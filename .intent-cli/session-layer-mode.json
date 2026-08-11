@@ -1,0 +1,29 @@
+{
+  "schema_version": "1",
+  "entries": [
+    {
+      "domain": "emumet",
+      "mode": "herdr-only",
+      "updated_at": "2026-08-11T10:31:05.0475755+00:00",
+      "transitions": [
+        {
+          "from": "agmsg",
+          "to": "herdr-only",
+          "at": "2026-08-11T10:31:05.0475755+00:00"
+        }
+      ]
+    },
+    {
+      "domain": "ratcap",
+      "mode": "herdr-only",
+      "updated_at": "2026-08-11T10:32:11.7371784+00:00",
+      "transitions": [
+        {
+          "from": "agmsg",
+          "to": "herdr-only",
+          "at": "2026-08-11T10:32:11.7371784+00:00"
+        }
+      ]
+    }
+  ]
+}
