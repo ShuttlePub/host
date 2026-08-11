@@ -1,0 +1,62 @@
+execution_unit: unfollow-api
+implementation_issue_packet:
+  issue_title: "外向き unfollow REST API(Undo(Follow) 配送) + REST followers/following 一覧"
+  issue_kind: feature
+  source_execution_unit: unfollow-api
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: application/src/service/activitypub/, application/src/transfer/, server/src/route/account/, server/src/schema/account.rs, server/src/openapi.rs, server/tests/e2e_ap_mock.rs, openapi.json
+  target_part: "外向き Undo(Follow) 配送ユースケース + unfollow REST ハンドラ + REST followers/following 一覧ハンドラ"
+  dependencies: []
+  technical_baseline:
+    - "Follow は純 CRUD エンティティ(イベントソーシング非対象)。approved_at: Option<FollowApprovedAt> で承認状態を表現"
+    - "署名付き配送は application/src/service/activitypub/delivery.rs の deliver_activity_to_inbox が唯一の窓口"
+    - "REST ルート追加は route/account/mod.rs AccountRouter + openapi.rs 登録 + openapi.json 再生成の3点セット"
+    - "認証は auth_middleware(Ory Hydra JWT)、権限はユースケース内 check_permission(account_sign)"
+  intent_references:
+    - "intents/emumet/features/ap-federation/overview.md"
+    - "intents/emumet/packets/backlog.md"
+  acceptance_criteria:
+    - "POST /api/v1/accounts/{account_id}/unfollow が存在し、認証なしで 401、他人のアカウントで 403 を返す"
+    - "リモート相手へのフォロー解除で署名付き Undo(Follow) が相手 inbox に配送されることを mock peer E2E で確認できる"
+    - "Undo 配送成功後にローカル follow 行が削除され、配送失敗時は follow 行が残りエラーが返る"
+    - "GET /api/v1/accounts/{account_id}/followers と .../following が承認済みフォローのみ返す(pending 不含)"
+    - "openapi.json が再生成され openapi_spec_matches_committed_file テストが通る"
+
+intent_placement:
+  primary_intent: intents/emumet/features/ap-federation/overview.md
+  supporting_intents: []
+  new_intent_needed: false
+  placement_rationale: "ap-federation 残スコープ「unfollow REST API + REST フォロー一覧」に直接対応"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/ap-federation/overview.md
+      - intents/emumet/features/ap-federation/packets.md
+    summary: "完了時に残スコープ→実装済みスコープへ移動し、packets.md に issue リンク追記(host-only)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: ""
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
+
+implementation_issue:
+  issue_title: "外向き unfollow REST API(Undo(Follow) 配送) + REST followers/following 一覧"
+  target_repo: ShuttlePub/Emumet
+  dependencies: []
+  blocked_by: []
