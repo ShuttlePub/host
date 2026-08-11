@@ -39,3 +39,7 @@
   - BAN 操作は確認モーダル内でアカウント名 (`@name`) を入力させ、一致する場合のみ `BanAccount` Message を発行する。
   - 停止操作は理由入力のみ必須とし、期限は任意の datetime-local 入力とする。
   - 停止解除はボタン単発で実行するが、理由入力欄が空でない場合は確認メッセージを表示する（簡易ガード）。
+
+- **実施順位と通報機能との統合設計 (2026-08-11 オペレーター決定)**
+  - 本 feature の実施は slice 順序の**最後**とする。外部からの通報(AccountReport)機能と合わせて設計を詰めてから実施する。
+  - 通報機能は Emumet 側 backlog に `moderation-account-report` packet として存在する(`intents/emumet/packets/backlog.md`)。モデレーション設計時に Emumet/Ratcap 横断で扱う。

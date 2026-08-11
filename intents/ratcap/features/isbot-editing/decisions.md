@@ -16,3 +16,7 @@
   - 理由：既存フィールド（summary 等）も同様に省略時に既存値を維持する設計になっているはずであり、整合性を取るため。
 - D5: 型再生成と PureScript ビルドは実装 PR 内で必ず実行し、生成物をコミットする。
   - 理由：`src/Generated/` は git 管理対象であり、GraphQL スキーマ変更と同期させる必要がある（README 記載）。
+- D6: is_bot は作成時のみ設定可能とし、作成後の編集 UI は提供しない (2026-08-11 オペレーター決定)。
+  - 理由：Emumet は ShuttlePub サービスのアカウント管理機能を提供することが目的であり、bot→人間等の後付け変更は用途上不自然。作成時に確定させるのが自然。
+  - 影響：D1（`UpdateProfileInput` への追加）・D3（AccountDetail 編集フォームへの配置）は**破棄**。代わりに `CreateAccountInput.isBot` + `AccountNew` フォームへの追加とする。D2 の命名規則（camelCase↔snake_case）と D5 の生成物コミット規則は継続。
+  - 補足：Emumet の `CreateAccountRequest` は `is_bot` を必須フィールドとして既に受け付けるため、バックエンド変更不要。

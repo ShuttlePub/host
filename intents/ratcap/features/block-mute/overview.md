@@ -7,20 +7,19 @@
 
 ## Goals
 
-- ユーザーが自分のアカウントから見た「ブロック」「ミュート」の対象を追加・削除できるようにする。
-- 対象は Emumet が受け入れる任意の識別子（ローカル nanoid、リモート actor URL、`acct:user@domain`）を指定できる。
-- ブロック / ミュート状態を一覧で確認・管理できる UI を提供する。
-- BFF レイヤーに `blockAccount` / `unblockAccount` / `muteAccount` / `unmuteAccount` の GraphQL mutation と、`blocks` / `mutes` の query を追加し、Emumet のブロック / ミュート REST API を呼び出す。
-- 既存のアカウント詳細画面にブロック / ミュート操作ボタンを追加する。
+- ユーザーが自分のアカウントから見た「ブロック」「ミュート」の対象を**一覧で確認・解除**できるようにする(2026-08-11 スコープ変更: 追加操作の UI は提供しない)。
+- ブロック / ミュートの**追加**は ShuttlePub 本体サービス側の UI フロー(投稿・タイムライン等)から Emumet API を通じて行われ、Ratcap はアカウント管理(一覧・解除)に専念する。Emumet は ShuttlePub サービスのアカウント管理機能を提供するという定位に整合。
+- BFF レイヤーに `unblockAccount` / `unmuteAccount` の GraphQL mutation と、`blocks` / `mutes` の query を追加し、Emumet のブロック / ミュート REST API を呼び出す。バックエンドは一覧・解除ともに実装済みで、Emumet 側の先行 packet は不要。
 
 ## Acceptance criteria summary
 
-- `bff/schema.graphql` に `Relation` 型と `blockAccount` / `unblockAccount` / `muteAccount` / `unmuteAccount` mutation、 `blocks` / `mutes` query が追加される。
-- `bff/emumet/client.ts` の `EmumetClient` 契約に `block` / `unblock` / `mute` / `unmute` / `listBlocks` / `listMutes` メソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
+- `bff/schema.graphql` に `Relation` 型と `unblockAccount` / `unmuteAccount` mutation、 `blocks` / `mutes` query が追加される。
+- `bff/emumet/client.ts` の `EmumetClient` 契約に `unblock` / `unmute` / `listBlocks` / `listMutes` メソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
 - `bff/resolvers.ts` に各リゾルバが実装され、未認証時は `UNAUTHENTICATED`、成功時は `Boolean` または `RelationConnection` を返す。
 - PureScript 側で生成型を再生成後、`spago build` が成功する。
-- アカウント詳細画面にブロック / ミュートボタンが追加され、操作後は状態が即座に反映される。
-- ブロック / ミュート一覧画面（またはセクション）が追加され、対象の識別子と種別を表示する。
+- ブロック / ミュート一覧(Settings 配下のセクション)が追加され、対象の識別子と種別を表示する。
+- 一覧項目から解除でき、解除後は一覧へ即座に反映される。
+- ブロック / ミュート**追加**の操作 UI は存在しない。
 - `bun test` の BFF テストにブロック / ミュートリゾルバのテストが追加され全て通る。
 
 ## Related

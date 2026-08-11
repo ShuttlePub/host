@@ -1,5 +1,7 @@
 # packets — ratcap ドメイン
 
+順序付き backlog は [backlog.md](backlog.md) を参照。
+
 各 feature の実装単位 (packet) の一覧は、各 feature 配下の `packets.md` を参照。
 
 - [settings-hub](../features/settings-hub/packets.md)

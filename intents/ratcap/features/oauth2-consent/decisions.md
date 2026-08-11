@@ -20,3 +20,6 @@
 - D6: Hydra の consent URL を Ratcap 側に向ける設定変更を行う (2026-07-28 決定)。
   - 理由： D1 で Ratcap ホストが確定したため、Hydra が現在向けている Emumet `/oauth2/consent` から Ratcap の consent ページへリダイレクト先を変更する必要がある。
   - 影響： Hydra / デプロイ設定の変更を packet の成果物に含める。
+- D7: 優先度を引き上げる (2026-08-11 オペレーター決定)。
+  - 理由： ShuttlePub が Emumet をリソースサーバーとして利用する際、公式以外の外部 ShuttlePub ホストもサードパーティ OAuth2 クライアントとして登録・利用する見込み。外部クライアントに対しては consent の auto-skip は不適切で、明示的な同意画面が必須となる。
+  - 影響： slice 順序で本 feature を前方に配置（`intents/ratcap/packets/backlog.md` 参照）。

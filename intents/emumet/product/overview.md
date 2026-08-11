@@ -10,6 +10,9 @@ Emumet は ShuttlePub のアカウント管理サービス。Event Sourcing + CQ
 
 - **ShuttlePub 利用者**: Ory Kratos で認証し、Emumet 上に ActivityPub アカウントを持つ。
 - **ShuttlePub 本体サービス**: Emumet の内部 API(代理署名など)を利用するサービス間クライアント。
+- **外部 ShuttlePub ホスト** (2026-08-11 追記): Emumet をリソースサーバーとして利用する
+  サードパーティ OAuth2 クライアント。公式以外のホストも登録される見込みのため、
+  OAuth2 consent の明示同意画面が必要(Ratcap 側 `oauth2-consent` feature)。
 - **インスタンス管理者/モデレーター**: Suspend/Ban 等のモデレーションを行う admin ロール保持者。
 - **外部 ActivityPub サーバー**: WebFinger/Actor/Inbox/Outbox を通じて連合するリモート。
 
@@ -18,11 +21,14 @@ Emumet は ShuttlePub のアカウント管理サービス。Event Sourcing + CQ
 実装済み: Account CRUD + Profile/Metadata、OAuth2 Login/Consent Provider (Hydra 連携)、
 WebFinger、Actor、Inbox(Follow/Accept/Undo のみ)、Outbox、Followers/Following、
 Follow の送受信配送、HTTP Signature (Cavage 検証 / Cavage+RFC9421 署名)、SSRF 対策、
-Suspend/Unsuspend/Ban + Admin/Moderator ロール、内部代理署名 API、
+Suspend/Unsuspend/Ban + Admin/Moderator ロール、ユーザーブロック/ミュート REST API
+(block-mute-core 完了: issue #16)、内部代理署名 API、
 Iceshrimp/Mock peer との E2E。
 
-未実装: ユーザーブロック/ミュート、画像アップロード、Create/Note 等の投稿送受信・
-転送、連携先 ShuttlePub サービス設定、通報・ロール割当管理、Mastodon E2E の完成。
+未実装: Block アクティビティ連合(block-mute-federation)、画像アップロード、
+Create/Note 等の投稿送受信・転送、連携先 ShuttlePub サービス設定、通報・ロール割当管理、
+Mastodon E2E の完成、外向き unfollow REST API・REST フォロー一覧
+(2026-08-11 確認、ap-federation 残スコープ)。
 
 ## Non-goals
 

@@ -20,6 +20,11 @@ ActivityPub 連合との相互運用を提供する。**基盤は実装済み**�
 
 ## 残スコープ
 
+- **unfollow REST API + REST フォロー一覧** (2026-08-11 追加): Ratcap のアカウント管理画面
+  (`follow-management`)が必要とする、外向き Undo(Follow) 配送の REST エンドポイント
+  (例: `POST /api/v1/accounts/{id}/unfollow` または `DELETE .../follow`)と、
+  BFF から利用しやすい REST の followers/following 一覧。現状は Inbox での Undo(Follow)
+  **受信**と AP collections のみで、ローカルユーザーからの外向き unfollow の REST 経路がない。
 - Create/Note 等の投稿系アクティビティ → [../post-relay/overview.md](../post-relay/overview.md)
 - Actor の icon/image 反映 → [../media-upload/overview.md](../media-upload/overview.md)
 - Block アクティビティ → [../block-mute/overview.md](../block-mute/overview.md)

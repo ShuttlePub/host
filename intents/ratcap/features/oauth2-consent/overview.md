@@ -12,6 +12,10 @@
 
 > **Ask intent-cli first:** `intent-cli guide intent-work setup --kind tree-layout --domain ratcap --format markdown`
 
+## Context (2026-08-11 追記)
+
+ShuttlePub は Emumet をリソースサーバーとして利用し、公式以外の**外部 ShuttlePub ホスト**もサードパーティ OAuth2 クライアントとして登録・利用する見込み。外部クライアントに対しては consent の auto-skip は不適切で、明示的な同意画面が必須となるため、本 feature の優先度は高い(slice 順序は [../../packets/backlog.md](../../packets/backlog.md) 参照)。
+
 ## Goals
 
 - Hydra の consent フローで「手動同意（manual consent）」が要求された場合に、ユーザーがクライアント名と要求スコープを確認して同意/拒否できる UI を提供する。

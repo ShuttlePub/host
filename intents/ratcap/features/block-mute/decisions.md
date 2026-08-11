@@ -31,3 +31,8 @@
 - **状態更新方式**
   - mutation 成功後は対象アカウントの詳細を再フェッチするか、ローカル state で即座にリストを更新する。
   - 一覧画面では `FetchBlocks` / `FetchMutes` 完了後に `RemoteData` を更新する。
+
+- **スコープ変更: 一覧 + 解除に特化 (2026-08-11 オペレーター決定)**
+  - ブロック / ミュートの**追加**操作 UI は Ratcap に持たせない。Emumet は ShuttlePub サービスのアカウント管理機能を提供する定位であり、追加は ShuttlePub 本体サービス側の UI フロー(投稿・タイムライン等)から Emumet API を通じて行われる。Ratcap はアカウント管理(一覧・解除)に専念する。
+  - 「UI の配置方針 (2026-07-28 決定)」のうち AccountDetail への操作ボタン追加は**破棄**し、Settings 配下の一覧 + 解除のみとする。
+  - バックエンドは一覧(GET blocks/mutes)・解除(POST unblock/unmute)ともに実装済みのため、Emumet 側の先行 packet は不要。

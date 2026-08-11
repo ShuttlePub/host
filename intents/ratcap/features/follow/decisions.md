@@ -26,3 +26,8 @@
 
 6. **権限判定は Emumet 側に委ねる**
    - `account_sign`（Owner/Editor/Signer）の判定は Emumet で行う。BFF はレスポンスの status code を適切な GraphQL エラーコードに写像するのみ。
+
+7. **スコープ変更: 一覧 + unfollow に特化 (2026-08-11 オペレーター決定)**
+   - 新規フォローのフォーム(D1-D3 の `FollowResult` / `followAccount` / 詳細画面フォローセクション)は**提供しない**。Emumet は ShuttlePub サービスのアカウント管理機能を提供する定位であり、フォロー操作は ShuttlePub 本体サービス側の UI フローに委ねる。Ratcap はアカウント管理(一覧・解除)に専念する。
+   - D4 の「一覧は初回 slice ではスコープ外」は本決定により**反転**。following/followers 一覧と unfollow が本 feature の中核スコープとなる。
+   - **前提**: Emumet に unfollow REST エンドポイントが存在しない(2026-08-11 確認)。Emumet 側 `unfollow-api` packet(外向き Undo(Follow) 配送 + REST フォロー一覧)の完了が先行条件。`intents/emumet/packets/backlog.md` 参照。

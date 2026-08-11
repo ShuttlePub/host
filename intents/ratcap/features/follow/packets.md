@@ -2,34 +2,27 @@
 
 > [../../packets/](../../packets/) に domain-level packet がある場合は参照。
 
+> **BLOCKED (2026-08-11)**: Emumet 側 `unfollow-api` packet(外向き Undo(Follow) REST API + REST フォロー一覧)の完了が先行条件。`intents/emumet/packets/backlog.md` 参照。
+
 ## Execution units
 
-### Packet 1: BFF GraphQL + EmumetClient 拡張
+### Packet 1: BFF 一覧 query + unfollow mutation
 - **対象ファイル**: `bff/schema.graphql`, `bff/emumet/client.ts`, `bff/emumet/real.ts`, `bff/emumet/mock.ts`, `bff/resolvers.ts`
 - **作業内容**:
-  1. `bff/schema.graphql` に `FollowResult` 型と `followAccount(accountId: ID!, target: String!): FollowResult!` mutation を追加する。
-  2. `bff/emumet/client.ts` に `FollowResult` 型と `followAccount` メソッドを追加する。
-  3. `bff/emumet/real.ts` で `POST /api/v1/accounts/{accountId}/follow` を呼び出し、レスポンスを camelCase に変換する。
-  4. `bff/emumet/mock.ts` で `followAccount` を実装し、フォロー状態をインメモリで保持する。
-  5. `bff/resolvers.ts` に `Mutation.followAccount` を追加する。
-  6. `bff/*.test.ts` に成功/未認証/404/無効入力/権限不足のテストを追加する。
+  1. `bff/schema.graphql` に following/followers 取得 query と `unfollowAccount` mutation を追加する。
+  2. `bff/emumet/client.ts` に一覧取得と unfollow のメソッドを追加する。
+  3. `bff/emumet/real.ts` で Emumet の REST フォロー一覧と unfollow エンドポイントを呼び出し、camelCase に変換する。
+  4. `bff/emumet/mock.ts` でフォロー関係をインメモリ保持し、一覧と unfollow を模擬する。
+  5. `bff/resolvers.ts` に各リゾルバを追加する。
+  6. `bff/*.test.ts` に成功/未認証/404/権限不足のテストを追加する。
 - **完了条件**: `bun test` が全て通る。
 
-### Packet 2: PureScript 型再生成 + フロントエンド API 呼び出し
-- **対象ファイル**: `src/Generated/**/*.purs`, `src/App/Api/GraphQL.purs`, `src/App/Api/GraphQL/Types.purs`
+### Packet 2: PureScript 型再生成 + 一覧 UI + unfollow
+- **対象ファイル**: `src/Generated/**/*.purs`, `src/App/Api/GraphQL.purs`, `src/App/Api/GraphQL/Types.purs`, `src/App/Model.purs`, `src/App/Message.purs`, `src/App/View/AccountDetail.purs`, `src/Client/Update.purs`
 - **作業内容**:
   1. `bun scripts/sync-graphql.ts` を実行して生成型を更新する。
-  2. `src/App/Api/GraphQL/Types.purs` に `FollowResultResponse` 型を追加する。
-  3. `src/App/Api/GraphQL.purs` に `followAccount :: String -> String -> Aff (Either ApiError FollowResultResponse)` を追加する。
-  4. `spago build` でコンパイルエラーを解消する。
-- **完了条件**: `spago build` が成功する。
-
-### Packet 3: UI フォローセクション + 状態管理
-- **対象ファイル**: `src/App/Model.purs`, `src/App/Message.purs`, `src/App/View/AccountDetail.purs`, `src/Client/Update.purs`（または一元 Update ファイル）
-- **作業内容**:
-  1. `src/App/Message.purs` にフォロー関連メッセージを追加する。
-  2. `src/App/Model.purs` にフォロー対象入力文字列と結果/エラー状態を追加する。
-  3. `src/App/View/AccountDetail.purs` にフォロー入力欄と実行ボタン、結果表示エリアを追加する。
-  4. update 関数にフォロー mutation 実行と成功/失敗ハンドラを追加する。
-  5. mock モードで手動検証する（アカウント作成 → フォロー実行 → 結果表示）。
-- **完了条件**: 手動でフォローが実行でき、結果が表示される。
+  2. `src/App/Api/GraphQL.purs` に一覧取得と unfollow の関数を追加する。
+  3. アカウント詳細画面に following / followers 一覧セクションを追加する。
+  4. 一覧項目に unfollow ボタンを配置し、成功後に一覧を更新する。
+  5. mock モードで手動検証する(一覧表示 → unfollow → 一覧更新)。
+- **完了条件**: `spago build` / `spago test` が成功し、手動で一覧表示と unfollow が動作する。

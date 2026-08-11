@@ -7,18 +7,22 @@
 
 ## Goals
 
-- ユーザーが所有/署名/編集権限を持つアカウントから、外部 ActivityPub アクターをフォローできるようにする。
-- フォロー対象は nanoid、actor URL、`acct:user@domain` のいずれかを入力できるシンプルなフォームで受け付ける。
-- フォロー実行後、成功/失敗のフィードバックを即座に表示する。
-- フォロー成功で返却される `follow_id`, `remote_actor_url`, `activity_id`, `approved` をフロントエンドで表示する（初回 slice）。
-- フォロー/フォロワー一覧は ActivityPub collections で取得するため、初回 slice ではスコープ外とする。
+- ユーザーが自身のアカウントの **following / followers 一覧**を Ratcap 上で確認できるようにする(2026-08-11 スコープ変更: 新規フォローのフォームは提供しない)。
+- 一覧から **unfollow** を実行できるようにする。
+- 新規フォロー操作は ShuttlePub 本体サービス側の UI フローに委ね、Ratcap はアカウント管理(一覧・解除)に専念する。Emumet は ShuttlePub サービスのアカウント管理機能を提供するという定位に整合。
+
+## 前提(バックエンド依存)
+
+- Emumet に unfollow の REST エンドポイントが存在しない(2026-08-11 確認)。Emumet 側の `unfollow-api` packet(外向き Undo(Follow) 配送 + REST フォロー一覧)の完了が先行条件。`intents/emumet/packets/backlog.md` 参照。
+- following/followers の取得は現状 ActivityPub collections (`/ap/accounts/{id}/followers` 等) のみ。BFF から利用しやすい REST 一覧を Emumet 側 packet で併せて提供する。
 
 ## Acceptance criteria summary
 
-- `bff/schema.graphql` に `followAccount` mutation と `FollowResult` 型が追加される。
-- `bff/emumet/client.ts` の `EmumetClient` 契約に `followAccount` メソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
-- `bff/resolvers.ts` に `followAccount` リゾルバが実装される。
+- `bff/schema.graphql` に following/followers を取得する query と `unfollowAccount` mutation が追加される。
+- `bff/emumet/client.ts` の `EmumetClient` 契約に一覧取得と unfollow のメソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
+- `bff/resolvers.ts` に各リゾルバが実装され、未認証時は `UNAUTHENTICATED` を返す。
 - PureScript 側で生成型を再生成後、`spago build` が成功する。
-- アカウント詳細画面に「フォロー」セクション/フォームが追加され、対象入力後に mutation を発行できる。
-- フォロー成功時は `FollowResult` のフィールドを表示する。失敗時はエラーメッセージを表示する。
-- `bun test` の BFF テストに `followAccount` リゾルバのテストが追加され全て通る。
+- アカウント詳細画面(または設定ハブ)に following / followers 一覧が表示される。
+- 一覧の各項目に unfollow ボタンがあり、実行後に一覧へ即座に反映される。
+- 新規フォローの入力フォームは UI に存在しない。
+- `bun test` の BFF テストに一覧取得・unfollow のテストが追加され全て通る。
