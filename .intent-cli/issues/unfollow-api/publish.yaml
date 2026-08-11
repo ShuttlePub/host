@@ -1,7 +1,7 @@
 execution_unit: unfollow-api
-publish_status: drafted
-packet_path: ".intent-cli/issues/unfollow-api/packet.yaml"
-issue_body_path: ".intent-cli/issues/unfollow-api/github-body.md"
-created_issue_number: null
-created_issue_url: null
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/unfollow-api"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/unfollow-api/github-body.md"
+created_issue_number: 20
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/20"
 published_label_name: null
