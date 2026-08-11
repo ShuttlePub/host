@@ -1,10 +1,5 @@
 ---
 # Automation bindings for the `ratcap` intent domain (tree-v1).
-#
-# Created by `intent-cli intent init-tree` so first-run `next-slice`,
-# `host-check`, and `automation summary` recognize this domain without
-# hand-authoring. Ask intent-cli before editing:
-#   intent-cli guide intent-work setup --kind tree-layout --domain ratcap --format markdown
 
 # Implementation (child) repository this domain's issues target.
 child_repo: ShuttlePub/RatCap

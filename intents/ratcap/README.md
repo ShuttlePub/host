@@ -1,6 +1,6 @@
 # ratcap
 
-Target repo: `ShuttlePub/RatCap`
+Target repo: `ShuttlePub/Ratcap`
 
 Bootstrapped by `intent-cli intent init`.
 
