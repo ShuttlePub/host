@@ -1,9 +1,32 @@
 # intent-cli × OpenCode ループ統合ノート
 
 > 目的: OpenCode (oh-my-openagent) 環境で intent-cli の実装ループを回すための実運用知見を記録する。
-> 由来: 2026-08-12 の emumet `unfollow-api` 実験 (issue ShuttlePub/Emumet#20 → PR #21) で得た実測。
+> 由来: 2026-08-12 の emumet `unfollow-api` 実験 (issue ShuttlePub/Emumet#20 → PR #21) と
+> 2026-08-13 の emumet `block-mute-federation` (issue #22 → PR #23) で得た実測。
 > 原則は変わらず `intent-cli` がワークフロー権威。ここには OpenCode 側の配線知見だけを置き、
 > ワークフロー手順そのものはコピーしない。
+
+---
+
+## 0. 確定した「型」 (2026-08-13、2スライス実測で固定)
+
+スライスのライフサイクルは以下のターン構造で回す:
+
+1. `next` — 証拠確認(queue / backlog / PR / doctor)のうえで 1 プロセスを推薦
+2. `grill` / clarification — ブロッカーがあれば先に解消
+3. `stack` — packet draft。**この時点で packet.yaml から scaffold 由来のルートレベル
+   コメントを除去する** (§2 参照)。github-body.md の H1 が issue タイトルになる
+4. publish — queue-seed → publish-flow → automation issue-publish
+5. claim — worker claim で intent-issue-in-progress
+6. **実装前計画レビュー (本ノートで新設)**: claim 後・実装着手前に packet ↔ 実コードを
+   再照合し、矛盾・追加の意思決定事項・実装分解を確定する。publish 前ではなくここに置く
+   (draft 時点の記憶ではなく最新コードで照合できる)。今回 3 件の微差をこのターンで検出
+7. 実装 — 使い捨て team (lead + implementation member)。member prompt には
+   作業場所・バイナリパス・gitmoji・スコープ境界・マイルストーン報告・検証ループ最小化を明記
+8. 2層レビュー — lead が契約照合 (`intent-cli guide review` チェックリスト) とラベル遷移、
+   独立 `code-reviewer` agent が品質・セキュリティ・保守性 + 外部 API 互換性を審査
+9. closeout — merge → `closeout pr` → 知識書き戻し (declared なら同 wake で実施・記録)
+10. ノート更新 — 実測の差分を本ノートへ。team は `team_delete` で解体
 
 ---
 
@@ -11,10 +34,11 @@
 
 | 制約 | 対処 |
 |---|---|
-| `~/Documents` が ro bind mount (rw は host repo のみ) | 子実装 worktree は `~/worktrees/<repo>` に clone する |
+| ~~`~/Documents` が ro bind mount~~ → 2026-08-13 に operator が sandbox 設定を変更し、Emumet 本体が writable に | **本物のチェックアウトで直接作業する** (worktree 不要)。以降のスライスもこの前提。sandbox 仕様は「cwd + ホームルート + /tmp が writable」で、`/var/tmp` は sandbox 内に存在しない。ホーム (`~`) はホスト側 `/var/tmp/opencodebox-*` の bind mount (ext4) で、永続性はセッション構成次第 |
 | gh の git protocol が ssh + nix 環境の ssh_config 破損で git over ssh 不可、`~/.config/gh` も ro | clone は https、認証は repo-local credential helper: `git config credential.helper '!f() { echo username=x-access-token; echo password=$(gh auth token); }; f'` |
-| 子リポジトリの `.envrc` の `use dotenv` がこの環境の direnv stdlib に無い | 非致命だが .env が載らない。恒久対応は `.envrc` を `dotenv` 表記に直す PR |
+| 子リポジトリの `.envrc` の `use dotenv` がこの環境の direnv stdlibに無い | 非致命だが .env が載らない。恒久対応は `.envrc` を `dotenv` 表記に直す PR |
 | Emumet flake pin の intent-cli が 0.5.0 で stale (worker 系コマンド不足) | host 側 flake の 0.18.1 nix store バイナリを子でも直接使う。恒久対応は Emumet flake.lock の intent-system-flake 更新 PR (別スライス候補) |
+| **rootless docker の inotify quota 枯渇でローカル E2E 不可** (2026-08-13 実測。keto が fsnotify ENOSPC で起動不能) | ローカルで `e2e/run-ap-e2e.sh` を**実行しない**。E2E は CI をエビデンスにする (PR body に明記)。なお同スクリプトの cleanup (`compose down -v`) は稼働中の dev postgres container + volume を消す — 実行自体を避けること |
 
 ## 2. intent-cli 側の適合メモ
 
@@ -29,6 +53,14 @@
 - packet.yaml の title は github-body.md の H1 が最終ソース (`title_source: github-body-h1`)。
   H1 が無いと `fallback-untitled` 警告になる。また packet.yaml は `execution_unit` トップレベル
   キーと `implementation_issue` セクションが別途必須 (scaffold 出力だけでは不足するので注意)。
+- **packet.yaml のルートレベルコメントは projection パーサが不正フィールドとして弾く**
+  (2026-08-13 実測: `issue draft` が "invalid root field" で失敗)。`packet draft` の scaffold が
+  挿入する G461/G645 の説明コメントは、publish 前に除去すること。公開済み packet
+  (unfollow-api) はコメント無し。**media-upload の packet.yaml には残っているので、
+  その publish 時に同じ対応が必要**
+- CI の giraffate/clippy-action が reviewdog install で `socket hang up` する infra flake あり
+  (2026-08-13)。`gh run rerun <id> --failed` で回復する。差分に無関係な crate の fail は
+  まず infra を疑う
 
 ## 3. team-mode マッピング (実験構成)
 
@@ -52,50 +84,65 @@
    member への再開指示に「team task 更新が無理なら本文で報告」を含める。
 3. **member が最後に errored 状態になった**。成果物 (PR) は確定済みだったので
    `team_delete(force=true)` で解体。チームはスライス単位で使い捨てる運用が無難。
+4. **team member からの再委譲は不可** (2026-08-13 検証完了): member セッションには
+   `task()` / delegate-task が公開されず (budget ゼロ)、`call_omo_agent` の
+   explore/librarian 系のみ。§5 の「ネストオーケストレーション」構想は現構成では
+   成立しないため、implementation member はスライスを直接実装する。
+   block-mute-federation 級 (9ファイル +838行) はマイルストーン報告 + 検証最小化で
+   上限死せず完走できた。それより大きいスライスは lead 側で分割 publish する。
+5. **member の idle 表示と wake**: `team_status` の idle は未読状態の話で、セッションは
+   生きていることがある。`task(task_id=...)` の nudge が "gate: active" で skip されたら
+   稼働中なので二重起動しない。未読メッセージは順不同で注入されるため、
+   タイムスタンプを見て古いバックログに反応しない。
 
 ## 4. レビューループの実測
 
 - 初回レビューで packet 契約との差分 (ローカル相手 unfollow 未対応) を1件検出し、
   PR コメント + `pr-transition request-update` で差し戻し → member が修正して
   `rereview-ready` → 再レビューで `approved` まで一連のラベル遷移が成立した。
+  **2026-08-13 の block-mute-federation でも同じ往復が成立** (2 データ点目。
+  E2E テスト欠陥 → request-update → テストのみ修正 → approved)。
 - **ローカルで動かせなかった mock E2E は CI のハーネスで実行・通過した**。
   ローカル E2E 不可は PR 本文に明記すればブロッカーではなく、CI を証跡にできる。
 - レビュー観点は `intent-cli guide review --pr <n> --domain emumet` のチェックリスト
   出力がそのまま使えた。テスト green は必要条件で、packet 照合が承認根拠。
+- **E2E アサーションの観測可能性は独立したレビュー観点にする** (2026-08-13 の教訓):
+  GET /blocks のような「source=自分」の一覧 API では remote→local の状態遷移を
+  観測できず、テストが「見えないもの」を assert して CI で落ちた。静的レビュー
+  (lead + code-reviewer) は両方とも通したが CI が捕捉した。inbound 連合の E2E は
+  DB レベルの assert helper を使う。
+- CI が落ちたら先に「どの観測が失敗したか」を特定してから request-update を書く。
+  実装バグとテストの検証方法バグで修正スコープがまったく変わる。
 
-## 5. 次のスライスでのチーム構成 (2026-08-12 オペレーター助言を反映)
+## 5. チーム構成の結論 (2026-08-13 に検証完了)
 
-実験後の助言を受けた改訂方針。`deep` 1本への丸投げは安直だった — 400 tool-call キャンセルは
-「調査→実装→環境迂回→検証→PR」を1コンテキストに抱えたことが直接原因。
+実験後の助言を受けた改訂方針だった「ネストオーケストレーション」は、
+**team member からの再委譲 (task()) が現構成では不可**と検証されたため撤回。
+以下が確定構成:
 
-- **実装はネストオーケストレーション**: implementation member は `deep` ではなく
-  委譲可能なオーケストレータ (subagent_type `sisyphus` または `atlas`) とし、
-  issue 契約を「アプリケーション層」「REST/OpenAPI 配線」「テスト/E2E」等に分解して
-  ワーカーへ fan-out する。ワーカーはコンテキストが小さく保たれ上限死を回避できる。
-  - 制約: intent-cli の workflow 面 (worker claim/complete、ラベル遷移) を触るのは
-    オーケストレータのみ (G444「1 wake 1 ドライバー」)。ワーカーは GitHub-contract-only の
-    コード作業に限定する。
-  - 未検証: team member 内からの再委譲 (delegate-task は budget zero と明記されていた)。
-    task() が使えるかは次スライスで検証する。Sisyphus-Junior は no delegation なので
-    オーケストレータ役には使わない。
-  - 使い分け: 小さいスライス (数ファイル) では調整コストが見合わないので単一 worker のまま。
-    block-mute-federation 級 (30ファイル) からネストを適用する。
-- **レビューは2層**: 契約適合レビュー (intent-cli guide review 照合 + ラベル遷移) は
-  lead が担う (host metadata 権限が必要)。コード品質レビューは `code-reviewer` agent を
-  read-only で独立起動し、issue 契約と OOS 境界を prompt に与えて品質・セキュリティ・
-  保守性を審査させる。実装者と別セッションなので独立性も保てる。
-  (`review-gate:*` 系 plugin agent は要件/設計ゲート用で PR レビュー用途ではない。)
-- **外部 API 互換性の観点をレビューに追加**: REST エンドポイント追加系スライスでは、
-  Mastodon API 等の de-facto 標準とのパス/セマンティクス競合をレビュー観点に含める
-  (今回の PR #21 で指摘を受けた。詳細は intents/emumet/clarifications/open.md C4)。
+- **implementation member は直接実装する単一ワーカー** (subagent_type `sisyphus`)。
+  `deep` 丸投げの反省 (400 tool-call 上限死) には、member prompt への
+  「マイルストーンごとに中間報告」「検証ループ最小化」の明記で対抗する。
+  block-mute-federation (9ファイル +838行、E2E 含む) はこの構成で上限死せず完走。
+  それより大きいスライスは packet を分割して publish する (設計側の責務)。
+- **lead = design/host 役** (ホストリポジトリ cwd のセッション)。review も lead が兼任し、
+  品質レビューは独立 `code-reviewer` agent を read-only で別起動する 2層構成 (§0-8)。
+  実装者と別セッションなので独立性も保てる。`review-gate:*` 系 plugin agent は
+  要件/設計ゲート用で PR レビュー用途ではない。
+- **外部 API 互換性の観点をレビューに追加**: REST エンドポイント追加系では Mastodon API
+  等の de-facto 標準との競合を、ActivityPub 連合系では Block/Undo の shape が
+  主流実装 (Akkoma/GoToSocial/Iceshrimp) と整合するかを審査させる。
+  (Mastodon は Block を連合しないため、Mastodon inbox への Block は黙棄される想定。
+  実 Mastodon での確認は別スライスの余地あり)
 
 ## 6. 次回以降の改善アクション
 
 - [ ] Emumet flake.lock の intent-system-flake 更新 PR (stale 0.5.0 解消) — 別スライス候補
 - [ ] Emumet `.envrc` の `use dotenv` → `dotenv` 修正 PR — 同上
 - [ ] upstream に ShuttlePub リポジトリの `guide oneshot` 対応を要望するか検討
-- [ ] 子ループの起動手順 (clone 場所、credential helper、バイナリパス) を
-      member prompt テンプレートとして定型化する
-- [ ] backlog 複数件運用時の WIP cap と team 使い捨て/存続の方針を決める
-- [ ] block-mute-federation でネストオーケストレーション構成を検証し、
-      team member からの再委譲可否を確認して本ノートに結果を追記する
+- [ ] media-upload publish 前に packet.yaml のルートレベルコメントを除去する (§2)
+- [x] ~~子ループの起動手順の定型化~~ → §0 の「型」として確定 (2026-08-13)
+- [x] ~~backlog 複数件運用時の WIP cap~~ → 現状は先頭 1 件運用で問題なし。複数並走が
+      必要になった時点で再検討
+- [x] ~~block-mute-federation でネストオーケストレーション検証~~ → 検証完了。
+      team member からの task() 再委譲は不可 (§3-4, §5)。単一ワーカー直接実装に確定
