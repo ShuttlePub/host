@@ -4,7 +4,10 @@
 
 ## Execution units
 
-1. `mastodon-e2e-completion` — Mastodon 連携 E2E テストの完成
+1. `unfollow-api` — 外向き unfollow REST API(Undo(Follow) 配送) + REST followers/following 一覧
+   ✅ issue [#20](https://github.com/ShuttlePub/Emumet/issues/20) / PR [#21](https://github.com/ShuttlePub/Emumet/pull/21)
+   (2026-08-12 merge、packet: `.intent-cli/issues/unfollow-api/`)
+2. `mastodon-e2e-completion` — Mastodon 連携 E2E テストの完成
    (packet: `.intent-cli/issues/mastodon-e2e-completion/`)
 
 ## 関連 packet(他 feature 管轄)

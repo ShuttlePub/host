@@ -1,11 +1,11 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-11T22:28:30.9573803+00:00",
+  "updated_at": "2026-08-12T00:17:33.0143832+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
       "title": "\u5916\u5411\u304D unfollow REST API(Undo(Follow) \u914D\u9001) \u002B REST followers/following \u4E00\u89A7",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
@@ -19,6 +19,7 @@
         "number": 20,
         "url": "https://github.com/ShuttlePub/Emumet/issues/20"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/21",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
