@@ -23,12 +23,13 @@ WebFinger、Actor、Inbox(Follow/Accept/Undo のみ)、Outbox、Followers/Follow
 Follow の送受信配送、HTTP Signature (Cavage 検証 / Cavage+RFC9421 署名)、SSRF 対策、
 Suspend/Unsuspend/Ban + Admin/Moderator ロール、ユーザーブロック/ミュート REST API
 (block-mute-core 完了: issue #16)、内部代理署名 API、
-Iceshrimp/Mock peer との E2E。
+外向き unfollow REST API(Undo(Follow) 配送) + REST followers/following 一覧
+(issue #20 / PR #21)、
+Iceshrimp/Mastodon 実機/Mock peer との E2E(CI 常時実行)。
 
 未実装: Block アクティビティ連合(block-mute-federation)、画像アップロード、
-Create/Note 等の投稿送受信・転送、連携先 ShuttlePub サービス設定、通報・ロール割当管理、
-Mastodon E2E の完成、外向き unfollow REST API・REST フォロー一覧
-(2026-08-11 確認、ap-federation 残スコープ)。
+Create/Note 等の投稿送受信・転送、連携先 ShuttlePub サービス設定、通報・ロール割当管理
+(2026-08-12 確認、ap-federation 残スコープ)。
 
 ## Non-goals
 

@@ -7,11 +7,16 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 
 | # | execution unit | 概要 | 依存 |
 |---|---|---|---|
-| 1 | `unfollow-api` | 外向き unfollow REST API(Undo(Follow) 配送) + REST followers/following 一覧。Ratcap `follow-management` の先行条件 (2026-08-11 追加) | — |
-| 2 | `block-mute-federation` | Block アクティビティの連合送受信 + E2E(REST API の block-mute-core は完了: issue #16) | — |
-| 3 | `moderation-role-assignment` | Admin/Moderator ロール割当管理 API | — |
-| 4 | `moderation-account-report` | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 3 |
-| 5 | `mastodon-e2e-completion` | Mastodon 連携 E2E テストの完成 | — |
+| 1 | `block-mute-federation` | Block アクティビティの連合送受信 + E2E(REST API の block-mute-core は完了: issue #16) | — |
+| 2 | `moderation-role-assignment` | Admin/Moderator ロール割当管理 API | — |
+| 3 | `moderation-account-report` | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 2 |
+| 4 | `mastodon-e2e-undo-coverage` | Mastodon 実機 E2E に Undo(Follow) 相互運用シナリオを追加(unfollow-api の Undo 配送を実 Mastodon 相手に検証。S7-S9 は完成済み) (2026-08-12 C4 grill より) | — |
+
+## 完了(2026-08-12 ドリフト解消で整理)
+
+- `unfollow-api` — issue #20 / PR #21 マージ済み(2026-08-12)
+- `mastodon-e2e-completion` — S7-S9 シナリオ完成、CI (e2e.yml → run-ap-e2e.sh) で
+  実 Mastodon コンテナ相手に常時実行中。backlog 記述が stale だっただけで実体は達成済み
 
 ## Deferred(open question 解消が先)
 
