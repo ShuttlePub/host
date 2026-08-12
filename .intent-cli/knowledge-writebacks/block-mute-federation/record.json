@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "block-mute-federation",
+  "host_commit": "ec76a5dcf742e3295b40f07ecb71397a81bd204c",
+  "recorded_at": "2026-08-12T17:44:08.1977985+00:00",
+  "targets": [
+    "intents/emumet/features/block-mute/packets.md",
+    "intents/emumet/features/block-mute/acceptance.md",
+    "intents/emumet/features/block-mute/decisions.md"
+  ],
+  "note": null
+}
