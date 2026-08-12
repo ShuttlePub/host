@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-12T00:17:33.0143832+00:00",
+  "updated_at": "2026-08-12T15:50:49.9765438+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -20,6 +20,28 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/20"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/21",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "block-mute-federation",
+      "title": "block-mute-federation: Block \u30A2\u30AF\u30C6\u30A3\u30D3\u30C6\u30A3\u9023\u5408 (\u9001\u4FE1 Block/Undo(Block) \u002B inbox \u53D7\u4FE1\u51E6\u7406) \u002B E2E",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/block-mute-federation/implementation.md",
+        "review_context": ".intent-cli/issues/block-mute-federation/review-context.md",
+        "yaml": ".intent-cli/issues/block-mute-federation/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 22,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/22"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
