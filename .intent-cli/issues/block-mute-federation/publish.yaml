@@ -1,0 +1,7 @@
+execution_unit: block-mute-federation
+publish_status: drafted
+packet_path: ".intent-cli/issues/block-mute-federation/packet.yaml"
+issue_body_path: ".intent-cli/issues/block-mute-federation/github-body.md"
+created_issue_number: null
+created_issue_url: null
+published_label_name: null

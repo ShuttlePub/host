@@ -1,0 +1,71 @@
+execution_unit: block-mute-federation
+implementation_issue_packet:
+  issue_title: "block-mute-federation: Block アクティビティ連合 (送信 Block/Undo(Block) + inbox 受信処理) + E2E"
+  issue_kind: feature
+  source_execution_unit: block-mute-federation
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: application/src/service/activitypub/, application/src/service/block.rs, application/src/transfer/, server/tests/e2e_ap_mock.rs, server/tests/e2e_ap_iceshrimp.rs
+  target_part: "外向き Block/Undo(Block) 配送ユースケース + inbox の Block/Undo(Block) ハンドラ + ブロック連合 E2E"
+  dependencies: []
+  technical_baseline:
+    - "Block/Mute エンティティ (local/remote 識別の source/destination 構造)・BlockRepository/MuteRepository・REST API (作成/一覧/解除) は block-mute-core (issue #16 / PR #17) で完了"
+    - "block_account は既に remove_follows_between で双方向フォロー解除を実施済み (application/src/service/block.rs:305)。ローカル状態側のブロック成立ロジックは変更不要"
+    - "Activity は generic 型 (type_: String、object: serde_json::Value) のため Block 専用型の新設は不要 (kernel/src/activitypub.rs:297)"
+    - "署名付き配送は application/src/service/activitypub/delivery.rs の deliver_activity_to_inbox が唯一の窓口"
+    - "外向き配送 + outbox 記録の最新パターンは outbound_unfollow.rs (Activity 構築 → deliver_activity_to_inbox → ローカル状態更新 → OutboxActivity 記録)"
+    - "inbox は inbox/mod.rs の activity.type_ match で dispatch し、ハンドラは inbox/handlers.rs に追加 (handle_follow_activity / handle_undo_follow / handle_accept_activity が既存)"
+    - "リモートアクター解決は remote_actor.rs の resolve_remote_actor / upsert_remote_account を流用"
+    - "認証は auth_middleware (Ory Hydra JWT)、権限はユースケース内 check_permission(account_sign)"
+  intent_references:
+    - intents/emumet/features/block-mute/overview.md
+    - intents/emumet/features/block-mute/requirements.md
+    - intents/emumet/features/block-mute/acceptance.md
+    - intents/emumet/features/block-mute/packets.md
+  acceptance_criteria:
+    - "ローカルアカウントがリモートアカウントをブロックすると、署名付き Block アクティビティが相手 inbox に配送され、outbox に記録される (mock peer E2E で検証)"
+    - "ローカルアカウントがリモートアカウントのブロックを解除すると、署名付き Undo(Block) が相手 inbox に配送される"
+    - "inbox で受信した Block がローカルの block 状態 (remote→local) の作成と双方向フォロー関係の解除に反映される"
+    - "inbox で受信した Undo(Block) が該当 block の削除に反映される"
+    - "配送失敗時のローカル状態遷移・エラー返却が outbound_unfollow の既存パターンと一貫している"
+    - "Mock peer E2E にブロック連合シナリオが追加され、Iceshrimp E2E にもブロックシナリオが追加される"
+
+intent_placement:
+  primary_intent: intents/emumet/features/block-mute/overview.md
+  supporting_intents:
+    - intents/emumet/features/ap-federation/overview.md
+  new_intent_needed: false
+  placement_rationale: "features/block-mute/packets.md の execution unit 2 として定義済み。feature スコープ内の連合部分の実装"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/block-mute/packets.md
+      - intents/emumet/features/block-mute/acceptance.md
+      - intents/emumet/features/block-mute/decisions.md
+    summary: "完了時に packets.md へ issue/PR リンク追記・acceptance.md の連合項目チェック・decisions.md に Mute 非連合の確定を記録 (host-only)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "Mute を連合しない方針・Block の純粋 CRUD 継続は feature スコープのため features/block-mute/decisions.md に記録 (cross-domain ADR は不要)"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "document リポジトリ同期は packets/backlog.md の Host-only 項目として別途管理"
+closeout_learning:
+  expected: "Block アクティビティのリモート実装 (Iceshrimp) との相互運用で得た知見 (object 表現の許容差異など)"
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
+
+implementation_issue:
+  issue_title: "block-mute-federation: Block アクティビティ連合 (送信 Block/Undo(Block) + inbox 受信処理) + E2E"
+  target_repo: ShuttlePub/Emumet
+  dependencies: []
+  blocked_by: []
