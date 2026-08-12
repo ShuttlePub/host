@@ -1,0 +1,72 @@
+implementation_issue_packet:
+  issue_title: "media-upload: 画像アップロード API + S3 互換ストレージ連携 + Actor icon/image 反映"
+  issue_kind: feature
+  source_execution_unit: media-upload
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: server/src/route, application/src/service, kernel/src/repository/image.rs, driver/src/database, compose.yml
+  target_part: "画像アップロード REST API・S3 互換ストレージ抽象化・Profile icon/banner 紐付け・Actor icon/image 出力・Update(Person) 配送"
+  dependencies: []
+  technical_baseline:
+    - "images テーブル + ImageRepository (find/create/delete) は実装済み (migrations/20230707210300_init.sql:85-90, kernel/src/repository/image.rs)"
+    - "PATCH /api/v1/accounts/{id} の icon_url/banner_url → find_by_url で ImageId 解決する更新フローは実装済み (application/src/service/profile.rs:98-114)"
+    - "Actor.icon / ImageObject 型は定義済みだが Actor::new で icon: None 固定 (kernel/src/activitypub.rs:113,161,197-204)"
+    - "Update 配送は既存 delivery.rs の署名付き配送を流用 (application/src/service/activitypub/delivery.rs)"
+    - "ADR 0005: /api/v1 は Emumet 固有 API。Mastodon /api/v1/media 互換は Non-goal"
+  intent_references:
+    - intents/emumet/features/media-upload/overview.md
+    - intents/emumet/features/media-upload/requirements.md
+    - intents/emumet/features/media-upload/decisions.md
+    - intents/emumet/interview/2026-08-12-c1-c3-grill.md
+  acceptance_criteria:
+    - "multipart アップロード API (Emumet 固有設計) で画像を登録でき、MIME/サイズ検証を通る"
+    - "アップロードされた画像バイトが S3 互換ストレージ (開発環境: RustFS) に保存され、images テーブルに url/hash/blur_hash が登録される (blurhash 生成を含む)"
+    - "配信 URL が『公開ベース URL + オブジェクトキー』で生成され、ベース URL は設定で差し替え可能 (presigned URL は使わない)"
+    - "アップロードした画像を既存 PATCH icon_url/banner_url フローで Profile に設定できる"
+    - "Profile の icon/banner が Actor ドキュメントの icon/image として出力される (None 固定の解消)"
+    - "アイコン/バナー変更時に Update(Person) がフォロワー inbox へ署名付き配送される"
+    - "compose.yml に RustFS サービスが追加され、開発環境が compose 起動だけで画像アップロードまで通る"
+
+# G461: optional packet-time intent-maintenance metadata. OPTIONAL and
+# backward-compatible — packets that omit this whole block stay valid.
+# Fill it in or explicitly decline each part while the design context is
+# fresh; `improve` (G456 / G460) is the later safety net, not a substitute.
+intent_placement:
+  primary_intent: intents/emumet/features/media-upload/overview.md
+  supporting_intents:
+    - intents/emumet/features/ap-federation/overview.md
+  new_intent_needed: false
+  placement_rationale: "media-upload feature として確立済み。intent-tree/00-map.md は pending のため feature ドキュメントが実質の primary"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: "features/media-upload の decisions/open-questions は grill 完了時点で更新済み"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "ストレージ/配信/Update 配送の決定は feature スコープのため features/media-upload/decisions.md に記録済み (cross-domain ADR は不要)"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "document リポジトリ同期は packets/backlog.md の Host-only 項目として別途管理"
+closeout_learning:
+  expected: "RustFS の compose 統合 (バケット自動作成手順) と S3 SDK の forcePathStyle 要否など、開発環境構築で得た知見"
+  write_back_required: false
+  write_back_targets: []
+# G645/G661: guide reachability is explicit and checked at closeout.
+# Uncomment and complete EXACTLY ONE accepted form. Leaving this
+# commented is visibly undeclared; the scaffold never guesses that
+# a new slice has no role-facing surface.
+#
+# Route form:
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "media アップロード REST API エンドポイント (Emumet /api/v1)"
