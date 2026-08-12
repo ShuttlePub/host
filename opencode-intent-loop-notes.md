@@ -63,7 +63,33 @@
 - レビュー観点は `intent-cli guide review --pr <n> --domain emumet` のチェックリスト
   出力がそのまま使えた。テスト green は必要条件で、packet 照合が承認根拠。
 
-## 5. 次回以降の改善アクション
+## 5. 次のスライスでのチーム構成 (2026-08-12 オペレーター助言を反映)
+
+実験後の助言を受けた改訂方針。`deep` 1本への丸投げは安直だった — 400 tool-call キャンセルは
+「調査→実装→環境迂回→検証→PR」を1コンテキストに抱えたことが直接原因。
+
+- **実装はネストオーケストレーション**: implementation member は `deep` ではなく
+  委譲可能なオーケストレータ (subagent_type `sisyphus` または `atlas`) とし、
+  issue 契約を「アプリケーション層」「REST/OpenAPI 配線」「テスト/E2E」等に分解して
+  ワーカーへ fan-out する。ワーカーはコンテキストが小さく保たれ上限死を回避できる。
+  - 制約: intent-cli の workflow 面 (worker claim/complete、ラベル遷移) を触るのは
+    オーケストレータのみ (G444「1 wake 1 ドライバー」)。ワーカーは GitHub-contract-only の
+    コード作業に限定する。
+  - 未検証: team member 内からの再委譲 (delegate-task は budget zero と明記されていた)。
+    task() が使えるかは次スライスで検証する。Sisyphus-Junior は no delegation なので
+    オーケストレータ役には使わない。
+  - 使い分け: 小さいスライス (数ファイル) では調整コストが見合わないので単一 worker のまま。
+    block-mute-federation 級 (30ファイル) からネストを適用する。
+- **レビューは2層**: 契約適合レビュー (intent-cli guide review 照合 + ラベル遷移) は
+  lead が担う (host metadata 権限が必要)。コード品質レビューは `code-reviewer` agent を
+  read-only で独立起動し、issue 契約と OOS 境界を prompt に与えて品質・セキュリティ・
+  保守性を審査させる。実装者と別セッションなので独立性も保てる。
+  (`review-gate:*` 系 plugin agent は要件/設計ゲート用で PR レビュー用途ではない。)
+- **外部 API 互換性の観点をレビューに追加**: REST エンドポイント追加系スライスでは、
+  Mastodon API 等の de-facto 標準とのパス/セマンティクス競合をレビュー観点に含める
+  (今回の PR #21 で指摘を受けた。詳細は intents/emumet/clarifications/open.md C4)。
+
+## 6. 次回以降の改善アクション
 
 - [ ] Emumet flake.lock の intent-system-flake 更新 PR (stale 0.5.0 解消) — 別スライス候補
 - [ ] Emumet `.envrc` の `use dotenv` → `dotenv` 修正 PR — 同上
@@ -71,3 +97,5 @@
 - [ ] 子ループの起動手順 (clone 場所、credential helper、バイナリパス) を
       member prompt テンプレートとして定型化する
 - [ ] backlog 複数件運用時の WIP cap と team 使い捨て/存続の方針を決める
+- [ ] block-mute-federation でネストオーケストレーション構成を検証し、
+      team member からの再委譲可否を確認して本ノートに結果を追記する
