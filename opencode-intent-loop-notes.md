@@ -21,8 +21,12 @@
 6. **実装前計画レビュー (本ノートで新設)**: claim 後・実装着手前に packet ↔ 実コードを
    再照合し、矛盾・追加の意思決定事項・実装分解を確定する。publish 前ではなくここに置く
    (draft 時点の記憶ではなく最新コードで照合できる)。今回 3 件の微差をこのターンで検出
-7. 実装 — 使い捨て team (lead + implementation member)。member prompt には
-   作業場所・バイナリパス・gitmoji・スコープ境界・マイルストーン報告・検証ループ最小化を明記
+7. 実装 — **開始時に lead はユーザーへ ultrawork-mode の有効化を促す**
+   (ユーザーがメッセージで "ulw" / "ultrawork" と指定するだけでよい。agent は
+   self-activate できないため、この促しを型の一手順として省略しない)。
+   使い捨て team (lead + implementation member) または ULW 直接実装 (§5 実験)。
+   member/worker prompt には作業場所・バイナリパス・gitmoji・スコープ境界・
+   マイルストーン報告・検証ループ最小化を明記
 8. 2層レビュー — lead が契約照合 (`intent-cli guide review` チェックリスト) とラベル遷移、
    独立 `code-reviewer` agent が品質・セキュリティ・保守性 + 外部 API 互換性を審査
 9. closeout — merge → `closeout pr` → 知識書き戻し (declared なら同 wake で実施・記録)
