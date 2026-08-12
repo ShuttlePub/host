@@ -10,4 +10,5 @@
    **completed: https://github.com/ShuttlePub/Emumet/pull/17** (merged 2026-07-25)
 2. `block-mute-federation` — ActivityPub 連合(Block アクティビティ送受信)
    (packet: `.intent-cli/issues/block-mute-federation/`) — depends on: block-mute-core —
-   **published: https://github.com/ShuttlePub/Emumet/issues/22** (intent-target)
+   **published: https://github.com/ShuttlePub/Emumet/issues/22** (intent-target) —
+   **completed: https://github.com/ShuttlePub/Emumet/pull/23** (merged 2026-08-13)

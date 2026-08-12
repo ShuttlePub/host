@@ -7,14 +7,17 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 
 | # | execution unit | 概要 | 依存 |
 |---|---|---|---|
-| 1 | `block-mute-federation` | Block アクティビティの連合送受信 + E2E(REST API の block-mute-core は完了: issue #16) | — |
-| 2 | `moderation-role-assignment` | Admin/Moderator ロール割当管理 API | — |
-| 3 | `moderation-account-report` | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 2 |
-| 4 | `mastodon-e2e-undo-coverage` | Mastodon 実機 E2E に Undo(Follow) 相互運用シナリオを追加(unfollow-api の Undo 配送を実 Mastodon 相手に検証。S7-S9 は完成済み) (2026-08-12 C4 grill より) | — |
-| 5 | `media-upload` | 画像アップロード API + S3 互換ストレージ (開発: RustFS) + Actor icon/image 反映 + Update 配送 (2026-08-12 C1 grill でブロッカー解消、packet draft 済み) | — |
+| 1 | `moderation-role-assignment` | Admin/Moderator ロール割当管理 API | — |
+| 2 | `moderation-account-report` | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 1 |
+| 3 | `mastodon-e2e-undo-coverage` | Mastodon 実機 E2E に Undo(Follow) 相互運用シナリオを追加(unfollow-api の Undo 配送を実 Mastodon 相手に検証。S7-S9 は完成済み) (2026-08-12 C4 grill より) | — |
+| 4 | `media-upload` | 画像アップロード API + S3 互換ストレージ (開発: RustFS) + Actor icon/image 反映 + Update 配送 (2026-08-12 C1 grill でブロッカー解消、packet draft 済み) | — |
 
-## 完了(2026-08-12 ドリフト解消で整理)
+## 完了
 
+- `block-mute-federation` — issue #22 / PR #23 マージ済み(2026-08-13)。
+  block-mute feature の acceptance 全項目達成。レビュー観測のフォローアップ候補
+  (重複 Block 時の follow 再解除・inbox エラーパス単体テスト拡充・S10 の Undo 受信検証) は
+  [../features/block-mute/decisions.md](../features/block-mute/decisions.md) に記録
 - `unfollow-api` — issue #20 / PR #21 マージ済み(2026-08-12)
 - `mastodon-e2e-completion` — S7-S9 シナリオ完成、CI (e2e.yml → run-ap-e2e.sh) で
   実 Mastodon コンテナ相手に常時実行中。backlog 記述が stale だっただけで実体は達成済み

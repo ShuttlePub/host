@@ -6,3 +6,5 @@
 {"ts":"2026-08-12T15:47:22.0577223+00:00","execution_unit":"block-mute-federation","event":"issue-drafted","by":"intent-cli","result_ref":".intent-cli/issues/block-mute-federation/publish.yaml","packet_ref":".intent-cli/issues/block-mute-federation/packet.yaml"}
 {"ts":"2026-08-12T15:50:38.491396+00:00","execution_unit":"block-mute-federation","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/block-mute-federation/"}
 {"ts":"2026-08-12T15:50:49.9765438+00:00","execution_unit":"block-mute-federation","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#22","reason":"https://github.com/ShuttlePub/Emumet/issues/22"}
+{"ts":"2026-08-12T17:42:24.0804727+00:00","execution_unit":"block-mute-federation","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":23}
+{"ts":"2026-08-12T17:42:24.0804727+00:00","execution_unit":"block-mute-federation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":23}
