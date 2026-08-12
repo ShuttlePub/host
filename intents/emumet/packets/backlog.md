@@ -24,6 +24,7 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 (2026-08-13 Accepted) に由来するアーキテクチャ再配置ユニット。
 atomicity 欠落が現在進行形のデータ不整合リスクのため先頭に配置。
 packet 起こしは `architecture-foundation` から。
+命名の正規化 (ADR §10) は各 Stage 冒頭の純粋 rename commit として実施する。
 
 ## 完了
 

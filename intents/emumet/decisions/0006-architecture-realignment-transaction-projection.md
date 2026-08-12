@@ -150,6 +150,38 @@
 - 移行ルール: **新規 read query はドメイン Entity を返さない**
   (中間状態の恒久化を防ぐ)
 
+### 10. 命名の正規化
+
+検証過程で「実態と乖離した名前」「同じ語で別物を指す名前」が構造的な誤解の
+原因になっていることが確認された (最たる例: auto-commit 接続を指す
+`transaction` 変数)。移行に合わせて以下を正しい名前に整理する。
+
+| 現行 | 新名 (案) | 理由 |
+|---|---|---|
+| `Executor` trait / `get_executor()` | `Connection` / `connection()` | 実体は接続ハンドル。`sqlx::Executor` とも衝突する紛らわしい用語 |
+| `get_transaction()` | `TransactionManager::run` に吸収 | 決定2。begin/commit は Service に見せない |
+| auto-commit 接続を指す変数名 `transaction` | `conn` (UoW 内は `tx`) | 嘘の除去。本問題の発見が遅れた直接の原因 |
+| adapter クレート | 解体 (kernel / application / driver へ) | 決定1。層名として実態がない |
+| `*CommandProcessor` | `AggregateRepository<A>` | 決定3。実態は ES 集約の save/load |
+| `*QueryProcessor` | `*Query` | 決定3。実態は read model facade |
+| `*ReadModel` (read+write 混在) | `*Query` + `*ProjectionWriter` | 決定3。"Read"Model が書き込みも行う矛盾 |
+| `KnownEventVersion` (`Nothing` / `Prev`) | `ExpectedVersion` (`Nothing` / `At(v)`) | 決定3の port 形状に合わせ楽観排他の意味を明示 |
+| server の `*Applier` / `ApplierContainer` | `*Projector` / projector worker | 実態は projection 更新。kernel の `EventApplier` (event→state fold) との同名衝突を解消 |
+| application の `UpdateAuthAccount` 等 | `application::projection::*Projector` | 決定6。use case 風の命名だが実態は投影処理 |
+| `Signal` | `ProjectionNotifier` (dispatcher 配下) | 決定4。直接 emit 廃止後は「commit 後の起動合図」が実態 |
+| `transfer` モジュール | `dto` | Data Transfer Object の意。一般用語に合わせる |
+| server の `Handler` | 配線専用1型に統合 (決定7) | DI root が "Handler" という名で HTTP handler と衝突 |
+| `Nanoid` | `PublicId` (案。要互換性確認) | 実装ライブラリ由来の名前。外部公開 ID というドメイン意味を名乗る |
+
+実施ルール:
+
+- rename は**各 Stage 冒頭の純粋 rename commit** として分離し、
+  挙動変更と混ぜない (レビュー可能性と blame の保全のため)
+- 新しい名前で書き始めてから旧名を消す (parallel change) を徹底し、
+  main green を維持する
+- `Nanoid` のように外部表現 (API パス等) に影響しうるものは、
+  シリアライズ互換を確認した上で型名のみ変更する
+
 ## 却下案と理由
 
 - **ES/CRUD 共通の単一 `Repository<A>`**
@@ -192,6 +224,7 @@
 
 - atomicity 欠落は現在進行形のリスクのため、backlog の**先頭**に配置する
 - 各ユニットは独立して publish 可能な execution unit とする
+- 命名の正規化 (決定10) は各 Stage 冒頭の純粋 rename commit として実施する
 
 ## Links
 
