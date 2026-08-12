@@ -135,12 +135,32 @@
   (Mastodon は Block を連合しないため、Mastodon inbox への Block は黙棄される想定。
   実 Mastodon での確認は別スライスの余地あり)
 
+### 次スライス (moderation-role-assignment) の実験: lead セッション ULW 直接実装 (2026-08-13 オペレーター承認)
+
+team-mode の調整コスト (member wake/idle 管理、stale メッセージの順不同注入、
+契約の全文メッセージ化、shutdown 握手の停滞 → force delete) を受け、次スライスは
+**lead セッションで ultrawork-mode を有効化して直接実装**する構成を試す:
+
+- 実装は task() による wave 分割 fan-out。lead からは task() が使えるため、
+  team member の再委譲制約 (§3-4) は適用されない
+- レビューは ULW Reviewer Gate 手順 (criterion-cited blockers + 差分再レビュー ≤2 回)。
+  reviewer は ultrabrain 級、または同手順を prompt に与えた code-reviewer。
+  レビュー独立性 (実装者と別セッション) は team-mode と同じく確保できる
+- シナリオ契約 (観測可能なリアルサーフェスの事前名指し) により、今回 CI に漏れた
+  「GET /blocks では remote→local 行を観測できない」型の欠陥を設計時に検出できるはず
+- 比較軸: 調整コスト (上記 team 運用コスト vs task() セッション再開管理)、
+  上限死リスク、レビュー品質。結果を本ノートに記録してデフォルトを決める
+- **ultrawork-mode は agent が self-activate できない** (ユーザーの "ulw" / "ultrawork"
+  指定でハーネスが注入)。指定がない場合は §0 の型に従い ULW 規律を self-impose する
+
 ## 6. 次回以降の改善アクション
 
 - [ ] Emumet flake.lock の intent-system-flake 更新 PR (stale 0.5.0 解消) — 別スライス候補
 - [ ] Emumet `.envrc` の `use dotenv` → `dotenv` 修正 PR — 同上
 - [ ] upstream に ShuttlePub リポジトリの `guide oneshot` 対応を要望するか検討
 - [ ] media-upload publish 前に packet.yaml のルートレベルコメントを除去する (§2)
+- [ ] moderation-role-assignment で lead セッション ULW 直接実装を試し、
+      team-mode との比較結果を §5 に記録してデフォルト構成を決める
 - [x] ~~子ループの起動手順の定型化~~ → §0 の「型」として確定 (2026-08-13)
 - [x] ~~backlog 複数件運用時の WIP cap~~ → 現状は先頭 1 件運用で問題なし。複数並走が
       必要になった時点で再検討
