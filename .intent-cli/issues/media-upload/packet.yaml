@@ -27,10 +27,6 @@ implementation_issue_packet:
     - "アイコン/バナー変更時に Update(Person) がフォロワー inbox へ署名付き配送される"
     - "compose.yml に RustFS サービスが追加され、開発環境が compose 起動だけで画像アップロードまで通る"
 
-# G461: optional packet-time intent-maintenance metadata. OPTIONAL and
-# backward-compatible — packets that omit this whole block stay valid.
-# Fill it in or explicitly decline each part while the design context is
-# fresh; `improve` (G456 / G460) is the later safety net, not a substitute.
 intent_placement:
   primary_intent: intents/emumet/features/media-upload/overview.md
   supporting_intents:
@@ -58,12 +54,6 @@ closeout_learning:
   expected: "RustFS の compose 統合 (バケット自動作成手順) と S3 SDK の forcePathStyle 要否など、開発環境構築で得た知見"
   write_back_required: false
   write_back_targets: []
-# G645/G661: guide reachability is explicit and checked at closeout.
-# Uncomment and complete EXACTLY ONE accepted form. Leaving this
-# commented is visibly undeclared; the scaffold never guesses that
-# a new slice has no role-facing surface.
-#
-# Route form:
 guide_reachability:
   no_role_facing_surface: false
   routes:
