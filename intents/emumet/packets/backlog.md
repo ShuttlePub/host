@@ -28,6 +28,13 @@ packet 起こしは `architecture-foundation` から。
 
 ## 完了
 
+- `account-aggregate-repository` — issue #26 / PR #27 マージ済み(2026-08-13、
+  merge commit d064264)。ADR 0006 Stage 2。AggregateRepository port
+  (`save(CommandEnvelope)` 確定) + `Rehydrated<A>` + Postgres 実装 + 新旧同値テスト。
+  確定 signature と Stage 3/4 への設計入力 (CAS 原子性・version 連鎖・tailing 順序分離) は
+  ADR 0006 決定3/9 に writeback 済み
+- `architecture-foundation` — issue #24 / PR #25 マージ済み(2026-08-13)。ADR 0006 Stage 1。
+  TransactionManager port (Box::pin closure 版)・no-op commit 廃止・event seq 列追加
 - `block-mute-federation` — issue #22 / PR #23 マージ済み(2026-08-13)。
   block-mute feature の acceptance 全項目達成。レビュー観測のフォローアップ候補
   (重複 Block 時の follow 再解除・inbox エラーパス単体テスト拡充・S10 の Undo 受信検証) は

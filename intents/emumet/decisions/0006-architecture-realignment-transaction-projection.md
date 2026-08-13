@@ -107,6 +107,22 @@
 - `*ProjectionWriter` (projector 専用。version-gated upsert)
 - CRUD に `expected_version` や `Rehydrated` を擬装する「型が嘘をつく」共通化は
   行わない。一体感は命名規則と依存方向の一貫性で作る
+- **Stage 2 時点の確定 signature (2026-08-13、PR #27 closeout より)**:
+  - `save` は文言通りの `save(aggregate, ExpectedVersion)` ではなく
+    `save(CommandEnvelope)` とした。このコードベースでは集約が pending events を
+    持たず `CommandEnvelope` が集約変更の表現であり、envelope が
+    `ExpectedVersion` を内包するため。集約に pending events を持たせる再設計
+    (文言通りの実装に必要) は Stage 2 のスコープ根拠がなかった
+  - port は generic `AggregateRepository<A: EventApplier>` (`type Id` 付き)、
+    DI は集約別の concrete wrapper (`DependOnAccountRepository`)。
+    汎用 `DependOnAggregateRepository<A>` は関連型解決が読みにくく不採用
+  - **Stage 4 への設計入力**: UoW closure 内で同一集約に連続 save する場合、
+    直前の `EventEnvelope.version` を次のコマンドの expected version に連鎖
+    させること (最初の `Rehydrated.version` を再利用すると自己競合する)。
+    また legacy append SQL の CAS (`NOT EXISTS` / `MAX(version)=v`) は同時
+    書き込み下で両方の transaction を通しうる (Oracle + 品質レビュー両方が
+    指摘)。UoW 移行で楽観排他に依存する前に、UNIQUE 制約・advisory lock 等の
+    原子的 CAS への強化を検証すること
 
 ### 4. projection 通知: transactional log tailing
 
@@ -177,6 +193,15 @@
 - `AccountProjection` を Account で縦切り導入し、他 read model に横展開する
 - 移行ルール: **新規 read query はドメイン Entity を返さない**
   (中間状態の恒久化を防ぐ)
+- **Stage 2 時点の確定配置 (2026-08-13、PR #27 closeout より)**: `Rehydrated<A>` は
+  `kernel::repository::aggregate` に配置 (aggregate + version のみ。
+  `from_events` fold helper 付き)。`rehydrate_account` の `(Account, EventVersion)`
+  タプル返しは `Rehydrated<Account>` に置換済み。`Account` が内部に持つ `version`
+  は Stage 2 では残置し、`Rehydrated.version == aggregate.version` をテストで固定
+- **Stage 3 への設計入力 (Stage 2 review より)**: グローバル tailing (seq 順) と
+  per-stream rehydration (version 順) の順序規則を明示的に分けること。
+  `Rehydrated::from_events` は入力列の最後の envelope を境界 version とするため、
+  読み出し順を seq に変えてもそのまま利用できる
 
 ### 10. 命名の正規化
 
