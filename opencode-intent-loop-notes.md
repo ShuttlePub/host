@@ -32,7 +32,9 @@
    member/worker prompt には作業場所・バイナリパス・gitmoji・スコープ境界・
    マイルストーン報告・検証ループ最小化を明記
 8. 2層レビュー — lead が契約照合 (`intent-cli guide review` チェックリスト) とラベル遷移、
-   独立 `code-reviewer` agent が品質・セキュリティ・保守性 + 外部 API 互換性を審査
+   独立 `code-reviewer` agent が品質・セキュリティ・保守性 + 外部 API 互換性を審査。
+   アーキテクチャ/設計意図が絡む変更 (port 導入・migration 設計等) ではさらに
+   `oracle` を高リガー層として起動する (§5 architecture-foundation 実測)
 9. closeout — merge → `closeout pr` → 知識書き戻し (declared なら同 wake で実施・記録)
 10. ノート更新 — 実測の差分を本ノートへ。team は `team_delete` で解体
 
@@ -166,6 +168,28 @@ team-mode の調整コスト (member wake/idle 管理、stale メッセージの
 「lead セッション ULW 直接実装」から **task() ベースの sisyphus 委譲**に変更する。
 harness ネイティブの完了通知 (system-reminder) が外部観測より信頼できるため。
 比較軸とレビュー手順 (2層レビュー、シナリオ契約) は上記の通り維持する。
+
+### architecture-foundation (#24 → PR #25) の実測 (2026-08-13)
+
+task() ベース委譲 (category=deep、Sisyphus-Junior) の初実施で以下を観測:
+
+- **大規模 rename (144箇所/47ファイル) を含むスライスは Junior 単独の 400 tool-call
+  予算を超えうる**。1回目は 18m で5コミット (rename→characterization→no-op除去→
+  TxManager→seq列) 完了も finalize (検証/PR作成) 前に上限死。2回目は同一セッション
+  継続 (task_id 再開) を試みたが、肥大コンテキストで空転し新規コミットゼロで再度上限死。
+  **同一セッション継続は上限死後の復帰手段として機能しない**
+- 残作業 (テスト切り出し・検証・PR作成・記録) は小さかったため lead が直接仕上げて完走
+- **小スコープ委譲は健全に機能**: SHOULD-FIX 修正 (1ファイル) を category=quick に
+  委譲したところ 46秒・予算内で完走。委譲粒度が予算内に収まることが成功条件
+- 結論の更新: スライスの想定 tool-call 量が Junior 予算を超える場合は、
+  (a) packet をマイルストーン単位で分割して publish する (設計側の責務、従来通り)、
+  (b) 再委譲できるオーケストレータ型セッション (lead ULW 直接実装 or 別セッション
+  sisyphus) に載せる、のいずれかを packet 起こし時点で判断する。rename 全置換のような
+  機械的大規模変更は (a) の分割基準として「rename sweep は独立スライス化」を検討する
+- レビュー層の確定: 網羅的品質 = `code-reviewer`、アーキテクチャ/設計意図の審査 =
+  `oracle` (ULW Reviewer Gate の高リガー層)。今回 oracle が ADR 決定4 への疑義
+  (BIGSERIAL tailing の commit 順序逆転) を検出し、operator 判断で Stage 3 設計入力
+  として ADR に記録する流れが機能した
 
 ## 6. herdr 観測の検証と interim observability (2026-08-13)
 
