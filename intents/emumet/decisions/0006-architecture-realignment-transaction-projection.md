@@ -102,6 +102,13 @@
 - applier は version-gated upsert で冪等化する (at-least-once 前提)
 - ActivityPub 配送用 outbox (`outbox_activities`) とは**別物**。ペイロード・
   消費者・再試行規則が異なるため、テーブルも dispatcher ポリシーも統合しない
+- **Stage 3 への設計入力 (2026-08-13、Stage 1 review より)**: `BIGSERIAL` の
+  払出順は commit 順と一致しないため、`seq > checkpoint` の素朴な単調 tailing は
+  commit 順序逆転時にイベントを取りこぼしうる。また 4 テーブルの `BIGSERIAL` は
+  それぞれ独立した sequence であり、テーブル横断の単一順序 (グローバル連番) では
+  ない。Stage 3 で tailing プロトコル (watermark/窓再読、counter 行による採番
+  直列化、テーブル別 checkpoint の可否) を確定する際の検討入力とする。
+  `seq` への index も現状未付与のため、tail query 確定時に追加する
 
 ### 5. 外部プロビジョニング (Keto)
 
@@ -131,6 +138,12 @@
 - object safety は取らない (ジェネリクス維持)。`TransactionManager` の
   signature は Stage 1 で `AsyncFnOnce` (`F::CallOnceFuture: Send`、Rust 1.85+)
   を spike 検証し、不可なら `Box::pin` 版で進める
+- **spike 結果 (2026-08-13、Stage 1 closeout / PR #25 で確定)**: `AsyncFnOnce` は
+  **不採用**。`F::CallOnceFuture: Send` の bound 指定は stable Rust 1.97 でも
+  不安定機能 `async_fn_traits` を要求する (E0658) ため、HRTB 付き `Box::pin`
+  closure 版 (`for<'c> FnOnce(&'c mut Connection) -> Pin<Box<dyn Future + Send + 'c>>`)
+  を採用した。lifetime/Send の健全性 (escape 防止・二度呼び出し不可) は
+  独立レビューで検証済み
 
 ### 8. AuthAccount は ES → CRUD に移行
 
