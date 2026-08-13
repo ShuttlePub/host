@@ -1,14 +1,56 @@
 # intent-cli × OpenCode ループ統合ノート
 
 > 目的: OpenCode (oh-my-openagent) 環境で intent-cli の実装ループを回すための実運用知見を記録する。
-> 由来: 2026-08-12 の emumet `unfollow-api` 実験 (issue ShuttlePub/Emumet#20 → PR #21) と
-> 2026-08-13 の emumet `block-mute-federation` (issue #22 → PR #23) で得た実測。
+> 由来: 2026-08-12 unfollow-api (#20 → PR #21)、2026-08-13 block-mute-federation
+> (#22 → PR #23)、2026-08-13 architecture-foundation (#24 → PR #25) の実測。
 > 原則は変わらず `intent-cli` がワークフロー権威。ここには OpenCode 側の配線知見だけを置き、
 > ワークフロー手順そのものはコピーしない。
 
 ---
 
-## 0. 確定した「型」 (2026-08-13、2スライス実測で固定)
+## 現在のデフォルト構成 (2026-08-13 確定)
+
+**実装委譲は `task()` ベース。team-mode / herdr は使わない。**
+
+- 実装: `task(category="deep" 等, run_in_background=true)` で実装ワーカーを起動し、
+  harness ネイティブの完了通知 (system-reminder) を wake 源とする
+- 大きいスライス (rename sweep 級、ワーカーの 400 tool-call 予算を超える見込み) は
+  packet 起こし時点で (a) マイルストーン分割 publish、(b) lead セッション ULW 直接実装
+  (lead からは task() fan-out が使える)、のどちらかに振り分ける (§5 実測)
+- 上限死後の復帰: **同一セッション継続 (task_id 再開) は使わない** (肥大コンテキストで
+  空転する実績あり)。新セッションに lead 実測の state (git log/status の具体値) を
+  渡すか、残作業が小さければ lead が直接仕上げる
+- レビュー: lead の契約照合 + `code-reviewer` (網羅品質) + `oracle` (設計意図) の層構成
+- team-mode: 調整コストと member 再委譲不可の検証により廃止 (§3)
+- herdr: 子セッション busy を観測できないため wake 源には使わない (§6)
+
+### agent 名の正確な対応 (勘違い防止)
+
+| 役割 | 呼び出し | 実体 |
+|---|---|---|
+| lead (このセッション) | — | Sisyphus (オーケストレーション lead。task() / team_* が使える) |
+| 実装ワーカー | `task(category="deep"` / `"quick"` / ...`)` | **Sisyphus-Junior** (category 毎に最適化モデル。再委譲不可・400 tool-call 上限) |
+| コードベース探索 | `task(subagent_type="explore")` | explore agent |
+| 外部調査 (docs/OSS/web) | `task(subagent_type="librarian")` | librarian agent |
+| 網羅的品質レビュー | `task(subagent_type="code-reviewer")` | code-reviewer (read-only 運用) |
+| 設計/アーキテクチャ審査 | `task(subagent_type="oracle")` | oracle (read-only・高コスト) |
+| 実装前の計画 | `task(subagent_type="plan")` | plan agent |
+| 計画の事前分析 / 批評 | `task(subagent_type="metis"` / `"momus")` | Metis / Momus (計画ゲート) |
+
+注意:
+
+- **`sisyphus` という subagent_type は `task()` には存在しない**。`task(category=...)`
+  で spawn されるのは常に Sisyphus-Junior。team_create の eligible 例に sisyphus が
+  残っているが team-mode は使わない (§3)
+- category 一覧: `deep` / `quick` / `ultrabrain` / `visual-engineering` / `writing` /
+  `artistry` / `unspecified-low` / `unspecified-high`
+- `review-gate:*` 系 plugin agent は要件/設計ゲート用で、PR レビュー用途ではない
+- ワーカー (Sisyphus-Junior / team member) からの再委譲 (task() ネスト) は不可
+  (subagent には task() の budget が公開されない)
+
+---
+
+## 0. 確定した「型」 (2026-08-13、3スライス実測で固定)
 
 スライスのライフサイクルは以下のターン構造で回す:
 
@@ -28,12 +70,9 @@
 7. 実装 — **開始時に lead はユーザーへ ultrawork-mode の有効化を促す**
    (ユーザーがメッセージで "ulw" / "ultrawork" と指定するだけでよい。agent は
    self-activate できないため、この促しを型の一手順として省略しない)。
-   使い捨て team (lead + implementation member) または ULW 直接実装 (§5 実験)。
-   member/worker prompt には作業場所・バイナリパス・gitmoji・スコープ境界・
-   マイルストーン報告・検証ループ最小化を明記。**ワーカーが tool-call 上限死した
-   場合、同一セッション継続 (task_id 再開) は使わない** (肥大コンテキストで空転する
-   実績あり)。新セッションに lead 実測の state (git log/status の具体値) を渡して
-   復帰するか、残作業が小さければ lead が直接仕上げる (§5 実測)
+   委譲形は冒頭のデフォルト構成を参照。worker prompt には作業場所・バイナリパス・
+   gitmoji・スコープ境界・マイルストーン報告・検証ループ最小化を明記。
+   上限死後の復帰ルールも冒頭のデフォルト構成通り
 8. 2層レビュー — lead が契約照合 (`intent-cli guide review` チェックリスト) とラベル遷移、
    独立 `code-reviewer` agent が品質・セキュリティ・保守性 + 外部 API 互換性を審査。
    アーキテクチャ/設計意図が絡む変更 (port 導入・migration 設計等) ではさらに
@@ -45,7 +84,7 @@
 9. closeout — merge → `closeout pr` → 知識書き戻し (declared なら同 wake で実施・記録)。
    **コミット分離が受入条件のスライスは squash ではなく merge commit で履歴を保存する**
    (ADR 0006 §10 型の rename 分離など。Emumet の既定は squash だが意図的に変える)
-10. ノート更新 — 実測の差分を本ノートへ。team は `team_delete` で解体
+10. ノート更新 — 実測の差分を本ノートへ
 
 ---
 
@@ -85,38 +124,22 @@
   (2026-08-13)。`gh run rerun <id> --failed` で回復する。差分に無関係な crate の fail は
   まず infra を疑う
 
-## 3. team-mode マッピング (実験構成)
+## 3. team-mode 検証の結論 (2026-08-13 に廃止)
 
-- **lead = design/host 役** (ホストリポジトリ cwd のセッション)。review も lead が兼任した。
-- **implementation member** (deep カテゴリ): 子 clone を cwd とし、prompt に
-  GitHub-contract-only (host metadata 不触)・worker 経由のラベル遷移・使用バイナリの
-  絶対パス・gitmoji 規約・スコープ境界を明記。
-- **goal コマンド**でスレッドゴールを固定し、lead 側は todowrite で監督進捗を管理。
-- 4スレッドモデル (design/orchestrator/implementation/review) のうち orchestrator は
-  今回は lead が吸収。backlog が増えてきたら orchestrator member を分離する。
+team-mode (使い捨て team: lead + implementation member) は2スライスで検証のうえ廃止。
+運用詳細 (member wake/idle 管理、shutdown 握手等) は現行構成と無関係なため残さない。
+引き継ぐ知見のみ:
 
-### team-mode 運用で観測した問題と対策
-
-1. **400 tool-call 上限で member が自動キャンセルされた** (実装完了直後、push 前)。
-   対策: 作業は session_id (`task(task_id=...)`) で再開できた。member prompt に
-   「検証ループは最小化し、マイルストーンごとに中間報告する」を明記するとよい。
-   大きなスライスは「実装」「検証+PR作成」の2タスクに分割するのも有効そう。
-2. **task() 再開セッションでは team_* ツールが見えず**、member が自分の team task を
-   completed に更新できなかった。lead も cross-owner 更新は不可。
-   → チーム解体時に task が in_progress 残りになるのを許容するか、
-   member への再開指示に「team task 更新が無理なら本文で報告」を含める。
-3. **member が最後に errored 状態になった**。成果物 (PR) は確定済みだったので
-   `team_delete(force=true)` で解体。チームはスライス単位で使い捨てる運用が無難。
-4. **team member からの再委譲は不可** (2026-08-13 検証完了): member セッションには
-   `task()` / delegate-task が公開されず (budget ゼロ)、`call_omo_agent` の
-   explore/librarian 系のみ。§5 の「ネストオーケストレーション」構想は現構成では
-   成立しないため、implementation member はスライスを直接実装する。
-   block-mute-federation 級 (9ファイル +838行) はマイルストーン報告 + 検証最小化で
-   上限死せず完走できた。それより大きいスライスは lead 側で分割 publish する。
-5. **member の idle 表示と wake**: `team_status` の idle は未読状態の話で、セッションは
-   生きていることがある。`task(task_id=...)` の nudge が "gate: active" で skip されたら
-   稼働中なので二重起動しない。未読メッセージは順不同で注入されるため、
-   タイムスタンプを見て古いバックログに反応しない。
+- **member からの再委譲 (task() ネスト) は不可**: member セッションには task() が
+  公開されず (budget ゼロ)、explore/librarian 系のみ。ネストオーケストレーション
+  構想は現構成では成立しない
+- **廃止理由**: 調整コスト (member wake/idle 管理、stale メッセージの順不同注入、
+  契約の全文メッセージ化、shutdown 握手の停滞 → force delete) が見合わない
+- worker prompt の定型 (子 clone を cwd、GitHub-contract-only、worker 経由のラベル
+  遷移、バイナリ絶対パス、gitmoji、スコープ境界、マイルストーン毎の中間報告、
+  検証ループ最小化) は team-mode 時代に確立。task() 委譲でも同じ定型が有効
+- team-mode 時代の実績: block-mute-federation (9ファイル +838行、E2E 含む) は
+  上記 prompt 規約で上限死せず完走
 
 ## 4. レビューループの実測
 
@@ -137,50 +160,26 @@
 - CI が落ちたら先に「どの観測が失敗したか」を特定してから request-update を書く。
   実装バグとテストの検証方法バグで修正スコープがまったく変わる。
 
-## 5. チーム構成の結論 (2026-08-13 に検証完了)
+## 5. 委譲構成の検証履歴と実測
 
-実験後の助言を受けた改訂方針だった「ネストオーケストレーション」は、
-**team member からの再委譲 (task()) が現構成では不可**と検証されたため撤回。
-以下が確定構成:
+確定事項:
 
-- **implementation member は直接実装する単一ワーカー** (subagent_type `sisyphus`)。
-  `deep` 丸投げの反省 (400 tool-call 上限死) には、member prompt への
+- **実装は直接実装する単一ワーカーに委譲** (再委譲不可のため。§3)。
+  `deep` 丸投げの反省 (400 tool-call 上限死) には、worker prompt への
   「マイルストーンごとに中間報告」「検証ループ最小化」の明記で対抗する。
-  block-mute-federation (9ファイル +838行、E2E 含む) はこの構成で上限死せず完走。
-  それより大きいスライスは packet を分割して publish する (設計側の責務)。
+  それより大きいスライスは packet を分割して publish する (設計側の責務)
 - **lead = design/host 役** (ホストリポジトリ cwd のセッション)。review も lead が兼任し、
   品質レビューは独立 `code-reviewer` agent を read-only で別起動する 2層構成 (§0-8)。
-  実装者と別セッションなので独立性も保てる。`review-gate:*` 系 plugin agent は
-  要件/設計ゲート用で PR レビュー用途ではない。
+  実装者と別セッションなので独立性も保てる
 - **外部 API 互換性の観点をレビューに追加**: REST エンドポイント追加系では Mastodon API
   等の de-facto 標準との競合を、ActivityPub 連合系では Block/Undo の shape が
   主流実装 (Akkoma/GoToSocial/Iceshrimp) と整合するかを審査させる。
   (Mastodon は Block を連合しないため、Mastodon inbox への Block は黙棄される想定。
   実 Mastodon での確認は別スライスの余地あり)
-
-### 次スライス (moderation-role-assignment) の実験: lead セッション ULW 直接実装 (2026-08-13 オペレーター承認)
-
-team-mode の調整コスト (member wake/idle 管理、stale メッセージの順不同注入、
-契約の全文メッセージ化、shutdown 握手の停滞 → force delete) を受け、次スライスは
-**lead セッションで ultrawork-mode を有効化して直接実装**する構成を試す:
-
-- 実装は task() による wave 分割 fan-out。lead からは task() が使えるため、
-  team member の再委譲制約 (§3-4) は適用されない
-- レビューは ULW Reviewer Gate 手順 (criterion-cited blockers + 差分再レビュー ≤2 回)。
-  reviewer は ultrabrain 級、または同手順を prompt に与えた code-reviewer。
-  レビュー独立性 (実装者と別セッション) は team-mode と同じく確保できる
-- シナリオ契約 (観測可能なリアルサーフェスの事前名指し) により、今回 CI に漏れた
-  「GET /blocks では remote→local 行を観測できない」型の欠陥を設計時に検出できるはず
-- 比較軸: 調整コスト (上記 team 運用コスト vs task() セッション再開管理)、
-  上限死リスク、レビュー品質。結果を本ノートに記録してデフォルトを決める
-- **ultrawork-mode は agent が self-activate できない** (ユーザーの "ulw" / "ultrawork"
-  指定でハーネスが注入)。指定がない場合は §0 の型に従い ULW 規律を self-impose する
-
-**更新 (2026-08-13)**: ADR 0006 の8ユニットが backlog 先頭に挿入され、次スライスは
-`architecture-foundation` (issue #24) になった。実験構成も §6 の検証結果を受けて
-「lead セッション ULW 直接実装」から **task() ベースの sisyphus 委譲**に変更する。
-harness ネイティブの完了通知 (system-reminder) が外部観測より信頼できるため。
-比較軸とレビュー手順 (2層レビュー、シナリオ契約) は上記の通り維持する。
+- 検討履歴 (圧縮): 「lead セッション ULW 直接実装」の実験構想は
+  moderation-role-assignment 用に立てられたが、ADR 0006 割り込みで
+  architecture-foundation が先になり task() 委譲で実施。結果を受けて冒頭の
+  デフォルト構成に確定した。ULW 直接実装は大きいスライス向けの選択肢として残る
 
 ### architecture-foundation (#24 → PR #25) の実測 (2026-08-13)
 
@@ -196,9 +195,9 @@ task() ベース委譲 (category=deep、Sisyphus-Junior) の初実施で以下�
   委譲したところ 46秒・予算内で完走。委譲粒度が予算内に収まることが成功条件
 - 結論の更新: スライスの想定 tool-call 量が Junior 予算を超える場合は、
   (a) packet をマイルストーン単位で分割して publish する (設計側の責務、従来通り)、
-  (b) 再委譲できるオーケストレータ型セッション (lead ULW 直接実装 or 別セッション
-  sisyphus) に載せる、のいずれかを packet 起こし時点で判断する。rename 全置換のような
-  機械的大規模変更は (a) の分割基準として「rename sweep は独立スライス化」を検討する
+  (b) lead セッション ULW 直接実装 (task() fan-out が使える) に載せる、のいずれかを
+  packet 起こし時点で判断する。rename 全置換のような機械的大規模変更は (a) の
+  分割基準として「rename sweep は独立スライス化」を検討する
 - レビュー層の確定: 網羅的品質 = `code-reviewer`、アーキテクチャ/設計意図の審査 =
   `oracle` (ULW Reviewer Gate の高リガー層)。今回 oracle が ADR 決定4 への疑義
   (BIGSERIAL tailing の commit 順序逆転) を検出し、operator 判断で Stage 3 設計入力
@@ -210,7 +209,7 @@ task() ベース委譲 (category=deep、Sisyphus-Junior) の初実施で以下�
 
 - emumet の session-layer は `herdr-only` と記録済み (2026-08-11 に agmsg から遷移、
   `.intent-cli/session-layer-mode.json`)。ただしこのマシンに herdr は未インストールで、
-  現行 transport は omo ネイティブ (team-mode / task()) のまま運用してきた
+  現行 transport は omo ネイティブ (task()) のまま運用してきた
 - intent-system 側の認識: session layer は transport の選択であってモデル (4スレッドと
   権威境界) の変更ではない。herdr 導入は operator が裏で準備中
 
@@ -280,9 +279,9 @@ orchestrator-thread ガイドの3層 wake を本構成に写像:
       あわせて両 packet の github-body.md に H1 タイトルを付与 (§2 の title 規約)
 - [x] ~~moderation-role-assignment で lead セッション ULW 直接実装を試す~~ →
       2026-08-13 更新: 次スライスは architecture-foundation、構成は task() ベース
-      sisyphus 委譲に変更 (§5 更新・§6 参照)
+      委譲に変更 (§5 更新・§6 参照)
 - [x] ~~子ループの起動手順の定型化~~ → §0 の「型」として確定 (2026-08-13)
 - [x] ~~backlog 複数件運用時の WIP cap~~ → 現状は先頭 1 件運用で問題なし。複数並走が
       必要になった時点で再検討
 - [x] ~~block-mute-federation でネストオーケストレーション検証~~ → 検証完了。
-      team member からの task() 再委譲は不可 (§3-4, §5)。単一ワーカー直接実装に確定
+      team member からの task() 再委譲は不可 (§3)。単一ワーカー直接実装に確定
