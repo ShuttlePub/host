@@ -1,3 +1,5 @@
+# media-upload: 画像アップロード API + S3 互換ストレージ連携 + Actor icon/image 反映
+
 ## Goal
 
 画像アップロード REST API (Emumet 固有設計) を新設し、S3 互換ストレージへの保存・

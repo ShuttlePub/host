@@ -1,3 +1,5 @@
+# architecture-foundation: TransactionManager port 導入・no-op commit 廃止・event seq 列追加 (ADR 0006 Stage 1)
+
 ## Goal
 
 ADR 0006 (アーキテクチャ再配置) Stage 1 の土台整備。後続 Stage が依存する基盤として、

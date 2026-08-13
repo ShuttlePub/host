@@ -157,14 +157,85 @@ team-mode の調整コスト (member wake/idle 管理、stale メッセージの
 - **ultrawork-mode は agent が self-activate できない** (ユーザーの "ulw" / "ultrawork"
   指定でハーネスが注入)。指定がない場合は §0 の型に従い ULW 規律を self-impose する
 
-## 6. 次回以降の改善アクション
+**更新 (2026-08-13)**: ADR 0006 の8ユニットが backlog 先頭に挿入され、次スライスは
+`architecture-foundation` (issue #24) になった。実験構成も §6 の検証結果を受けて
+「lead セッション ULW 直接実装」から **task() ベースの sisyphus 委譲**に変更する。
+harness ネイティブの完了通知 (system-reminder) が外部観測より信頼できるため。
+比較軸とレビュー手順 (2層レビュー、シナリオ契約) は上記の通り維持する。
+
+## 6. herdr 観測の検証と interim observability (2026-08-13)
+
+### 背景
+
+- emumet の session-layer は `herdr-only` と記録済み (2026-08-11 に agmsg から遷移、
+  `.intent-cli/session-layer-mode.json`)。ただしこのマシンに herdr は未インストールで、
+  現行 transport は omo ネイティブ (team-mode / task()) のまま運用してきた
+- intent-system 側の認識: session layer は transport の選択であってモデル (4スレッドと
+  権威境界) の変更ではない。herdr 導入は operator が裏で準備中
+
+### 検証結果 (librarian によるソースレベル調査)
+
+- herdr は opencode kind の状態を画面認識ではなく **plugin hook 権威**
+  (`full_lifecycle_hook_authority` に `("herdr:opencode", "opencode")`) で取得する。
+  ただしその opencode plugin は **子セッションの busy を親 pane に投影しない**
+  (herdr 側テストでも確認)
+- omo の `task(run_in_background=true)` は senpi 経由の `client.session.create()` で
+  **parentID 付きの実 opencode サーバーセッション**を作る。lead セッションは自分の
+  ターン終了時に子の稼働を待たず独立に idle 化する
+- opencode サーバーは `/session/status` と `/session/children` を公開しており、
+  API 的には子孫セッションの集約は可能。herdr がそれをやっていないだけ
+- upstream の既知 issue: **herdr #1362** (親 OpenCode pane が子セッション作業中も
+  idle のまま — 本件そのもの)、#2548 (childSessions false positive)、
+  #2241 (Claude Code pane が run_in_background 実行中に idle を報告)
+- omo PR #6613 (herdr multiplexer backend) は team-mode の **pane 可視化のみ**で
+  orchestration 観測ではない。2026-08-13 時点で OPEN、状態検出の設計議論なし
+
+### 結論
+
+**現状の herdr は omo background 実行中と真の完了を区別できない。**
+したがって実装委譲は task() ベース (harness ネイティブの完了通知) をデフォルトとし、
+herdr 観測は (a) upstream #1362 系の解消、(b) opencode の measured launch recipe
+(G647) 策定、が揃ってから再評価する。herdr 導入自体は pane 可視化・オペレーター
+俯瞰の価値で進めてよいが、orchestration の wake 源には当面使わない。
+
+### interim observability プロトコル
+
+orchestrator-thread ガイドの3層 wake を本構成に写像:
+
+1. **報告層**: `worker result-summary` + `worker complete` を実装セッションの必須
+   最終手順とする (§0 の型に既存。transport 非依存の canonical 面)
+2. **プロセス観測 wake**: 欠落。operator が wake 源 (実装セッションの終了を見て
+   lead に伝える)。lead は canonical state (GitHub PR / ラベル / queue-state) で検証
+3. **網**: `intent-cli automation stalled-work --domain emumet --repo ShuttlePub/Emumet`
+   を lead の wake 時ルーチンに組み込む (claimed-silent 検知)
+
+成功判定は composite gate (PR 実在・CI green・worker complete 記録・diff 精査) で、
+これは §0-8/9 の従来運用と同じ。
+
+### design ∥ implementation の並列化
+
+- 意図の取りまとめと実装は構造的に並列可能。queue preload は正式サポート
+  (dry-run で packet を `queued` に積み、issue リンクは後の wake で付ける)
+- 直列化しているのは実装 WIP のみ: `wip_cap_guidance` は "Default child WIP cap is
+  one in-flight branch per loop"。実装中に design 側で次 packet を draft して
+  preload しておく運用が正規の並列形
+- ADR 0006 スタックの依存: Stage 2/5/6 は Stage 1 完了で並列解禁、3 は 2 待ち、
+  4 は 2+3 待ち。media-upload はスタックと完全独立
+
+## 7. 次回以降の改善アクション
 
 - [ ] Emumet flake.lock の intent-system-flake 更新 PR (stale 0.5.0 解消) — 別スライス候補
 - [ ] Emumet `.envrc` の `use dotenv` → `dotenv` 修正 PR — 同上
 - [ ] upstream に ShuttlePub リポジトリの `guide oneshot` 対応を要望するか検討
-- [ ] media-upload publish 前に packet.yaml のルートレベルコメントを除去する (§2)
-- [ ] moderation-role-assignment で lead セッション ULW 直接実装を試し、
-      team-mode との比較結果を §5 に記録してデフォルト構成を決める
+- [ ] herdr upstream 追跡: #1362 (子セッション busy の親 pane 非投影) / #2548 の解消
+      状況。解消されても opencode measured launch recipe (G647) 策定までは wake 源にしない (§6)
+- [ ] lead の wake 時ルーチンに `automation stalled-work` を組み込む (§6 interim プロトコル層3)
+- [x] ~~media-upload publish 前に packet.yaml のルートレベルコメントを除去する~~ →
+      2026-08-13 対応済み (architecture-foundation 分も同時に除去、af200b8)。
+      あわせて両 packet の github-body.md に H1 タイトルを付与 (§2 の title 規約)
+- [x] ~~moderation-role-assignment で lead セッション ULW 直接実装を試す~~ →
+      2026-08-13 更新: 次スライスは architecture-foundation、構成は task() ベース
+      sisyphus 委譲に変更 (§5 更新・§6 参照)
 - [x] ~~子ループの起動手順の定型化~~ → §0 の「型」として確定 (2026-08-13)
 - [x] ~~backlog 複数件運用時の WIP cap~~ → 現状は先頭 1 件運用で問題なし。複数並走が
       必要になった時点で再検討
