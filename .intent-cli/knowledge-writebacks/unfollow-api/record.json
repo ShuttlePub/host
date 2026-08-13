@@ -1,0 +1,11 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "unfollow-api",
+  "host_commit": "f0f111f",
+  "recorded_at": "2026-08-13T08:27:47.6150899+00:00",
+  "targets": [
+    "intents/emumet/features/ap-federation/overview.md",
+    "intents/emumet/features/ap-federation/packets.md"
+  ],
+  "note": null
+}
