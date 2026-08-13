@@ -30,12 +30,21 @@
    self-activate できないため、この促しを型の一手順として省略しない)。
    使い捨て team (lead + implementation member) または ULW 直接実装 (§5 実験)。
    member/worker prompt には作業場所・バイナリパス・gitmoji・スコープ境界・
-   マイルストーン報告・検証ループ最小化を明記
+   マイルストーン報告・検証ループ最小化を明記。**ワーカーが tool-call 上限死した
+   場合、同一セッション継続 (task_id 再開) は使わない** (肥大コンテキストで空転する
+   実績あり)。新セッションに lead 実測の state (git log/status の具体値) を渡して
+   復帰するか、残作業が小さければ lead が直接仕上げる (§5 実測)
 8. 2層レビュー — lead が契約照合 (`intent-cli guide review` チェックリスト) とラベル遷移、
    独立 `code-reviewer` agent が品質・セキュリティ・保守性 + 外部 API 互換性を審査。
    アーキテクチャ/設計意図が絡む変更 (port 導入・migration 設計等) ではさらに
-   `oracle` を高リガー層として起動する (§5 architecture-foundation 実測)
-9. closeout — merge → `closeout pr` → 知識書き戻し (declared なら同 wake で実施・記録)
+   `oracle` を高リガー層として起動する (§5 architecture-foundation 実測)。
+   **レビュー指摘は writeback/closeout 前に全件 disposition 表 (fixed / recorded /
+   declined + 理由) を作る** (指摘の記録漏れ防止)。過去コミットのテスト検証は
+   **fresh DB** で行う (dev DB は HEAD の migration 適用済みで汚染され、旧コミットの
+   テストが偽の失敗を起こす)
+9. closeout — merge → `closeout pr` → 知識書き戻し (declared なら同 wake で実施・記録)。
+   **コミット分離が受入条件のスライスは squash ではなく merge commit で履歴を保存する**
+   (ADR 0006 §10 型の rename 分離など。Emumet の既定は squash だが意図的に変える)
 10. ノート更新 — 実測の差分を本ノートへ。team は `team_delete` で解体
 
 ---
@@ -58,6 +67,10 @@
   で代替できる。実害はなかったが、ShuttlePub 対応を upstream に要望する価値はある。
 - `worker next-action` / `claim` / `result-summary` / `complete` / `automation pr-transition`
   は全て ShuttlePub/Emumet で問題なく動作した (0.18.1)。
+  `result-summary` の `--kind` は loop kind (`issue-to-pr`)、`--outcome` は enum
+  (完了時は `pr-created`) で自由文は取らない。`complete` は issue に対して
+  `--outcome pr-created --pr <n> --write` でラベル遷移 (add intent-pr-created /
+  remove intent-issue-in-progress) まで行う
 - publish 系は queue-seed ゲート (G363) がある: `issue publish-flow --write` 前に
   `automation queue-seed-from-packet` が必要。エラーメッセージが次のコマンドを教えてくれるので従う。
 - packet.yaml の title は github-body.md の H1 が最終ソース (`title_source: github-body-h1`)。
@@ -252,6 +265,8 @@ orchestrator-thread ガイドの3層 wake を本構成に写像:
 
 ## 7. 次回以降の改善アクション
 
+- [ ] 大規模 rename sweep を含むスライスの分割基準 (rename を独立スライス/独立タスクに
+      切る等) を packet 起こしのガイド/prompt 定型に反映するか検討 (§5 実測由来)
 - [ ] Emumet flake.lock の intent-system-flake 更新 PR (stale 0.5.0 解消) — 別スライス候補
 - [ ] Emumet `.envrc` の `use dotenv` → `dotenv` 修正 PR — 同上
 - [ ] upstream に ShuttlePub リポジトリの `guide oneshot` 対応を要望するか検討
