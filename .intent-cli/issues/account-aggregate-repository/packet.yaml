@@ -1,0 +1,61 @@
+implementation_issue_packet:
+  issue_title: "account-aggregate-repository: AggregateRepository port (Rehydrated<Account>) + driver 実装 + 同値テスト並走 (ADR 0006 Stage 2)"
+  issue_kind: feature
+  source_execution_unit: account-aggregate-repository
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: kernel/src/repository, kernel/src/entity/event, driver/src/database/postgres, application/src/service/account/rehydrate.rs
+  target_part: "AggregateRepository<Account> port + Postgres 実装 + 旧 CommandProcessor との同値テスト並走 + Stage 2 冒頭の純粋 rename (KnownEventVersion→ExpectedVersion)"
+  dependencies:
+    - architecture-foundation
+  technical_baseline:
+    - "kernel/src/event_store/account.rs の AccountEventStore が persist / persist_and_transform / find_by_id を提供。楽観排他は driver/src/database/postgres/account_event_store.rs の persist_internal で KnownEventVersion::Nothing なら NOT EXISTS ガード、Prev(v) なら MAX(version)=v ガード、衝突時は KernelError::Concurrency"
+    - "application/src/service/account/rehydrate.rs の rehydrate_account が (Account, EventVersion<Account>) を返す。これが Rehydrated<A> 分離の seam (ADR 0006 決定9)"
+    - "adapter/src/processor/account/command.rs の AccountCommandProcessor は event persist に加えて read model 書込み (create / link_auth_account) と直接 Signal emit を行う。新 repository は event append のみを担い、これらは移行しない (Stage 3/4 の責務)"
+    - "kernel/src/entity/event/version.rs の KnownEventVersion (Nothing / Prev) は ADR 0006 §10 で ExpectedVersion (Nothing / At(v)) への rename 対象"
+    - "kernel/src/repository/ には既に CRUD 系 port (FollowRepository 等) があり、DependOn* パターン・Connection 型付随の port 形状が確立している"
+    - "Stage 1 で TransactionManager port (Box::pin closure 版) と event テーブルの seq 列が導入済み (PR #25)。rename は各 Stage 冒頭の純粋 rename commit として分離する (ADR 0006 §10 実施ルール)"
+    - "DB テストは #[test_with::env(DATABASE_URL)] で compose の Postgres 16 相手に実行する既存規約"
+  intent_references:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    - intents/emumet/packets/backlog.md
+  acceptance_criteria:
+    - "純粋 rename commit (KnownEventVersion → ExpectedVersion、Prev → At(v)) が挙動変更コミットから分離され、rename commit 単体でテストが緑"
+    - "kernel に ES 集約用の AggregateRepository port (load → Rehydrated<Account>、save(aggregate, ExpectedVersion)) が定義され、driver に Postgres 実装がある。Account が最初の対象集約"
+    - "Rehydrated<A> 型が aggregate と version を分離して返す (rehydrate_account の (Account, EventVersion) タプルが kernel 側の型に置き換わる)"
+    - "save の楽観排他が現行 persist_internal と同じセマンティクス (Nothing: NOT EXISTS ガード / At(v): MAX(version) 一致ガード / 衝突時 KernelError::Concurrency)"
+    - "同値テスト: 同一コマンド列 (Created → Updated → 各 moderation イベント) を旧経路 (AccountEventStore) と新経路 (AggregateRepository) で実行し、event stream (内容・version 順) と rehydrate された aggregate が一致することを #[test_with::env(DATABASE_URL)] で検証"
+    - "旧 AccountCommandProcessor / AccountEventStore は shim として残り main green (呼出側の移行は Stage 4)。新 repository は read model 書込み・Signal emit を行わない"
+    - "cargo test (DATABASE_URL あり) / clippy が緑"
+
+intent_placement:
+  primary_intent: intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+  supporting_intents: []
+  new_intent_needed: false
+  placement_rationale: "ADR 0006 Stage 2 の実施ユニットであり、ADR が source of truth。intent-tree/00-map.md は pending のため新規ノードは切らない"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: true
+    target_paths:
+      - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    decision_title: "AggregateRepository / Rehydrated<A> の確定 signature を決定3・決定9 に追記"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "Emumet AGENTS.md Architecture 節の更新は移行完了後 (ADR 0006 Links 参照)"
+closeout_learning:
+  expected: "AggregateRepository port の確定 signature (load/save の形状、Rehydrated<A> の定義、ExpectedVersion への rename で浮上した制約があればそれ)"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
