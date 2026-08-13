@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-13T01:50:34.3522255+00:00",
+  "updated_at": "2026-08-13T09:17:33.0941128+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -51,7 +51,7 @@
     {
       "execution_unit": "architecture-foundation",
       "title": "architecture-foundation: TransactionManager port \u5C0E\u5165\u30FBno-op commit \u5EC3\u6B62\u30FBevent seq \u5217\u8FFD\u52A0 (ADR 0006 Stage 1)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
@@ -65,6 +65,7 @@
         "number": 24,
         "url": "https://github.com/ShuttlePub/Emumet/issues/24"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/25",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
