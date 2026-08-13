@@ -8,3 +8,5 @@
 {"ts":"2026-08-12T15:50:49.9765438+00:00","execution_unit":"block-mute-federation","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#22","reason":"https://github.com/ShuttlePub/Emumet/issues/22"}
 {"ts":"2026-08-12T17:42:24.0804727+00:00","execution_unit":"block-mute-federation","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":23}
 {"ts":"2026-08-12T17:42:24.0804727+00:00","execution_unit":"block-mute-federation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":23}
+{"ts":"2026-08-13T01:50:27.0891351+00:00","execution_unit":"architecture-foundation","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/architecture-foundation/"}
+{"ts":"2026-08-13T01:50:34.3522255+00:00","execution_unit":"architecture-foundation","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#24","reason":"https://github.com/ShuttlePub/Emumet/issues/24"}

@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-12T17:42:24.0854544+00:00",
+  "updated_at": "2026-08-13T01:50:34.3522255+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -43,6 +43,28 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/22"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/23",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "architecture-foundation",
+      "title": "architecture-foundation: TransactionManager port \u5C0E\u5165\u30FBno-op commit \u5EC3\u6B62\u30FBevent seq \u5217\u8FFD\u52A0 (ADR 0006 Stage 1)",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/architecture-foundation/implementation.md",
+        "review_context": ".intent-cli/issues/architecture-foundation/review-context.md",
+        "yaml": ".intent-cli/issues/architecture-foundation/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 24,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/24"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
