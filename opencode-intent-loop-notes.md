@@ -12,6 +12,10 @@
 
 スライスのライフサイクルは以下のターン構造で回す:
 
+**wake 時ルーチン (セッション冒頭)**: `intent-cli automation stalled-work --domain emumet
+--repo ShuttlePub/Emumet` を実行し claimed-silent / writeback 滞留を検知する
+(§6 interim プロトコル層3。2026-08-13 の wake から実施)。
+
 1. `next` — 証拠確認(queue / backlog / PR / doctor)のうえで 1 プロセスを推薦
 2. `grill` / clarification — ブロッカーがあれば先に解消
 3. `stack` — packet draft。**この時点で packet.yaml から scaffold 由来のルートレベル
@@ -229,7 +233,9 @@ orchestrator-thread ガイドの3層 wake を本構成に写像:
 - [ ] upstream に ShuttlePub リポジトリの `guide oneshot` 対応を要望するか検討
 - [ ] herdr upstream 追跡: #1362 (子セッション busy の親 pane 非投影) / #2548 の解消
       状況。解消されても opencode measured launch recipe (G647) 策定までは wake 源にしない (§6)
-- [ ] lead の wake 時ルーチンに `automation stalled-work` を組み込む (§6 interim プロトコル層3)
+- [x] ~~lead の wake 時ルーチンに `automation stalled-work` を組み込む~~ →
+      2026-08-13 の wake から実施 (§0 冒頭に定型化)。初回実施で unfollow-api の
+      knowledge-writeback-pending (declared: intent_tree) を検知
 - [x] ~~media-upload publish 前に packet.yaml のルートレベルコメントを除去する~~ →
       2026-08-13 対応済み (architecture-foundation 分も同時に除去、af200b8)。
       あわせて両 packet の github-body.md に H1 タイトルを付与 (§2 の title 規約)
