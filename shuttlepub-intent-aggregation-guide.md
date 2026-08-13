@@ -4,6 +4,17 @@
 > 対象読者: オペレーター(人間)と、作業を実行する AI エージェントの design スレッド。
 > 原則: **手でファイルや label をいじらず、各ステップで `intent-cli` のガイダンスに従う**。このガイドは道筋の管理に使い、判断に迷ったら design スレッドで `intent-cli` に聞く。
 
+## 進捗ステータス(2026-08-13 時点)
+
+| domain | 状態 |
+|---|---|
+| `emumet` | ✅ 完了(Phase 1–5 実施済み。集約 host で実運用中) |
+| `ratcap` | ✅ 完了(同上) |
+| `shuttlepub` | ⏳ 未実施。追加時に Phase 1–3 をこの domain に対して実行する |
+| `stellar` / `satellite` | 🚫 当面対象外。追加したくなった時点で同じ手順で domain を1つ追加する |
+
+host の初期化(Phase 1-1 / 1-2)は完了済みのため、残作業は「新規 domain ごとの登録(Phase 1-3 以降)」のみ。Phase 0 / Phase 4 は追加対象 domain に旧セットアップがある場合だけ実施する。
+
 ---
 
 ## 0. ゴール状態と前提変数
@@ -14,16 +25,15 @@
 ShuttlePub/<host-repo>          ← 集約 host リポジトリ(トポロジーA)
   .intent-cli/                  ← queue-state 等(host 単位・単一)
   intents/
-    shuttlepub/                 ← domain(対象: ShuttlePub/ShuttlePub)
-    stellar/                    ← domain(対象: ShuttlePub/Stellar)
-    satellite/                  ← domain(対象: ShuttlePub/Satellite)
-    emumet/                     ← domain(対象: ShuttlePub/Emumet)
-    ratcap/                     ← domain(対象: ShuttlePub/RatCap)
+    shuttlepub/                 ← domain(対象: ShuttlePub/ShuttlePub)追加予定
+    emumet/                     ← domain(対象: ShuttlePub/Emumet)✅ 登録済み
+    ratcap/                     ← domain(対象: ShuttlePub/RatCap)✅ 登録済み
+    # stellar / satellite       ← 当面対象外(必要になった時点で同手順で追加)
   AGENTS.md
 ```
 
 - domain は横並び。上位/下位のネスト概念は存在しない
-- 将来のストレージサービスは作成時に同じ手順(Phase 1)で domain を1つ追加するだけ
+- 将来のストレージサービスや stellar / satellite を追加する場合は、作成・追加時に同じ手順(Phase 1-3 以降)で domain を1つ追加するだけ
 - http-msgsign / ap-sandbox / document 等の付随リポジトリは、intent 駆動で回したくなった時点で同様に domain 追加すればよい。今回は対象外でよい
 
 ### 前提変数(作業前に埋める)
@@ -32,7 +42,7 @@ ShuttlePub/<host-repo>          ← 集約 host リポジトリ(トポロジーA
 |---|---|---|
 | `HOST` | 作成済み host リポジトリ | `ShuttlePub/<host-repo>` |
 | `HOST_ROOT` | host リポジトリのローカル checkout パス | `~/work/<host-repo>` |
-| 対象 domain | `shuttlepub` `stellar` `satellite` `emumet` `ratcap` | 対象 repo は `ShuttlePub/<Capitalized名>` |
+| 対象 domain | 登録済み: `emumet` `ratcap` / 追加予定: `shuttlepub` / 当面対象外: `stellar` `satellite` | 対象 repo は `ShuttlePub/<Capitalized名>` |
 
 ---
 
@@ -95,9 +105,9 @@ git clone https://github.com/<HOST> "$HOST_ROOT" && cd "$HOST_ROOT"
 
 host の checkout を cwd とする AI エージェント(Claude / Codex / Copilot 等)の会話に、次を貼る(同居マシン想定の `herdr-only` 版):
 
-> 既存の対象実装リポジトリ群 ShuttlePub/ShuttlePub, ShuttlePub/Stellar, ShuttlePub/Satellite, ShuttlePub/Emumet, ShuttlePub/RatCap に intent-cli を追加します。空の分離した intent 用ホストリポジトリだけを開いています。まずインストール済みのガイドで intent-cli を理解し、ホストを初期化して同居する単一マシンのチーム用に `herdr-only` を記録してください。
+> 既存の対象実装リポジトリ群 ShuttlePub/ShuttlePub, ShuttlePub/Emumet, ShuttlePub/RatCap に intent-cli を追加します。空の分離した intent 用ホストリポジトリだけを開いています。まずインストール済みのガイドで intent-cli を理解し、ホストを初期化して同居する単一マシンのチーム用に `herdr-only` を記録してください。
 
-(分散チーム / 既存 agmsg 投資がある場合は末尾を「`agmsg` を記録してください」に変える)
+(対象リポジトリ群はその時点の追加予定に合わせて書き換える。分散チーム / 既存 agmsg 投資がある場合は末尾を「`agmsg` を記録してください」に変える)
 
 エージェントは `guide onboarding` → `intent init` dry-run → `--write` 適用 → `session-layer set` まで進める。
 
@@ -106,7 +116,7 @@ host の checkout を cwd とする AI エージェント(Claude / Codex / Copil
 各 domain について design スレッドのエージェントが実行する(直接実行も可):
 
 ```bash
-D=<domain>            # shuttlepub / stellar / satellite / emumet / ratcap
+D=<domain>            # 追加対象(例: shuttlepub)
 R=ShuttlePub/<repo>   # 対応する実装リポジトリ
 
 intent-cli intent init      --domain "$D" --target-repo "$R" --write
