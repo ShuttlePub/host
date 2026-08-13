@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-13T12:15:48.0410384+00:00",
+  "updated_at": "2026-08-13T12:16:05.5913995+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -84,6 +84,11 @@
         "implementation": ".intent-cli/issues/account-aggregate-repository/implementation.md",
         "review_context": ".intent-cli/issues/account-aggregate-repository/review-context.md",
         "yaml": ".intent-cli/issues/account-aggregate-repository/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 26,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/26"
       },
       "worker_role": "implementation",
       "review_role": "review",
