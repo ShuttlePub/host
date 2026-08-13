@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-13T09:17:33.0941128+00:00",
+  "updated_at": "2026-08-13T12:15:48.0410384+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -66,6 +66,25 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/24"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/25",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "account-aggregate-repository",
+      "title": "account-aggregate-repository: AggregateRepository port (Rehydrated\u003CAccount\u003E) \u002B driver \u5B9F\u88C5 \u002B \u540C\u5024\u30C6\u30B9\u30C8\u4E26\u8D70 (ADR 0006 Stage 2)",
+      "state": "queued",
+      "dependencies": [
+        "architecture-foundation"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/account-aggregate-repository/implementation.md",
+        "review_context": ".intent-cli/issues/account-aggregate-repository/review-context.md",
+        "yaml": ".intent-cli/issues/account-aggregate-repository/packet.yaml"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

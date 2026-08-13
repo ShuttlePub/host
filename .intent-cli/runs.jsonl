@@ -12,3 +12,4 @@
 {"ts":"2026-08-13T01:50:34.3522255+00:00","execution_unit":"architecture-foundation","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#24","reason":"https://github.com/ShuttlePub/Emumet/issues/24"}
 {"ts":"2026-08-13T09:17:33.0887597+00:00","execution_unit":"architecture-foundation","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":25}
 {"ts":"2026-08-13T09:17:33.0887597+00:00","execution_unit":"architecture-foundation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":25}
+{"ts":"2026-08-13T12:15:48.0514736+00:00","execution_unit":"account-aggregate-repository","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/account-aggregate-repository/"}
