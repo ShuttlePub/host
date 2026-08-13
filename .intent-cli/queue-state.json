@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-13T12:16:05.5913995+00:00",
+  "updated_at": "2026-08-13T14:25:39.5613037+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -74,7 +74,7 @@
     {
       "execution_unit": "account-aggregate-repository",
       "title": "account-aggregate-repository: AggregateRepository port (Rehydrated\u003CAccount\u003E) \u002B driver \u5B9F\u88C5 \u002B \u540C\u5024\u30C6\u30B9\u30C8\u4E26\u8D70 (ADR 0006 Stage 2)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "architecture-foundation"
       ],
@@ -90,6 +90,7 @@
         "number": 26,
         "url": "https://github.com/ShuttlePub/Emumet/issues/26"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/27",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
