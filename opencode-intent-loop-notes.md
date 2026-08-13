@@ -25,7 +25,9 @@
   **code-reviewer はルーティング不具合で background stall するため、現在は
   `category="deep"` の read-only レビューで代替する** (§5 PR #27 実測)
 - team-mode: 調整コストと member 再委譲不可の検証により廃止 (§3)
-- herdr: 子セッション busy を観測できないため wake 源には使わない (§6)
+- herdr: task() 子セッションの busy を観測できないため現行形の wake 源には使わない。
+  ただし pane 内に root セッションとしてワーカーを立てる「pane-root 委譲」なら
+  観測問題が消え、再委譲不可・400 tool-call 上限の回避にもなるため PoC 候補 (§6)
 
 ### agent 名の正確な対応 (勘違い防止)
 
@@ -281,6 +283,69 @@ orchestrator-thread ガイドの3層 wake を本構成に写像:
 成功判定は composite gate (PR 実在・CI green・worker complete 記録・diff 精査) で、
 これは §0-8/9 の従来運用と同じ。
 
+### herdr 0.8.0 実機検証と pane-root ワーカー構想 (2026-08-14)
+
+herdr 0.8.0 (stable, 2026-08-03 リリース) がこのマシンに導入され、server 稼働・
+opencode 統合 (v9) が current であることを実機確認した。upstream と併せて再検証。
+
+**task() 子セッション観測の結論は変わらない (維持)**:
+
+- インストール済み統合 (`~/.config/opencode/plugins/herdr-agent-state.js` v9) の
+  ソースで確認: 子セッション (parentID 付き) の busy/idle イベントは **意図的に
+  破棄** される (childSessions 抑止)。親 pane に投影されるのは子の
+  permission/question (→blocked) のみ。upstream master の v10 も同挙動で、
+  TUI companion (herdr-tui-session.js) すら parentID セッションを明示除外する
+- upstream issue は全て OPEN (2026-08-14 時点): herdr#1362 (本件そのもの。
+  集約実装した PR #2062 は上流 blocker anomalyco/opencode#39711 — plugin に
+  resume/attach セッション ID が渡らない — により未マージクローズ)、
+  #2548 (opencode 1.18.x で agent_session 未報告、調査継続中)、#2241 (Claude
+  Code の同型問題)。#1362 解消の目途は upstream #39711 次第
+- このマシンでは lead セッションの agent_session 報告と working/idle 検出は
+  正常動作を実機確認 (#2548 の影響は観測されず)
+
+**新規の発見: pane-root ワーカーなら herdr がそのまま wake 源になる**:
+
+task() 子セッションではなく、herdr pane 内に **root opencode セッション**として
+ワーカーを立てる委譲形。herdr が観測できるのは root セッションなので、この形なら
+観測問題が構造的に消える:
+
+- 起動: `herdr workspace create` / `pane split` → `herdr agent start opencode
+  --pane <id> -- [AGENT_ARG]` → `herdr agent prompt <target> <text>`
+- 状態: `herdr agent list` / `herdr api snapshot` で working/idle/blocked を取得。
+  **blocked = permission/question 待ちが可視化される** (task() 子にはない利点。
+  `agent send-keys` で応答も可能)
+- wake: `herdr agent wait <target> --until idle,done,blocked [--timeout ms]` が
+  ブロッキング primitive。lead は bash から timeout 分割で呼べばトークンを
+  消費せず待機できる
+- 出力確認: `herdr agent read <target>`
+- 自動 wake 注入も可能: herdr API の `events.subscribe` / `pane.agent_status_changed`
+  を購読する watcher が worker idle を検知して lead セッションへ opencode server
+  API (localhost:4099) 経由でメッセージを POST する構成が立てられる
+
+**task() 委譲との比較**:
+
+| 観点 | task() 子 (現行) | herdr pane-root ワーカー |
+|---|---|---|
+| wake 源 | harness 完了通知 (確実・実績あり) | `agent wait` / events.subscribe (要配線) |
+| 子の観測 | herdr からは見えない | pane 状態・出力・トークンが見える |
+| 再委譲 | 不可 (§3) | **可能** (root セッションなので task() fan-out できる) |
+| tool-call 予算 | 400 上限死リスク | root セッションの通常上限 (実質緩和) |
+| モデル/コスト | category routing で最適化 | pane の opencode 設定依存 (AGENT_ARG で指定) |
+| permission | background で詰むと気付けない | blocked として可視 |
+| 起動の確実性 | 高い | agent start/prompt の対話は未検証 |
+
+**判断**: 大きいスライス (予算超過見込み・再委譲が欲しい) 向けの選択肢 (c) として
+有力。次の大きいスライスで小さく PoC する: (1) 使い捨て workspace で
+start → prompt → wait → read の一巡を確認、(2) worker prompt はファイル経由で
+渡す定型にする (長文を CLI 引数に乗せない)、(3) canonical 完了プロトコル
+(worker result-summary/complete + PR ラベル) は transport 非依存でそのまま適用、
+(4) PoC 成功までは task() がデフォルトのまま。
+
+なお herdr を介さずとも、opencode server の `/session/status` (全セッションの
+busy マップ、子を含む) + `/session/:id/children` + `/event` SSE で子孫 busy
+集約は自前実装可能 (2026-08-14 librarian 調査)。観測だけが目的なら pane-root 化
+よりこちらが軽い。
+
 ### design ∥ implementation の並列化
 
 - 意図の取りまとめと実装は構造的に並列可能。queue preload は正式サポート
@@ -300,8 +365,13 @@ orchestrator-thread ガイドの3層 wake を本構成に写像:
 - [ ] Emumet flake.lock の intent-system-flake 更新 PR (stale 0.5.0 解消) — 別スライス候補
 - [ ] Emumet `.envrc` の `use dotenv` → `dotenv` 修正 PR — 同上
 - [ ] upstream に ShuttlePub リポジトリの `guide oneshot` 対応を要望するか検討
-- [ ] herdr upstream 追跡: #1362 (子セッション busy の親 pane 非投影) / #2548 の解消
-      状況。解消されても opencode measured launch recipe (G647) 策定までは wake 源にしない (§6)
+- [ ] herdr pane-root ワーカー委譲の PoC (§6 2026-08-14 構想): 使い捨て workspace で
+      start → prompt → wait → read の一巡を検証し、大きいスライスの選択肢 (c) として
+      採用可否を判断する。成功するまで task() 委譲がデフォルト
+- [ ] herdr upstream 追跡: #1362 (子セッション busy の親 pane 非投影。blocker は
+      anomalyco/opencode#39711) / #2548 / #2241 の解消状況。2026-08-14 時点で全て
+      OPEN。解消されても opencode measured launch recipe (G647) 策定までは
+      task() 子の wake 源にしない (§6)
 - [x] ~~lead の wake 時ルーチンに `automation stalled-work` を組み込む~~ →
       2026-08-13 の wake から実施 (§0 冒頭に定型化)。初回実施で unfollow-api の
       knowledge-writeback-pending (declared: intent_tree) を検知
