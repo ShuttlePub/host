@@ -1,0 +1,77 @@
+implementation_issue_packet:
+  issue_title: "architecture-foundation: TransactionManager port 導入・no-op commit 廃止・event seq 列追加 (ADR 0006 Stage 1)"
+  issue_kind: feature
+  source_execution_unit: architecture-foundation
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: kernel/src/database.rs, driver/src/database, application/src/service, migrations/
+  target_part: "TransactionManager port 導入・no-op commit 廃止・event seq 列追加・characterization tests・Stage 1 冒頭の純粋 rename"
+  dependencies: []
+  technical_baseline:
+    - "全ユースケースが get_executor() (auto-commit プール接続) を transaction という変数名で下位に回している (例: application/src/service/account/create.rs:41)。真の transaction は account_detail/update.rs:65 の1箇所のみ"
+    - "kernel/src/database.rs の Executor::commit はデフォルト no-op (async { Ok(()) })。PostgresConnection::Connection の commit も Ok(()) を返す (driver/src/database/postgres.rs:69-79)"
+    - "event テーブル4本 (account_events / auth_account_events / profile_events / metadata_events) は (id, version) PK のみでグローバル連番なし (migrations/20230707210300_init.sql:92-124)"
+    - "rust-toolchain は 1.97.0。AsyncFnOnce + F::CallOnceFuture: Send は Rust 1.85+ で利用可能 (ADR 0006 決定7)"
+    - "DB テストは #[test_with::env(DATABASE_URL)] で compose の Postgres 16 相手に実行する既存規約"
+    - "rename は純粋 rename commit として挙動変更と混ぜない (ADR 0006 §10 実施ルール)"
+  intent_references:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    - intents/emumet/packets/backlog.md
+  acceptance_criteria:
+    - "純粋 rename commit (Executor→Connection / get_executor()→connection() / 変数名 transaction→conn) が挙動変更コミットから分離され、rename commit 単体でテストが緑"
+    - "CreateAccount (Account + Profile + SigningKey + 権限の4書き込み) と UpdateAccountDetail の characterization tests が現行振る舞いを固定し、変更前後で緑"
+    - "auto-commit 接続 (connection() 経由) では commit 手段が存在しない形になり、no-op デフォルト実装が除去されている"
+    - "kernel に TransactionManager port、driver に Postgres 実装があり、closure 内で begin/commit/rollback が完結。closure 内エラー時に rollback されることがテストで確認できる"
+    - "signature spike の結果 (AsyncFnOnce 採否と理由) が PR description に記録されている"
+    - "4 event テーブルに seq 列 (BIGSERIAL) が追加される migration があり、既存マイグレーションを破壊しない"
+    - "cargo test (DATABASE_URL あり) / clippy が緑"
+
+# G461: optional packet-time intent-maintenance metadata. OPTIONAL and
+# backward-compatible — packets that omit this whole block stay valid.
+# Fill it in or explicitly decline each part while the design context is
+# fresh; `improve` (G456 / G460) is the later safety net, not a substitute.
+intent_placement:
+  primary_intent: intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+  supporting_intents: []
+  new_intent_needed: false
+  placement_rationale: "ADR 0006 Stage 1 の実施ユニットであり、ADR が source of truth。intent-tree/00-map.md は pending のため新規ノードは切らない"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: true
+    target_paths:
+      - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    decision_title: "TransactionManager signature spike 結果の確定 (AsyncFnOnce 採否) を決定7 に追記"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "Emumet AGENTS.md Architecture 節の更新は移行完了後 (ADR 0006 Links 参照)"
+closeout_learning:
+  expected: "TransactionManager signature spike の結果 (AsyncFnOnce 採否と理由)。AsyncFnOnce が不可だった場合の具体的なコンパイラ制約"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+# G645/G661: guide reachability is explicit and checked at closeout.
+# Uncomment and complete EXACTLY ONE accepted form. Leaving this
+# commented is visibly undeclared; the scaffold never guesses that
+# a new slice has no role-facing surface.
+#
+# Route form:
+# guide_reachability:
+#   no_role_facing_surface: false
+#   routes:
+#     - guide_surface: guide workflow task implementation-loop
+#       role: implementation
+#       target_surface: <role-facing-surface>
+#
+# Explicit no-surface form:
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
