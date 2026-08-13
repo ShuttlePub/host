@@ -1,0 +1,10 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "architecture-foundation",
+  "host_commit": "7575033",
+  "recorded_at": "2026-08-13T09:19:25.7834322+00:00",
+  "targets": [
+    "intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md"
+  ],
+  "note": null
+}
