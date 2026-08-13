@@ -2,7 +2,8 @@
 
 > 目的: OpenCode (oh-my-openagent) 環境で intent-cli の実装ループを回すための実運用知見を記録する。
 > 由来: 2026-08-12 unfollow-api (#20 → PR #21)、2026-08-13 block-mute-federation
-> (#22 → PR #23)、2026-08-13 architecture-foundation (#24 → PR #25) の実測。
+> (#22 → PR #23)、2026-08-13 architecture-foundation (#24 → PR #25)、
+> 2026-08-13 account-aggregate-repository (#26 → PR #27) の実測。
 > 原則は変わらず `intent-cli` がワークフロー権威。ここには OpenCode 側の配線知見だけを置き、
 > ワークフロー手順そのものはコピーしない。
 
@@ -20,7 +21,9 @@
 - 上限死後の復帰: **同一セッション継続 (task_id 再開) は使わない** (肥大コンテキストで
   空転する実績あり)。新セッションに lead 実測の state (git log/status の具体値) を
   渡すか、残作業が小さければ lead が直接仕上げる
-- レビュー: lead の契約照合 + `code-reviewer` (網羅品質) + `oracle` (設計意図) の層構成
+- レビュー: lead の契約照合 + `code-reviewer` (網羅品質) + `oracle` (設計意図) の層構成。
+  **code-reviewer はルーティング不具合で background stall するため、現在は
+  `category="deep"` の read-only レビューで代替する** (§5 PR #27 実測)
 - team-mode: 調整コストと member 再委譲不可の検証により廃止 (§3)
 - herdr: 子セッション busy を観測できないため wake 源には使わない (§6)
 
@@ -181,6 +184,32 @@ team-mode (使い捨て team: lead + implementation member) は2スライスで�
   architecture-foundation が先になり task() 委譲で実施。結果を受けて冒頭の
   デフォルト構成に確定した。ULW 直接実装は大きいスライス向けの選択肢として残る
 
+### account-aggregate-repository (#26 → PR #27) の実測 (2026-08-13)
+
+**user 定義 agent の background stall と lead 直接実装への移行**:
+
+- deep ワーカーは起動 ~6分で M1 (rename commit) + claim まで正常に到達したが、
+  operator 判断で「オーケストレーション可能な agent」への載せ替えを試行
+- **`subagent_type="general"` と `code-reviewer` は background task で起動直後から
+  無応答 stall する** (general は 6 分無出力・プロセス無し、code-reviewer は 48 分
+  無出力)。原因は **agent ルーティング設定ミスによるレートリミット** (operator 特定)。
+  category 経由 (Sisyphus-Junior) と oracle は正常動作する
+- **解決: lead セッション ULW 直接実装 (選択肢 b) の初の本格運用**。M2-M5 を lead が
+  直接実装して完走 (~2時間、Oracle 設計相談 → 実装 → 2層レビュー → merge)。
+  Stage 2 規模 (port 定義 + driver 実装 + 同値テスト4本、+543行) は lead 直接で
+  十分に回る。設計判断 (save signature) は実装前に Oracle 相談で確定させる流れが
+  有効だった
+- **品質レビュー層の代替**: code-reviewer 不在時は `category="deep"` に read-only
+  レビュー prompt を渡すと 5 分で完走し、実質的な指摘 (MUST-FIX 1 / SHOULD-FIX 2)
+  を返した。2層レビュー構成は「品質 = deep (Junior)、設計意図 = oracle」で代替可能
+- **CI Format check がコミット粒度の fmt 欠落を捕捉**: rename commit が fmt 未通過で
+  後続の fmt コミットに rename 行の再整形が混入し、Oracle レビューで Decision 10
+  違反 (MUST-FIX) になった。対応は履歴組み直し (fmt を rename commit に折り込み、
+  最終 tree が検証済み tree と同一であることを `git diff --quiet` で証明して
+  force-with-lease)。**教訓: 各コミット作成時に `cargo fmt --check` を回す**
+- 環境: cargo 系コマンドは `nix develop --command` 経由が必須 (pkg-config/openssl が
+  bare shell に無い)。DB テストは `.env` の DATABASE_URL を明示渡し
+
 ### architecture-foundation (#24 → PR #25) の実測 (2026-08-13)
 
 task() ベース委譲 (category=deep、Sisyphus-Junior) の初実施で以下を観測:
@@ -264,6 +293,8 @@ orchestrator-thread ガイドの3層 wake を本構成に写像:
 
 ## 7. 次回以降の改善アクション
 
+- [ ] code-reviewer / general の agent ルーティング設定の修正 (operator 側。
+      レートリミットで background stall。修正までは品質レビュー = category=deep 代替)
 - [ ] 大規模 rename sweep を含むスライスの分割基準 (rename を独立スライス/独立タスクに
       切る等) を packet 起こしのガイド/prompt 定型に反映するか検討 (§5 実測由来)
 - [ ] Emumet flake.lock の intent-system-flake 更新 PR (stale 0.5.0 解消) — 別スライス候補
