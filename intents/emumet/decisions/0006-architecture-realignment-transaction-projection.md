@@ -82,6 +82,21 @@
 - no-op default の `Executor::commit` は廃止する
 - repository は外側の transaction に参加するだけで、nested transaction を
   独自に開始してはならない (外側 UoW を分断するため)
+- **Stage 1 時点の既知の制約 (2026-08-13、Stage 1 review より)**:
+  - `PostgresConnection` の `DerefMut<Target = PgConnection>` 経由で
+    `sqlx::Connection::begin()` / 生 SQL の `COMMIT` が呼べるため、
+    「Service は begin/commit/rollback の手段を持たない」は Stage 1 時点では
+    **kernel trait レベルの規約**であり、concrete 型では強制されていない。
+    Stage 4 のユースケース移行時に、Service に渡す connection capability を
+    raw `PgConnection` へ deref できない port 型に閉じて強制化する
+    (SQLx アクセスは driver の repository 実装内に限定)
+  - `TransactionManager::transaction()` の nested 呼び出しは savepoint ではなく
+    **別 pool 接続の独立 transaction** になり、pool 枯渇時に自己デッドロック
+    しうる。`transaction()` は top-level のユースケース境界でのみ呼ぶ契約とし、
+    Stage 4 で 5 ユースケース (CreateAccount / UpdateAccountDetail / Block /
+    Inbox Follow / Inbox Block) の呼び出し構造を固定する際に構造で担保する。
+    nested scope が実際に必要になった時点で、既存 connection を受け取る
+    savepoint API を別途追加する
 
 ### 3. port 文法: 統一せず4系統を明示
 
