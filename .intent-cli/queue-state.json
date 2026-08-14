@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-14T15:50:16.8083036+00:00",
+  "updated_at": "2026-08-14T16:03:27.8397884+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -152,7 +152,7 @@
     {
       "execution_unit": "crud-ap-transactions",
       "title": "crud-ap-transactions: Block / Inbox Follow / Inbox Block \u3092 tx \u002B \u914D\u9001 outbox \u5316\u3001Mute / Accept / Undo \u7CFB\u3092\u51AA\u7B49 repo \u64CD\u4F5C\u5316 (ADR 0006 Stage 5)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "architecture-foundation"
       ],

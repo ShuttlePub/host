@@ -50,6 +50,12 @@ packet 起こしは `architecture-foundation` から。
   Keto post-commit provisioning (冪等 create/delete)。`unban` / `reactivate` は未実装のまま。
   確定 design (DependOnTransactionManager 注入形状・post-commit provisioning パターン・
   UoW 内 version 連鎈) は ADR 0006 決定2/3/5 に writeback 済み
+- `crud-ap-transactions` — issue #32 / PR #33 マージ済み(2026-08-14)。ADR 0006 Stage 5。
+  Block / Unblock / Inbox Follow / Inbox Block / Undo(Block) の UoW 化、AP 配送 outbox 化
+  (`outbox_activities` に `delivered_at` / `attempted_at` / `error` 列追加、commit 後 delivery)、
+  Mute / Accept / Undo Follow / Undo Block の冪等 repo 操作化 (`insert_if_absent` /
+  `approve_follow_if_pending` / `delete_if_exists`)。確定 design は ADR 0006 決定2/3/4/5 に
+  writeback 済み
 - `mastodon-e2e-completion` — S7-S9 シナリオ完成、CI (e2e.yml → run-ap-e2e.sh) で
   実 Mastodon コンテナ相手に常時実行中。backlog 記述が stale だっただけで実体は達成済み
 

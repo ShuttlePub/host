@@ -110,6 +110,22 @@
     `CreateAccount` 実装で固定
   - `UpdateAccountDetail` から低レベル `get_transaction()` / `transaction.commit()`
     の直接呼び出しを解消し `TransactionManager::transaction()` へ統一
+- **Stage 5 確定 (2026-08-14、PR #33 closeout より)**:
+  - UoW 対象ユースケースを ADR 決定2 の **Block / Inbox Follow / Inbox Block** に拡張。
+    `BlockAccountUseCase` / `UnblockAccountUseCase`、inbox `Follow` / `Block` /
+    `Undo(Block)` ハンドラを `TransactionManager::transaction()` 化。remote actor
+    解決・関係テーブル書き込み・outbox 記録を同一 tx に閉じ、AP delivery HTTP は
+    commit 成功後に実行
+  - 単一書き込みユースケース **Mute / Accept / Undo Follow / Undo Block** を冪等
+    repository 操作に置換。`MuteRepository` / `FollowRepository` / `BlockRepository`
+    に `insert_if_absent` / `delete_if_exists` / `approve_follow_if_pending` 等を追加し、
+    アプリ層の事前 `find` + `Rejected` を減らす
+  - `InboxUseCase` に `Clone` バウンドを追加し、transaction closure 内で
+    `module.clone()` して非 `Send` キャプチャを避ける。その結果、handler 関数の
+    `T: InboxUseCase + ?Sized` から `?Sized` を除去 (`clippy::needless_maybe_sized` 対応)
+  - Stage 5 終了時点の UoW 対象は **CreateAccount / UpdateAccountDetail /
+    Suspend / Unsuspend / Ban / Deactivate / Block / Inbox Follow / Inbox Block**
+    の9つ。冪等 repo 操作対象は **Mute / Accept / Undo Follow / Undo Block** の4つ
 
 ### 3. port 文法: 統一せず4系統を明示
 
@@ -151,6 +167,19 @@
     - 楽観排他の原子性強化については、現行の UNIQUE / NOT NULL / 条件付き
       `WHERE version = $expected` による CAS に加え、必要に応じて advisory lock
       等を検討する方針を維持。本 Stage では advisory lock 導入までは至らず
+  - **Stage 5 確定 (2026-08-14、PR #33 closeout より)**:
+    - CRUD repository に冪等操作の系統を追加:
+      - `FollowRepository::insert_if_absent` / `approve_follow_if_pending` /
+        `delete_if_exists`
+      - `BlockRepository::insert_if_absent` / `delete_if_exists`
+      - `MuteRepository::insert_if_absent` / `delete_if_exists`
+      これらは DB の UNIQUE / 部分 index + `ON CONFLICT DO NOTHING` / 条件付き
+      `UPDATE` で実装し、重複・不存在・順不同到達を冪等に処理
+    - `OutboxActivityRepository` に delivery 用操作を追加: `create` は発行された
+      `outbox_id` を返し、`pending_deliveries` / `mark_delivered` /
+      `mark_attempted` で delivery 状態を管理
+    - `AggregateRepository<A>` の `save(CommandEnvelope)` と CRUD 冪等操作を並存。
+      CRUD 側に `ExpectedVersion` や `Rehydrated` を擬装しない方針を維持
   - **Stage 3 確定 (2026-08-14、PR #29 closeout より)**: projector 専用 port は
     `kernel::interfaces::projection` に 3 系統で確定 —
     `AccountEventLog` (seq 窓読み出し `find_by_seq_window(executor, from, limit)`)、
@@ -185,7 +214,20 @@
   書込みは per-aggregate savepoint で隔離 (他集約の wedge 防止)。
   `account_events(seq)` に index `idx_account_events_seq` を追加済み。
   グローバル tailing (seq 順) と per-stream fold (version 順) の順序分離
-  (決定9 の Stage 3 入力) もこの通り実装した
+    (決定9 の Stage 3 入力) もこの通り実装した
+- **Stage 5 確定 (2026-08-14、PR #33 closeout より)**:
+  - AP 配送 outbox は projection 通知 outbox とは別の関心事。本 Stage では既存
+    `outbox_activities` テーブルを流用しつつ、delivery 状態を同テーブル内で管理。
+    追加カラム: `delivered_at TIMESTAMPTZ`, `attempted_at TIMESTAMPTZ`, `error TEXT`
+    (`migrations/20260814000001_add_outbox_delivery_state.sql`)
+  - delivery フロー: UoW tx 内で outbox レコードを `create` → commit 成功後に
+    `deliver_accept` / `deliver_block_activity` 等で HTTP delivery → 成功時
+    `mark_delivered`、失敗時 `mark_attempted` + `error` 保存。post-commit 即時
+    delivery を baseline とし、失敗時は outbox レコードに再試行可能性を残す。
+    long-running delivery worker は optional
+  - projection 通知 outbox (決定4 本文) と AP 配送 outbox を統合しない方針を維持。
+    `outbox_activities` は collection API 用の履歴兼 delivery log としても機能するが、
+    失敗再試行・配送順序の責務は AP 配送層に閉じる
 
 ### 5. 外部プロビジョニング (Keto)
 
