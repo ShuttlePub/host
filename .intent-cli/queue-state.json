@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-14T08:43:53.362454+00:00",
+  "updated_at": "2026-08-14T10:48:38.7191297+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -99,7 +99,7 @@
     {
       "execution_unit": "projection-outbox-projector",
       "title": "projection-outbox-projector: account_events log tailing \u002B application::projection AccountProjector \u65B0\u8A2D \u002B \u76F4\u63A5 Signal emit \u505C\u6B62 (ADR 0006 Stage 3)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "architecture-foundation",
         "account-aggregate-repository"
@@ -116,6 +116,7 @@
         "number": 28,
         "url": "https://github.com/ShuttlePub/Emumet/issues/28"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/29",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

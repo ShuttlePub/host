@@ -117,12 +117,19 @@
     DI は集約別の concrete wrapper (`DependOnAccountRepository`)。
     汎用 `DependOnAggregateRepository<A>` は関連型解決が読みにくく不採用
   - **Stage 4 への設計入力**: UoW closure 内で同一集約に連続 save する場合、
-    直前の `EventEnvelope.version` を次のコマンドの expected version に連鎖
-    させること (最初の `Rehydrated.version` を再利用すると自己競合する)。
-    また legacy append SQL の CAS (`NOT EXISTS` / `MAX(version)=v`) は同時
-    書き込み下で両方の transaction を通しうる (Oracle + 品質レビュー両方が
-    指摘)。UoW 移行で楽観排他に依存する前に、UNIQUE 制約・advisory lock 等の
-    原子的 CAS への強化を検証すること
+     直前の `EventEnvelope.version` を次のコマンドの expected version に連鎖
+     させること (最初の `Rehydrated.version` を再利用すると自己競合する)。
+     また legacy append SQL の CAS (`NOT EXISTS` / `MAX(version)=v`) は同時
+     書き込み下で両方の transaction を通しうる (Oracle + 品質レビュー両方が
+     指摘)。UoW 移行で楽観排他に依存する前に、UNIQUE 制約・advisory lock 等の
+     原子的 CAS への強化を検証すること
+  - **Stage 3 確定 (2026-08-14、PR #29 closeout より)**: projector 専用 port は
+    `kernel::interfaces::projection` に 3 系統で確定 —
+    `AccountEventLog` (seq 窓読み出し `find_by_seq_window(executor, from, limit)`)、
+    `ProjectionCheckpointStore` (`get` / `set` で projector_name 単位)、
+    `AccountProjectionWriter` (version-gated upsert)。DI は既存の
+    `DependOn*` ケーキパターンで行い、`*Query` 系統 (決定3 の `*Query`) とは
+    分離した
 
 ### 4. projection 通知: transactional log tailing
 
@@ -140,6 +147,17 @@
   ない。Stage 3 で tailing プロトコル (watermark/窓再読、counter 行による採番
   直列化、テーブル別 checkpoint の可否) を確定する際の検討入力とする。
   `seq` への index も現状未付与のため、tail query 確定時に追加する
+- **Stage 3 確定値 (2026-08-14、PR #29 closeout より)**: tailing プロトコルは
+  checkpoint + 重複窓再読で確定した。`projection_checkpoints`
+  (`projector_name TEXT PK` / `last_seq BIGINT NOT NULL` / `updated_at TIMESTAMPTZ`)
+  に checkpoint を保存し、1 poll で `seq > last_seq - W` (W=100) を
+  `ORDER BY seq LIMIT 1000` で再読する。`last_seq` は窓内 max(seq) で単調更新し、
+  **後退しない**。tail 読み出し → 投影書込み → checkpoint 更新は**同一
+  transaction**。per-aggregate は version 順 fold + version gate で収束させ、
+  書込みは per-aggregate savepoint で隔離 (他集約の wedge 防止)。
+  `account_events(seq)` に index `idx_account_events_seq` を追加済み。
+  グローバル tailing (seq 順) と per-stream fold (version 順) の順序分離
+  (決定9 の Stage 3 入力) もこの通り実装した
 
 ### 5. 外部プロビジョニング (Keto)
 
@@ -156,6 +174,13 @@
   → `application::projection`
 - SQL upsert / delete / checkpoint 更新 → driver
 - worker の起動・shutdown 管理のみ → server
+- **Stage 3 確定配置 (2026-08-14、PR #29 closeout より)**: `application::projection`
+  に `AccountProjector` を新設し、調停は `ProjectAccountBatch` trait の
+  `project_batch()` (poll 1回 = 窓再読 → fold → 書込み → checkpoint の1 transaction)
+  に集約した。driver は `PostgresProjectionStore` (checkpoint / seq 窓 / version-gated
+  upsert の SQL)。server は `ProjectionWorker` + `ProjectionShutdown`
+  (watch channel による graceful shutdown、poll interval は
+  `PROJECTION_POLL_INTERVAL_MS` で設定可、default 100ms = e2e 互換)
 
 ### 7. DI: ケーキパターン維持 + 境界の型レベル強制
 
@@ -202,6 +227,12 @@
   per-stream rehydration (version 順) の順序規則を明示的に分けること。
   `Rehydrated::from_events` は入力列の最後の envelope を境界 version とするため、
   読み出し順を seq に変えてもそのまま利用できる
+- **Stage 3 確定 (2026-08-14、PR #29 closeout より)**: account 投影は
+  `AccountProjector` に一本化し、コマンドパスの直接 Signal emit (7箇所) と
+  `AccountApplier` / `account_applier` キューを廃止した。コマンドパスの同期
+  read model 書込み (create / account_detail update) は維持。profile /
+  metadata / auth_account の Redis 経路は残置 (Stage 6 以降の対象)。
+  Account の version ゲート付き upsert は `AccountProjectionWriter` が担う
 
 ### 10. 命名の正規化
 
