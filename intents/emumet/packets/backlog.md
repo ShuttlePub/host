@@ -10,7 +10,7 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 | 1 | `architecture-foundation` | ADR 0006 Stage 1。characterization tests、no-op `Executor::commit` 廃止、`TransactionManager` port + signature spike (AsyncFnOnce vs Box::pin)、event テーブル seq 列追加 | — |
 | 2 | `account-aggregate-repository` | ADR 0006 Stage 2。`AccountRepository` port (`Rehydrated<Account>`) + driver 実装、旧 CommandProcessor との同値テストで並走 | 1 |
 | 3 | `projection-outbox-projector` | ADR 0006 Stage 3。event + 通知の同一 tx 化 (log tailing)、Account projector を application::projection に新設、直接 Signal emit 停止、applier 冪等化 (version-gated upsert) | 1, 2 |
-| 4 | `account-write-usecases` | ADR 0006 Stage 4。CreateAccount / UpdateAccountDetail / moderation を UoW に移行、SigningKey の executor 受け取り化、Keto post-commit provisioning (KetoClient は driver へ移動) | 2, 3 | — issue [#30](https://github.com/ShuttlePub/Emumet/issues/30) / PR 未作成 |
+| 4 | `account-write-usecases` | ADR 0006 Stage 4。CreateAccount / UpdateAccountDetail / moderation を UoW に移行、SigningKey の executor 受け取り化、Keto post-commit provisioning (KetoClient は driver へ移動) | 2, 3 | — issue [#30](https://github.com/ShuttlePub/Emumet/issues/30) / PR [#31](https://github.com/ShuttlePub/Emumet/pull/31) マージ済み |
 | 5 | `crud-ap-transactions` | ADR 0006 Stage 5。Block / Inbox Follow / Inbox Block を tx + 配送 outbox 化、Mute / Accept / Undo 系は冪等 repo 操作 (`insert_if_absent` 等) に置換 | 1 |
 | 6 | `auth-account-crud-migration` | ADR 0006 Stage 6。AuthAccount を ES→CRUD 移行、find-or-create を `ON CONFLICT (host_id, client_id)` 原子化、同期 projection 例外除去、auth_account_events データ移行 | 1 |
 | 7 | `es-aggregates-migration` | ADR 0006 Stage 7。Profile / Metadata を ES repository/projector パターンに移行、`AccountProjection` の横展開 (新規 read query はドメイン Entity を返さない) | 2-4 |
@@ -44,6 +44,12 @@ packet 起こしは `architecture-foundation` から。
   (重複 Block 時の follow 再解除・inbox エラーパス単体テスト拡充・S10 の Undo 受信検証) は
   [../features/block-mute/decisions.md](../features/block-mute/decisions.md) に記録
 - `unfollow-api` — issue #20 / PR #21 マージ済み(2026-08-12)
+- `account-write-usecases` — issue #30 / PR #31 マージ済み(2026-08-14)。ADR 0006 Stage 4。
+  CreateAccount / UpdateAccountDetail / moderation (suspend/unsuspend/ban/deactivate) の UoW 化、
+  `AggregateRepository<Account>` のユースケース層本採用、SigningKey executor 受け渡し、
+  Keto post-commit provisioning (冪等 create/delete)。`unban` / `reactivate` は未実装のまま。
+  確定 design (DependOnTransactionManager 注入形状・post-commit provisioning パターン・
+  UoW 内 version 連鎈) は ADR 0006 決定2/3/5 に writeback 済み
 - `mastodon-e2e-completion` — S7-S9 シナリオ完成、CI (e2e.yml → run-ap-e2e.sh) で
   実 Mastodon コンテナ相手に常時実行中。backlog 記述が stale だっただけで実体は達成済み
 

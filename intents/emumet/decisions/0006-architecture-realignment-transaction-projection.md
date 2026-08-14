@@ -97,6 +97,19 @@
     Inbox Follow / Inbox Block) の呼び出し構造を固定する際に構造で担保する。
     nested scope が実際に必要になった時点で、既存 connection を受け取る
     savepoint API を別途追加する
+- **Stage 4 確定 (2026-08-14、PR #31 closeout より)**:
+  - UoW 対象ユースケースは ADR 決定2 の5つから、本 Stage で **CreateAccount /
+    UpdateAccountDetail / Suspend / Unsuspend / Ban / Deactivate** の4+2=6つを
+    対象とした。Block / Inbox Follow / Inbox Block は Stage 5、
+    Mute / Accept / Undo 系は Stage 5 で扱う
+  - Service は `DependOnTransactionManager` trait を介して `TransactionManager` を
+    注入。`transaction_manager().transaction(|conn| async move { ... })` で UoW を
+    宣言。begin/commit/rollback は Service から不可視
+  - 同一 UoW 内で同一集約に連続 `save` する場合は、直前の `EventEnvelope.version`
+    を次の `CommandEnvelope` の `ExpectedVersion::At(v)` に連鎈させることを
+    `CreateAccount` 実装で固定
+  - `UpdateAccountDetail` から低レベル `get_transaction()` / `transaction.commit()`
+    の直接呼び出しを解消し `TransactionManager::transaction()` へ統一
 
 ### 3. port 文法: 統一せず4系統を明示
 
@@ -119,10 +132,25 @@
   - **Stage 4 への設計入力**: UoW closure 内で同一集約に連続 save する場合、
      直前の `EventEnvelope.version` を次のコマンドの expected version に連鎖
      させること (最初の `Rehydrated.version` を再利用すると自己競合する)。
-     また legacy append SQL の CAS (`NOT EXISTS` / `MAX(version)=v`) は同時
-     書き込み下で両方の transaction を通しうる (Oracle + 品質レビュー両方が
-     指摘)。UoW 移行で楽観排他に依存する前に、UNIQUE 制約・advisory lock 等の
-     原子的 CAS への強化を検証すること
+      また legacy append SQL の CAS (`NOT EXISTS` / `MAX(version)=v`) は同時
+      書き込み下で両方の transaction を通しうる (Oracle + 品質レビュー両方が
+      指摘)。UoW 移行で楽観排他に依存する前に、UNIQUE 制約・advisory lock 等の
+      原子的 CAS への強化を検証すること
+  - **Stage 4 確定 (2026-08-14、PR #31 closeout より)**:
+    - `AggregateRepository<Account>` / `DependOnAccountRepository` をユースケース層で
+      本採用。`application/src/service/account/rehydrate.rs` の `rehydrate_account()`
+      ヘルパーは削除。ユースケースは `account_repository().load(id)` で
+      `Rehydrated<Account>` を取得し、`save(CommandEnvelope)` で永続化
+    - `AccountCommandProcessor` (`adapter/src/processor/account/command.rs`) の
+      `account_event_store().persist_and_transform()` 直呼びを解消し、
+      `AggregateRepository::save(CommandEnvelope)` 経由に変更。processor は調停
+      (command → event 構築) のみを担う形に整理
+    - UoW 内での同一集約連続 save の version 連鎈は実装で固定。具体的には
+      初回 save の戻り `EventEnvelope.version` を次の `CommandEnvelope` の
+      `ExpectedVersion::At(v)` に設定
+    - 楽観排他の原子性強化については、現行の UNIQUE / NOT NULL / 条件付き
+      `WHERE version = $expected` による CAS に加え、必要に応じて advisory lock
+      等を検討する方針を維持。本 Stage では advisory lock 導入までは至らず
   - **Stage 3 確定 (2026-08-14、PR #29 closeout より)**: projector 専用 port は
     `kernel::interfaces::projection` に 3 系統で確定 —
     `AccountEventLog` (seq 窓読み出し `find_by_seq_window(executor, from, limit)`)、
@@ -167,6 +195,19 @@
 - 失敗時は再試行可能という明示契約にする。厳密な収束保証が必要になった時点で
   process manager / saga の導入を別途検討する
 - KetoClient は driver に移動する (server から除去)
+- **Stage 4 確定 (2026-08-14、PR #31 closeout より)**:
+  - `KetoClient` は既に `driver/src/keto.rs` に所在。server の `Handler` は引き続き
+    `KETO_READ_URL` / `KETO_WRITE_URL` から生成し AppModule へ委譲するが、
+    クライアント実装本体は driver crate 内に閉じる
+  - `CreateAccount` / `DeactivateAccount` での Keto relation create/delete は DB
+    transaction 内では実行せず、commit 成功後に driver 層の post-commit スロットで
+    冪等実行する。実装では `PostgresTransaction` の commit 完了後に `KetoClient` を
+    呼び出す構成を採用
+  - 冪等化方針を固定: Keto relation create は HTTP 409 Conflict を「既存 relation
+    あり」の成功扱い、delete は HTTP 404 Not Found を「既に存在しない」の成功扱い。
+    これにより at-least-once 的な再試行が安全になる
+  - 失敗時の再試行は現状「失敗を通知する」に留まり、厳密な saga / process manager
+    は導入しない (決定5 本文通り)。ログと監視で運用カバーする
 
 ### 6. projector の配置
 

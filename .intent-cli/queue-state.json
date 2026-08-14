@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-14T14:40:16.3667551+00:00",
+  "updated_at": "2026-08-14T14:48:25.8507486+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -125,7 +125,7 @@
     {
       "execution_unit": "account-write-usecases",
       "title": "account-write-usecases: CreateAccount / UpdateAccountDetail / moderation \u3092 UoW \u306B\u79FB\u884C\u3001SigningKey executor \u53D7\u3051\u53D6\u308A\u5316\u3001Keto post-commit provisioning (ADR 0006 Stage 4)",
-      "state": "pr-created",
+      "state": "completed",
       "dependencies": [
         "architecture-foundation",
         "account-aggregate-repository",
