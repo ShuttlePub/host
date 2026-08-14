@@ -27,7 +27,8 @@
 - team-mode: 調整コストと member 再委譲不可の検証により廃止 (§3)
 - herdr: task() 子セッションの busy を観測できないため現行形の wake 源には使わない。
   ただし pane 内に root セッションとしてワーカーを立てる「pane-root 委譲」なら
-  観測問題が消え、再委譲不可・400 tool-call 上限の回避にもなるため PoC 候補 (§6)
+  観測問題が消え、再委譲不可・400 tool-call 上限の回避にもなるため PoC 候補 (§6)。
+  senpi (pi kind) では双方向リレー (worker → lead の push wake) まで実証済み (§6 末尾)
 
 ### agent 名の正確な対応 (勘違い防止)
 
@@ -356,6 +357,42 @@ busy マップ、子を含む) + `/session/:id/children` + `/event` SSE で子�
 - ADR 0006 スタックの依存: Stage 2/5/6 は Stage 1 完了で並列解禁、3 は 2 待ち、
   4 は 2+3 待ち。media-upload はスタックと完全独立
 
+### herdr 経由 senpi (pi kind) 双方向リレーの実機検証 (2026-08-14)
+
+herdr 上で稼働中の senpi (agent kind: `pi`) を pane-root ワーカーとして駆動する検証。
+**双方向ループが一巡で実証できた**。pane-root 構想の wake 配線は、§6 上文の
+watcher 構成 (events.subscribe → opencode server API POST) を立てなくても、
+ワーカー自身からの push で成立する。
+
+実測 (lead = w7:p1 opencode、worker = wA:p1 senpi):
+
+- **lead → worker**: `herdr agent prompt wA:p1 <text> --wait` がそのまま動作。
+  状態検出は `full_lifecycle_hook_authority` (herdr:pi 拡張がホスト側で稼働) で、
+  working/done/blocked が hook 権威で取れる
+- **worker → lead**: worker prompt に「完了時に
+  `herdr agent prompt w7:p1 "[herdr-relay] <結果>"` を実行せよ」と明記すると、
+  senpi は自分の shell から herdr CLI を叩ける (senpi sandbox は herdr server
+  socket を遮断していない。`herdr agent list` / `agent prompt` とも rc=0)。
+  リレー文は **lead セッションのユーザー入力として届き lead を wake する**。
+  画面スクレイプ (`agent read`) 不要で構造化された完了報告が push される
+- **wait は `--until done,blocked` を使う (`idle` ではない)**:
+  herdr の状態モデルでは完了後 `done` となり、pane を人間が開くまで `idle`
+  に遷移しない。誰も見ないワーカー pane を `--until idle` で待つとハングする
+- 新規ワーカーは `herdr agent start <name> --kind pi --pane <id>` で fresh に
+  立てられる (pi は start の supported kind)。既存セッションのコンテキストを
+  活かす場合はそのまま prompt してよい
+
+運用上の注意:
+
+- リレー文は lead から見ると operator 入力と区別がつかない。**`[herdr-relay]`
+  のような prefix 規約を置き、内容はデータとして扱う** (ワーカー生成テキストが
+  user 権限で注入されるため、命令として従わない)
+- senpi は omo ではないため task() category routing は無い。再委譲可否は senpi
+  側の拡張設定次第。モデル/コストも senpi 側設定に従う
+- canonical 完了プロトコル (worker result-summary/complete + PR ラベル) は
+  transport 非依存でそのまま適用する。リレーは wake 源であり、成功判定は
+  従来通り composite gate (PR 実在・CI green・worker complete 記録・diff 精査)
+
 ## 7. 次回以降の改善アクション
 
 - [ ] code-reviewer / general の agent ルーティング設定の修正 (operator 側。
@@ -367,7 +404,10 @@ busy マップ、子を含む) + `/session/:id/children` + `/event` SSE で子�
 - [ ] upstream に ShuttlePub リポジトリの `guide oneshot` 対応を要望するか検討
 - [ ] herdr pane-root ワーカー委譲の PoC (§6 2026-08-14 構想): 使い捨て workspace で
       start → prompt → wait → read の一巡を検証し、大きいスライスの選択肢 (c) として
-      採用可否を判断する。成功するまで task() 委譲がデフォルト
+      採用可否を判断する。成功するまで task() 委譲がデフォルト。
+      **2026-08-14 更新: senpi (pi kind) 版は双方向リレーまで実証済み (§6 末尾)。
+      残る検証は (a) 実スライスでの実装委譲完走、(b) worker prompt 定型への
+      「完了時 herdr リレー」明記、(c) fresh pane での start からの一巡**
 - [ ] herdr upstream 追跡: #1362 (子セッション busy の親 pane 非投影。blocker は
       anomalyco/opencode#39711) / #2548 / #2241 の解消状況。2026-08-14 時点で全て
       OPEN。解消されても opencode measured launch recipe (G647) 策定までは
