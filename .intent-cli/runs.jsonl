@@ -24,3 +24,5 @@
 {"ts":"2026-08-14T13:51:36.5055033+00:00","execution_unit":"account-write-usecases","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#30","reason":"https://github.com/ShuttlePub/Emumet/issues/30"}
 {"ts":"2026-08-14T14:48:25.8634615+00:00","execution_unit":"account-write-usecases","event":"pr-merged","by":"intent-cli automation closeout-drift-check","repo":"ShuttlePub/Emumet","pr":31}
 {"ts":"2026-08-14T14:48:25.8634615+00:00","execution_unit":"account-write-usecases","event":"closeout-recorded","by":"intent-cli automation closeout-drift-check","repo":"ShuttlePub/Emumet","pr":31}
+{"ts":"2026-08-14T15:14:23.2105694+00:00","execution_unit":"crud-ap-transactions","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/crud-ap-transactions/"}
+{"ts":"2026-08-14T15:14:31.9501893+00:00","execution_unit":"crud-ap-transactions","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#32","reason":"https://github.com/ShuttlePub/Emumet/issues/32"}

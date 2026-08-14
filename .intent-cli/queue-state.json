@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-14T14:48:25.8507486+00:00",
+  "updated_at": "2026-08-14T15:14:31.9501893+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -144,6 +144,30 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/30"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/31",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "crud-ap-transactions",
+      "title": "crud-ap-transactions: Block / Inbox Follow / Inbox Block \u3092 tx \u002B \u914D\u9001 outbox \u5316\u3001Mute / Accept / Undo \u7CFB\u3092\u51AA\u7B49 repo \u64CD\u4F5C\u5316 (ADR 0006 Stage 5)",
+      "state": "queued",
+      "dependencies": [
+        "architecture-foundation"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/crud-ap-transactions/implementation.md",
+        "review_context": ".intent-cli/issues/crud-ap-transactions/review-context.md",
+        "yaml": ".intent-cli/issues/crud-ap-transactions/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 32,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/32"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
