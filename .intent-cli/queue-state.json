@@ -125,7 +125,7 @@
     {
       "execution_unit": "account-write-usecases",
       "title": "account-write-usecases: CreateAccount / UpdateAccountDetail / moderation \u3092 UoW \u306B\u79FB\u884C\u3001SigningKey executor \u53D7\u3051\u53D6\u308A\u5316\u3001Keto post-commit provisioning (ADR 0006 Stage 4)",
-      "state": "queued",
+      "state": "pr-created",
       "dependencies": [
         "architecture-foundation",
         "account-aggregate-repository",
