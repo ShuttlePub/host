@@ -30,6 +30,9 @@
   有効化できる
 - **長文はファイル経由**: タスク詳細・契約はファイルに書き、prompt にはパスを渡す
   (長文を CLI 引数に乗せない)
+  - **ファイルの置き場所に注意**: senpi ワーカーから `/tmp/opencode` は読めなかった
+    (2026-08-14 実測。配送失敗時もワーカーは canonical 手順で自律継続した)。
+    契約ファイルは host repo 内など lead/worker 双方が確実に読める場所に置く
 - **完了時リレーを必須手順として明記**:
   `herdr agent prompt <lead-pane> "[herdr-relay] <結果要約>"`
   (worker の最終手順。これが lead の push wake になる)
@@ -79,12 +82,20 @@
   確認)、senpi 側 shell からの `herdr agent list` / `agent prompt w7:p1` とも rc=0
   (senpi sandbox は herdr server socket を遮断していない)。リレー文が lead
   セッションにユーザー入力として着信することを確認
+- **2026-08-14 (実スライス完走)**: Emumet issue #28 (projection-outbox-projector)
+  の issue-to-pr を既存 senpi pane (wB:p1) に委譲し完走。worker 側で
+  claim → 実装 (3 commits) → result-summary → complete まで実行され、issue ラベルが
+  `intent-target` + `intent-pr-created` に正しく遷移。完了リレーも着信。
+  CI が rustfmt 差分でのみ落ちたため lead が fmt commit を追加 push して全緑化
+  (lint-and-test 全ジョブ + e2e)。composite gate (canonical 記録 / PR+CI /
+  diff 精査) を lead 側で全通し
 
 ## 未検証 / 開項目
 
-- [ ] 実スライスでの実装委譲の完走 (大きいスライスの選択肢 c としての採用可否判断)
+- [x] 実スライスでの実装委譲の完走 (大きいスライスの選択肢 c としての採用可否判断)
+      — 2026-08-14 Emumet#28 で完走 (実測ログ参照)
 - [ ] fresh pane での start → prompt → wait → relay の一巡
-- [ ] senpi 側からの intent-cli worker コマンド (claim / result-summary / complete)
-      の実行確認 (バイナリパス・権限)
+- [x] senpi 側からの intent-cli worker コマンド (claim / result-summary / complete)
+      の実行確認 (バイナリパス・権限) — 2026-08-14 Emumet#28 で確認
 - [ ] worker からの再委譲可否 (senpi 側の拡張設定次第)
 - [ ] `/goal` + `ulw` 規約の効果測定 (goal が worker の逸脱防止に機能するか)
