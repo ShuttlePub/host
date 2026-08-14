@@ -1,0 +1,69 @@
+implementation_issue_packet:
+  issue_title: "projection-outbox-projector: account_events log tailing + application::projection AccountProjector 新設 + 直接 Signal emit 停止 (ADR 0006 Stage 3)"
+  issue_kind: feature
+  source_execution_unit: projection-outbox-projector
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: kernel/src/repository, application/src/projection, driver/src/database/postgres, server/src/applier, server/src/handler.rs, adapter/src/processor/account/command.rs, migrations/
+  target_part: "account_events log tailing 基盤 (checkpoint + seq index + 窓再読) + application::projection AccountProjector 新設 + AccountProjectionWriter port (version-gated upsert) + account 直接 Signal emit 停止と AccountApplier 廃止"
+  dependencies:
+    - architecture-foundation
+    - account-aggregate-repository
+  technical_baseline:
+    - "Signal<ID> trait は kernel/src/signal.rs。実装は server の 4 applier で emit の実体は rikka-mq Redis キューへの push。ペイロードは集約 ID のみ、イベント本体は消費側が event store から再読込する"
+    - "emit は adapter/src/processor/account/command.rs に 7 箇所 (create の回復用 2 + 成功後 1、update、deactivate、suspend、unsuspend、ban)"
+    - "AccountApplier (server/src/applier/account_applier.rs) が Redis キュー account_applier を消費し、既存投影取得 → 差分イベント再読 → Account::apply → create / link_auth_account / Keto Owner / deactivate cascade / ban / suspend / update を実行する"
+    - "account read model は二重経路: コマンドパス同期書込み (command.rs create、account_detail/update.rs update) + Signal → applier 非同期再適用。accounts UPDATE は WHERE id のみで version ゲートなし (driver/src/database/postgres/account/mod.rs)"
+    - "4 イベントテーブルに seq BIGSERIAL 列はある (Stage 1) が index なし・参照クエリなし・checkpoint テーブルなし"
+    - "application::projection モジュールは未存在 (application/src は permission / service / signing_key / transfer のみ)"
+    - "ワーカーは AppModule::new → ApplierContainer::new → start_workers() の fire-and-forget で shutdown 管理なし"
+    - "ADR 0006 writeback 済み設計入力: BIGSERIAL 払出順 ≠ commit 順 (単調 tail 禁止の根拠)、グローバル tailing (seq 順) と per-stream rehydration (version 順) の順序分離、seq index 未付与"
+    - "Rehydrated<A> / AggregateRepository port は kernel/src/repository/aggregate.rs (Stage 2 確定)。save は Signal emit も通知行 insert もしない"
+    - "DB テストは #[test_with::env(DATABASE_URL)] で compose の Postgres 16 相手に実行する既存規約。rust-toolchain は 1.97.0"
+  intent_references:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    - intents/emumet/packets/backlog.md
+  acceptance_criteria:
+    - "純粋 move commit (AccountApplier 調停ロジック → application::projection::AccountProjector) が挙動変更 commit から分離され、move commit 単体でテストが緑 (挙動非変更)"
+    - "projection_checkpoints テーブル (projector_name PK + last_seq) と account_events(seq) index の migration がある"
+    - "kernel に AccountProjectionWriter port (version-gated upsert) と checkpoint 読み書き・seq 窓読み出しの port 群が定義され、driver に Postgres 実装がある"
+    - "tailing は checkpoint + 重複窓の再読 (seq > checkpoint - W を ORDER BY seq LIMIT N) で、素朴な単調 tail ではない。tail 読み出し → 投影書込み → checkpoint 更新が同一 transaction"
+    - "server に tailing worker があり、poll interval が設定可能で graceful shutdown (CancellationToken 等) がある"
+    - "冪等性テスト: 同一イベント再適用で read model 不変、古い version の適用は no-op"
+    - "コミット順序逆転テスト: 2 接続で seq 払出順と commit 順を逆転させ、両イベントが最終的に投影される (単調 tail では落ちる)"
+    - "per-aggregate 順序テスト: 同一集約イベントが seq 順 ≠ version 順で到着しても version 順 fold + gate で収束"
+    - "account 経路に直接 Signal emit が残っていない (adapter/src/processor/account/ 内の .emit( が 0 件)、AccountApplier と account_applier キューが削除済み。profile / metadata / auth_account の Redis 経路は維持"
+    - "コマンドパスの同期 read model 書込み (create / account_detail update) は維持"
+    - "cargo test (DATABASE_URL あり) / clippy が緑、e2e (compose) が緑"
+
+intent_placement:
+  primary_intent: intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+  supporting_intents: []
+  new_intent_needed: false
+  placement_rationale: "ADR 0006 Stage 3 の実施ユニットであり、ADR が source of truth。intent-tree/00-map.md は pending のため新規ノードは切らない"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: true
+    target_paths:
+      - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    decision_title: "tailing プロトコル確定値 (窓パラメータ・checkpoint schema・seq index) を決定4 に、projector 確定配置 (module 構成・port 命名) を決定3/6/9 に追記"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "Emumet AGENTS.md Architecture 節の更新は移行完了後 (ADR 0006 Links 参照)"
+closeout_learning:
+  expected: "tailing プロトコルの確定値 (窓パラメータ W・checkpoint schema・seq index) と AccountProjectionWriter / projector の確定命名"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
