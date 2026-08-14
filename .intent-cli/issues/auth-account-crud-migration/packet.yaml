@@ -1,0 +1,69 @@
+implementation_issue_packet:
+  issue_title: "auth-account-crud-migration: AuthAccount を ES→CRUD 移行、find-or-create 原子化、同期 projection 例外除去 (ADR 0006 Stage 6)"
+  issue_kind: feature
+  source_execution_unit: auth-account-crud-migration
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/entity/auth_account.rs, kernel/src/event_store/auth_account.rs, kernel/src/read_model/auth_account.rs, kernel/src/repository/, kernel/src/lib.rs, kernel/src/test_utils/event.rs, adapter/src/processor/auth_account.rs, adapter/src/processor/, application/src/service/auth_account.rs, application/src/service.rs, driver/src/database/postgres/auth_account.rs, driver/src/database/postgres/auth_account_event_store.rs, server/src/auth.rs, server/src/applier.rs, server/src/applier/auth_account_applier.rs, server/src/handler.rs, server/src/route/test_mode.rs, server/tests/support/db.rs, migrations/"
+  target_part: "AuthAccount の ES→CRUD 移行 (find-or-create ON CONFLICT 原子化・同期 projection 例外と Redis リペア経路の除去・auth_account_events データ移行)"
+  dependencies:
+    - architecture-foundation
+  technical_baseline:
+    - "AuthAccount は kernel/src/entity/auth_account.rs の ES 集約。イベントは `Created { host: AuthHostId, client_id: AuthAccountClientId }` の1種類のみ (event_name = `auth_account_created`) で履歴価値を持たない。entity は `version: EventVersion<AuthAccount>` を内包"
+    - "port は旧来の2系統: `AuthAccountEventStore` (kernel/src/event_store/auth_account.rs: persist / persist_and_transform / find_by_id) と `AuthAccountReadModel` (kernel/src/read_model/auth_account.rs: find_by_id / find_by_client_id / create)。`AggregateRepository<AuthAccount>` (kernel/src/repository/aggregate.rs) は存在せず、AuthAccount は旧 EventStore port を直接使う"
+    - "コマンド経路は adapter/src/processor/auth_account.rs の `AuthAccountCommandProcessor::create`: ①event `persist_and_transform` (id 単位の楽観ガード) ②`AuthAccount::apply` ③read model 同期 `create` ④Signal emit (成功/失敗両パス)。この③が ADR のいう同期 projection 例外の本体。`AuthAccountQueryProcessor` (同ファイル 109-168行) は ReadModel への委譲のみ"
+    - "find-or-create 入口は server/src/auth.rs:415-448 の `resolve_auth_account_id`。`find_by_client_id` で検索し、miss なら AuthHost を find-or-create (issuer URL 単位) してから `AuthAccountCommandProcessor::create` を呼ぶ。全認証ルート (route/me.rs, account/client.rs, account/admin.rs, account/follow_relations.rs, account/block_mute.rs, account/follow.rs, account/unfollow.rs, signing.rs) が依存。client_id = OIDC subject (Kratos identity UUID)"
+    - "競合時の現行挙動: イベント INSERT は id 単位ガード (fresh snowflake なので実質無防備) のため並行 create が両方成功しうるが、auth_accounts への同期 INSERT が UNIQUE(host_id, client_id) に衝突して片方が Err → Signal emit → `UpdateAuthAccount` リペアという迂回。ADR 決定8 の `ON CONFLICT (host_id, client_id) DO NOTHING` 1文化はこの3手順 (検索→イベント書込→同期投影) を置き換える"
+    - "スキーマ: auth_accounts は `UNIQUE(host_id, client_id)` あり (migrations/20230707210300_init.sql:58-64、host_id FK→auth_hosts, version BIGINT NOT NULL)。auth_account_events は PK(id, version) + `seq BIGSERIAL` (20260813000001_add_event_sequence.sql)。auth_account 用の tailing projector は存在しない (seq index なし、projection_checkpoints 登録なし)"
+    - "Redis リペア経路: server/src/applier/auth_account_applier.rs が channel `auth_account_applier` (RedisMessageQueue) を消費し `UpdateAuthAccount` (application/src/service/auth_account.rs) を呼ぶ。冪等リペア (投影があれば noop、なければイベント fold → read model create) のみ。配線は server/src/applier.rs の `impl_signal!` と server/src/handler.rs の `DependOnAuthAccountSignal`"
+    - "`find_by_client_id` (driver/src/database/postgres/auth_account.rs:55-74) は host 絞り込みなしで client_id のみで検索する。UNIQUE(host_id, client_id) 下で理論上の曖昧さがあり、(host_id, client_id) の組で引く形への修正は本 Stage の範囲"
+    - "下流消費者は AuthAccountId のみに依存: CreateAccountUseCase の `link_auth_account` (auth_emumet_accounts INSERT) + Keto Owner relation、GetSessionContextUseCase の Keto role 参照、各種 use case の `check_permission(subject=AuthAccountId)`、account read model の `find_by_auth_id` (auth_emumet_accounts JOIN)、AccountProjector の Account::Created 処理。AuthAccount の永続化方式変更の影響は受けない"
+    - "driver 実装: auth_account_event_store.rs (persist_and_transform は version に snowflake `generate_id()` を使用、persist_internal は `WHERE NOT EXISTS (id)` / `MAX(version)=prev` ガード付き INSERT)、auth_account.rs (read model: find_by_id / find_by_client_id / create の素直な SELECT/INSERT)"
+    - "テスト基盤: kernel/src/test_utils/event.rs の `auth_account_create_command`、driver auth_account_event_store.rs / auth_account.rs の integration テスト、application/src/projection/tests.rs と characterization_tests.rs の `seed_auth_account` (auth_accounts への直接 INSERT)、server/src/route/me.rs のルートテスト、server/tests/support/db.rs と server/src/route/test_mode.rs の TRUNCATE 対象に auth_account_events を含む"
+  intent_references:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    - intents/emumet/packets/backlog.md
+  acceptance_criteria:
+    - "kernel に CRUD repository port `AuthAccountRepository` を新設する (ADR 決定3 の CRUD 系統。`ExpectedVersion` / `Rehydrated` の擬装はしない)。最低限 `find_or_create(host_id, client_id)` と `find_by_id` を持ち、`AuthAccountReadModel` port はこの repository に吸収または置換する"
+    - "find-or-create は `INSERT ... ON CONFLICT (host_id, client_id) DO NOTHING` ベースの単一原子的操作とする (既存 UNIQUE 制約を利用)。並行リクエストが同一 (host_id, client_id) で同時に実行されても同一 id が返り、auth_accounts に1行のみ存在することをテストで示す"
+    - "`resolve_auth_account_id` は AuthHost の find-or-create (既存のまま) の後、(host_id, client_id) の組で AuthAccount を find_or_create する形に置き換わり、EventStore / CommandProcessor / QueryProcessor を経由しない"
+    - "同期 projection 例外を除去する: `AuthAccountCommandProcessor` / `AuthAccountQueryProcessor` (adapter/src/processor/auth_account.rs)、`UpdateAuthAccount` (application/src/service/auth_account.rs)、`AuthAccountApplier` と `auth_account_applier` Redis queue (server/src/applier.rs, server/src/applier/auth_account_applier.rs)、`DependOnAuthAccountSignal` 配線 (server/src/handler.rs) を削除する"
+    - "ES 基盤を削除する: `AuthAccountEvent` / `EventApplier for AuthAccount` / `AuthAccountEventStore` port + Postgres 実装 (driver/src/database/postgres/auth_account_event_store.rs) + テスト helper (kernel/src/test_utils/event.rs の auth_account_create_command 等)。`AuthAccount` entity は `EventVersion` を持たない plain な構造体とする"
+    - "データ移行マイグレーションを追加する: 既存 `auth_account_events` の内容を `auth_accounts` に fold して欠損行を補完した上で `auth_account_events` テーブルを drop する。`auth_accounts.version` 列の扱い (drop or 残置+default) は実装で確定し、closeout で ADR に writeback する"
+    - "server/src/route/test_mode.rs と server/tests/support/db.rs の TRUNCATE 対象から auth_account_events を除外する"
+    - "`cargo test` (DATABASE_URL あり) / clippy / fmt green。e2e (compose) green。既存の認証フロー (Kratos login → Hydra OAuth2 → JWT → resolve_auth_account_id → account 作成・取得) が維持される"
+  intent_placement:
+    primary_intent: intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    supporting_intents: []
+    new_intent_needed: false
+    placement_rationale: "ADR 0006 Stage 6 の実施ユニット。決定8 (AuthAccount ES→CRUD) の直接実装。確定値 (CRUD port signature、find-or-create SQL 形状、version 列の扱い、データ移行手順) を決定8/9/10 に writeback"
+  knowledge_updates:
+    intent_tree:
+      required: false
+      target_paths: []
+      summary: ""
+    adr:
+      required: true
+      target_paths:
+        - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+      decision_title: "Stage 6 確定値 (AuthAccount CRUD port signature・find-or-create 原子化・同期 projection 例外除去・データ移行手順) を決定8/9/10 に追記"
+    diagram:
+      required: false
+      target_paths: []
+      diagram_type: none
+    docs:
+      required: false
+      target_paths: []
+      summary: ""
+  closeout_learning:
+    expected: "Stage 6 の確定値: AuthAccountRepository port signature、find_or_create の SQL 形状 (ON CONFLICT DO NOTHING + RETURNING の可否とフォールバック SELECT)、auth_accounts.version 列の扱い、auth_account_events バックフィル・drop 手順、Redis リペア経路除去の影響範囲"
+    write_back_required: true
+    write_back_targets:
+      - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+  guide_reachability:
+    no_role_facing_surface: true
+    routes: []
+
+implementation_issue:
+  issue_title: "auth-account-crud-migration: AuthAccount を ES→CRUD 移行、find-or-create 原子化、同期 projection 例外除去 (ADR 0006 Stage 6)"
+  target_repo: ShuttlePub/Emumet

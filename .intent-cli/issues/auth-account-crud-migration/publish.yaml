@@ -1,0 +1,7 @@
+execution_unit: auth-account-crud-migration
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/auth-account-crud-migration"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/auth-account-crud-migration/github-body.md"
+created_issue_number: 34
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/34"
+published_label_name: null
