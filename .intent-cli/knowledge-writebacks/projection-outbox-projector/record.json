@@ -1,0 +1,10 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "projection-outbox-projector",
+  "host_commit": "99c2ce6",
+  "recorded_at": "2026-08-14T10:49:51.6442713+00:00",
+  "targets": [
+    "intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md"
+  ],
+  "note": "ADR 0006 decision 3/4/6/9: tailing protocol values (W=100, LIMIT=1000, checkpoint schema, seq index) \u002B projector placement"
+}
