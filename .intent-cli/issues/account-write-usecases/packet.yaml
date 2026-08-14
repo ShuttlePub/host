@@ -1,0 +1,72 @@
+implementation_issue_packet:
+  issue_title: "account-write-usecases: CreateAccount / UpdateAccountDetail / moderation を UoW に移行、SigningKey executor 受け取り化、Keto post-commit provisioning (ADR 0006 Stage 4)"
+  issue_kind: feature
+  source_execution_unit: account-write-usecases
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "application/src/service/account/create.rs, application/src/service/account/update.rs, application/src/service/account/moderation.rs, application/src/service/account/deactivate.rs, application/src/service/account_detail/update.rs, application/src/service/account/rehydrate.rs, application/src/signing_key.rs, application/src/service/block.rs, adapter/src/processor/account/command.rs, kernel/src/database.rs, kernel/src/repository/aggregate.rs, driver/src/database/postgres.rs, driver/src/database/postgres/account_repository.rs, driver/src/database/postgres/signing_key.rs, driver/src/keto.rs, server/src/handler.rs, server/src/route/account/admin.rs, server/src/route/account/client.rs"
+  target_part: "CreateAccount / UpdateAccountDetail / moderation (suspend/unsuspend/ban/deactivate) の UoW 化、SigningKey repository/create への executor 受け渡し、Keto provisioning を DB commit 後の冪等処理へ再配置、AggregateRepository<Account> をユースケース層で本採用"
+  dependencies:
+    - architecture-foundation
+    - account-aggregate-repository
+    - projection-outbox-projector
+  technical_baseline:
+    - "CreateAccountUseCase (`application/src/service/account/create.rs`) は auto-commit 接続上で4系統の独立書き込みを実行: account_command_processor().create、profile_command_processor().create、permission_writer().create_relation (Keto HTTP)、CreateSigningKeyUseCase。現状アトミックでない"
+    - "UpdateAccountDetailUseCase (`application/src/service/account_detail/update.rs`) のみ `get_transaction()` + `transaction.commit()` を使い、低レベル Transaction API を直接使用。他のユースケースは `connection()` のみ"
+    - "moderation ユースケース (`application/src/service/account/moderation.rs`) は suspend/unsuspend/ban の3つ。deactivate (`application/src/service/account/deactivate.rs`) はコマンド + Keto relation 削除 (Owner/Editor/Signer) ×3。いずれも auto-commit"
+    - "`unban` / `reactivate` は集約・イベント・ユースケース・エンドポイントのいずれにも存在しない。`AccountEvent` は Created/Updated/Deactivated/Suspended/Unsuspended/Banned のみ (`kernel/src/entity/account.rs`)"
+    - "`TransactionManager` port (`kernel/src/database.rs`) と Postgres 実装 (`driver/src/database/postgres.rs` 181行目) は Stage 1 で完成。ユースケース層での呼び出しはゼロ — テスト (`driver/src/database/postgres/transaction_manager_tests.rs`) と projection worker (`application/src/projection/account_projector.rs`) のみ"
+    - "`AggregateRepository<Account>` / `DependOnAccountRepository` (`kernel/src/repository/aggregate.rs`) と Postgres 実装 (`driver/src/database/postgres/account_repository.rs`) は Stage 2 で完成。だが `application/src` 内で `account_repository()` を使うユースケースはゼロ。全て `application/src/service/account/rehydrate.rs` の `rehydrate_account()` ヘルパー (event store 直読み) を経由"
+    - "`AccountCommandProcessor` (`adapter/src/processor/account/command.rs`) も `account_event_store().persist_and_transform()` を直呼びしており AggregateRepository を経由しない。adapter クレート解体前の中間状態"
+    - "SigningKeyRepository port (`kernel/src/entity/signing_key.rs`) / Postgres 実装 (`driver/src/database/postgres/signing_key.rs` 単一ファイル) は存在。CreateSigningKeyUseCase (`application/src/signing_key.rs`) は自前で `connection()` を取得して `SigningKeyRepository::create` を呼ぶ — CreateAccount 内で独立コネクションになる"
+    - "KetoClient (`driver/src/keto.rs`) はすでに driver crate に所在し PermissionChecker/PermissionWriter を実装。生成は `server/src/handler.rs` の `init_with_urls` (KETO_READ_URL / KETO_WRITE_URL) で行われ、AppModule/Handler が委譲。DB transaction 内からは呼ばないが、現状 CreateAccount 内では transaction 概念がない"
+    - "`Executor` / `Executor::commit` no-op は Stage 1 (PR #25, commit 522f034/8b72624) で撤去済み。`kernel/src` に `Executor` の痕跡はない"
+    - "Block/Unblock (`application/src/service/block.rs`) はイベントソースではなく `BlockRepository` テーブル駆動。ActivityPub 配送・outbox 化は Stage 5 のスコープ"
+  intent_references:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    - intents/emumet/packets/backlog.md
+  acceptance_criteria:
+    - "純粋 rename commit として `Executor` 残存名の最終掃討が分離されている（すでに kernel 内に痕跡なしなら該当なし）"
+    - "CreateAccountUseCase が `TransactionManager::transaction()` 内で完結し、4系統の書き込み (account event+projection、profile event+projection、Keto relation、signing key) が同一 DB transaction になる。commit 前に Keto へ HTTP しない"
+    - "UpdateAccountDetailUseCase が `TransactionManager::transaction()` ベースに移行し、低レベル `get_transaction()`/`transaction.commit()` 直使いを解消"
+    - "moderation ユースケース (suspend/unsuspend/ban/deactivate) が `TransactionManager::transaction()` ベースに移行。deactivate の Keto relation 削除は DB commit 後の冪等 post-commit provisioning として分離するか、DB tx 内では実行しない"
+    - "ユースケース層で `rehydrate_account()` ヘルパーを使わず、`DependOnAccountRepository` + `account_repository().load(id)` / `save(CommandEnvelope)` を使う。旧 `rehydrate_account` ヘルパーは削除またはテスト専用に縮小"
+    - "`AccountCommandProcessor` が `persist_and_transform` を直呼びするのを止め、`AggregateRepository<Account>::save(CommandEnvelope)` 経由に変更（processor は解体途中の責務整理として、純粋な調停/イベント構築に留める）"
+    - "CreateSigningKeyUseCase / PostgresSigningKeyRepository::create が `&mut Connection` (executor) を引数に受け取り、CreateAccount から閉包内で共有 executor を渡せるようにする"
+    - "Keto provisioning を DB commit 後に配置する構造が確立: tx 内では Keto write を行わず、成功後に `PostCommitProvisioner`/`ProvisioningQueue` 的な driver 層スロットまたは単純な post-commit コールバックで冪等実行。失敗時は再試行可能な契約をドキュメント化"
+    - "`unban` / `reactivate` の新規実装が含まれる場合は、集約コマンド・イベント・ユースケース・エンドポイント・migration が揃う。含まない場合はパケット/PR 説明に「未実装のまま」と明記し、後続 Stage または別 issue として切り分ける"
+    - "UoW 内で同一集約に連続 `save` する場合、直前の `EventEnvelope.version` を次の `CommandEnvelope.expected_version` に連鎈させる（ADR 0006 決定3 Stage 2→4 設計入力）"
+    - "単一書き込みユースケース (Mute, Accept, Undo Follow, Undo Block) は本 Stage では対象外 — 変更しない。Stage 5 で冪等 repo 操作に置換"
+    - "characterization / 等価テスト: UoW 移行前後で CreateAccount / UpdateAccountDetail / moderation の結果が等価。rollback 時は全テーブルが元に戻る integration テスト"
+    - "cargo test (DATABASE_URL あり) / clippy / fmt が緑、e2e (compose) が緑"
+  intent_placement:
+    primary_intent: intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    supporting_intents: []
+    new_intent_needed: false
+    placement_rationale: "ADR 0006 Stage 4 の実施ユニットであり、ADR が source of truth。Stage 4 の確定値 (UoW 対象リスト・Keto provisioning 配置・SigningKey executor 受け渡し方式) を ADR 決定2/3/5 に writeback"
+  knowledge_updates:
+    intent_tree:
+      required: false
+      target_paths: []
+      summary: ""
+    adr:
+      required: true
+      target_paths:
+        - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+      decision_title: "UoW 対象ユースケースの確定値、SigningKey executor 受け渡し方式、Keto post-commit provisioning の配置を決定2/3/5/10 に追記"
+    diagram:
+      required: false
+      target_paths: []
+      diagram_type: none
+    docs:
+      required: false
+      target_paths: []
+      summary: "Emumet AGENTS.md Architecture 節の更新は移行完了後 (ADR 0006 Links 参照)"
+  closeout_learning:
+    expected: "Stage 4 の確定値: UoW 化対象ユースケース一覧、TransactionManager 注入形状 (DependOnTransactionManager の有無)、SigningKey executor 受け渡し方式、Keto post-commit provisioning の実装パターン、AggregateRepository<Account> のユースケース層採用可否"
+    write_back_required: true
+    write_back_targets:
+      - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+  guide_reachability:
+    no_role_facing_surface: true
+    routes: []

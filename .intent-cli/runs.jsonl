@@ -20,3 +20,5 @@
 {"ts":"2026-08-14T08:43:53.362454+00:00","execution_unit":"projection-outbox-projector","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#28","reason":"https://github.com/ShuttlePub/Emumet/issues/28"}
 {"ts":"2026-08-14T10:48:38.714781+00:00","execution_unit":"projection-outbox-projector","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":29}
 {"ts":"2026-08-14T10:48:38.714781+00:00","execution_unit":"projection-outbox-projector","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":29}
+{"ts":"2026-08-14T13:51:13.149299+00:00","execution_unit":"account-write-usecases","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/account-write-usecases/"}
+{"ts":"2026-08-14T13:51:36.5055033+00:00","execution_unit":"account-write-usecases","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#30","reason":"https://github.com/ShuttlePub/Emumet/issues/30"}

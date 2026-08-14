@@ -10,7 +10,7 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 | 1 | `architecture-foundation` | ADR 0006 Stage 1。characterization tests、no-op `Executor::commit` 廃止、`TransactionManager` port + signature spike (AsyncFnOnce vs Box::pin)、event テーブル seq 列追加 | — |
 | 2 | `account-aggregate-repository` | ADR 0006 Stage 2。`AccountRepository` port (`Rehydrated<Account>`) + driver 実装、旧 CommandProcessor との同値テストで並走 | 1 |
 | 3 | `projection-outbox-projector` | ADR 0006 Stage 3。event + 通知の同一 tx 化 (log tailing)、Account projector を application::projection に新設、直接 Signal emit 停止、applier 冪等化 (version-gated upsert) | 1, 2 |
-| 4 | `account-write-usecases` | ADR 0006 Stage 4。CreateAccount / UpdateAccountDetail / moderation を UoW に移行、SigningKey の executor 受け取り化、Keto post-commit provisioning (KetoClient は driver へ移動) | 2, 3 |
+| 4 | `account-write-usecases` | ADR 0006 Stage 4。CreateAccount / UpdateAccountDetail / moderation を UoW に移行、SigningKey の executor 受け取り化、Keto post-commit provisioning (KetoClient は driver へ移動) | 2, 3 | — issue [#30](https://github.com/ShuttlePub/Emumet/issues/30) / PR 未作成 |
 | 5 | `crud-ap-transactions` | ADR 0006 Stage 5。Block / Inbox Follow / Inbox Block を tx + 配送 outbox 化、Mute / Accept / Undo 系は冪等 repo 操作 (`insert_if_absent` 等) に置換 | 1 |
 | 6 | `auth-account-crud-migration` | ADR 0006 Stage 6。AuthAccount を ES→CRUD 移行、find-or-create を `ON CONFLICT (host_id, client_id)` 原子化、同期 projection 例外除去、auth_account_events データ移行 | 1 |
 | 7 | `es-aggregates-migration` | ADR 0006 Stage 7。Profile / Metadata を ES repository/projector パターンに移行、`AccountProjection` の横展開 (新規 read query はドメイン Entity を返さない) | 2-4 |
@@ -35,6 +35,10 @@ packet 起こしは `architecture-foundation` から。
   ADR 0006 決定3/9 に writeback 済み
 - `architecture-foundation` — issue #24 / PR #25 マージ済み(2026-08-13)。ADR 0006 Stage 1。
   TransactionManager port (Box::pin closure 版)・no-op commit 廃止・event seq 列追加
+- `projection-outbox-projector` — issue #28 / PR #29 マージ済み(2026-08-14)。ADR 0006 Stage 3。
+  account_events log tailing (checkpoint + 重複窓再読) + `application::projection::AccountProjector` 新設 +
+  直接 Signal emit 停止 + `AccountApplier` / `account_applier` キュー廃止。確定 tailing プロトコルと
+  projector 配置は ADR 0006 決定3/4/6/9 に writeback 済み
 - `block-mute-federation` — issue #22 / PR #23 マージ済み(2026-08-13)。
   block-mute feature の acceptance 全項目達成。レビュー観測のフォローアップ候補
   (重複 Block 時の follow 再解除・inbox エラーパス単体テスト拡充・S10 の Undo 受信検証) は

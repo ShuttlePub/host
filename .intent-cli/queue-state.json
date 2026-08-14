@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-14T10:48:38.7191297+00:00",
+  "updated_at": "2026-08-14T13:51:36.5055033+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -117,6 +117,32 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/28"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/29",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "account-write-usecases",
+      "title": "account-write-usecases: CreateAccount / UpdateAccountDetail / moderation \u3092 UoW \u306B\u79FB\u884C\u3001SigningKey executor \u53D7\u3051\u53D6\u308A\u5316\u3001Keto post-commit provisioning (ADR 0006 Stage 4)",
+      "state": "queued",
+      "dependencies": [
+        "architecture-foundation",
+        "account-aggregate-repository",
+        "projection-outbox-projector"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/account-write-usecases/implementation.md",
+        "review_context": ".intent-cli/issues/account-write-usecases/review-context.md",
+        "yaml": ".intent-cli/issues/account-write-usecases/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 30,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/30"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
