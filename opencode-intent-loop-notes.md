@@ -359,6 +359,9 @@ busy マップ、子を含む) + `/session/:id/children` + `/event` SSE で子�
 
 ### herdr 経由 senpi (pi kind) 双方向リレーの実機検証 (2026-08-14)
 
+> **跨ハーネス (herdr × senpi) ループの運用知見は `herdr-senpi-loop-notes.md`
+> に分離した (2026-08-14)。以降そちらが正。本節は初回検証の記録として残す。**
+
 herdr 上で稼働中の senpi (agent kind: `pi`) を pane-root ワーカーとして駆動する検証。
 **双方向ループが一巡で実証できた**。pane-root 構想の wake 配線は、§6 上文の
 watcher 構成 (events.subscribe → opencode server API POST) を立てなくても、
