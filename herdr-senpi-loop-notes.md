@@ -89,6 +89,15 @@
   CI が rustfmt 差分でのみ落ちたため lead が fmt commit を追加 push して全緑化
   (lint-and-test 全ジョブ + e2e)。composite gate (canonical 記録 / PR+CI /
   diff 精査) を lead 側で全通し
+- **2026-08-14 (Stage 4 委譲試行)**: Emumet issue #30 (account-write-usecases)
+  を既存 senpi pane (wD:p1) に委譲。`/goal` + `ulw` + ファイル経由契約
+  (`.senpi/account-write-usecases-contract.md`) + 完了時 `herdr agent prompt w7:p1`
+  リレーで prompt 送信。すぐに `Error: 400: role 'developer' is not allowed`
+  (provider error) で blocked。`herdr agent send-keys wD:p1 Enter` では復帰せず、
+  senpi 側の provider/model 設定解消が必要と判断。fallback として OpenCode/Sisyphus
+  自身での実装、または intent-cli worker コマンド経由の手動 issue-to-pr 実施を選択。
+  intent-cli `worker next-action --repo ShuttlePub/Emumet` は issue #30 を
+  `issue-to-pr` / `ready-to-implement` として正しく認識。
 
 ## 未検証 / 開項目
 
