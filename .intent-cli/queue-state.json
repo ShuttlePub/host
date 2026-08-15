@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-15T03:14:12.9216301+00:00",
+  "updated_at": "2026-08-15T03:33:15.1798471+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -194,6 +194,32 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/34"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/35",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "es-aggregates-migration",
+      "title": "es-aggregates-migration: Profile / Metadata \u3092 ES repository \u002B tailing projector \u30D1\u30BF\u30FC\u30F3\u306B\u79FB\u884C (ADR 0006 Stage 7)",
+      "state": "queued",
+      "dependencies": [
+        "account-aggregate-repository",
+        "projection-outbox-projector",
+        "account-write-usecases"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/es-aggregates-migration/implementation.md",
+        "review_context": ".intent-cli/issues/es-aggregates-migration/review-context.md",
+        "yaml": ".intent-cli/issues/es-aggregates-migration/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 37,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/37"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

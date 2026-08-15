@@ -1,0 +1,74 @@
+implementation_issue_packet:
+  issue_title: "es-aggregates-migration: Profile / Metadata を ES repository + tailing projector パターンに移行 (ADR 0006 Stage 7)"
+  issue_kind: feature
+  source_execution_unit: es-aggregates-migration
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/entity/profile.rs, kernel/src/entity/metadata.rs, kernel/src/repository/aggregate.rs, kernel/src/repository/, kernel/src/read_model/profile.rs, kernel/src/read_model/metadata.rs, kernel/src/projection.rs, kernel/src/lib.rs, adapter/src/processor/profile.rs, adapter/src/processor/metadata.rs, application/src/projection/, application/src/service/profile.rs, application/src/service/metadata.rs, application/src/service/account_detail/, application/src/service/activitypub/actor.rs, application/src/transfer/, driver/src/database/postgres/projection.rs, driver/src/database/postgres/profile.rs, driver/src/database/postgres/metadata.rs, server/src/applier.rs, server/src/applier/profile_applier.rs, server/src/applier/metadata_applier.rs, server/src/handler.rs, server/src/projection_worker.rs, server/src/route/test_mode.rs, server/tests/support/db.rs, migrations/"
+  target_part: "Profile / Metadata の書き込みを AggregateRepository 経由に、投影を tailing projector に移行し、Redis applier 経路を除去。read query を DTO 返却に変更"
+  dependencies:
+    - account-aggregate-repository
+    - projection-outbox-projector
+    - account-write-usecases
+  technical_baseline:
+    - "Profile (kernel/src/entity/profile.rs): イベントは Created / Updated の2種。create は ExpectedVersion::Nothing (line 81)、update は prev_version None の LWW (line 99、楽観ロックなし)。Metadata (kernel/src/entity/metadata.rs): Created / Updated / Deleted の3種。create は Nothing、update/delete は At(current_version)。Deleted は fold 後に entity が None になる (line 142)"
+    - "書き込み経路の現状: Profile create は persist_and_transform + 同期 read model create + Signal emit の二重経路 (adapter/src/processor/profile.rs:71-113)、Profile update は persist + Signal のみ (line 115-137)。Metadata は create/update/delete すべて persist + Signal のみ (adapter/src/processor/metadata.rs:70-143)。Account は Stage 4 で AggregateRepository + UoW 化済み (account_detail/update.rs:82-108) で、Profile/Metadata だけ旧経路が残る"
+    - "Redis applier 経路: ProfileApplier / MetadataApplier (server/src/applier/*) が queue `profile_applier` / `metadata_applier` を消費し UpdateProfile / UpdateMetadata (application/src/service/profile.rs:11-75, metadata.rs:10-77) を呼ぶ。read model の version を見て差分イベントを fold し投影。配線は server/src/applier.rs の impl_signal! と handler.rs:158-163,183-188 の DependOnProfileSignal / DependOnMetadataSignal"
+    - "Account の同期 read model 書込み (create / account_detail update) は ADR 決定9 Stage 3 確定で維持されている (adapter/src/processor/account/command.rs:112-115)。Profile/Metadata の同期書込みもこの先例に従い維持する (即時性は同期書込み、保証は projector が担う)"
+    - "読み取り経路: ProfileReadModel / MetadataReadModel (kernel/src/read_model/) の find_by_id / find_by_account_id / find_by_account_ids はドメイン Entity を返す。ProfileDto / MetadataDto は未存在。消費側は account_detail/read.rs:131-198, update.rs:110-210, fields.rs:31-53 (plan_field_updates が &[Metadata] を直接操作), activitypub/actor.rs:39-60 (GetActorUseCase)。WebFinger は Profile を使わない"
+    - "スキーマ: profile_events / metadata_events には seq BIGSERIAL 追加済み (20260813000001) だが seq index は未作成 (idx_account_events_seq のみ)。projection_checkpoints テーブルあり (20260814000001)。profiles / metadatas テーブルは version BIGINT NOT NULL + nanoid UNIQUE を持つ"
+    - "Account projector テンプレート (複製対象): ProjectAccountBatch (application/src/projection/account_projector.rs:39-264) — checkpoint + 重複窓再読 (WINDOW=100, BATCH_LIMIT=1000)、per-aggregate version 順 fold、savepoint 隔離、version-gated upsert (WHERE version < EXCLUDED.version、driver/src/database/postgres/projection.rs:125-193)、checkpoint は GREATEST で単調更新、全処理が同一 transaction。worker は ProjectionWorker (poll 100ms default、server/src/projection_worker.rs)"
+    - "AggregateRepository<A> 適合性: Profile/Metadata は EventApplier 実装済み、EventId::from(ProfileId/MetadataId) あり、CommandEnvelope ベースのため素のまま適合する (kernel/src/repository/aggregate.rs:66-84、DependOnAccountRepository が先例)"
+    - "注意点1: 削除済み Metadata はストリームが None に fold されるため repository.load がエラーになる (Rehydrated::from_events、aggregate.rs:52-55)。削除済みの扱いを明示する必要がある (現行 rehydrate_metadata は NotFound を返す、metadata.rs:102-107)"
+    - "注意点2: e2e / test_mode の TRUNCATE リスト (server/tests/support/db.rs, server/src/route/test_mode.rs) に projection_checkpoints が含まれていない。現状は Account/Profile create の同期書込みが e2e を支えて顕在化していないが、projector 移行後は checkpoint 残留で tailing が止まりうるため、本 Stage で TRUNCATE 対象に追加する"
+    - "テスト基盤: kernel entity 単体テスト、driver event store / read model 結合テスト (ProfileBuilder / MetadataBuilder)、projection tests (Account のみ、Profile/Metadata カスケードは未カバー)、characterization tests (NoopSignal / AllowPermissions で TestModule 構成)、e2e_basic_flow.rs:8-112 が Profile/Metadata を含む主要 e2e"
+    - "Keto: Profile/Metadata 固有の relation はなし (RelationTarget は Account/Instance のみ、kernel/src/permission.rs:147-155)。本 Stage で Keto 変更は不要"
+  intent_references:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    - intents/emumet/packets/backlog.md
+  acceptance_criteria:
+    - "Profile / Metadata の書き込み経路が AggregateRepository<Profile> / AggregateRepository<Metadata> (DependOnProfileRepository / DependOnMetadataRepository) 経由になる。adapter の ProfileCommandProcessor / MetadataCommandProcessor は調停 (command 構築) のみとなり、event store の persist_and_transform 直呼びを解消する (Account の Stage 4 先例どおり)"
+    - "ProfileProjector / MetadataProjector を application::projection に新設し、ProjectAccountBatch と同じ tailing プロトコル (checkpoint + 重複窓再読、per-aggregate version 順 fold、version-gated upsert、savepoint 隔離、同一 tx) で動作する。projector_name は profile_projector / metadata_projector とし、ProjectionWorker から起動する"
+    - "migration で profile_events(seq) / metadata_events(seq) に index を追加する。併せて e2e / test_mode の TRUNCATE リスト (server/tests/support/db.rs, server/src/route/test_mode.rs) に projection_checkpoints を追加する"
+    - "Redis applier 経路を除去する: ProfileApplier / MetadataApplier / 対応する impl_signal! 登録、UpdateProfile / UpdateMetadata サービス、DependOnProfileSignal / DependOnMetadataSignal 配線を削除。Profile/Metadata の直接 Signal emit を停止する"
+    - "Account 先例 (決定9 Stage 3 確定) に従い、コマンドパスの同期 read model 書込み (Profile create 等) は維持する。projector の version-gated upsert と冪等に両立すること"
+    - "削除済み Metadata のセマンティクスを明示する: projector は Deleted イベントで projection 行を削除する。command 側の再水和 (rehydrate_metadata 相当) は削除済みストリームを NotFound として扱う現行挙動を維持する"
+    - "Profile::update の LWW (ExpectedVersion なし) は現行セマンティクスを維持する (変更する場合は PR description で根拠を記録)"
+    - "Profile / Metadata の read query は projection DTO を返し、ドメイン Entity を返さない (決定9 の移行ルール)。ProfileDto / MetadataDto (または相当の投影型) を定義し、account_detail read/update、fields.rs、activitypub/actor.rs の消費側を更新する"
+    - "projection tests に Profile / Metadata のテストを追加する (冪等性、古い version の no-op、checkpoint 前進、Deleted の投影削除)。characterization tests と e2e (e2e_basic_flow の PATCH / fields 置換を含む) が green を維持する"
+    - "cargo test (DATABASE_URL あり) / clippy / fmt green。e2e (compose) green"
+  intent_placement:
+    primary_intent: intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    supporting_intents: []
+    new_intent_needed: false
+    placement_rationale: "ADR 0006 Stage 7 の実施ユニット。決定3 (port 文法) の AggregateRepository 横展開、決定4/6 (tailing projector) の Profile/Metadata 適用、決定9 (domain/projection 分離) の DTO 化。確定値を決定3/6/9 に writeback"
+  knowledge_updates:
+    intent_tree:
+      required: false
+      target_paths: []
+      summary: ""
+    adr:
+      required: true
+      target_paths:
+        - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+      decision_title: "Stage 7 確定値 (Profile/Metadata の AggregateRepository 適用・projector 配置・Deleted セマンティクス・DTO 形状) を決定3/6/9 に追記"
+    diagram:
+      required: false
+      target_paths: []
+      diagram_type: none
+    docs:
+      required: false
+      target_paths: []
+      summary: ""
+  closeout_learning:
+    expected: "Stage 7 の確定値: DependOnProfileRepository / DependOnMetadataRepository の形状、ProfileProjector / MetadataProjector の確定配置と checkpoint 名、削除済み Metadata の load セマンティクス、Profile LWW 維持の是非、ProfileDto / MetadataDto の形状、同期書込み維持範囲"
+    write_back_required: true
+    write_back_targets:
+      - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+  guide_reachability:
+    no_role_facing_surface: true
+    routes: []
+
+implementation_issue:
+  issue_title: "es-aggregates-migration: Profile / Metadata を ES repository + tailing projector パターンに移行 (ADR 0006 Stage 7)"
+  target_repo: ShuttlePub/Emumet
