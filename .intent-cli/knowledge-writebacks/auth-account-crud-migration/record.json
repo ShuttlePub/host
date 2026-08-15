@@ -1,0 +1,10 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "auth-account-crud-migration",
+  "host_commit": "2c7d945",
+  "recorded_at": "2026-08-15T03:18:48.9816261+00:00",
+  "targets": [
+    "intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md"
+  ],
+  "note": "ADR 0006 decision 8/9/10: AuthAccount CRUD port signature (find_or_create ON CONFLICT \u002B fallback SELECT), sync projection exception removal, migration order lesson (drop version column before backfill), auth_account_events drop"
+}
