@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-15T10:37:08.6178819+00:00",
+  "updated_at": "2026-08-15T11:54:08.849579+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -249,6 +249,7 @@
         "number": 39,
         "url": "https://github.com/ShuttlePub/Emumet/issues/39"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/40",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

@@ -69,10 +69,11 @@
 
 送信プロンプトの定型:
 
-- **prefix: `/goal`** — worker セッションの goal を設定する
-- **postfix: `ulw`** — ultrawork-mode を有効化する。agent は self-activate できないが、
-  herdr 経由の prompt は worker から見てユーザー入力なので、メッセージに含めることで
-  有効化できる
+- **初回タスク委譲: `/ulw-loop` 単体** — worker セッションの ultrawork-mode と
+  loop 継続を同時に立てる。
+- **レビュー結果・repair・stop 等 フォローアップ: bare メッセージ** — prefix も postfix も
+  付けず、平文で既存 goal コンテキストに注入する。`/goal` や `/ulw-loop` を付けると
+  goal 置換ダイアログや新規 goal 設定が走り、in-flight 作業が分断される
 - **長文はファイル経由**: タスク詳細・契約はファイルに書き、prompt にはパスを渡す
   - 契約ファイルの置き場所: host repo 内の `.senpi/<slice>-contract.md` 等。
     `/tmp/opencode` は senpi から読めないことがある (2026-08-14 実測)。
@@ -134,7 +135,7 @@ review-fix 時はできるだけ短く、具体的に:
 | herdr 0.8.0 の `--until` 記法 | カンマ区切りは拒否される。`--until done --until blocked` と repeat する (2026-08-15 実測)。 |
 | `herdr agent start --kind pi` が timeout を返す | 実体は新 workspace で起動していることがある (senpi は独自 window を開く)。`herdr agent list` で確認してから retry しないと二重起動する (2026-08-15 実測)。 |
 | goal 達成済み senpi への新 `/goal` 送信 | 「Replace current goal」ダイアログで止まる。`herdr agent send-keys <pane> Enter` で承認 (2026-08-15 実測)。 |
-| issue title の `→` 等非 ASCII 記号 | `issue publish-flow` が title fallback (`<unit> (untitled)`) になる。タイトルは ASCII 記号のみにするか、発生したら `gh issue edit` で修正 (2026-08-15 実測)。 |
+| issue title の fallback | `issue publish-flow` が title を `<unit> (untitled)` に fallback することがある (packet.yaml の issue_title は正しいのに発生。原因未特定。`issue draft` は別スキーマ (root `execution_unit` 必須) を要求し現行 packet と非互換)。発生したら `gh issue edit` で修正する (2026-08-15 Stage 6/7 で連続発生)。 |
 | draft PR のまま `intent-cli closeout pr` | pr-merged が記録されるが GitHub 上の merge は行われない。closeout 前に `gh pr ready` で draft を外し、closeout 後に merged state を必ず検証する (2026-08-15 実測)。 |
 | CI blocked 中の worker の自律行動 | hold 指示を送っても in-flight の判断 (fix commit の push 等) は止まらないことがある。並行して別経路の修正 PR を出す場合は「ブランチに触れるな」を先に明示する (2026-08-15 実測)。 |
 
@@ -164,4 +165,3 @@ review-fix 時はできるだけ短く、具体的に:
 ## 参照
 
 - `intent-cli automation summary --domain <d> --format json` — canonical ワークフロー権威
-
