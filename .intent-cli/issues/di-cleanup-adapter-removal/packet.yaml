@@ -1,0 +1,74 @@
+implementation_issue_packet:
+  issue_title: "di-cleanup-adapter-removal: route facade newtype 導入・DI 委譲集約・adapter クレート削除 (ADR 0006 Stage 8)"
+  issue_kind: refactor
+  source_execution_unit: di-cleanup-adapter-removal
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "adapter/, kernel/src/lib.rs, kernel/src/interfaces/, kernel/src/signal.rs, kernel/src/read_model/, kernel/src/repository/, application/src/lib.rs, application/src/transfer/, application/src/service/, application/src/signing_key.rs, server/src/handler.rs, server/src/route/, server/src/api/ (新設), server/src/main.rs, server/Cargo.toml, application/Cargo.toml, Cargo.toml"
+  target_part: "adapter の processor / crypto を kernel / application に解体吸収し、route に facade newtype を導入して生 port / executor アクセスをコンパイル時に遮断、AppModule/Handler の二重委譲を配線専用1型に集約し、adapter クレートを削除する"
+  dependencies:
+    - account-aggregate-repository
+    - projection-outbox-projector
+    - account-write-usecases
+    - es-aggregates-migration
+    - auth-account-crud-migration
+  technical_baseline:
+    - "adapter crate (全8ファイル・880行) の残存物: processor/account/{command,query}.rs, processor/profile.rs, processor/metadata.rs, crypto.rs のみ。全て blanket impl ベースの調停 trait (T: DependOn* で自動実装)。参照元は application 18ファイル + server 3ファイル (計21)、driver からの参照ゼロ。adapter/Cargo.toml deps は kernel/error-stack/time/tracing のみ"
+    - "processor 別参照: AccountQueryProcessor が18ファイル (application 15 + server 3: route/activitypub/mod.rs, route/signing.rs, route/account/follow_relations.rs のテスト)。AccountCommandProcessor は account/create.rs, account/update.rs の2。Profile command/query は account/create.rs, account_detail/{read,update}.rs。Metadata command/query は account_detail/{fields,read,update}.rs。crypto (SigningKeyGenerator) は signing_key.rs, account/create.rs の2"
+    - "processor の実態: query 系は DependOnAccountReadModel 等への薄い委譲 (find_by_id/find_by_nanoid 等)。command 系は CommandEnvelope 構築 + AggregateRepository 呼び出しの調停のみ (Stage 4/7 で persist_and_transform 直呼びは解消済み)。Param 型 (CreateAccountParam, UpdateAccountParam, CreateProfileParam, UpdateProfileParam, CreateMetadataParam, UpdateMetadataParam) も adapter に定義"
+    - "server/src/handler.rs (546行): AppModule { handler: Arc<Handler> } の二重構造。AppModule に手書き委譲 impl が34ブロック (L43-338, 約296行)、うち22個は kernel::impl_database_delegation! (kernel/src/lib.rs:92-249, 22 trait 生成) が Handler に生成するものと完全重複。マクロ非対象の12個: DependOnAccountEventLog, DependOnProjectionCheckpointStore, DependOnAccountProjectionWriter, DependOnPasswordProvider, DependOnRawKeyGenerator, DependOnKeyEncryptor, DependOnBlockRepository, DependOnMuteRepository, DependOnPermissionChecker, DependOnPermissionWriter, DependOnHttpSigner, DependOnHttpSignatureVerifier, DependOnPublicBaseUrl"
+    - "全34ルートハンドラが素の State<AppModule> を受ける (facade 型は未存在)。ルート層の生アクセス箇所: 生 executor (activitypub/mod.rs:67-71, signing.rs:86-90,158-162, auth.rs:419)、adapter processor 直接使用 (activitypub/mod.rs:74, signing.rs:92,164)、生 Ory クライアント (oauth2/login.rs:30-31, consent.rs:53,133)、DependOnPublicBaseUrl (discovery.rs:35, inbox.rs:54,140)、DependOnHttpSignatureVerifier (inbox.rs:62,114)、DependOnAuthHostRepository+DependOnAuthAccountRepository (auth.rs:421-438)"
+    - "ルート別 UseCase 使用: account/client.rs (Create/Deactivate/GetAccountDetail/UpdateAccountDetail), admin.rs (Suspend/Unsuspend/Ban), block_mute.rs (Block/Unblock/GetBlocks/Mute/Unmute/GetMutes), follow.rs (SendFollow), unfollow.rs (SendUndoFollow), follow_relations.rs (GetFollowRelations), me.rs (GetSessionContext), activitypub/actor.rs (GetActor), collections.rs (GetFollowersCollection/GetOutbox), discovery.rs (GetWebFinger), inbox.rs (Inbox), signing.rs (SignRequest/GetPublicKey)。oauth2/login.rs, consent.rs は UseCase 不使用で生クライアント直接"
+    - "共有ヘルパ: resolve_auth_account_id (server/src/auth.rs:414-440, DependOnDatabaseConnection+DependOnAuthHostRepository+DependOnAuthAccountRepository を直接使用)、find_account_id_by_nanoid (activitypub/mod.rs:56-80, 生 executor + account_query_processor)、check_permission (application::permission, DependOnPermissionChecker)"
+    - "ルートテストの生アクセス (テスト内のみ): block_mute.rs:286-378 (database_connection/account_read_model/follow_repository), follow_relations.rs:96-181 (account_query_processor), me.rs:126-130。characterization_tests.rs:144 は TestModule に impl_database_delegation! 適用済み"
+    - "rename 残件: application::transfer モジュール (→ dto、利用8ファイル+)、kernel::signal::Signal trait (signal.rs:4、参照ゼロの孤児)。Executor→Connection, transaction→conn, server Applier→Projector は完了済み。Nanoid→PublicId は外部 API 互換のため本 Stage でも実施しない"
+    - "マクロ使用箇所: server/src/handler.rs:475 (Handler), application/src/projection/tests.rs:52,510,800 (各 ProjectorTest), application/src/service/characterization_tests.rs:144 (TestModule)。マクロ拡張時はこれら全てが影響を受ける"
+  intent_references:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    - intents/emumet/packets/backlog.md
+  acceptance_criteria:
+    - "先行する純粋 rename commit (挙動変更と分離): application::transfer → application::dto に rename し、参照ゼロの kernel::signal::Signal trait (kernel/src/signal.rs) を削除する。Nanoid→PublicId は実施しない (外部 API 互換、別途検討)"
+    - "query processor 解体: AccountQuery / ProfileQuery / MetadataQuery trait を kernel (read model facade、決定3の *Query 系統) に定義し、従来の *QueryProcessor と同じメソッド集合を DependOn*ReadModel への blanket impl で提供する。全呼び出し側 (application 15ファイル + server 3ファイル) を *Query に置き換える"
+    - "command processor 解体: account/create.rs, account/update.rs, account_detail/update.rs, account_detail/fields.rs は AggregateRepository<A> (DependOn*Repository) を直接使い、CommandEnvelope 構築の調停は use case 内 (または application の小さな helper) に移す。Param 型は kernel または application に移動する"
+    - "crypto 解体: SigningKeyGenerator / DependOnSigningKeyGenerator を kernel::interfaces::crypto に移動し (RawKeyGenerator + KeyEncryptor の合成のまま)、signing_key.rs, account/create.rs の import を更新する"
+    - "adapter クレート削除: server/Cargo.toml, application/Cargo.toml から adapter 依存を除去し、workspace members から外して adapter/ ディレクトリを削除する。cargo tree / cargo metadata に adapter が残らないこと"
+    - "route facade 導入: ルート領域ごとの facade newtype (server/src/api/ 等に AccountApi, AdminAccountApi, MeApi, OAuth2Api, ActivityPubApi, SigningApi 相当) を定義し、各 facade は use case メソッドと正当な補助操作 (resolve_auth_account_id, find_account_id_by_nanoid, check_permission, public_base_url, http signature verify, hydra/kratos アクセス) のみを公開する。facade 自身は DependOn* を実装しない (内部に M を持ちメソッド内で use case を呼ぶ) ことで、ルートから生 port / executor への到達をコンパイル時に遮断する"
+    - "ルートハンドラは facade 経由のみで依存を取得し、route/ 以下のファイルから kernel::interfaces の DependOn* / adapter / database_connection().connection() の直接 import が消える (テストコード内のテスト用配線を除く)"
+    - "DI 委譲集約: AppModule/Handler の二重構造を配線専用1型に統合し (決定10 の server Handler 改名を含む)、impl_database_delegation! を拡張して現在手書きの DB 系 trait (DependOnAccountEventLog, DependOnProjectionCheckpointStore, DependOnAccountProjectionWriter, DependOnBlockRepository, DependOnMuteRepository) をマクロ対象に追加する。手書き委譲 ~296行を撤去し、非 DB 依存 (crypto, permission, http_signing, config) のみの小さな impl 群にする"
+    - "HTTP/OpenAPI 表面は不変 (utoipa のパス・スキーマ定義に影響させない)。projection worker / test_mode / e2e support の動作は維持"
+    - "cargo test (DATABASE_URL あり) / clippy / fmt green。e2e (compose) green。characterization tests も green (TestModule のマクロ適用を新構成に追従させる)"
+  intent_placement:
+    primary_intent: intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    supporting_intents: []
+    new_intent_needed: false
+    placement_rationale: "ADR 0006 Stage 8 (最終 stage) の実施ユニット。決定7 (DI 境界の型レベル強制)、決定1 (層の定義: adapter 解体)、決定10 (命名正規化の残件) を完遂する。確定値を決定7/10 に writeback"
+  knowledge_updates:
+    intent_tree:
+      required: false
+      target_paths: []
+      summary: ""
+    adr:
+      required: true
+      target_paths:
+        - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+      decision_title: "Stage 8 確定値 (facade 型の一覧と公開面、配線専用1型の確定名、マクロ拡張範囲、Query 系統の最終配置、rename 実施結果) を決定7/10 に追記"
+    diagram:
+      required: false
+      target_paths: []
+      diagram_type: none
+    docs:
+      required: false
+      target_paths: []
+      summary: ""
+  closeout_learning:
+    expected: "Stage 8 の確定値: facade newtype の一覧と各公開メソッド、配線専用1型の名前と構造 (AppModule/Handler 統合の結果)、impl_database_delegation! の拡張内容、*Query trait の最終配置 (kernel 内パス)、Param 型の移動先、transfer→dto / Signal 削除の実施記録"
+    write_back_required: true
+    write_back_targets:
+      - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+  guide_reachability:
+    no_role_facing_surface: true
+    routes: []
+
+implementation_issue:
+  issue_title: "di-cleanup-adapter-removal: route facade newtype 導入・DI 委譲集約・adapter クレート削除 (ADR 0006 Stage 8)"
+  target_repo: ShuttlePub/Emumet

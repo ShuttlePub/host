@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-15T10:17:38.3206703+00:00",
+  "updated_at": "2026-08-15T10:37:08.6178819+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -221,6 +221,34 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/37"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/38",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "di-cleanup-adapter-removal",
+      "title": "di-cleanup-adapter-removal: route facade newtype \u5C0E\u5165\u30FBDI \u59D4\u8B72\u96C6\u7D04\u30FBadapter \u30AF\u30EC\u30FC\u30C8\u524A\u9664 (ADR 0006 Stage 8)",
+      "state": "queued",
+      "dependencies": [
+        "account-aggregate-repository",
+        "projection-outbox-projector",
+        "account-write-usecases",
+        "es-aggregates-migration",
+        "auth-account-crud-migration"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/di-cleanup-adapter-removal/implementation.md",
+        "review_context": ".intent-cli/issues/di-cleanup-adapter-removal/review-context.md",
+        "yaml": ".intent-cli/issues/di-cleanup-adapter-removal/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 39,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/39"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
