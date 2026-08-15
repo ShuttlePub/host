@@ -1,0 +1,10 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "di-cleanup-adapter-removal",
+  "host_commit": "85301c9",
+  "recorded_at": "2026-08-15T12:18:42.5260103+00:00",
+  "targets": [
+    "intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md"
+  ],
+  "note": "ADR 0006 decision 7/10: facade newtype inventory (6 types, FromRef\u003CAppModule\u003E, DependOn* non-impl), *Query placement in kernel::read_model with DependOnDatabaseConnection supertrait for mock coherence, Param types abolished (direct command constructor args), impl_database_delegation! extended with 5 traits (AccountEventLog/ProjectionCheckpointStore/AccountProjectionWriter/BlockRepository/MuteRepository), AppModule/Handler double delegation collapsed to single wiring root, transfer\u2192dto rename, Signal trait deletion"
+}
