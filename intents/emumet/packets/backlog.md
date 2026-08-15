@@ -56,6 +56,15 @@ packet 起こしは `architecture-foundation` から。
   Mute / Accept / Undo Follow / Undo Block の冪等 repo 操作化 (`insert_if_absent` /
   `approve_follow_if_pending` / `delete_if_exists`)。確定 design は ADR 0006 決定2/3/4/5 に
   writeback 済み
+- `auth-account-crud-migration` — issue #34 / PR #35 マージ済み(2026-08-15)。ADR 0006 Stage 6。
+  AuthAccount ES→CRUD 移行: `AuthAccountRepository` CRUD port 新設
+  (`find_or_create` = `INSERT ... ON CONFLICT (host_id, client_id) DO NOTHING RETURNING` +
+  fallback SELECT)、同期 projection 例外と Redis リペア経路 (`UpdateAuthAccount` /
+  `auth_account_applier` queue) 除去、ES 基盤削除、`auth_account_events` の backfill +
+  drop マイグレーション (version 列は backfill 前に drop)。確定値は ADR 0006 決定8/9/10 に
+  writeback 済み。なお Stage 6 作業中に e2e harness の TRUNCATE が projection worker と
+  deadlock する既知 flake (Stage 3 由来) が顕在化し、test-support の retry 修正を
+  PR #36 として別途マージ済み (operator 承認の単発 PR)
 - `mastodon-e2e-completion` — S7-S9 シナリオ完成、CI (e2e.yml → run-ap-e2e.sh) で
   実 Mastodon コンテナ相手に常時実行中。backlog 記述が stale だっただけで実体は達成済み
 

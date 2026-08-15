@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-14T16:48:49.2187602+00:00",
+  "updated_at": "2026-08-15T03:14:12.9216301+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -177,7 +177,7 @@
     {
       "execution_unit": "auth-account-crud-migration",
       "title": "auth-account-crud-migration: AuthAccount \u3092 ES\u2192CRUD \u79FB\u884C\u3001find-or-create \u539F\u5B50\u5316\u3001\u540C\u671F projection \u4F8B\u5916\u9664\u53BB (ADR 0006 Stage 6)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "architecture-foundation"
       ],
@@ -193,6 +193,7 @@
         "number": 34,
         "url": "https://github.com/ShuttlePub/Emumet/issues/34"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/35",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

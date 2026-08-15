@@ -290,6 +290,29 @@
   (既存の UNIQUE 制約を利用) の1文にし、競合なし・同期 projection 不要にする
 - イベントは `Created` のみで履歴価値がないため ES 喪失の実害はない
 - 既存 `auth_account_events` のデータ移行を含む
+- **Stage 6 確定 (2026-08-15、PR #35 closeout より)**:
+  - kernel に CRUD repository port `AuthAccountRepository`
+    (`kernel/src/repository/auth_account.rs`) を新設。`find_or_create(host_id,
+    client_id)` / `find_by_id` / `create` を持ち、`AuthAccountReadModel` port は
+    これに吸収 (廃止)。`find_by_client_id` は廃止し、(host_id, client_id) の組で
+    引く形に修正 (host 絞り込みなし検索の曖昧さを解消)
+  - `find_or_create` の SQL 形状: `INSERT ... ON CONFLICT (host_id, client_id)
+    DO NOTHING RETURNING` で挿入成功時はその行を返し、0行のときのみ
+    `SELECT ... WHERE host_id = $1 AND client_id = $2` にフォールバック。
+    READ COMMITTED では後続 SELECT が新しい snapshot を取るため、commit 済みの
+    競合行を参照できる (並行テストで同一 id・1行を検証済み)
+  - `resolve_auth_account_id` は AuthHost find-or-create (既存のまま) の後に
+    `find_or_create` を呼ぶ形に置き換わり、EventStore / processor 経由を廃止
+  - データ移行 (`migrations/20260815000001_migrate_auth_account_to_crud.sql`):
+    `auth_accounts.version` 列を**先に drop** してから `auth_account_events` の
+    欠損行を backfill (`DISTINCT ON (id)` + LEFT JOIN) し、最後に
+    `auth_account_events` を drop。**教訓: backfill INSERT より先に version 列を
+    drop しないと NOT NULL 制約違反で失敗する** (fresh DB では検出できず、
+    review で指摘され修正)。backfill 経路は旧スキーマを savepoint 内で再現する
+    driver テストで検証
+  - `AuthAccount` entity は `EventVersion` を持たない plain struct 化。
+    `AuthAccountEvent` / `EventApplier` impl / `AuthAccountEventStore` port +
+    Postgres 実装は削除
 
 ### 9. ドメイン / projection 分離
 
@@ -316,6 +339,14 @@
   read model 書込み (create / account_detail update) は維持。profile /
   metadata / auth_account の Redis 経路は残置 (Stage 6 以降の対象)。
   Account の version ゲート付き upsert は `AccountProjectionWriter` が担う
+- **Stage 6 確定 (2026-08-15、PR #35 closeout より)**: AuthAccount の同期
+  projection 例外を除去した。`AuthAccountCommandProcessor` /
+  `AuthAccountQueryProcessor` (adapter/src/processor/auth_account.rs)、
+  `UpdateAuthAccount` (application/src/service/auth_account.rs)、
+  `AuthAccountApplier` + `auth_account_applier` Redis queue (server/src/applier*)、
+  `DependOnAuthAccountSignal` 配線 (server/src/handler.rs) を削除。
+  Redis 経路の残置は profile / metadata のみとなり (Stage 7 の対象)、
+  auth_account の経路は本 Stage で解消済み
 
 ### 10. 命名の正規化
 
@@ -348,6 +379,11 @@
   main green を維持する
 - `Nanoid` のように外部表現 (API パス等) に影響しうるものは、
   シリアライズ互換を確認した上で型名のみ変更する
+- **Stage 6 確定 (2026-08-15、PR #35 closeout より)**: AuthAccount 系の命名整理は
+  rename ではなく削除として確定。`UpdateAuthAccount` (投影処理だったもの) は
+  CRUD 化により責務ごと消滅、`AuthAccountReadModel` は `AuthAccountRepository`
+  (CRUD 系統) に吸収、`auth_account_applier` queue / `DependOnAuthAccountSignal`
+  は除去。`auth_account_events` テーブルも drop 済み
 
 ## 却下案と理由
 
