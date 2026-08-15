@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-15T03:33:15.1798471+00:00",
+  "updated_at": "2026-08-15T10:17:38.3206703+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -202,7 +202,7 @@
     {
       "execution_unit": "es-aggregates-migration",
       "title": "es-aggregates-migration: Profile / Metadata \u3092 ES repository \u002B tailing projector \u30D1\u30BF\u30FC\u30F3\u306B\u79FB\u884C (ADR 0006 Stage 7)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "account-aggregate-repository",
         "projection-outbox-projector",
@@ -220,6 +220,7 @@
         "number": 37,
         "url": "https://github.com/ShuttlePub/Emumet/issues/37"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/38",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

@@ -34,3 +34,5 @@
 {"ts":"2026-08-15T03:14:12.9166846+00:00","execution_unit":"auth-account-crud-migration","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":35}
 {"ts":"2026-08-15T03:33:03.6461702+00:00","execution_unit":"es-aggregates-migration","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/es-aggregates-migration/"}
 {"ts":"2026-08-15T03:33:15.1798471+00:00","execution_unit":"es-aggregates-migration","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#37","reason":"https://github.com/ShuttlePub/Emumet/issues/37"}
+{"ts":"2026-08-15T10:17:38.3145598+00:00","execution_unit":"es-aggregates-migration","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":38}
+{"ts":"2026-08-15T10:17:38.3145598+00:00","execution_unit":"es-aggregates-migration","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":38}

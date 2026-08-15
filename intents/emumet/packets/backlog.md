@@ -67,6 +67,13 @@ packet 起こしは `architecture-foundation` から。
   PR #36 として別途マージ済み (operator 承認の単発 PR)
 - `mastodon-e2e-completion` — S7-S9 シナリオ完成、CI (e2e.yml → run-ap-e2e.sh) で
   実 Mastodon コンテナ相手に常時実行中。backlog 記述が stale だっただけで実体は達成済み
+- `es-aggregates-migration` — issue #37 / PR #38 マージ済み(2026-08-15)。ADR 0006 Stage 7。
+  Profile/Metadata を `AggregateRepository` 経由の書き込み + tailing projector
+  (ProfileProjector/MetadataProjector) に移行、Redis applier 経路全削除、
+  read query の projection DTO 化 (ProfileProjection/MetadataProjection)、
+  削除済み Metadata の NotFound 化 (`from_events_allow_deletion`)、cross-projector
+  規約 (削除済み親 Account の fresh materialization skip) を確立。seq index 追加 +
+  e2e TRUNCATE に projection_checkpoints 追加。確定値は ADR 0006 決定3/6/9 に writeback 済み
 
 ## Deferred(open question 解消が先)
 

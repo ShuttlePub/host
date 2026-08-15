@@ -180,6 +180,19 @@
       `mark_attempted` で delivery 状態を管理
     - `AggregateRepository<A>` の `save(CommandEnvelope)` と CRUD 冪等操作を並存。
       CRUD 側に `ExpectedVersion` や `Rehydrated` を擬装しない方針を維持
+  - **Stage 7 確定 (2026-08-15、PR #38 closeout より)**:
+    - `AggregateRepository<Profile>` / `AggregateRepository<Metadata>` を採用し、
+      `DependOnProfileRepository` / `DependOnMetadataRepository` を
+      `DependOnAccountRepository` の先例で追加。adapter の Profile/Metadata
+      CommandProcessor は調停 (command 構築) のみとなり、event store の
+      `persist_and_transform` 直呼びを解消
+    - `Rehydrated::from_events` は「非空ストリームが None に fold」される場合を
+      引き続き `Internal` (破壊検知) とする。削除がドメイン上正当な集約
+      (Metadata) 向けに `from_events_allow_deletion` を追加し、
+      `PostgresMetadataRepository::load` は削除済みストリームを `NotFound` に
+      変換する (他集約の破壊検知は弱めない)
+    - Profile::update の LWW (ExpectedVersion なし) は維持。投影は
+      version-gated upsert で保護される
   - **Stage 3 確定 (2026-08-14、PR #29 closeout より)**: projector 専用 port は
     `kernel::interfaces::projection` に 3 系統で確定 —
     `AccountEventLog` (seq 窓読み出し `find_by_seq_window(executor, from, limit)`)、
@@ -264,6 +277,29 @@
   upsert の SQL)。server は `ProjectionWorker` + `ProjectionShutdown`
   (watch channel による graceful shutdown、poll interval は
   `PROJECTION_POLL_INTERVAL_MS` で設定可、default 100ms = e2e 互換)
+- **Stage 7 確定 (2026-08-15、PR #38 closeout より)**:
+  - `ProfileProjector` / `MetadataProjector` を `application::projection` に新設し、
+    `ProjectAccountBatch` と同一の tailing プロトコル (checkpoint `profile_projector` /
+    `metadata_projector`、WINDOW=100 / BATCH_LIMIT=1000、per-aggregate version 順 fold、
+    savepoint 隔離、version-gated upsert、同一 tx) で動作。ProjectionWorker から
+    Account → Profile → Metadata の順に起動
+  - **cross-projector 規約 (重要)**: Profile/Metadata projector は fresh
+    materialization (既存 projection なし) のとき、Created イベントの account_id から
+    親 Account を `find_by_id_including_deleted` で引き、`deleted_at` があれば
+    upsert をスキップする。これは Account projector の削除カスケード (従属行削除)
+    が同 tick の後続 projector に再生されないためのガード。window 内に Created が
+    残っている限り existing=None で全イベントが pending になるため、ガードなしでは
+    カスケード削除直後に行が復活する (review で検出)
+  - projector は既存 projection を読み (`find_by_id_unfiltered`)、
+    `version > existing.version` の pending のみを既存 entity に fold する。
+    窓 (100 seq) 外に Created が落ちた集約の更新も投影できる (Account 先例の踏襲。
+    初版はこれを欠き永久欠落しうる状態だったが review で検出・修正)
+  - Redis applier 経路 (ProfileApplier / MetadataApplier / UpdateProfile /
+    UpdateMetadata / DependOn*Signal 配線、`server/src/applier/`) は全削除。
+    Profile/Metadata の直接 Signal emit は停止
+  - `profile_events(seq)` / `metadata_events(seq)` に index 追加
+    (20260815000002)。e2e / test_mode の TRUNCATE リストに
+    `projection_checkpoints` を追加 (checkpoint 残留で tailing が止まるのを防ぐ)
 
 ### 7. DI: ケーキパターン維持 + 境界の型レベル強制
 
@@ -347,6 +383,19 @@
   `DependOnAuthAccountSignal` 配線 (server/src/handler.rs) を削除。
   Redis 経路の残置は profile / metadata のみとなり (Stage 7 の対象)、
   auth_account の経路は本 Stage で解消済み
+- **Stage 7 確定 (2026-08-15、PR #38 closeout より)**:
+  - Profile / Metadata の read query は projection DTO (`ProfileProjection` /
+    `MetadataProjection`。kernel/src/read_model/) を返し、ドメイン Entity を
+    返さない形に確定。消費側 (account_detail read/update、fields.rs、
+    GetActorUseCase) を更新。HTTP レスポンス形状は不変
+  - コマンドパスの同期 read model 書込みは Profile create/update と Metadata
+    create/update/delete にも維持される (Account 先例)。**教訓: これを外すと
+    跨リクエストの read-after-write が 100ms poll の projector に race する**
+    (e2e_basic_flow が検出)。PATCH 応答の DTO は「request + 直前 projection の
+    overlay」で合成するが、これが決定的であるためには同期書込みが前提
+  - projector が既存 projection から集約を再構成するため、
+    `From<ProfileProjection> for Profile` / `From<MetadataProjection> for Metadata`
+    の変換が kernel entity に追加された
 
 ### 10. 命名の正規化
 
