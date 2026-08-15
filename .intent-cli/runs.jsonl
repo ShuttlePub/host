@@ -38,3 +38,5 @@
 {"ts":"2026-08-15T10:17:38.3145598+00:00","execution_unit":"es-aggregates-migration","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":38}
 {"ts":"2026-08-15T10:37:00.6595008+00:00","execution_unit":"di-cleanup-adapter-removal","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/di-cleanup-adapter-removal/"}
 {"ts":"2026-08-15T10:37:08.6178819+00:00","execution_unit":"di-cleanup-adapter-removal","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#39","reason":"https://github.com/ShuttlePub/Emumet/issues/39"}
+{"ts":"2026-08-15T12:17:41.8506325+00:00","execution_unit":"di-cleanup-adapter-removal","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":40}
+{"ts":"2026-08-15T12:17:41.8506325+00:00","execution_unit":"di-cleanup-adapter-removal","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":40}

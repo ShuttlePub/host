@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-15T11:54:08.849579+00:00",
+  "updated_at": "2026-08-15T12:17:41.8558005+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -229,7 +229,7 @@
     {
       "execution_unit": "di-cleanup-adapter-removal",
       "title": "di-cleanup-adapter-removal: route facade newtype \u5C0E\u5165\u30FBDI \u59D4\u8B72\u96C6\u7D04\u30FBadapter \u30AF\u30EC\u30FC\u30C8\u524A\u9664 (ADR 0006 Stage 8)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "account-aggregate-repository",
         "projection-outbox-projector",
