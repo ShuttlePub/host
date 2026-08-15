@@ -1,0 +1,10 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "es-aggregates-migration",
+  "host_commit": "d3446ab",
+  "recorded_at": "2026-08-15T10:20:36.9734011+00:00",
+  "targets": [
+    "intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md"
+  ],
+  "note": "ADR 0006 decision 3/6/9: AggregateRepository for Profile/Metadata, Profile/MetadataProjector placement \u002B cross-projector guard (deleted parent account skip), from_events_allow_deletion, projection DTO conversion, sync write retention lesson"
+}
