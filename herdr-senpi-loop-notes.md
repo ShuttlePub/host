@@ -131,6 +131,12 @@ review-fix 時はできるだけ短く、具体的に:
 | プロンプト内のシェルメタ文字 | シングルクォートで囲むか、契約ファイル経由で渡す。 |
 | ファイル置き場所 `/tmp/opencode` | senpi から読めない可能性あり。host repo 内の `.senpi/` 等を使う。 |
 | `--until idle` | 完了後は `done` になる。`--until done,blocked` を使う。 |
+| herdr 0.8.0 の `--until` 記法 | カンマ区切りは拒否される。`--until done --until blocked` と repeat する (2026-08-15 実測)。 |
+| `herdr agent start --kind pi` が timeout を返す | 実体は新 workspace で起動していることがある (senpi は独自 window を開く)。`herdr agent list` で確認してから retry しないと二重起動する (2026-08-15 実測)。 |
+| goal 達成済み senpi への新 `/goal` 送信 | 「Replace current goal」ダイアログで止まる。`herdr agent send-keys <pane> Enter` で承認 (2026-08-15 実測)。 |
+| issue title の `→` 等非 ASCII 記号 | `issue publish-flow` が title fallback (`<unit> (untitled)`) になる。タイトルは ASCII 記号のみにするか、発生したら `gh issue edit` で修正 (2026-08-15 実測)。 |
+| draft PR のまま `intent-cli closeout pr` | pr-merged が記録されるが GitHub 上の merge は行われない。closeout 前に `gh pr ready` で draft を外し、closeout 後に merged state を必ず検証する (2026-08-15 実測)。 |
+| CI blocked 中の worker の自律行動 | hold 指示を送っても in-flight の判断 (fix commit の push 等) は止まらないことがある。並行して別経路の修正 PR を出す場合は「ブランチに触れるな」を先に明示する (2026-08-15 実測)。 |
 
 ---
 
@@ -147,9 +153,11 @@ review-fix 時はできるだけ短く、具体的に:
 
 ## 未解決の検証項目
 
-- [ ] fresh pane での start → prompt → wait → relay の一巡
+- [x] fresh pane での start → prompt → wait → relay の一巡 (2026-08-15 Stage 6 で実証。
+  ただし start の timeout 誤報と新 workspace 起動の癖あり。既知の落とし穴参照)
 - [ ] worker からの再委譲可否 (senpi 側の拡張設定次第)
-- [ ] `/goal` + `ulw` 規約の効果測定 (goal が worker の逸脱防止に機能するか)
+- [x] `/goal` + `ulw` 規約の効果測定 (2026-08-15 Stage 6: goal は逸脱防止に機能。
+  review-fix 2 ラウンドとも contract 内で収束)
 
 ---
 
