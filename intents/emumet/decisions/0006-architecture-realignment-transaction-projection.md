@@ -434,6 +434,38 @@
   (CRUD 系統) に吸収、`auth_account_applier` queue / `DependOnAuthAccountSignal`
   は除去。`auth_account_events` テーブルも drop 済み
 
+### Stage 8 実施記録 (di-cleanup-adapter-removal, 2026-08-15, Emumet#39 / PR#40)
+
+実施済みの解体対象と、実装時に確定した配置判断の記録。
+
+- **完了した解体対象**: adapter crate 全責務を移転・削除した。query processor は
+  kernel の `*Query` facade trait へ、command processor の調停は呼出側 use case へ、
+  `SigningKeyGenerator` 系統は `kernel::interfaces::crypto` へ移動。`adapter/`
+  ディレクトリと依存宣言を削除し、`cargo tree` に adapter は残らない。
+  `application::transfer` は `application::dto` に rename し、孤立していた
+  `kernel::signal::Signal` trait を削除 (先行の純粋 rename commit として独立化)。
+- **Param 型の行き先**: 6 つの Param 型 (CreateAccountParam / UpdateAccountParam /
+  CreateProfileParam / UpdateProfileParam / CreateMetadataParam / UpdateMetadataParam) は
+  全廃止。command processor 解体後は唯一の消費者が use case であり、間接化の意味を
+  失ったため、`Account::create` 等の command コンストラクタへの直接引数渡しに置き換えた
+  (決定10 の実施ルールに基づく実装者判断)。
+- **`*Query` trait の kernel 内配置**: `kernel::read_model::{account,profile,metadata}.rs`
+  に `AccountQuery` / `ProfileQuery` / `MetadataQuery` と `DependOn*Query` を配置。
+  `DependOn*Query` の supertrait は `DependOnDatabaseConnection` (旧 processor 系統と同形)
+  とし、blanket impl 側に `DependOn*ReadModel` を要求することで、テストの手書き mock
+  impl との coherence 衝突を回避した。
+- **facade 新設の要約**: `server/src/api/` に `AccountApi` / `AdminAccountApi` / `MeApi` /
+  `OAuth2Api` / `ActivityPubApi` / `SigningApi` を新設。各 facade は `Arc<AppModule>`
+  を保持する newtype で、`FromRef<AppModule>` により axum の `State<XxxApi>` として
+  抽出される。use case メソッドと正当な補助操作 (resolve_auth_account_id,
+  find_account_id_by_nanoid, public_base_url/host 照合, HTTP 署名検証呼出し,
+  hydra/kratos クライアントアクセス) のみを公開し、DependOn* の実装や raw port /
+  executor の露出は行わない。
+- **DI 委譲集約**: `impl_database_delegation!` に 5 trait (DependOnAccountEventLog /
+  DependOnProjectionCheckpointStore / DependOnAccountProjectionWriter /
+  DependOnBlockRepository / DependOnMuteRepository) を追加し、
+  `AppModule`→`Handler` の二重委譲を解消して `AppModule` に一本化した。
+
 ## 却下案と理由
 
 - **ES/CRUD 共通の単一 `Repository<A>`**
