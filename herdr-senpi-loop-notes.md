@@ -137,6 +137,9 @@ Fix clippy warnings in PR #33. In application/src/service/activitypub/inbox/hand
 | issue title の fallback | `issue publish-flow` が title を `<unit> (untitled)` に fallback することがある (packet.yaml の issue_title は正しいのに発生。原因未特定。`issue draft` は別スキーマ (root `execution_unit` 必須) を要求し現行 packet と非互換)。発生したら `gh issue edit` で修正する (2026-08-15 Stage 6/7 で連続発生)。 |
 | draft PR のまま `intent-cli closeout pr` | pr-merged が記録されるが GitHub 上の merge は行われない。closeout 前に `gh pr ready` で draft を外し、closeout 後に merged state を必ず検証する (2026-08-15 実測)。**実害発生**: Stage 5 (issue #32 / PR #33) が draft のまま closeout されコード未マージのまま queue=completed となり、2026-08-16 に発覚。PR #33 は superseded close、Stage 9 (`crud-ap-transactions-reapply`) として現行 main に再適用する recovery を実施。closeout 後の `git cherry origin/main <pr-branch>` 等での実マージ検証を closeout 手順に組み込むこと |
 | CI blocked 中の worker の自律行動 | hold 指示を送っても in-flight の判断 (fix commit の push 等) は止まらないことがある。並行して別経路の修正 PR を出す場合は「ブランチに触れるな」を先に明示する (2026-08-15 実測)。 |
+| worker sandbox の git read-only 制約 | worker の opencode sandbox は対象 repo の `.git` を read-only mount し `/tmp` を隔離するため、sandbox 内から commit/push ができない。bundle export 運用 (worker が copy gitdir 上に commit し `git bundle create`、lead が sandbox 外で fetch+push+PR 作成) で対応 (2026-08-16 Stage 9 実測)。 |
+| worktree の置き場所 (ro mount) | `/home/turtton/Documents` 直下は ro mount で、Emumet 本体のみ rw bind mount という特殊構成。worktree を ro 側 (`.../Emumet-worktrees/`) に作ると checkout が read-only になり `git reset --hard` / commit が「Read-only file system」で失敗する。worktree は rw な場所 (Emumet 本体配下 or 別 rw パス) に作ること (2026-08-16 Stage 9 実測)。 |
+| bundle の host への受け渡し | worker sandbox の `/tmp` は host から見えない。bundle は checkout ディレクトリ (worker から writable で host と共有) 経由で受け渡す (2026-08-16 Stage 9 実測)。 |
 
 ---
 
