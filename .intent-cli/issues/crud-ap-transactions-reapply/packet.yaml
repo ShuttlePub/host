@@ -1,0 +1,70 @@
+implementation_issue_packet:
+  issue_title: "crud-ap-transactions-reapply: Block / Inbox Follow / Inbox Block を tx + 配送 outbox 化、Mute / Accept / Undo 系を冪等 repo 操作化 (ADR 0006 Stage 9 = Stage 5 re-apply)"
+  issue_kind: feature
+  source_execution_unit: crud-ap-transactions-reapply
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "application/src/service/block.rs, application/src/service/mute.rs, application/src/service/activitypub/outbound_block.rs, application/src/service/activitypub/inbox/handlers.rs, application/src/service/activitypub/inbox/mod.rs, application/src/service/activitypub/outbox.rs, application/src/service/activitypub/delivery.rs, kernel/src/database.rs, kernel/src/repository/block.rs, kernel/src/repository/follow.rs, kernel/src/repository/mute.rs, kernel/src/repository/outbox_activity.rs, driver/src/database/postgres/block.rs, driver/src/database/postgres/follow.rs, driver/src/database/postgres/mute.rs, driver/src/database/postgres/outbox_activity.rs, server/src/route/account, server/src/route/activitypub, migrations"
+  target_part: "Block / Inbox Follow / Inbox Block の UoW 化 + AP 配送 outbox 化、Mute / Accept / Undo Follow / Undo Block の冪等 repo 操作化 (Stage 5 intent の現行 main への再適用)"
+  dependencies: []
+  technical_baseline:
+    - "RECOVERY: Stage 5 (issue #32 / PR #33) は draft PR のまま closeout が記録され、コードは main に未マージ。PR #33 は superseded として close 済み (2026-08-16)。本 packet は Stage 5 の intent を現行 main に再適用する"
+    - "BlockAccountUseCase / UnblockAccountUseCase (application/src/service/block.rs) は auto-commit 接続を取得し、remote 宛 Block/Undo(Block) の **delivery HTTP を DB write より先に** 実行し、その後 block 作成/削除・双方向 follow 解除・outbox 記録を順次実行。delivery 失敗・クラッシュで local state と AP 履歴が不整合になりうる"
+    - "Inbox Follow ハンドラ (inbox/handlers.rs:handle_follow_activity) は remote_account upsert、follow 作成 (approved)、Accept 配送、outbox 記録を auto-commit で実行。delivery 失敗は warn ログのみで outbox に再試行可能な状態が残らない"
+    - "Inbox Block / Undo(Block) / Accept / Undo(Follow) ハンドラは read-check-then-write パターンで auto-commit 実行。冪等性はアプリ層の事前 find 依存で、順不同到達・重複に構造で対処していない"
+    - "MuteAccountUseCase / UnmuteAccountUseCase (application/src/service/mute.rs) は auto-commit 接続で mutes テーブルへの insert/delete。重複時はアプリ層で Rejected を返す (DB の partial unique index あり)"
+    - "outbox_activities テーブルは migrations/20260621000004_add_outbox_activities.sql で定義済み。delivery 状態カラム (delivered_at/attempted_at/error) は存在しない (Stage 5 のマイグレーション 20260814000001 は main に未適用)"
+    - "TransactionManager port (kernel/src/database.rs) と PostgresTransactionManager は Stage 1 で導入済み。Stage 4 (CreateAccount / UpdateAccountDetail / moderation) と Stage 6 (AuthAccount) で DependOnTransactionManager 経由の UoW 注入が確立済み"
+    - "Stage 8 で adapter crate は解体済み。配線は server/src/route/** の route facade + 集約済み DI に従う。旧 packet の『route facade newtype 化は Stage 8 のスコープ』という記述は完了済み前提に読み替える"
+    - "BlockRepository / FollowRepository / MuteRepository / OutboxActivityRepository は kernel port + Postgres 実装。insert_if_absent / delete_if_exists / approve_follow_if_pending 等の冪等インターフェースは存在しない"
+    - "参考: PR #33 の branch claude/crud-ap-transactions-stage5 に旧実装 diff が残るが、Stage 6-8 で構造が変わっているため再実装とする (cherry-pick / rebase 不可)"
+  intent_references:
+    - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    - intents/emumet/packets/backlog.md
+  acceptance_criteria:
+    - "BlockAccountUseCase / UnblockAccountUseCase を TransactionManager::transaction() ベースの UoW に移行。DB 書き込み (block 作成/削除、follow 解除、outbox 記録) を同一トランザクションにまとめ、AP delivery HTTP は commit 成功後にのみ実行される (現行の delivery-first 順序を解消)"
+    - "Inbox Follow / Inbox Block / Undo(Block) ハンドラを UoW 化。remote_account upsert、follow/block 作成・削除、follow 解除、Accept/outbox 記録を tx 内にまとめ、delivery は commit 後"
+    - "Mute / Accept / Undo Follow / Undo Block を冪等 repository 操作に置換。重複・不存在・未承認を DB 制約 + 戻り値で解釈し、アプリ層での事前 find + Rejected 依存を減らす (insert_if_absent、approve_follow_if_pending、delete_if_exists 等)"
+    - "冪等 repo 操作は UoW を必要としない。&mut Connection executor を引き渡し、単一接続で実行する"
+    - "outbox_activities テーブルに delivery 状態カラム (delivered_at / attempted_at / error) を追加するマイグレーションを作成。OutboxActivityRepository.create は発行した outbox_id を返し、pending_deliveries / mark_delivered / mark_attempted で delivery 状態を管理。post-commit 即時 delivery + 失敗時の再試行可能状態を実現 (worker 化は optional)"
+    - "AP 配送 outbox は projection 通知 outbox (ADR 決定4) と別物であることを維持。統合しない"
+    - "DependOnTransactionManager が現行の DI 構造 (Stage 8 後の route facade / AppModule) を通じて対象 use case / inbox ハンドラに届く"
+    - "cargo fmt --check / cargo check --workspace / cargo clippy --workspace -- -D warnings / cargo test --workspace (DATABASE_URL あり) / e2e (compose) が green"
+    - "Block/Mute/Follow 系の既存振る舞い (Block 時の双方向 follow 解除、リモート Mute 非連合) は維持する"
+  intent_placement:
+    primary_intent: intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+    supporting_intents: []
+    new_intent_needed: false
+    placement_rationale: "ADR 0006 Stage 5 の re-apply (Stage 9)。Stage 5 確定セクションに記録された設計値を設計入力とし、現行 main に再実装する"
+  knowledge_updates:
+    intent_tree:
+      required: false
+      target_paths: []
+      summary: ""
+    adr:
+      required: true
+      target_paths:
+        - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+      decision_title: "host 側で実施: Stage 5 確定セクションの根拠表記修正 (コード未着地の記録であることの明示) + closeout 時に Stage 9 確定値を追記"
+    diagram:
+      required: false
+      target_paths: []
+      diagram_type: none
+    docs:
+      required: false
+      target_paths: []
+      summary: ""
+  closeout_learning:
+    expected: "Stage 9 確定値: 現行 main 上での UoW 対象・冪等 repo 操作の最終 signature・delivery outbox 実装パターン。PR #33 diff からの再利用率と再実装判断の妥当性"
+    write_back_required: true
+    write_back_targets:
+      - intents/emumet/decisions/0006-architecture-realignment-transaction-projection.md
+  guide_reachability:
+    no_role_facing_surface: true
+    routes: []
+
+implementation_issue:
+  issue_title: "crud-ap-transactions-reapply: Block / Inbox Follow / Inbox Block を tx + 配送 outbox 化、Mute / Accept / Undo 系を冪等 repo 操作化 (ADR 0006 Stage 9 = Stage 5 re-apply)"
+  target_repo: ShuttlePub/Emumet
+  dependencies: []
+  blocked_by: []

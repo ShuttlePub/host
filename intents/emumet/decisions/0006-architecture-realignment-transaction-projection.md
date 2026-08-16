@@ -111,6 +111,9 @@
   - `UpdateAccountDetail` から低レベル `get_transaction()` / `transaction.commit()`
     の直接呼び出しを解消し `TransactionManager::transaction()` へ統一
 - **Stage 5 確定 (2026-08-14、PR #33 closeout より)**:
+  > ⚠ 記録訂正 (2026-08-16): 以下は draft PR #33 の closeout から記録されたもので、
+  > コードは main に未マージ (PR #33 は superseded close)。**設計入力として有効**であり、
+  > 実装は Stage 9 (`crud-ap-transactions-reapply`) で現行 main に再適用する。
   - UoW 対象ユースケースを ADR 決定2 の **Block / Inbox Follow / Inbox Block** に拡張。
     `BlockAccountUseCase` / `UnblockAccountUseCase`、inbox `Follow` / `Block` /
     `Undo(Block)` ハンドラを `TransactionManager::transaction()` 化。remote actor
@@ -168,6 +171,8 @@
       `WHERE version = $expected` による CAS に加え、必要に応じて advisory lock
       等を検討する方針を維持。本 Stage では advisory lock 導入までは至らず
   - **Stage 5 確定 (2026-08-14、PR #33 closeout より)**:
+    > ⚠ 記録訂正 (2026-08-16): コード未着地の closeout 由来 (上記 決定2 の注記を参照)。
+    > 以下の signature は Stage 9 の設計入力。
     - CRUD repository に冪等操作の系統を追加:
       - `FollowRepository::insert_if_absent` / `approve_follow_if_pending` /
         `delete_if_exists`
@@ -229,6 +234,9 @@
   グローバル tailing (seq 順) と per-stream fold (version 順) の順序分離
     (決定9 の Stage 3 入力) もこの通り実装した
 - **Stage 5 確定 (2026-08-14、PR #33 closeout より)**:
+  > ⚠ 記録訂正 (2026-08-16): コード未着地の closeout 由来 (決定2 の注記を参照)。
+  > 以下は Stage 9 の設計入力。マイグレーション `20260814000001_add_outbox_delivery_state.sql`
+  > は main に存在しない。
   - AP 配送 outbox は projection 通知 outbox とは別の関心事。本 Stage では既存
     `outbox_activities` テーブルを流用しつつ、delivery 状態を同テーブル内で管理。
     追加カラム: `delivered_at TIMESTAMPTZ`, `attempted_at TIMESTAMPTZ`, `error TEXT`
