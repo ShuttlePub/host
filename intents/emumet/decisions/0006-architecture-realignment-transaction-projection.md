@@ -129,6 +129,20 @@
   - Stage 5 終了時点の UoW 対象は **CreateAccount / UpdateAccountDetail /
     Suspend / Unsuspend / Ban / Deactivate / Block / Inbox Follow / Inbox Block**
     の9つ。冪等 repo 操作対象は **Mute / Accept / Undo Follow / Undo Block** の4つ
+- **Stage 9 確定 (2026-08-16、PR #42 merge より)**: Stage 5 の intent を現行 main
+  (Stage 6-8 適用後) に再適用して着地。上記 Stage 5 確定値が実装として成立した。
+  実装上の確定差分:
+  - `insert_if_absent` / `delete_if_exists` は `Result<bool, _>` を返す
+    (重複・不存在を bool で返し、呼び出し側で `Rejected` を出さない)。
+    既存 `create` / `delete` も維持。
+  - REST Block/Unblock の「Already blocked」「Block relationship not found」は
+    既存挙動として維持 (冪等化は Mute / Accept / Undo 系のみ)。
+  - tx 内で `insert_if_absent` が unique 違反 (23505) を返すと Postgres tx が
+    abort されるため、`handle_block_activity` は返却 bool で後続の
+    `remove_follows_between` をゲートする (旧 branch の潜在バグを修正)。
+  - outbound Follow/Undo の outbox 行は insert 時に `delivered_at=now` を設定
+    (inline 配信済みのため)。
+  - delivery 状態メソッド名は `mark_delivery_attempt` (AC 記載の `mark_attempted` 相当)。
 
 ### 3. port 文法: 統一せず4系統を明示
 

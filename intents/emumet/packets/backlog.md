@@ -11,7 +11,7 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 | 2 | `account-aggregate-repository` | ADR 0006 Stage 2。`AccountRepository` port (`Rehydrated<Account>`) + driver 実装、旧 CommandProcessor との同値テストで並走 | 1 |
 | 3 | `projection-outbox-projector` | ADR 0006 Stage 3。event + 通知の同一 tx 化 (log tailing)、Account projector を application::projection に新設、直接 Signal emit 停止、applier 冪等化 (version-gated upsert) | 1, 2 |
 | 4 | `account-write-usecases` | ADR 0006 Stage 4。CreateAccount / UpdateAccountDetail / moderation を UoW に移行、SigningKey の executor 受け取り化、Keto post-commit provisioning (KetoClient は driver へ移動) | 2, 3 | — issue [#30](https://github.com/ShuttlePub/Emumet/issues/30) / PR [#31](https://github.com/ShuttlePub/Emumet/pull/31) マージ済み |
-| 5 | ~~`crud-ap-transactions`~~ → `crud-ap-transactions-reapply` | ADR 0006 Stage 9 (Stage 5 re-apply / recovery)。Stage 5 (issue #32 / PR #33) は draft のまま closeout 記録されコード未マージ。PR #33 は superseded close 済み (2026-08-16)。Stage 5 の intent を現行 main (Stage 6-8 適用後) に再適用 | 1 |
+| 5 | ~~`crud-ap-transactions`~~ → `crud-ap-transactions-reapply` — 完了 (issue #41 / PR #42 merge 2026-08-16) | ADR 0006 Stage 9 (Stage 5 re-apply / recovery)。Stage 5 (issue #32 / PR #33) は draft のまま closeout 記録されコード未マージ。PR #33 は superseded close 済み (2026-08-16)。Stage 5 の intent を現行 main (Stage 6-8 適用後) に再適用 | 1 |
 | 6 | `auth-account-crud-migration` | ADR 0006 Stage 6。AuthAccount を ES→CRUD 移行、find-or-create を `ON CONFLICT (host_id, client_id)` 原子化、同期 projection 例外除去、auth_account_events データ移行 | 1 |
 | 7 | `es-aggregates-migration` | ADR 0006 Stage 7。Profile / Metadata を ES repository/projector パターンに移行、`AccountProjection` の横展開 (新規 read query はドメイン Entity を返さない) | 2-4 |
 | 8 | `di-cleanup-adapter-removal` — 完了 (issue #39 / PR #40 merge 2026-08-15) | ADR 0006 Stage 8 (最終)。adapter crate 解体・削除、kernel `*Query` facade (read_model 配下)、command 調停の use case inline 化 (Param 6型廃止)、crypto の kernel::interfaces::crypto 移動、server/src/api facade 6種 (DependOn* 非実装・FromRef<AppModule>)、`impl_database_delegation!` に5 trait 追加 + AppModule/Handler 二重委譲解消、`transfer`→`dto` rename + `Signal` trait 削除。確定値は ADR 0006 決定7/10 に writeback 済み | 2-7 |
@@ -60,7 +60,13 @@ packet 起こしは `architecture-foundation` から。
   (`outbox_activities` に `delivered_at` / `attempted_at` / `error` 列追加、commit 後 delivery)、
   Mute / Accept / Undo Follow / Undo Block の冪等 repo 操作化 (`insert_if_absent` /
   `approve_follow_if_pending` / `delete_if_exists`)。確定 design は ADR 0006 決定2/3/4/5 に
-  writeback 済み (根拠表記は修正済み — ADR 側の注記を参照)
+   writeback 済み (根拠表記は修正済み — ADR 側の注記を参照)
+- `crud-ap-transactions-reapply` — issue #41 / PR #42 マージ済み(2026-08-16, merge 8b21711)。
+  ADR 0006 Stage 9 (Stage 5 re-apply / recovery)。Stage 5 の intent を現行 main に再適用:
+  Block/Unblock + inbox Follow/Block/Undo(Block) の UoW 化 + post-commit 配送、
+  Mute/Accept/Undo Follow/Undo Block の冪等 repo 操作化、
+  `outbox_activities` への delivery state カラム追加。確定値は ADR 0006 決定2 に
+  Stage 9 確定として writeback 済み
 - `auth-account-crud-migration` — issue #34 / PR #35 マージ済み(2026-08-15)。ADR 0006 Stage 6。
   AuthAccount ES→CRUD 移行: `AuthAccountRepository` CRUD port 新設
   (`find_or_create` = `INSERT ... ON CONFLICT (host_id, client_id) DO NOTHING RETURNING` +
