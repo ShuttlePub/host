@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-15T12:17:41.8558005+00:00",
+  "updated_at": "2026-08-16T05:19:40.9700036+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -250,6 +250,28 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/39"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/40",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "crud-ap-transactions-reapply",
+      "title": "crud-ap-transactions-reapply: Block / Inbox Follow / Inbox Block \u3092 tx \u002B \u914D\u9001 outbox \u5316\u3001Mute / Accept / Undo \u7CFB\u3092\u51AA\u7B49 repo \u64CD\u4F5C\u5316 (ADR 0006 Stage 9 = Stage 5 re-apply)",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/crud-ap-transactions-reapply/implementation.md",
+        "review_context": ".intent-cli/issues/crud-ap-transactions-reapply/review-context.md",
+        "yaml": ".intent-cli/issues/crud-ap-transactions-reapply/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 41,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/41"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

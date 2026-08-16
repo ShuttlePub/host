@@ -40,3 +40,5 @@
 {"ts":"2026-08-15T10:37:08.6178819+00:00","execution_unit":"di-cleanup-adapter-removal","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#39","reason":"https://github.com/ShuttlePub/Emumet/issues/39"}
 {"ts":"2026-08-15T12:17:41.8506325+00:00","execution_unit":"di-cleanup-adapter-removal","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":40}
 {"ts":"2026-08-15T12:17:41.8506325+00:00","execution_unit":"di-cleanup-adapter-removal","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":40}
+{"ts":"2026-08-16T05:19:25.5427736+00:00","execution_unit":"crud-ap-transactions-reapply","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/crud-ap-transactions-reapply/"}
+{"ts":"2026-08-16T05:19:40.9700036+00:00","execution_unit":"crud-ap-transactions-reapply","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#41","reason":"https://github.com/ShuttlePub/Emumet/issues/41"}
