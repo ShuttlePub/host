@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-16T08:18:25.5641059+00:00",
+  "updated_at": "2026-08-17T06:59:56.7290195+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -281,7 +281,7 @@
     {
       "execution_unit": "media-upload",
       "title": "media-upload: \u753B\u50CF\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9 API \u002B S3 \u4E92\u63DB\u30B9\u30C8\u30EC\u30FC\u30B8\u9023\u643A \u002B Actor icon/image \u53CD\u6620",
-      "state": "queued",
+      "state": "active",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
