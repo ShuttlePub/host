@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-19T06:20:38.7146528+00:00",
+  "updated_at": "2026-08-19T15:35:49.1835453+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -296,6 +296,28 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/43"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/44",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "moderation-role-assignment",
+      "title": "moderation-role-assignment: InstanceRole(Admin/Moderator) \u5272\u5F53\u30FB\u5265\u596A\u306E admin REST API (Keto PermissionWriter \u7D4C\u7531)",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/moderation-role-assignment/implementation.md",
+        "review_context": ".intent-cli/issues/moderation-role-assignment/review-context.md",
+        "yaml": ".intent-cli/issues/moderation-role-assignment/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 45,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/45"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
