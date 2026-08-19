@@ -48,3 +48,5 @@
 {"ts":"2026-08-16T08:18:18.7082467+00:00","execution_unit":"media-upload","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/media-upload/"}
 {"ts":"2026-08-16T08:18:25.5641059+00:00","execution_unit":"media-upload","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#43","reason":"https://github.com/ShuttlePub/Emumet/issues/43"}
 {"ts":"2026-08-17T06:59:56.7290195+00:00","execution_unit":"media-upload","event":"activated","by":"intent-cli"}
+{"ts":"2026-08-19T06:20:38.7098694+00:00","execution_unit":"media-upload","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":44}
+{"ts":"2026-08-19T06:20:38.7098694+00:00","execution_unit":"media-upload","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":44}
