@@ -1,0 +1,62 @@
+implementation_issue_packet:
+  issue_title: "moderation-role-assignment: InstanceRole(Admin/Moderator) 割当・剥奪の admin REST API (Keto PermissionWriter 経由)"
+  issue_kind: feature
+  source_execution_unit: moderation-role-assignment
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: application/src/service/account, application/src/permission.rs, server/src/route/account, server/src/api/admin_account.rs, kernel/src/read_model, driver/src/database/postgres/account, ory/keto/namespaces.ts
+  target_part: "InstanceRole 割当・剥奪ユースケース + admin REST API + Keto administrate permit + auth_emumet_accounts 逆引き query"
+  dependencies: []
+  technical_baseline:
+    - "kernel: InstanceRole(Admin/Moderator, as_str() = admins/moderators)、RelationTarget::Instance{role}、PermissionWriter trait (create_relation/delete_relation) は定義済み (kernel/src/permission.rs)"
+    - "driver: KetoClient が PermissionWriter を冪等実装済み (409 Conflict / 404 NotFound を Ok として吸収) (driver/src/keto.rs:159-)"
+    - "Keto subject は AuthAccountId。Account ↔ AuthAccount の紐付けは auth_emumet_accounts (emumet_id, auth_id) テーブル (migrations/20230707210300_init.sql:66)"
+    - "認可パターン: application/src/permission.rs の check_permission + instance_moderate() (PermissionReq::instance(\"moderate\"))、Keto namespaces.ts の Instance.permits.moderate (admins/moderators 包含)"
+    - "admin ルート既存例: POST /api/v1/admin/accounts/{account_id}/suspend 等 (server/src/route/account/admin.rs)、facade は AdminAccountApi (server/src/api/admin_account.rs)"
+    - "moderation-session-context 完了済み: GET /api/v1/me が instance_roles を返す (ロール付与結果の確認経路として利用可能)"
+  intent_references:
+    - intents/emumet/features/moderation/overview.md
+    - intents/emumet/features/moderation/requirements.md
+    - intents/emumet/features/moderation/packets.md
+  acceptance_criteria:
+    - "Admin が PUT /api/v1/admin/accounts/{account_id}/roles/{role} (role = admin | moderator) でロールを付与でき、Keto の Instance:singleton 関係タプルが作成される (再付与は冪等に成功)"
+    - "Admin が DELETE 同パスでロールを剥奪できる (未付与でも冪等に成功)"
+    - "Admin 以外 (Moderator・一般ユーザー) からの呼び出しは 403 (PermissionDenied) になる"
+    - "付与後、対象アカウント所有者の GET /api/v1/me の instance_roles に当該ロールが反映される"
+    - "自分自身の Admin ロール剥奪は Rejected (400 系) で拒否される (ロックアウト防止)"
+    - "不正な role 値は 400、存在しない account_id は 404 になる"
+    - "ユースケースの単体テスト (mock PermissionChecker/PermissionWriter) で認可拒否・自己剥奪拒否・正常系が検証される"
+
+intent_placement:
+  primary_intent: intents/emumet/features/moderation/overview.md
+  supporting_intents:
+    - intents/emumet/features/moderation/requirements.md
+  new_intent_needed: false
+  placement_rationale: "moderation feature の残スコープ「ロール割当管理」として既に位置付け済み (features/moderation/packets.md unit 1)。intent-tree 新規ノード不要"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: "features/moderation/packets.md の unit 1 として確定済み。完了時に packets.md へ issue/PR リンクを追記する (knowledge_updates.intent_tree 運用メモ)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "ロール割当を Admin 限定 (administrate permit 新設) とする判断は feature スコープのため features/moderation/decisions.md に closeout 時記録 (cross-domain ADR は不要)"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "document リポジトリ同期 (data-structure.md の Moderator 記載) は packets/backlog.md の Host-only 項目として別途管理"
+closeout_learning:
+  expected: "Keto namespaces.ts の permit 追加の反映手順 (keto コンテナ再起動要否・keto-migrate の扱い) と、auth_emumet_accounts 逆引き query の最終シグネチャ"
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "InstanceRole 割当・剥奪 admin REST API (PUT/DELETE /api/v1/admin/accounts/{account_id}/roles/{role})"
