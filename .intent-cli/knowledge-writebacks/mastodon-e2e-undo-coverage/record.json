@@ -1,0 +1,11 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "mastodon-e2e-undo-coverage",
+  "host_commit": "6a8c89f",
+  "recorded_at": "2026-08-20T14:53:13.0060443+00:00",
+  "targets": [
+    "intents/emumet/packets/backlog.md",
+    "intents/emumet/features/ap-federation/overview.md"
+  ],
+  "note": null
+}
