@@ -17,7 +17,6 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 | 8 | `di-cleanup-adapter-removal` — 完了 (issue #39 / PR #40 merge 2026-08-15) | ADR 0006 Stage 8 (最終)。adapter crate 解体・削除、kernel `*Query` facade (read_model 配下)、command 調停の use case inline 化 (Param 6型廃止)、crypto の kernel::interfaces::crypto 移動、server/src/api facade 6種 (DependOn* 非実装・FromRef<AppModule>)、`impl_database_delegation!` に5 trait 追加 + AppModule/Handler 二重委譲解消、`transfer`→`dto` rename + `Signal` trait 削除。確定値は ADR 0006 決定7/10 に writeback 済み | 2-7 |
 | 9 | `moderation-role-assignment` — issue [#45](https://github.com/ShuttlePub/Emumet/issues/45) 公開済み (2026-08-19) | Admin/Moderator ロール割当管理 API | — |
 | 10 | `moderation-account-report` | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 9 |
-| 11 | `mastodon-e2e-undo-coverage` | Mastodon 実機 E2E に Undo(Follow) 相互運用シナリオを追加(unfollow-api の Undo 配送を実 Mastodon 相手に検証。S7-S9 は完成済み) (2026-08-12 C4 grill より) | — |
 | 12 | `media-upload` | 画像アップロード API + S3 互換ストレージ (開発: RustFS) + Actor icon/image 反映 + Update 配送 (2026-08-12 C1 grill でブロッカー解消、packet draft 済み) | — |
 
 1-8 は [../decisions/0006-architecture-realignment-transaction-projection.md](../decisions/0006-architecture-realignment-transaction-projection.md)
@@ -27,6 +26,15 @@ packet 起こしは `architecture-foundation` から。
 命名の正規化 (ADR §10) は各 Stage 冒頭の純粋 rename commit として実施する。
 
 ## 完了
+
+- `mastodon-e2e-undo-coverage` — issue #46 / PR #47 マージ済み(2026-08-20、
+  merge commit 91faa72)。Mastodon 実機 E2E (`mastodon_full_federation_scenario`) に
+  S10 (双方向 Undo(Follow)) を追加。Emumet→Mastodon (unfollow REST → 相手 followers
+  から消失) / Mastodon→Emumet (Mastodon REST unfollow → inbox Undo(Follow) 処理) の
+  両方向をポーリングで外部観測アサート。`MastodonClient::unfollow_account` /
+  `wait_for_mastodon_followers_absent` / `wait_for_mastodon_following_absent` /
+  `wait_for_emumet_collection_count_at_most` ヘルパー整備。本体コード diff なし
+  (テストのみのスライス)。2026-08-12 C4 grill の残余ギャップを解消
 
 - `account-aggregate-repository` — issue #26 / PR #27 マージ済み(2026-08-13、
   merge commit d064264)。ADR 0006 Stage 2。AggregateRepository port

@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-20T13:58:51.292287+00:00",
+  "updated_at": "2026-08-20T14:50:44.0081466+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -326,7 +326,7 @@
     {
       "execution_unit": "mastodon-e2e-undo-coverage",
       "title": "Mastodon \u5B9F\u6A5F E2E \u306B Undo(Follow) \u76F8\u4E92\u904B\u7528\u30B7\u30CA\u30EA\u30AA (S10) \u3092\u8FFD\u52A0",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
@@ -340,6 +340,7 @@
         "number": 46,
         "url": "https://github.com/ShuttlePub/Emumet/issues/46"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/47",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

@@ -41,4 +41,5 @@
 - 決定記録: [../decisions/0005-rest-api-is-emumet-specific.md](../decisions/0005-rest-api-is-emumet-specific.md)
 - 経緯・Q/A: [../interview/2026-08-12-c4-rest-api-mastodon-compat.md](../interview/2026-08-12-c4-rest-api-mastodon-compat.md)
 - フォローアップ: Mastodon 実機 E2E の Undo(Follow) カバレッジ追加を
-  packet backlog に登録(`mastodon-e2e-undo-coverage`)
+  packet backlog に登録(`mastodon-e2e-undo-coverage`) → **完了**
+  (issue #46 / PR #47 マージ 2026-08-20。S10 双方向 Undo(Follow) を追加)
