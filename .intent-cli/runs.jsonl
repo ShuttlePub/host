@@ -52,3 +52,5 @@
 {"ts":"2026-08-19T06:20:38.7098694+00:00","execution_unit":"media-upload","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":44}
 {"ts":"2026-08-19T15:35:42.1748571+00:00","execution_unit":"moderation-role-assignment","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/moderation-role-assignment/"}
 {"ts":"2026-08-19T15:35:49.1835453+00:00","execution_unit":"moderation-role-assignment","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#45","reason":"https://github.com/ShuttlePub/Emumet/issues/45"}
+{"ts":"2026-08-20T13:58:42.1684238+00:00","execution_unit":"mastodon-e2e-undo-coverage","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/mastodon-e2e-undo-coverage/"}
+{"ts":"2026-08-20T13:58:51.292287+00:00","execution_unit":"mastodon-e2e-undo-coverage","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#46","reason":"https://github.com/ShuttlePub/Emumet/issues/46"}

@@ -1,0 +1,65 @@
+execution_unit: mastodon-e2e-undo-coverage
+implementation_issue_packet:
+  issue_title: "Mastodon 実機 E2E に Undo(Follow) 相互運用シナリオ (S10) を追加"
+  issue_kind: feature
+  source_execution_unit: mastodon-e2e-undo-coverage
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: server/tests/e2e_ap_mastodon.rs, server/tests/support/mastodon.rs, server/tests/support/mastodon_setup.rs, README.md
+  target_part: "Mastodon E2E の S10 ステップ (Undo(Follow) 相互運用) + Mastodon クライアント/ポーリング ヘルパー追加"
+  dependencies: []
+  technical_baseline:
+    - "外向き Undo(Follow) REST (POST /api/v1/accounts/{account_id}/unfollow, 204/400/403/404/422) は unfollow-api (PR #21) で実装済み"
+    - "inbox の Undo(Follow) 受信処理 (handle_undo_follow) も実装済み・冪等 (characterization_tests.rs inbox_undo_follow_is_idempotent)"
+    - "Mastodon E2E は server/tests/e2e_ap_mastodon.rs の単一テスト mastodon_full_federation_scenario が S7-S9 を結合実行する形式"
+    - "mock peer 向け Undo(Follow) E2E (e2e_ap_mock.rs outbound_unfollow_sends_undo_to_remote_inbox) が検証項目のテンプレート"
+    - "Iceshrimp S10 (e2e_ap_iceshrimp.rs, Block/Undo(Block)) が実サーバー Undo 相互運用の直近先例"
+  intent_references:
+    - "intents/emumet/features/ap-federation/overview.md"
+    - "intents/emumet/packets/backlog.md"
+    - "intents/emumet/clarifications/open.md"
+  acceptance_criteria:
+    - "mastodon_full_federation_scenario に S10 (Undo(Follow)) ステップが追加され、bash e2e/run-ap-e2e.sh (CI e2e.yml 相当) がグリーン"
+    - "Emumet→Mastodon 方向: post_unfollow が 204 を返し、Mastodon 側 followers 一覧から Emumet actor が消失し、Emumet 側 following コレクションの totalItems が 0 に戻る"
+    - "Mastodon→Emumet 方向: Mastodon REST の unfollow により Emumet inbox が Undo(Follow) を処理し、Emumet 側 followers コレクションの totalItems が 0 に戻る"
+    - "MastodonClient に unfollow_account メソッド、mastodon_setup に wait_for_mastodon_followers_absent (および必要なら following_absent) ヘルパーが追加されている"
+    - "README.md のシナリオ一覧に Mastodon 向け S10 (Undo(Follow)) の行が追加されている"
+
+intent_placement:
+  primary_intent: intents/emumet/features/ap-federation/overview.md
+  supporting_intents:
+    - intents/emumet/clarifications/open.md
+  new_intent_needed: false
+  placement_rationale: "ap-federation overview の関連スコープ「Mastodon 実機 E2E の Undo(Follow) カバレッジ追加」に直接対応 (2026-08-12 C4 grill のフォローアップ)"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/ap-federation/overview.md
+      - intents/emumet/packets/backlog.md
+    summary: "完了時に backlog #11 を完了セクションへ移動し、ap-federation/overview.md の該当行を実装済みとして更新 (host-only)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: ""
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
+
+implementation_issue:
+  issue_title: "Mastodon 実機 E2E に Undo(Follow) 相互運用シナリオ (S10) を追加"
+  target_repo: ShuttlePub/Emumet
+  dependencies: []
+  blocked_by: []
