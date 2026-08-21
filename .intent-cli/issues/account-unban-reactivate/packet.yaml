@@ -1,0 +1,66 @@
+implementation_issue_packet:
+  issue_title: "account-unban-reactivate: unban (Banned→Active) admin API + reactivate (deactivated 復帰) API と AccountEvent 拡張"
+  issue_kind: feature
+  source_execution_unit: account-unban-reactivate
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: kernel/src/entity/account.rs, application/src/service/account/moderation.rs, application/src/service/account, kernel/src/read_model/account.rs, driver/src/database/postgres/account/mod.rs, server/src/route/account/admin.rs, server/src/route/account/client.rs, server/src/api/admin_account.rs, server/src/schema/account.rs
+  target_part: "AccountEvent::Unbanned/Reactivated 追加 + Unban/ReactivateAccountUseCase + admin/client REST ルート"
+  dependencies: []
+  technical_baseline:
+    - "kernel: AccountEvent は Created/Updated/Deactivated/Suspended/Unsuspended/Banned (kernel/src/entity/account.rs:42-74)。Unbanned / Reactivated は未定義。EventApplier の Unsuspended (is_suspended guard → Active、同:266-278) が参考実装"
+    - "deactivated は AccountStatus ではなく Account.deleted_at で表現 (kernel/src/entity/account/status.rs:7, kernel/src/entity/account.rs:36)"
+    - "moderation usecase は ADR 0006 Stage 4 で UoW 化済み: ModerationReason::validate → find_by_nanoid_unfiltered → check_permission(instance_moderate) → tx 内 load → 状態 guard (Rejected) → save (application/src/service/account/moderation.rs:172 BanAccountUseCase)"
+    - "deactivate は owner の client ルート DELETE /api/v1/accounts/{account_id}。UoW で Account::deactivate 保存後、post-commit で Keto Owner/Editor/Signer 関係を削除 (application/src/service/account/deactivate.rs:72-86)。auth_emumet_accounts の紐付けは削除されない"
+    - "投影は tailing projector + read model update() が deleted_at と AccountStatus::Active (全 moderation 列 NULL 化) を担う (driver/src/database/postgres/account/mod.rs:171-223)。新イベントは EventApplier 経由で自動反映され、マイグレーション不要"
+    - "admin ルート既存例: POST /api/v1/admin/accounts/{account_id}/suspend|unsuspend|ban (server/src/route/account/admin.rs)、facade は AdminAccountApi (server/src/api/admin_account.rs)。ルート到達は OpenAPI 駆動テスト all_openapi_routes_are_reachable が自動カバー (server/src/route.rs:222)"
+    - "owner 確認は auth_emumet_accounts 紐付けで行うが、find_by_auth_id は deleted_at IS NULL でフィルタされる (driver/src/database/postgres/account/mod.rs:44-71) ため、deactivated アカウントの紐付け確認には削除込み query の追加が必要"
+    - "account 作成時の Keto Owner/Editor/Signer 付与パターンは create usecase (application/src/service/account/create.rs) に存在。KetoClient PermissionWriter は冪等 (再付与 409 / 未付与剥奪 404 を Ok 吸収)"
+  intent_references:
+    - intents/emumet/features/moderation/requirements.md
+    - intents/emumet/features/moderation/packets.md
+    - intents/emumet/features/account-management/overview.md
+  acceptance_criteria:
+    - "Admin/Moderator が POST /api/v1/admin/accounts/{account_id}/unban で Banned アカウントを Active に戻せる (認可は ban と同じ instance moderate permit)"
+    - "unban 対象が Banned でない場合 (Active/Suspended) と deactivated の場合は Rejected (400)、存在しない account_id は 404、非モデレーターは 403"
+    - "unban 後、対象が find_by_nanoid (filtered) で取得可能になり、GET /api/v1/accounts/{id} の moderation が null になる"
+    - "owner (auth_emumet_accounts 紐付き AuthAccount) が POST /api/v1/accounts/{account_id}/reactivate で deactivated アカウントを復帰できる (deleted_at クリア)"
+    - "reactivate 完了時に Keto の Owner/Editor/Signer 関係が owner AuthAccount に再付与され、以降の owner 操作 (PATCH update 等) が認可を通る"
+    - "reactivate 対象が deactivated でない場合は Rejected、紐付けのない AuthAccount からは 403、存在しない account_id は 404"
+    - "AccountEvent::Unbanned / Reactivated が EventApplier に実装され、rehydrate (load) と tailing projector の両方で正しく状態復元・投影される (reactivate は status を変更せず deleted_at のみクリア)"
+    - "usecase 単体テスト (mock) で正常系・状態 guard 拒否・認可拒否・Keto 再付与呼び出しが検証される"
+
+intent_placement:
+  primary_intent: intents/emumet/features/moderation/requirements.md
+  supporting_intents:
+    - intents/emumet/features/account-management/overview.md
+  new_intent_needed: false
+  placement_rationale: "account-write-usecases (ADR 0006 Stage 4) closeout で「unban / reactivate は未実装のまま」と記録された moderation 操作ペアの補完。moderation の既存スコープ内で intent-tree 新規ノード不要"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/moderation/packets.md
+    summary: "完了時に features/moderation/packets.md へ本 unit の issue/PR リンクを追記する (backlog 運用メモの既定動作)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "reactivate の status 非リセット方針 (deactivated 前の status を維持) は packet スコープの設計判断。必要なら features/moderation/decisions.md に closeout 時記録"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "document リポジトリ同期は Host-only backlog 項目として別途管理"
+closeout_learning:
+  expected: "reactivate の Keto 関係再付与で冪等性が成立することの確認結果 (deactivate 後に一部関係が残っていた場合の挙動)"
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "unban admin API (POST /api/v1/admin/accounts/{account_id}/unban) + reactivate client API (POST /api/v1/accounts/{account_id}/reactivate)"

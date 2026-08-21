@@ -12,3 +12,6 @@
    (packet: `.intent-cli/issues/block-mute-federation/`) — depends on: block-mute-core —
    **published: https://github.com/ShuttlePub/Emumet/issues/22** (intent-target) —
    **completed: https://github.com/ShuttlePub/Emumet/pull/23** (merged 2026-08-13)
+3. `block-mute-followups` — レビュー観測 3 件の消化 (重複 Block no-op 固定・
+   エラーパステスト・Iceshrimp S10 Undo(Block) 相手側観測)
+   (packet: `.intent-cli/issues/block-mute-followups/`) — depends on: block-mute-federation

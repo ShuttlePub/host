@@ -1,0 +1,55 @@
+implementation_issue_packet:
+  issue_title: "block-mute-followups: inbox Block/Undo(Block) テスト拡充 + Iceshrimp E2E S10 Undo(Block) 相手側観測 assert"
+  issue_kind: feature
+  source_execution_unit: block-mute-followups
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: application/src/service/activitypub/inbox/handlers.rs, server/tests/e2e_ap_iceshrimp.rs, server/tests/support/iceshrimp.rs, driver/src/database/postgres
+  target_part: "inbox Block/Undo(Block) ハンドラのエラーパス/重複配送テスト + Iceshrimp E2E S10 の Undo(Block) 相手側ポーリング検証"
+  dependencies: []
+  technical_baseline:
+    - "handle_block_activity (application/src/service/activitypub/inbox/handlers.rs:245-309): insert_if_absent が false (23505 重複) の場合 remove_follows_between を実行しない first-delivery ガード済み (Stage 9 re-apply で導入、handlers.rs:293)。重複 Block は tx 内 INSERT 失敗で tx abort → commit-as-rollback の no-op となる設計"
+    - "handle_undo_block_activity (同:311-357): unknown remote actor は Ok(()) early return、delete_if_exists で冪等削除"
+    - "既存の単体テストは handlers.rs:434 mod tests に 4 件 (純粋関数中心)。ハンドラ級のモックパターンは application/src/service/activitypub/collections.rs の MockModule が先例"
+    - "Iceshrimp E2E S10 (server/tests/e2e_ap_iceshrimp.rs:295-342): block 後の双方向 follows 除去・Iceshrimp followers 減少・unblock の 204 (signed Undo(Block) 配送) までは検証済み。Undo(Block) を Iceshrimp 側が実際に処理したことの外部観測は未検証"
+    - "Mastodon E2E (PR #47, mastodon-e2e-undo-coverage) の wait_for_* ポーリング helper (wait_for_mastodon_followers_absent / wait_for_emumet_collection_count_at_most 等) が相手側観測の直近先例"
+  intent_references:
+    - intents/emumet/features/block-mute/decisions.md
+    - intents/emumet/features/block-mute/overview.md
+  acceptance_criteria:
+    - "重複 Block 配送が no-op であることを実 Postgres 統合テストで固定: 同一 Block を 2 回配送しても handler が Ok を返し、follow 再解除が再実行されない (初回配送で削除済みのまま)"
+    - "inbox Block/Undo(Block) のエラーパス単体テストが追加される: 他人 inbox 宛 (ensure_local_actor_matches 拒否)、Block object が actor id でない Rejected、Undo object が Block でない Rejected、unknown remote actor"
+    - "Iceshrimp E2E S10 に unblock 後の相手側観測ポーリング assert が追加され、Iceshrimp 側で Block 状態が解消されたことを外部観測で確認する"
+    - "bash e2e/run-ap-e2e.sh (CI e2e.yml 相当) がグリーン"
+
+intent_placement:
+  primary_intent: intents/emumet/features/block-mute/decisions.md
+  supporting_intents:
+    - intents/emumet/features/block-mute/overview.md
+  new_intent_needed: false
+  placement_rationale: "features/block-mute/decisions.md 2026-08-13「フォローアップ候補 (PR #23 レビュー観測事項、非 blocking)」3 件の消化。block-mute feature の完了済みスコープ内"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/block-mute/decisions.md
+    summary: "完了時に decisions.md のフォローアップ候補 3 件を消化済みと更新する (host-side)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: ""
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []

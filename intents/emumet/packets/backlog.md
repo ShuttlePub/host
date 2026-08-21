@@ -16,8 +16,10 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 | 7 | `es-aggregates-migration` | ADR 0006 Stage 7。Profile / Metadata を ES repository/projector パターンに移行、`AccountProjection` の横展開 (新規 read query はドメイン Entity を返さない) | 2-4 |
 | 8 | `di-cleanup-adapter-removal` — 完了 (issue #39 / PR #40 merge 2026-08-15) | ADR 0006 Stage 8 (最終)。adapter crate 解体・削除、kernel `*Query` facade (read_model 配下)、command 調停の use case inline 化 (Param 6型廃止)、crypto の kernel::interfaces::crypto 移動、server/src/api facade 6種 (DependOn* 非実装・FromRef<AppModule>)、`impl_database_delegation!` に5 trait 追加 + AppModule/Handler 二重委譲解消、`transfer`→`dto` rename + `Signal` trait 削除。確定値は ADR 0006 決定7/10 に writeback 済み | 2-7 |
 | 9 | `moderation-role-assignment` — 完了 (issue #45 / PR [#48](https://github.com/ShuttlePub/Emumet/pull/48) merge 2026-08-21) | Admin/Moderator ロール割当管理 API。Keto `administrate` permit 新設 (admins のみ)、自己 Admin 剥奪拒否 (decisions.md D1/D2) | — |
-| 10 | `moderation-account-report` | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 9 |
+| 10 | `moderation-account-report` — grill 待ち (Ratcap admin-moderation 横断設計、2026-08-22 stack) | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 9 |
 | 12 | `media-upload` — 完了 (issue #43 / PR [#44](https://github.com/ShuttlePub/Emumet/pull/44) merge 2026-08-19) | 画像アップロード API + S3 互換ストレージ (開発: RustFS) + Actor icon/image 反映 + Update 配送 (2026-08-12 C1 grill でブロッカー解消、packet draft 済み) | — |
+| 13 | `account-unban-reactivate` | moderation 操作ペア補完: unban admin API + reactivate client API + AccountEvent::Unbanned/Reactivated (account-write-usecases の未実装ペア、2026-08-22 stack で packet draft) | — |
+| 14 | `block-mute-followups` | PR #23 レビュー観測 3 件の消化: 重複 Block no-op 固定・inbox エラーパステスト・Iceshrimp S10 Undo(Block) 相手側観測 (2026-08-22 stack で packet draft) | — |
 
 1-8 は [../decisions/0006-architecture-realignment-transaction-projection.md](../decisions/0006-architecture-realignment-transaction-projection.md)
 (2026-08-13 Accepted) に由来するアーキテクチャ再配置ユニット。
