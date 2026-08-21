@@ -17,7 +17,7 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 | 8 | `di-cleanup-adapter-removal` — 完了 (issue #39 / PR #40 merge 2026-08-15) | ADR 0006 Stage 8 (最終)。adapter crate 解体・削除、kernel `*Query` facade (read_model 配下)、command 調停の use case inline 化 (Param 6型廃止)、crypto の kernel::interfaces::crypto 移動、server/src/api facade 6種 (DependOn* 非実装・FromRef<AppModule>)、`impl_database_delegation!` に5 trait 追加 + AppModule/Handler 二重委譲解消、`transfer`→`dto` rename + `Signal` trait 削除。確定値は ADR 0006 決定7/10 に writeback 済み | 2-7 |
 | 9 | `moderation-role-assignment` — 完了 (issue #45 / PR [#48](https://github.com/ShuttlePub/Emumet/pull/48) merge 2026-08-21) | Admin/Moderator ロール割当管理 API。Keto `administrate` permit 新設 (admins のみ)、自己 Admin 剥奪拒否 (decisions.md D1/D2) | — |
 | 10 | `moderation-account-report` | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 9 |
-| 12 | `media-upload` | 画像アップロード API + S3 互換ストレージ (開発: RustFS) + Actor icon/image 反映 + Update 配送 (2026-08-12 C1 grill でブロッカー解消、packet draft 済み) | — |
+| 12 | `media-upload` — 完了 (issue #43 / PR [#44](https://github.com/ShuttlePub/Emumet/pull/44) merge 2026-08-19) | 画像アップロード API + S3 互換ストレージ (開発: RustFS) + Actor icon/image 反映 + Update 配送 (2026-08-12 C1 grill でブロッカー解消、packet draft 済み) | — |
 
 1-8 は [../decisions/0006-architecture-realignment-transaction-projection.md](../decisions/0006-architecture-realignment-transaction-projection.md)
 (2026-08-13 Accepted) に由来するアーキテクチャ再配置ユニット。
@@ -26,6 +26,10 @@ packet 起こしは `architecture-foundation` から。
 命名の正規化 (ADR §10) は各 Stage 冒頭の純粋 rename commit として実施する。
 
 ## 完了
+
+- `media-upload` — issue #43 / PR #44 マージ済み(2026-08-19)。画像アップロード API +
+  S3 互換ストレージ連携 (開発: RustFS) + Actor icon/image 反映 + Update(Person) 配送。
+  knowledge writeback は required:false のため本 backlog への反映のみ
 
 - `mastodon-e2e-undo-coverage` — issue #46 / PR #47 マージ済み(2026-08-20、
   merge commit 91faa72)。Mastodon 実機 E2E (`mastodon_full_federation_scenario`) に

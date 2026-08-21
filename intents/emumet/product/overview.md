@@ -25,11 +25,14 @@ Suspend/Unsuspend/Ban + Admin/Moderator ロール、ユーザーブロック/ミ
 (block-mute-core 完了: issue #16)、内部代理署名 API、
 外向き unfollow REST API(Undo(Follow) 配送) + REST followers/following 一覧
 (issue #20 / PR #21)、
-Iceshrimp/Mastodon 実機/Mock peer との E2E(CI 常時実行)。
+Iceshrimp/Mastodon 実機/Mock peer との E2E(CI 常時実行)、
+Block アクティビティ連合(送受信 Block/Undo(Block): issue #22 / PR #23)、
+画像アップロード + Actor icon/image 反映(issue #43 / PR #44)、
+Admin/Moderator ロール割当管理 API(issue #45 / PR #48)。
 
-未実装: Block アクティビティ連合(block-mute-federation)、画像アップロード、
-Create/Note 等の投稿送受信・転送、連携先 ShuttlePub サービス設定、通報・ロール割当管理
-(2026-08-12 確認、ap-federation 残スコープ)。
+未実装: 通報(AccountReport)、Create/Note 等の投稿送受信・転送、
+連携先 ShuttlePub サービス設定
+(2026-08-22 確認、ap-federation / moderation 残スコープ)。
 
 ## Non-goals
 
