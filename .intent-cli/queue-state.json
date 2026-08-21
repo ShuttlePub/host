@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-21T13:33:16.1244235+00:00",
+  "updated_at": "2026-08-21T15:46:20.7432288+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -342,6 +342,45 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/46"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/47",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "account-unban-reactivate",
+      "title": "account-unban-reactivate: unban (Banned\u2192Active) admin API \u002B reactivate (deactivated \u5FA9\u5E30) API \u3068 AccountEvent \u62E1\u5F35",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/account-unban-reactivate/implementation.md",
+        "review_context": ".intent-cli/issues/account-unban-reactivate/review-context.md",
+        "yaml": ".intent-cli/issues/account-unban-reactivate/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 49,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/49"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "block-mute-followups",
+      "title": "block-mute-followups: inbox Block/Undo(Block) \u30C6\u30B9\u30C8\u62E1\u5145 \u002B Iceshrimp E2E S10 Undo(Block) \u76F8\u624B\u5074\u89B3\u6E2C assert",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/block-mute-followups/implementation.md",
+        "review_context": ".intent-cli/issues/block-mute-followups/review-context.md",
+        "yaml": ".intent-cli/issues/block-mute-followups/packet.yaml"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
