@@ -25,3 +25,13 @@
 - Rationale: カウント方式は Keto 側の関係タプル走査が必要で複雑。
   自己剥奪拒否で通常経路のロックアウトは防げる。複数 Admin 同士の相互剥奪で
   全滅する経路は残るが、運用上のリスクとして許容する (issue #45 Out Of Scope 明記)。
+
+### D3: reactivate は status を非リセットとする — 2026-08-22
+
+- Context: account-unban-reactivate (issue #49 / PR #50)。deactivated アカウントの
+  復帰 (reactivate) で status をどう扱うか。
+- Decision: reactivate は deactivated 前の status を維持し、リセットしない。
+  Banned + deactivated のアカウントは reactivate で Banned に戻る。
+  ban の解除は unban で行う。
+- Rationale: deactivation (ユーザー自身の退会) と ban (モデレーション操作) は
+  独立した状態遷移であり、復帰操作がモデレーション状態を暗黙に解除すべきではない。

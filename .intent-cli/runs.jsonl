@@ -61,3 +61,5 @@
 {"ts":"2026-08-21T15:46:04.5423525+00:00","execution_unit":"account-unban-reactivate","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/account-unban-reactivate/"}
 {"ts":"2026-08-21T15:46:12.071966+00:00","execution_unit":"block-mute-followups","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/block-mute-followups/"}
 {"ts":"2026-08-21T15:46:20.7432288+00:00","execution_unit":"account-unban-reactivate","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#49","reason":"https://github.com/ShuttlePub/Emumet/issues/49"}
+{"ts":"2026-08-21T17:02:07.9570954+00:00","execution_unit":"account-unban-reactivate","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":50}
+{"ts":"2026-08-21T17:02:07.9570954+00:00","execution_unit":"account-unban-reactivate","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":50}

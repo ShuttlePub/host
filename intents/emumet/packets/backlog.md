@@ -18,7 +18,6 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 | 9 | `moderation-role-assignment` — 完了 (issue #45 / PR [#48](https://github.com/ShuttlePub/Emumet/pull/48) merge 2026-08-21) | Admin/Moderator ロール割当管理 API。Keto `administrate` permit 新設 (admins のみ)、自己 Admin 剥奪拒否 (decisions.md D1/D2) | — |
 | 10 | `moderation-account-report` — grill 待ち (Ratcap admin-moderation 横断設計、2026-08-22 stack) | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 9 |
 | 12 | `media-upload` — 完了 (issue #43 / PR [#44](https://github.com/ShuttlePub/Emumet/pull/44) merge 2026-08-19) | 画像アップロード API + S3 互換ストレージ (開発: RustFS) + Actor icon/image 反映 + Update 配送 (2026-08-12 C1 grill でブロッカー解消、packet draft 済み) | — |
-| 13 | `account-unban-reactivate` | moderation 操作ペア補完: unban admin API + reactivate client API + AccountEvent::Unbanned/Reactivated (account-write-usecases の未実装ペア、2026-08-22 stack で packet draft) | — |
 | 14 | `block-mute-followups` | PR #23 レビュー観測 3 件の消化: 重複 Block no-op 固定・inbox エラーパステスト・Iceshrimp S10 Undo(Block) 相手側観測 (2026-08-22 stack で packet draft) | — |
 
 1-8 は [../decisions/0006-architecture-realignment-transaction-projection.md](../decisions/0006-architecture-realignment-transaction-projection.md)
@@ -29,6 +28,17 @@ packet 起こしは `architecture-foundation` から。
 
 ## 完了
 
+- `account-unban-reactivate` — issue #49 / PR #50 マージ済み(2026-08-22、
+  merge commit 0eade33)。unban (Banned→Active) admin API + reactivate
+  (deactivated 復帰) client API + AccountEvent::Unbanned/Reactivated。
+  レビューで受領した設計判断2件: (a) projector の deactivation cascade から
+  `unlink_all_auth_accounts` を除去 (packet 前提「紐付けは削除されない」が現行コードと
+  矛盾しており、このままでは reactivate が恒常 403 になるため。regression test
+  `projected_deactivation_preserves_auth_account_linkage` で固定)、
+  (b) Rejected の HTTP mapping は既存共有 ErrorStatus マッピングの 422 を維持
+  (packet の 400 記載は「既存 admin ルート準拠」の原則に従い不採用)。
+  引き継ぎ事項: 本修正以前に unlink 済みの deactivated account は復帰不可。
+  救済が必要なら Created event からの backfill を別途判断
 - `media-upload` — issue #43 / PR #44 マージ済み(2026-08-19)。画像アップロード API +
   S3 互換ストレージ連携 (開発: RustFS) + Actor icon/image 反映 + Update(Person) 配送。
   knowledge writeback は required:false のため本 backlog への反映のみ

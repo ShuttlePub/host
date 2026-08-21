@@ -14,7 +14,8 @@
    (packet: `.intent-cli/issues/moderation-session-context/`) — depends on: — (role 付与は `moderation-role-assignment` が担うが、本 unit はそれをブロッキングしない) —
    **completed: https://github.com/ShuttlePub/Emumet/pull/18** (merged 2026-07-28)
 4. `account-unban-reactivate` — unban (Banned→Active) admin API + reactivate (deactivated 復帰) client API + AccountEvent::Unbanned/Reactivated
-   (packet: `.intent-cli/issues/account-unban-reactivate/`) — depends on: — (account-write-usecases の未実装ペア補完)
+   (packet: `.intent-cli/issues/account-unban-reactivate/`) — depends on: — (account-write-usecases の未実装ペア補完) —
+   **completed: https://github.com/ShuttlePub/Emumet/pull/50** (issue https://github.com/ShuttlePub/Emumet/issues/49, merged 2026-08-22)
 
 ## 未パケット化の残スコープ
 

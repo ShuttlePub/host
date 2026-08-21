@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-21T15:46:20.7432288+00:00",
+  "updated_at": "2026-08-21T17:02:07.965802+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -350,7 +350,7 @@
     {
       "execution_unit": "account-unban-reactivate",
       "title": "account-unban-reactivate: unban (Banned\u2192Active) admin API \u002B reactivate (deactivated \u5FA9\u5E30) API \u3068 AccountEvent \u62E1\u5F35",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
