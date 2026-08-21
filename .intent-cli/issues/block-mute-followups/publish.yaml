@@ -1,0 +1,7 @@
+execution_unit: block-mute-followups
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/block-mute-followups"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/block-mute-followups/github-body.md"
+created_issue_number: 51
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/51"
+published_label_name: null
