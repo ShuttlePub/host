@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-20T14:50:44.0081466+00:00",
+  "updated_at": "2026-08-21T13:33:16.1244235+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -304,7 +304,7 @@
     {
       "execution_unit": "moderation-role-assignment",
       "title": "moderation-role-assignment: InstanceRole(Admin/Moderator) \u5272\u5F53\u30FB\u5265\u596A\u306E admin REST API (Keto PermissionWriter \u7D4C\u7531)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
@@ -318,6 +318,7 @@
         "number": 45,
         "url": "https://github.com/ShuttlePub/Emumet/issues/45"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/48",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

@@ -56,3 +56,5 @@
 {"ts":"2026-08-20T13:58:51.292287+00:00","execution_unit":"mastodon-e2e-undo-coverage","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#46","reason":"https://github.com/ShuttlePub/Emumet/issues/46"}
 {"ts":"2026-08-20T14:50:44.0035367+00:00","execution_unit":"mastodon-e2e-undo-coverage","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":47}
 {"ts":"2026-08-20T14:50:44.0035367+00:00","execution_unit":"mastodon-e2e-undo-coverage","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":47}
+{"ts":"2026-08-21T13:33:16.1192428+00:00","execution_unit":"moderation-role-assignment","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":48}
+{"ts":"2026-08-21T13:33:16.1192428+00:00","execution_unit":"moderation-role-assignment","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":48}
