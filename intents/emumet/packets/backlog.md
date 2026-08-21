@@ -18,7 +18,6 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 | 9 | `moderation-role-assignment` — 完了 (issue #45 / PR [#48](https://github.com/ShuttlePub/Emumet/pull/48) merge 2026-08-21) | Admin/Moderator ロール割当管理 API。Keto `administrate` permit 新設 (admins のみ)、自己 Admin 剥奪拒否 (decisions.md D1/D2) | — |
 | 10 | `moderation-account-report` — grill 待ち (Ratcap admin-moderation 横断設計、2026-08-22 stack) | 通報(AccountReport)機能。Ratcap admin-moderation と横断設計 | 9 |
 | 12 | `media-upload` — 完了 (issue #43 / PR [#44](https://github.com/ShuttlePub/Emumet/pull/44) merge 2026-08-19) | 画像アップロード API + S3 互換ストレージ (開発: RustFS) + Actor icon/image 反映 + Update 配送 (2026-08-12 C1 grill でブロッカー解消、packet draft 済み) | — |
-| 14 | `block-mute-followups` | PR #23 レビュー観測 3 件の消化: 重複 Block no-op 固定・inbox エラーパステスト・Iceshrimp S10 Undo(Block) 相手側観測 (2026-08-22 stack で packet draft) | — |
 
 1-8 は [../decisions/0006-architecture-realignment-transaction-projection.md](../decisions/0006-architecture-realignment-transaction-projection.md)
 (2026-08-13 Accepted) に由来するアーキテクチャ再配置ユニット。
@@ -28,6 +27,15 @@ packet 起こしは `architecture-foundation` から。
 
 ## 完了
 
+- `block-mute-followups` — issue #51 / PR #52 マージ済み(2026-08-22、
+  merge commit ffb87d8)。PR #23 レビュー観測 3 件の消化:
+  重複 inbox Block no-op の実 DB 固定 (`inbox_block_duplicate_does_not_re_run_follow_removal`、
+  first-delivery ガード `if inserted` の mutation 感度 RED/GREEN 確認済み)・
+  inbox Block/Undo(Block) エラーパス単体テスト 4 件 (他人 inbox Rejected /
+  object 非 actor id Rejected / Undo 非 Block Rejected / unknown remote actor Ok)・
+  Iceshrimp E2E S10 の Undo(Block) 相手側観測 (users/show isBlocked true→false 遷移を
+  `wait_for_iceshrimp_block_present/absent` で固定)。本番コード挙動変更なし (テスト強化スライス)。
+  CI e2e 含め全緑
 - `account-unban-reactivate` — issue #49 / PR #50 マージ済み(2026-08-22、
   merge commit 0eade33)。unban (Banned→Active) admin API + reactivate
   (deactivated 復帰) client API + AccountEvent::Unbanned/Reactivated。

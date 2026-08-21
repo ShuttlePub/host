@@ -14,7 +14,7 @@
 - Undo(Block) は元の Block アクティビティを embedded object として wrap し、
   activity id は block 行の永続 id から再構成する (配送時と同一 id を参照できる)
 
-### 2026-08-13: フォローアップ候補 (PR #23 レビュー観測事項、非 blocking)
+### 2026-08-13: フォローアップ候補 (PR #23 レビュー観測事項、非 blocking) — 消化済み (issue #51 / PR #52, 2026-08-22)
 
 - 重複 Block 受信時に follow 再解除を再実行しない (first-delivery 時のみ)。
   再フォロー防止機構ができるまでは実害なし

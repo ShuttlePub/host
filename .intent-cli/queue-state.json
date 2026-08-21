@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-21T17:04:30.8413743+00:00",
+  "updated_at": "2026-08-21T18:09:55.4874708+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -372,7 +372,7 @@
     {
       "execution_unit": "block-mute-followups",
       "title": "block-mute-followups: inbox Block/Undo(Block) \u30C6\u30B9\u30C8\u62E1\u5145 \u002B Iceshrimp E2E S10 Undo(Block) \u76F8\u624B\u5074\u89B3\u6E2C assert",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
