@@ -5,7 +5,8 @@
 ## Execution units
 
 1. `moderation-role-assignment` — インスタンスロール(Admin/Moderator)割当管理 API
-   (packet: `.intent-cli/issues/moderation-role-assignment/`)
+   (packet: `.intent-cli/issues/moderation-role-assignment/`) —
+   **completed: https://github.com/ShuttlePub/Emumet/pull/48** (merged 2026-08-21)
 2. `moderation-account-report` — 通報(AccountReport)機能
    (packet: `.intent-cli/issues/moderation-account-report/`) — depends on: moderation-role-assignment
 3. `moderation-session-context` — 認証済みセッションの admin/moderator ロールを `GET /api/v1/me` で提供
