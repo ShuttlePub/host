@@ -4,9 +4,11 @@
 
 ## Criteria
 
-- [ ] AC1: 実装方針が決定し、本 intent の `decisions.md` に記録されている。候補は「Ratcap 内 standalone SSR ページ」または「Emumet / 他サービスでホスト」である。
+- [x] AC1: 実装方針が決定し、本 intent の `decisions.md` に記録されている。(2026-08-24 解決: Ratcap BFF の素 HTML standalone ページ、D8)
 - [ ] AC2: `GET /oauth2/consent?consent_challenge=...` へアクセスした際、Hydra レスポンスが `action: "show_consent"` の場合、HTML 同意ページが表示される。
-- [ ] AC3: 同意ページには `client_name` と `requested_scope` の各要素が表示される。
+- [ ] AC3: 同意ページには `client_name` と `requested_scope` の各要素が表示される。スコープはラベルマップ経由の人間可読表示で、未知スコープは生名フォールバックされる。
+- [ ] AC3a: `Accept-Language: ja` のリクエストでは日本語ラベル、`en` では英語ラベルが返る。ラベル定義は言語追加可能な i18n 構造になっている (D9)。
+- [ ] AC3b: 同意ページの取得・送信が `ratcap_session` cookie なしで完結する (D10)。
 - [ ] AC4: 同意ページの HTML 内に `consent_challenge` を保持（hidden フィールドまたはセッション対応）し、POST 時に正しく送信される。
 - [ ] AC5: 「許可」ボタン押下で `POST /oauth2/consent` へ `accept: true` と `grant_scope` が送信され、返された 302 `Location` へリダイレクトされる。
 - [ ] AC6: 「拒否」ボタン押下で `POST /oauth2/consent` へ `accept: false` が送信され、返された 302 `Location` へリダイレクトされる。
