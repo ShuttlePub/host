@@ -1,21 +1,30 @@
 # isbot-editing — requirements
 
-> See [overview.md](overview.md) for goals.
+> See [overview.md](overview.md) for goals。2026-08-11 スコープ変更(D6: 作成時設定のみ、
+> 編集 UI 廃止)に伴い全面改訂。旧版(UpdateProfileInput / 編集フォーム前提の FR1-FR7)は
+> D6 で破棄済み。
 
 ## Functional requirements
 
-- FR1: `bff/schema.graphql` の `UpdateProfileInput` 入力型に `isBot: Boolean` フィールドを追加する。デフォルト値は `null` または未定義とし、未指定時は既存値を維持する。
-- FR2: `bff/resolvers.ts` の `updateProfile` リゾルバーが `args.input.isBot` を受け取り、Emumet クライアントの `updateAccount` 呼び出しに `is_bot` として含める。
-- FR3: `bff/emumet/client.ts` および `bff/emumet/real.ts` / `bff/emumet/mock.ts` の `updateAccount` DTO に `isBot`（または Emumet 向け `is_bot`）フィールドを追加する。
-- FR4: `src/Api/GraphQL/Types.purs` 等の App 側 DTO に `isBot` フィールドを追加する。必要に応じて `src/Generated/` 自動生成型も更新する。
-- FR5: `src/View/AccountDetail.purs` の編集フォームに「bot アカウント」チェックボックスを追加し、保存ボタン押下時に `updateProfile` ミューテーションへ含める。
-- FR6: 既存の `isBot` 値を表示時に反映させ、編集開始時に現在の値を初期表示する。
-- FR7: GraphQL 型再生成 (`bun scripts/sync-graphql.ts`) 後、`spago build` がエラーなく完了する。
+- FR1: `bff/schema.graphql` の `CreateAccountInput` に `isBot: Boolean`(nullable)を追加する。
+- FR2: `bff/resolvers.ts` の `createAccount` リゾルバーが `input.isBot` を Emumet
+  `POST /api/v1/accounts` の `is_bot` へマッピングする(省略時は `false`)。
+- FR3: `bff/emumet/client.ts` / `real.ts` / `mock.ts` の `createAccount` DTO に
+  `isBot`(Emumet 向けは `is_bot`)を追加し、mock でも保存・読み出しできること。
+- FR4: `bun scripts/sync-graphql.ts` で `src/Generated/` を再生成し、App 側 DTO に
+  `isBot` が反映されること。
+- FR5: `src/App/View/AccountNew.purs` の作成フォームに「bot アカウント」チェックボックスを
+  追加し、作成ミューテーションへ含める。
+- FR6: アカウント詳細の編集フォームには is_bot 変更 UI を追加しない(作成時のみ設定)。
+  詳細画面では isBot バッジ表示のみ行う。
+- FR7: 作成フォームのチェックボックスは裸のままとし、注意書き・確認ダイアログ等の
+  追加 UI は設けない(2026-08-24 grill Q1 / D7)。
 
 ## Non-functional requirements
 
-- NFR1: 既存のプロフィール編集フロー（displayName, summary, iconUrl, bannerUrl）を壊さない。
-- NFR2: 本機能は小規模修正のため、新規ページ追加やルーティング変更を行わない。
-- NFR3: テストカバレッジ：BFF 側は `bff/resolvers.test.ts` または同等のテストに `isBot` の更新ケースを 1 件追加する。PureScript 側はフロントテストがあればフォーム状態のケースを追加する。
-- NFR4: 変更は `dev` / `mock` / `release` 全モードでビルド可能であること。
-- NFR5: Emumet API の `is_bot` フィールドが boolean として返却される前提で、型変換は minimap（`isBot` ↔ `is_bot`）を通じて一元化する。
+- NFR1: 既存のアカウント作成フロー(name 入力・作成後遷移)を壊さない。
+- NFR2: 新規ページ追加やルーティング変更を行わない。
+- NFR3: BFF 側テストに isBot 指定の作成ケースを含める。PureScript 側は現状
+  テストスイートが空のためビルド成功をもって足す。
+- NFR4: `dev` / `mock` / `release` 全モードでビルド可能であること。
+- NFR5: 型変換は BFF の DTO 変換層(`isBot` ↔ `is_bot`)に一元化する(D2 継続)。

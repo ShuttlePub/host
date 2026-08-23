@@ -20,3 +20,6 @@
   - 理由：Emumet は ShuttlePub サービスのアカウント管理機能を提供することが目的であり、bot→人間等の後付け変更は用途上不自然。作成時に確定させるのが自然。
   - 影響：D1（`UpdateProfileInput` への追加）・D3（AccountDetail 編集フォームへの配置）は**破棄**。代わりに `CreateAccountInput.isBot` + `AccountNew` フォームへの追加とする。D2 の命名規則（camelCase↔snake_case）と D5 の生成物コミット規則は継続。
   - 補足：Emumet の `CreateAccountRequest` は `is_bot` を必須フィールドとして既に受け付けるため、バックエンド変更不要。
+- D7: 作成フォームの bot チェックボックスに注意書き・確認ダイアログは追加しない (2026-08-24 grill Q1)。
+  - 理由：ShuttlePub はサービス運営者向け管理 UI で、利用者は bot フラグの意味を理解している層。誤設定時は Emumet API 直接叩きで修正可能とする。
+  - 影響：現行実装(裸のチェックボックス)を受入最終形とし、追加の UI 変更は行わない。

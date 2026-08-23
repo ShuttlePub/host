@@ -16,9 +16,9 @@ Ratcap は Emumet の Web フロントエンド。PureScript + Flame (Elm アー
                           [Emumet API]
 ```
 
-## 現状カバレッジ (2026-07 時点)
+## 現状カバレッジ (2026-08-24 時点)
 
-実装済み: アカウント一覧 / 詳細 / 作成、プロフィール編集、メタデータ CRUD、認証 (BFF 経由 Kratos + Hydra)。
+実装済み: アカウント一覧 / 詳細 / 作成 (作成時 is_bot 設定を含む)、プロフィール編集、メタデータ CRUD、認証 (BFF 経由 Kratos + Hydra)、settings-hub。
 
 ## 不足画面 (feature 一覧)
 
@@ -26,13 +26,14 @@ Ratcap は Emumet の Web フロントエンド。PureScript + Flame (Elm アー
 
 | # | Feature | 種別 | 優先度 | バックエンド API |
 |---|---------|------|--------|------------------|
-| 1 | [settings-hub](../features/settings-hub/) | ユーザー | 高 | なし (情報アーキテクチャ) |
-| 2 | [account-deactivation](../features/account-deactivation/) | ユーザー | 高 | `DELETE /api/v1/accounts/{id}` |
-| 3 | [follow](../features/follow/) | ユーザー | 高 | `POST /api/v1/accounts/{id}/follow` |
-| 4 | [block-mute](../features/block-mute/) | ユーザー | 中 | `POST/GET /api/v1/accounts/{id}/{block,unblock,blocks,mute,unmute,mutes}` |
-| 5 | [admin-moderation](../features/admin-moderation/) | 管理 | 中 | `POST /api/v1/admin/accounts/{id}/{suspend,unsuspend,ban}` |
-| 6 | [isbot-editing](../features/isbot-editing/) | ユーザー | 低 | `PATCH /api/v1/accounts/{id}` (is_bot) |
-| 7 | [oauth2-consent](../features/oauth2-consent/) | 認証 | 低 | `GET/POST /oauth2/consent` |
+| 1 | [account-deactivation](../features/account-deactivation/) | ユーザー | 高 | `DELETE /api/v1/accounts/{id}` |
+| 2 | [follow](../features/follow/) | ユーザー | 高 | `POST /api/v1/accounts/{id}/follow` |
+| 3 | [block-mute](../features/block-mute/) | ユーザー | 中 | `POST/GET /api/v1/accounts/{id}/{block,unblock,blocks,mute,unmute,mutes}` |
+| 4 | [admin-moderation](../features/admin-moderation/) | 管理 | 中 | `POST /api/v1/admin/accounts/{id}/{suspend,unsuspend,ban}` |
+| 5 | [oauth2-consent](../features/oauth2-consent/) | 認証 | 低 | `GET/POST /oauth2/consent` |
+
+完了済み feature: settings-hub (ShuttlePub/RatCap#3)、[isbot-editing](../features/isbot-editing/)
+(作成時設定のみ・編集 UI は D6 で意図的に非提供。2026-08-24 完了記録)。
 
 ## 共通の依存関係
 

@@ -4,7 +4,13 @@
 
 ## Execution units
 
-### Packet 1: 作成時 is_bot 設定(BFF + 型生成 + 作成フォーム)
+### Packet 1: 作成時 is_bot 設定(BFF + 型生成 + 作成フォーム) — 完了 (2026-08-24)
+
+> **完了記録**: issue 未発行のまま実装済みであることを 2026-08-24 grill で確認。
+> 実体は RatCap の初期 BFF コミット群(`79b745f` / `4b60abe`)に含まれ、backlog
+> 起票(2026-08-11)以前から main に存在した。AC1-AC10 を 2026-08-24 に検証済み
+> (bun test 51/51 pass、spago ビルド成功)。UI 受入の最終形は grill Q1 / D7 で確定
+> (注意書きなしの裸チェックボックス)。AC11 (手動 smoke) は次回 UI 変更時に併せて実施。
 
 - 内容
   - `bff/schema.graphql` の `CreateAccountInput` に `isBot: Boolean` を追加する。
