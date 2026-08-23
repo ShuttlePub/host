@@ -1,0 +1,7 @@
+execution_unit: moderation-account-report
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/moderation-account-report"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/moderation-account-report/github-body.md"
+created_issue_number: 53
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/53"
+published_label_name: null

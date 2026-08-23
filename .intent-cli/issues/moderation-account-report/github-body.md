@@ -50,6 +50,19 @@ Target paths: `kernel/src/prelude/entity, kernel/src/interfaces/repository, appl
 Target part: AccountReport aggregate + イベント + tailing projector +
 read projection + 通報作成 client API + ハンドリング admin API
 
+## In Scope
+
+- `AccountReport` aggregate + イベント (account_report_created /
+  account_report_closed) + イベント/projection テーブルの migration
+- `AggregateRepository<AccountReport>` の Postgres 実装登録と
+  tailing projector + read projection (version-gated upsert)
+- 通報作成 client API: `POST /api/v1/reports` (target nanoid + category +
+  comment。other 時は comment 必須)
+- ハンドリング admin API: `GET /api/v1/admin/reports` (open フィルタ +
+  未対応件数 count)、`POST /api/v1/admin/reports/{id}/resolve|dismiss`
+  (close_reason 必須、既 closed は Rejected)
+- ユースケース単体テスト + projector 統合テスト + REST 結合テスト
+
 ## Acceptance Criteria
 
 - 認証済みユーザーが POST /api/v1/reports (仮パス) でローカルアカウントへの
@@ -74,9 +87,28 @@ read projection + 通報作成 client API + ハンドリング admin API
 - 通報と suspend/ban の自動連動
 - Ratcap 側 UI — Ratcap `admin-moderation` packet (本 packet マージ後に publish)
 
-## References
+## Verification
+
+- use case 単体テスト (mock PermissionChecker / repo): 作成正常系、
+  other 時 comment 必須違反、非モデレーターの一覧/遷移で PermissionDenied、
+  既 closed への再遷移で Rejected、未存在 target で NotFound
+- projector 統合テスト: created → projection 反映、closed → 状態更新、
+  重複適用の冪等性 (version-gated upsert)
+- REST 結合: 作成 → admin 一覧に open で出現 → resolve で resolved 遷移 →
+  open フィルタから消失
+- `git diff --check`
+
+## Related Links
 
 - Design decisions: `intents/emumet/features/moderation/decisions.md` D4
 - Grill record: `intents/emumet/interview/2026-08-23-moderation-account-report-grill.md`
   (CLI session: `intents/emumet/interviews/moderation-account-report.json` Q1-Q10)
 - Feature: `intents/emumet/features/moderation/` (overview / requirements / packets)
+- 前提 (merged): issue #45 / PR #48 (moderation-role-assignment)
+
+## Base Branch Policy
+
+Policy: `direct-main`
+Expected PR base branch: `main`
+
+Open all child PRs against `main` directly.
