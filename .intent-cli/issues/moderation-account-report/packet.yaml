@@ -1,0 +1,66 @@
+implementation_issue_packet:
+  issue_title: "moderation-account-report: 通報(AccountReport)機能 — 作成 API + モデレーターハンドリング API (ES aggregate、3状態)"
+  issue_kind: feature
+  source_execution_unit: moderation-account-report
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: kernel/src/prelude/entity, kernel/src/interfaces/repository, application/src/service, application/src/projection, server/src/route, server/src/api, driver/src/database/postgres, migrations
+  target_part: "AccountReport aggregate + イベント + tailing projector + read projection + 通報作成 client API + ハンドリング admin API"
+  dependencies: []
+  technical_baseline:
+    - "ADR 0006 パターン確立済み: AggregateRepository<A> port (save(CommandEnvelope), Rehydrated<A>) + Postgres 実装 + tailing projector (event seq + projection_checkpoints) (kernel/src/interfaces/repository, application/src/projection, driver/src/database/postgres)"
+    - "Account aggregate と同型の ES 実装例: Account / Profile / Metadata (account_events 等、event テーブルに seq 列 + version-gated upsert の冪等 applier)"
+    - "認可パターン: application/src/permission.rs の check_permission + instance_moderate() (PermissionReq::instance(\"moderate\"))、Keto namespaces.ts の Instance.permits.moderate は admins + moderators 包含済み (変更不要)"
+    - "ロール基盤: moderation-role-assignment 完了 (issue #45 / PR #48)。Admin/Moderator の付与・剥奪が可能"
+    - "admin ルート既存例: POST /api/v1/admin/accounts/{account_id}/suspend 等 (server/src/route/account/admin.rs)、facade は AdminAccountApi (server/src/api/admin_account.rs)。エラーマッピングは既存共有 ErrorStatus マッピングに倣う (PermissionDenied → 403、NotFound → 404、Rejected → 422)"
+    - "client ルート既存例: 認証済みユーザー向け API (unfollow 等)。AuthClaims → resolve_auth_account_id → 所有 Account 解決の既存経路"
+    - "設計決定: features/moderation/decisions.md D4 (2026-08-23 横断 grill、interviews/moderation-account-report.json Q1-Q10)"
+  intent_references:
+    - intents/emumet/features/moderation/overview.md
+    - intents/emumet/features/moderation/requirements.md
+    - intents/emumet/features/moderation/decisions.md
+    - intents/emumet/interview/2026-08-23-moderation-account-report-grill.md
+  acceptance_criteria:
+    - "認証済みユーザーが POST /api/v1/reports (仮パス) でローカルアカウントへの通報を作成できる (target nanoid + category [spam|harassment|other] + comment。other 時は comment 必須、それ以外は任意)"
+    - "リモートアカウント・存在しないアカウントへの通報は 404、不正 category は 400 になる"
+    - "instance_moderate を持つユーザー (Admin/Moderator) が GET /api/v1/admin/reports で通報一覧を取得できる (open のフィルタと未対応件数 count を含む)。権限なしは 403"
+    - "instance_moderate を持つユーザーが POST /api/v1/admin/reports/{id}/resolve および /dismiss で close_reason 必須の状態遷移を実行できる。既に closed の通報への再遷移は Rejected (422)"
+    - "通報は作成後 immutable (type/comment の更新 API は存在しない)"
+    - "通報の作成・状態遷移が account_report_created / account_report_closed (resolution 分類 + close_reason) イベントとして保存され、tailing projector が read projection (ReportProjection) を冪等に更新する"
+    - "同一 reporter から同一 target への重複通報は別レコードとして許可される"
+    - "ユースケース単体テスト (mock 権限/repo) で作成・権限拒否・二重クローズ拒否・other 時 comment 必須が検証される"
+
+intent_placement:
+  primary_intent: intents/emumet/features/moderation/overview.md
+  supporting_intents:
+    - intents/emumet/features/moderation/requirements.md
+    - intents/emumet/features/moderation/decisions.md
+  new_intent_needed: false
+  placement_rationale: "moderation feature の残スコープ「通報(AccountReport)」として既に位置付け済み (features/moderation/packets.md unit 2)。intent-tree 新規ノード不要"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: "features/moderation/packets.md の unit 2 として確定済み。完了時に packets.md へ issue/PR リンクを追記する (knowledge_updates.intent_tree 運用メモ)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "通報設計 (3状態・ES aggregate・instance_moderate 流用) は features/moderation/decisions.md D4 に記録済み (cross-domain ADR は不要)"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "document リポジトリの data-structure.md AccountReport イベント記載は実装と差分あり (updated 廃止・closed に resolution 追加)。docs 同期は packets/backlog.md の Host-only 項目として別途管理"
+closeout_learning:
+  expected: "AccountReport イベントテーブル/projection の最終命名と、通報一覧 API のフィルタ・ページネーション最終シグネチャ"
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "通報作成 client API (POST /api/v1/reports) + ハンドリング admin API (GET /api/v1/admin/reports, POST /api/v1/admin/reports/{id}/resolve|dismiss)"

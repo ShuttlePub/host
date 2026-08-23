@@ -43,3 +43,19 @@
 - **実施順位と通報機能との統合設計 (2026-08-11 オペレーター決定)**
   - 本 feature の実施は slice 順序の**最後**とする。外部からの通報(AccountReport)機能と合わせて設計を詰めてから実施する。
   - 通報機能は Emumet 側 backlog に `moderation-account-report` packet として存在する(`intents/emumet/packets/backlog.md`)。モデレーション設計時に Emumet/Ratcap 横断で扱う。
+- **通報(AccountReport)統合設計の確定 (2026-08-23 横断 grill)**
+  - Emumet `moderation-account-report` との横断 grill が完了し、設計が確定した
+    (Emumet 側記録: `intents/emumet/features/moderation/decisions.md` D4、
+    interview `intents/emumet/interview/2026-08-23-moderation-account-report-grill.md`)。
+  - **管理 UI は /admin ルート新設に集約する** (open-questions.md の「admin UI 配置」は
+    これで決着)。`/admin/reports` (未対応キュー一覧) + `/admin/reports/{id}`
+    (詳細・resolve/dismiss・対象アカウントへの suspend/ban 導線) を設け、
+    停止/BAN 操作もアカウント詳細の Admin セクションから /admin へ移す。
+  - 通報作成導線は一般ユーザー向けにアカウント詳細画面の「通報する」ボタン +
+    カテゴリ選択 (spam/harassment/other) / コメントフォーム。
+  - ナビゲーションの Admin メニューに未対応件数バッジを表示するため、
+    BFF GraphQL に openReportCount 相当の件数クエリを追加する。
+  - 通報ハンドリングの認可は Emumet の instance_moderate (Admin+Moderator) に従う。
+    BFF は GET /api/v1/me の instance_roles (admin または moderator) で UI を出し分ける。
+  - **実装順序**: Emumet の通報 API マージ後に本 feature を publish する
+    (2026-08-11 決定「通報と合わせて実施」を直列順序で具体化)。

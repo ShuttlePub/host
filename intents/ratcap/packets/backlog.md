@@ -24,7 +24,7 @@ Emumet は ShuttlePub サービスのアカウント管理機能を提供する�
 
 | # | execution unit | feature | 概要 | 依存 |
 |---|---|---|---|---|
-| 6 | `admin-moderation` | [admin-moderation](../features/admin-moderation/overview.md) | 停止/BAN UI。外部通報(AccountReport)と合わせて設計を詰める | 通報設計(Emumet `moderation-account-report` と横断) |
+| 6 | `admin-moderation` | [admin-moderation](../features/admin-moderation/overview.md) | 停止/BAN UI + 通報キュー UI (/admin 集約) + 未対応件数バッジ。設計確定 (2026-08-23 横断 grill、decisions.md 参照) | Emumet `moderation-account-report` マージ後に publish (直列) |
 
 ## 運用メモ
 

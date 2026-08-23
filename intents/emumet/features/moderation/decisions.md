@@ -35,3 +35,28 @@
   ban の解除は unban で行う。
 - Rationale: deactivation (ユーザー自身の退会) と ban (モデレーション操作) は
   独立した状態遷移であり、復帰操作がモデレーション状態を暗黙に解除すべきではない。
+### D4: AccountReport (通報) 横断設計 — 2026-08-23
+
+- Context: moderation-account-report (backlog #10)。Ratcap admin-moderation と
+  横断で grill 実施 (interview/2026-08-23-moderation-account-report-grill.md、
+  CLI セッション interviews/moderation-account-report.json Q1-Q10)。
+- Decision:
+  - 通報対象はローカルアカウントのみ。リモート通報・AP Flag 連合は将来の
+    ホストモデレーション feature で別途設計。
+  - 状態モデルは open / resolved / dismissed の3状態 + close_reason 必須。
+    通報は作成後 immutable (docs 案の account_report_updated は廃止)。
+  - カテゴリは列挙 (spam / harassment / other) 必須 + comment (other 時のみ必須)。
+  - 作成は認証済みローカルユーザー全員。重複通報は許可 (rate limit は将来対処)。
+    通報者本人向け一覧・状態開示は初期スコープ外。
+  - ハンドリング (一覧・状態遷移) の認可は既存 `instance_moderate` permit 流用
+    (Admin + Moderator)。Keto 変更なし。
+  - 永続化は ES aggregate + tailing projector (ADR 0006 パターン)。
+    イベントは account_report_created / account_report_closed
+    (resolution 分類 + close_reason)。
+- Rationale: モデレーターの「未対応キューを捌く」ワークフローを中核に据え、
+  監査証跡 (誰がいつどう判断したか) を ES で自然に残す。投稿通報・リモート通報・
+  通報者への開示はいずれも要件未整備のため将来論点として分離した。
+- Ratcap 側の対応決定 (admin-moderation 拡張): /admin ルート新設に管理機能集約
+  (/admin/reports キュー + 詳細 + 停止/BAN UI 移動)、通報作成はアカウント詳細の
+  ボタンから、ナビに未対応件数バッジ (GraphQL 件数クエリ)。
+  実装順序は Emumet 先行・マージ後に Ratcap publish。

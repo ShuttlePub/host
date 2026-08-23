@@ -15,10 +15,11 @@
   - 候補 3: mock ログイン時に「admin モード」フラグをリクエストボディで受け取る。
   - 影響ファイル: `index.ts` の `handleMockAuth`、 `src/App/View/Login.purs`。
 
-- **admin 管理 UI の配置場所**
-  - 管理操作をアカウント詳細画面にインラインで配置するか、 `/admin` 以下の別ルート（例: `/admin/accounts/{id}`）に分離するか未決定。
-  - インライン配置の場合: 既存 `AccountDetail` View の複雑化が懸念。
-  - 別ルートの場合: `Route.purs`、 `PageModel`、 `mkUpdate` のルーティング対応が増加する。
+- ~~**admin 管理 UI の配置場所**~~ **(2026-08-23 解決)**
+  - ~~管理操作をアカウント詳細画面にインラインで配置するか、 `/admin` 以下の別ルート（例: `/admin/accounts/{id}`）に分離するか未決定。~~
+  - ~~インライン配置の場合: 既存 `AccountDetail` View の複雑化が懸念。~~
+  - ~~別ルートの場合: `Route.purs`、 `PageModel`、 `mkUpdate` のルーティング対応が増加する。~~
+  - **決定**: `/admin` ルートを新設し管理機能を集約する (`/admin/reports` キュー + 詳細、停止/BAN 操作も移動)。通報(AccountReport)統合設計の横断 grill (2026-08-23) で確定。詳細は [decisions.md](decisions.md) を参照。
 
 - **BAN 済みアカウントの閲覧制限**
   - BAN 済みアカウントの詳細画面を admin 以外が閲覧できるようにするか、どのような表示制限を設けるか未決定。
