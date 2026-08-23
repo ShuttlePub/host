@@ -4,34 +4,24 @@
 
 ## Execution units
 
-### Packet 1: 実装方針決定と BFF エンドポイント設計
+### Packet: `oauth2-consent-flow` — 明示同意画面 (BFF standalone HTML + i18n) — issue 発行済み
+
+> **issue**: [ShuttlePub/RatCap#6](https://github.com/ShuttlePub/RatCap/issues/6)
+> (2026-08-24 publish)。旧 2 分割案 (Packet 1: 方針決定 + 表示 / Packet 2: POST +
+> エラーハンドリング) は 2026-08-24 grill で D8-D10 が確定したため 1 packet に集約。
 
 - 内容
-  - `open-questions.md` の Q1, Q2, Q3 をクローズし、`decisions.md` に記録する。
-  - `index.ts` に `/oauth2/consent` ルートを追加するかどうか、受け渡し方を決める。
-  - Emumet の `GET /oauth2/consent` を BFF 経由または直接プロキシして、HTML 生成に必要な情報（`client_name`, `requested_scope`, `consent_challenge`）を取得する。
-  - 同意ページ用のテンプレートまたは SSR コンポーネントを設計する。必要に応じて `Server.purs` 側に新しいレンダリング関数を追加するか、`index.ts` 内で軽量 HTML を返す。
+  - `index.ts` に `GET /oauth2/consent` (Emumet 呼出 → 同意フォーム HTML 描画 /
+    auto-skip 時 302 伝搬) と `POST /oauth2/consent` (許可/拒否の中継 → 302) を追加。
+    `/auth/*` と同じ層の BFF 素 HTML standalone ページ (D8)。Flame SSR / PureScript 側は
+    変更しない。
+  - スコープ表示は日本語プライマリの i18n ラベルマップ (言語コード → スコープ →
+    ラベル)。言語は `Accept-Language` からサーバーサイド判定、未知スコープは生名
+    フォールバック (D9)。
+  - `ratcap_session` を要求しない。challenge 欠落・不正時はエラーページ (D10)。
+  - BFF 単体テスト (Emumet 呼出 mock) + real モード手動 E2E。
+  - Hydra consent URL の Ratcap 向けデプロイ設定変更 (D6)。
 - 完了条件
-  - `decisions.md` に実装方針が確定して記録される。
-  - `GET /oauth2/consent?consent_challenge=...` で同意ページが表示される（または 302 が伝搬される）。
+  - acceptance.md の AC2-AC11 が満たされる。
 - 推定規模：中
-- 依存：なし（ただし open questions の解決が必要）
-
-### Packet 2: 同意/拒否 POST 処理とエラーハンドリング・テスト
-
-- 内容
-  - 同意ページのフォームから `POST /oauth2/consent` へ `consent_challenge`, `accept`, `grant_scope` を送信する。
-  - Emumet または Hydra から返る 302 リダイレクトをブラウザへ伝搬する。SSR 経由の場合はサーバー側リダイレクト、フォーム直接送信の場合はブラウザが自動で追従する。
-  - エラーハンドリング：無効な `consent_challenge`、未ログイン、Hydra エラー時の表示を実装する。
-  - `accept: false`（拒否）時の遷移先を確認し、必要ならエラー/キャンセルページを追加する。
-  - real モードで手動 consent フローを有効化し、E2E テストを行う。BFF 単体テストが可能な範囲は追加する。
-- 完了条件
-  - 「許可」「拒否」いずれも正常に OAuth2 フローを完了または安全に中断する。
-  - AC5 ~ AC11 が満たされる。
-- 推定規模：中
-- 依存：Packet 1 完了後
-
-## Ordering
-
-1. Packet 1: open questions を解決し、BFF/SSR エンドポイントと同意ページ表示を実装する。
-2. Packet 2: POST 処理、エラーハンドリング、 real モード E2E テストを実装する。
+- 依存：なし

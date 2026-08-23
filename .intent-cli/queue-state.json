@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-23T16:33:56.9679065+00:00",
+  "updated_at": "2026-08-23T18:36:55.0941136+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -407,6 +407,28 @@
         "repo": "ShuttlePub/Emumet",
         "number": 53,
         "url": "https://github.com/ShuttlePub/Emumet/issues/53"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "oauth2-consent-flow",
+      "title": "OAuth2 \u660E\u793A\u540C\u610F\u753B\u9762 (BFF standalone HTML \u30DA\u30FC\u30B8 \u002B i18n \u30B9\u30B3\u30FC\u30D7\u30E9\u30D9\u30EB)",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/ratcap/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/oauth2-consent-flow/implementation.md",
+        "review_context": ".intent-cli/issues/oauth2-consent-flow/review-context.md",
+        "yaml": ".intent-cli/issues/oauth2-consent-flow/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/RatCap",
+        "number": 6,
+        "url": "https://github.com/ShuttlePub/RatCap/issues/6"
       },
       "worker_role": "implementation",
       "review_role": "review",
