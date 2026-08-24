@@ -12,9 +12,9 @@
 
 ### 外向き(ShuttlePub → 連合)
 
-- ShuttlePub から投稿データを受け取る内部 API
-- Emumet が代理署名し、対象リモート inbox へ配送(OutboxActivity として記録)
-- 配送失敗時のリトライ方針(既存 delivery 機構の拡張)
+- 内部署名 API(`POST /internal/v1/accounts/{id}/sign`)で配送リクエストへの代理署名を提供
+- アクティビティの組み立て・ファンアウト先決定・リモート inbox への送信は ShuttlePub が行う
+- 配送失敗時のリトライ・配送記録は ShuttlePub 側の責務(Emumet の delivery 機構は外向きには使わない)
 
 ### 追加アクティビティ
 

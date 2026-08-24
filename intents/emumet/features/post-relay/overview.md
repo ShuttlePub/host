@@ -10,10 +10,11 @@ facets: [invariant, vocabulary]
 Emumet が中継する。分散思想(本体サービスは ShuttlePub)と ActivityPub 仕様
 (住所=配送先)のバランスを取る中核機能。
 
-2026-07-22 interview で確定した方針:
+2026-07-22 interview で確定し、2026-08-24 に外向きの責務分担を修正した方針:
 
-- **外向き**: ShuttlePub 本体から受け取った投稿に、Emumet が保持する秘密鍵で
-  代理署名し、Create/Note 等として外部 ActivityPub サーバーへ配送する
+- **外向き**: ShuttlePub が組み立てた投稿アクティビティ(Create/Note 等)の
+  配送リクエストに、Emumet が保持する秘密鍵で代理署名する(内部署名 API)。
+  **リモート inbox への配送自体は ShuttlePub が行う**(ADR 0003 amended)
 - **内向き**: inbox で Create/Note 等を受信し、そのアカウントの連携先 ShuttlePub
   サーバーへ転送する(転送先は Stellar ではなく ShuttlePub 本体。features/shuttlepub-link 参照)
 
@@ -21,13 +22,13 @@ Emumet が中継する。分散思想(本体サービスは ShuttlePub)と Activ
 
 - inbox の Create/Note(および Like/Announce/Delete/Update 等)ハンドラ
 - 連携先 ShuttlePub サーバーへの転送機構
-- ShuttlePub からの投稿受け口(内部 API)+ 代理署名 + 外部配送(OutboxActivity 記録)
-- 既存の内部署名 API(POST /internal/v1/accounts/{id}/sign)との役割整理
+- 代理署名の提供(内部署名 API `POST /internal/v1/accounts/{id}/sign`)
+- 配送(ファンアウト・送信・再送・配送記録)は ShuttlePub 側の責務であり本 feature のスコープ外
 
 ## Acceptance criteria summary
 
 - リモートからの Create/Note が連携先 ShuttlePub に転送される
-- ShuttlePub 発の投稿が署名付きでリモート inbox に配送される(E2E で検証)
+- ShuttlePub 発の投稿が Emumet の署名付きで ShuttlePub からリモート inbox へ配送される(E2E で検証)
 
 ## Related
 
