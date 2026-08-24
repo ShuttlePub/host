@@ -9,9 +9,8 @@ Emumet は ShuttlePub サービスのアカウント管理機能を提供する�
 
 | # | execution unit | feature | 概要 | 依存 |
 |---|---|---|---|---|
-| 1 | `oauth2-consent-flow` | [oauth2-consent](../features/oauth2-consent/overview.md) | 外部 ShuttlePub ホスト(サードパーティクライアント)向けの明示同意画面 | — |
-| 2 | `block-mute-management` | [block-mute](../features/block-mute/overview.md) | blocks/mutes 一覧 + 解除(追加 UI なし) | — |
-| 3 | `account-deactivation` | [account-deactivation](../features/account-deactivation/overview.md) | アカウント削除 + 確認ダイアログ | — |
+| 1 | `block-mute-management` | [block-mute](../features/block-mute/overview.md) | blocks/mutes 一覧 + 解除(追加 UI なし) | — |
+| 2 | `account-deactivation` | [account-deactivation](../features/account-deactivation/overview.md) | アカウント削除 + 確認ダイアログ | — |
 
 ## Blocked(Emumet 側 packet 待ち)
 
@@ -27,6 +26,16 @@ Emumet は ShuttlePub サービスのアカウント管理機能を提供する�
 
 ## 完了
 
+- `oauth2-consent-flow` — issue #6 / PR #7 マージ済み(2026-08-24、merge commit
+  `1676769`)。BFF `index.ts` に `GET/POST /oauth2/consent` を追加 (real モードのみ登録):
+  Emumet ShowConsent 呼出 → 同意フォーム standalone HTML 描画 / auto-skip 時 302 伝搬、
+  許可・拒否の中継 → 302。i18n スコープラベル (ja プライマリ + en、Accept-Language q 値
+  判定、未知スコープ生名フォールバック)、ratcap_session 不要 (challenge ベース)、
+  CSRF Origin/Referer 検証、HTML エスケープ、上游エラーの非露出。bun test 85 pass
+  (既存 51 + 新規 34)。D6 成果物 `deploy/hydra-consent-url.patch` を同梱し、
+  Emumet `ory/hydra/hydra.yml` へ適用済み (ローカル deploy 設定として未コミット。
+  Hydra 未起動のため次回起動時に有効化)。手動 E2E は未実施 (real モード環境依存、
+  PR 本文に明記)
 - `isbot-at-creation` — 2026-08-24 grill で実装済みを確認し完了記録。issue 未発行のまま
   初期 BFF コミット群(RatCap `79b745f` / `4b60abe`)に実装が含まれており、backlog 起票
   (2026-08-11) 以前から main に存在。AC1-AC10 検証済み (bun test 51/51、spago ビルド成功)。

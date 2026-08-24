@@ -72,3 +72,6 @@
 {"ts":"2026-08-23T18:36:55.0941136+00:00","execution_unit":"oauth2-consent-flow","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/RatCap#6","reason":"https://github.com/ShuttlePub/RatCap/issues/6"}
 {"ts":"2026-08-23T18:48:52.1459415+00:00","execution_unit":"moderation-account-report","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":54}
 {"ts":"2026-08-23T18:48:52.1459415+00:00","execution_unit":"moderation-account-report","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":54}
+{"ts":"2026-08-24T15:41:38.8918723+00:00","execution_unit":"oauth2-consent-flow","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/RatCap","pr":7}
+{"ts":"2026-08-24T15:42:57.4876801+00:00","execution_unit":"oauth2-consent-flow","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/RatCap","pr":7}
+{"ts":"2026-08-24T15:42:57.4876801+00:00","execution_unit":"oauth2-consent-flow","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/RatCap","pr":7}

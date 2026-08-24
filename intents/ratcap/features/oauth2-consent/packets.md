@@ -4,11 +4,13 @@
 
 ## Execution units
 
-### Packet: `oauth2-consent-flow` — 明示同意画面 (BFF standalone HTML + i18n) — issue 発行済み
+### Packet: `oauth2-consent-flow` — 明示同意画面 (BFF standalone HTML + i18n) — 完了
 
 > **issue**: [ShuttlePub/RatCap#6](https://github.com/ShuttlePub/RatCap/issues/6)
-> (2026-08-24 publish)。旧 2 分割案 (Packet 1: 方針決定 + 表示 / Packet 2: POST +
-> エラーハンドリング) は 2026-08-24 grill で D8-D10 が確定したため 1 packet に集約。
+> (2026-08-24 publish) / **PR**: [ShuttlePub/RatCap#7](https://github.com/ShuttlePub/RatCap/pull/7)
+> (2026-08-24 merge、merge commit `1676769`)。旧 2 分割案 (Packet 1: 方針決定 + 表示 /
+> Packet 2: POST + エラーハンドリング) は 2026-08-24 grill で D8-D10 が確定したため
+> 1 packet に集約。
 
 - 内容
   - `index.ts` に `GET /oauth2/consent` (Emumet 呼出 → 同意フォーム HTML 描画 /
