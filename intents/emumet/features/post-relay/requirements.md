@@ -14,7 +14,11 @@
 
 - 内部署名 API(`POST /internal/v1/accounts/{id}/sign`)で配送リクエストへの代理署名を提供
 - アクティビティの組み立て・ファンアウト先決定・リモート inbox への送信は ShuttlePub が行う
-- 配送失敗時のリトライ・配送記録は ShuttlePub 側の責務(Emumet の delivery 機構は外向きには使わない)
+- **署名時に Emumet がアクティビティ内容と発行元 ShuttlePub を記録する**(outbox 提供のデータソース。
+  既存資産 `kernel/src/entity/activitypub/outbox_activity.rs` の活用を検討)
+- actor の outbox(`GET /users/{id}/outbox`)を Emumet が公開する
+- 配送失敗時のリトライ・配送状態(配達済み/失敗)の記録は ShuttlePub 側の責務
+  (Emumet が記録するのは outbox 用のアクティビティ内容のみ)
 
 ### 追加アクティビティ
 
