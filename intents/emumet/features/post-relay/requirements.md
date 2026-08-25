@@ -16,6 +16,8 @@
   - ShuttlePub は remote activity ID をキーに冪等処理する
 - 転送は durable queue 経由とし、障害時も取りこぼさない(operator 判断 2026-08-24)。
   恒久失敗(バリデーション・未リンク・再試行枯渇)は dead-letter 相当の監査記録を残す
+- 再送ポリシー(確定 2026-08-25): 指数 backoff(初回30s、倍率2、上限1h、jitter 付き)、
+  72h で打ち切り dead-letter 化。監査記録は 30日保管
 
 ### 外向き(ShuttlePub → 連合)
 
@@ -27,6 +29,10 @@
     (capability 有効性 / POST・HTTPS / actor・attributedTo 一致 / ID namespace 内 /
     MVP 許可 type のみ)
   - wire contract: 返却された body/ヘッダを byte-exact で送信。外向き 64KiB 上限
+  - SLO・backpressure(確定 2026-08-25): p99 100ms・エラー率 0.1% 未満。過負荷時は
+    429 + Retry-After を返し ShuttlePub 側 queue backoff で応じる(Emumet 内に要求
+    キューを持たない)。レート制限は profile(link)単位 + 全体上限の2段。
+    Emumet 最大許容停止時間 72h(ShuttlePub queue 保持 72h と整合)
 - アクティビティの組み立て・ファンアウト先決定・リモート inbox への送信・
   リトライ・配送状態の記録は ShuttlePub が行う
 - **ID 名前空間**: Activity/Note の `id` は
@@ -42,6 +48,9 @@
   アクター文書ごと拒否するため、actor ドキュメントへの ShuttlePub URL 直接記載は不可)
 - deletion marker(署名した Delete の `object_id / profile_id / link_id / deleted_at`)
   を保持し、削除済み object URL は upstream より優先して Tombstone/410 を返す
+- unlink 後の旧 namespace プロキシ(確定 2026-08-25): 理由別ルール。ユーザー主体
+  unlink は read-only 無期限継続(upstream 7日連続到達不能で 502 化 → 30日後に 404)。
+  運営切断(abuse/規約違反)は即時遮断(全 object 404)。link 管理に unlink reason を記録
 
 ### 追加アクティビティ
 

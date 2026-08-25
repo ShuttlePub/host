@@ -43,3 +43,14 @@
 - フォローアップ: Mastodon 実機 E2E の Undo(Follow) カバレッジ追加を
   packet backlog に登録(`mastodon-e2e-undo-coverage`) → **完了**
   (issue #46 / PR #47 マージ 2026-08-20。S10 双方向 Undo(Follow) を追加)
+
+## Recently Resolved
+
+- 2026-08-25T14:11:06Z — unlink 後の旧 namespace (`/objects/<link-id>/...`) のプロキシ継続条件・遮断ルール
+  - Decision: (operator 確定 2026-08-25) **A で確定**: ユーザー主体 unlink → read-only プロキシ無期限継続 (upstream 応答する限り。7日連続到達不能で 502 化 → 30日後に 404)。 運営切断(abuse/規約違反) → 即時遮断(全 object 404)。 削除済み object は unlink 理由に関わらず Tombstone/410 を upstream より優先 (現行 requirements 通り)。link 管理に unlink reason の記録を追加する。
+
+- 2026-08-25T14:11:06Z — 署名 API の SLO(レイテンシ・エラー率)と backpressure 設計。Emumet 障害時の最大許容停止時間
+  - Decision: (operator 確定 2026-08-25) **A で確定**: SLO p99 100ms・エラー率 0.1% 未満。 過負荷時は Emumet が 429 + Retry-After を返し、ShuttlePub は queue backoff で応じる (Emumet 内に要求キューを持たない)。レート制限は profile(link)単位 + 全体上限の2段。 Emumet 最大許容停止時間 72h(ShuttlePub 側 durable queue 保持 72h と整合)。
+
+- 2026-08-25T14:10:57Z — 内向き転送(Emumet → ShuttlePub)が失敗した場合の再送間隔・保管期間の具体値
+  - Decision: (operator 確定 2026-08-25) **A で確定**: 指数 backoff (初回30s、倍率2、上限1h、jitter 付き)。72h で再試行打ち切り、 dead-letter 相当の監査記録へ移行。監査記録は 30日保管。

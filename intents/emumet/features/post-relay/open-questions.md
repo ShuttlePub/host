@@ -6,16 +6,26 @@
 
 - **ShuttlePub への転送プロトコル**: HTTP webhook / キュー(rikka-mq/Redis) / gRPC 等。
   ShuttlePub 本体側の受け口設計と合わせて決定が必要(durable queue 要件は確定済み。
-  requirements 参照)
+  requirements 参照)。**deferred 継続 (C2)**: 再開条件「ShuttlePub 本体実装の構想が立つ
+  こと」は未充足 (2026-08-25 operator 確認)
 - ShuttlePub から内部署名 API を呼ぶ際の認証方式(サービス間認証。
-  link capability の提示方法と一体で設計)
-- 転送に失敗した場合の再送間隔・保管期間の具体値(durable queue 方針は確定済み)
-- 署名 API の SLO(レイテンシ・エラー率)と backpressure 設計。Emumet 障害時の
-  最大許容停止時間(ShuttlePub 側 durable queue の保持方針と一体)
-- unlink 後の旧 namespace のプロキシ継続条件(read-only 継続がデフォルト。
-  遮断条件・期間の運用ルール)
+  link capability の提示方法と一体で設計)。**deferred 継続 (C2/C3 と同条件)**
 
 ## Resolved
+
+- ~~転送に失敗した場合の再送間隔・保管期間の具体値~~
+  → **確定 (2026-08-25)**: 指数 backoff (初回30s、倍率2、上限1h、jitter 付き)。
+  72h で再試行打ち切り、dead-letter 相当の監査記録へ移行。監査記録は 30日保管
+- ~~署名 API の SLO と backpressure、Emumet 障害時の最大許容停止時間~~
+  → **確定 (2026-08-25)**: SLO p99 100ms・エラー率 0.1% 未満。過負荷時は Emumet が
+  429 + Retry-After を返し、ShuttlePub は queue backoff で応じる(Emumet 内に要求
+  キューを持たない)。レート制限は profile(link)単位 + 全体上限の2段。最大許容停止
+  時間 72h(ShuttlePub 側 durable queue 保持 72h と整合)
+- ~~unlink 後の旧 namespace のプロキシ継続条件~~
+  → **確定 (2026-08-25)**: 理由別ルール。ユーザー主体 unlink → read-only プロキシ
+  無期限継続(upstream 応答する限り。7日連続到達不能で 502 化 → 30日後に 404)。
+  運営切断(abuse/規約違反) → 即時遮断(全 object 404)。削除済み object は理由に
+  関わらず Tombstone/410 優先。link 管理に unlink reason の記録を追加
 
 - ~~外向き配送で既存の内部署名 API(`POST /internal/v1/accounts/{id}/sign`)を
   そのまま使うのか、Emumet 主導の配送に置き換えるのか~~
