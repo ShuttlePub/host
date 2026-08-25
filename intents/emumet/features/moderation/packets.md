@@ -9,7 +9,9 @@
    **completed: https://github.com/ShuttlePub/Emumet/pull/48** (merged 2026-08-21)
 2. `moderation-account-report` — 通報(AccountReport)機能
    (packet: `.intent-cli/issues/moderation-account-report/`) — depends on: moderation-role-assignment —
-   **design fixed: 2026-08-23 横断 grill 完了 (decisions.md D4 / interview 2026-08-23)。packet draft 済み、publish 準備中**
+   **completed: https://github.com/ShuttlePub/Emumet/pull/54**
+   (issue https://github.com/ShuttlePub/Emumet/issues/53, merged 2026-08-23)。
+   design: 2026-08-23 横断 grill (decisions.md D4 / interview 2026-08-23)**
 3. `moderation-session-context` — 認証済みセッションの admin/moderator ロールを `GET /api/v1/me` で提供
    (packet: `.intent-cli/issues/moderation-session-context/`) — depends on: — (role 付与は `moderation-role-assignment` が担うが、本 unit はそれをブロッキングしない) —
    **completed: https://github.com/ShuttlePub/Emumet/pull/18** (merged 2026-07-28)

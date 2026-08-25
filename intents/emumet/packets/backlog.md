@@ -16,7 +16,7 @@ intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベ
 | 7 | `es-aggregates-migration` | ADR 0006 Stage 7。Profile / Metadata を ES repository/projector パターンに移行、`AccountProjection` の横展開 (新規 read query はドメイン Entity を返さない) | 2-4 |
 | 8 | `di-cleanup-adapter-removal` — 完了 (issue #39 / PR #40 merge 2026-08-15) | ADR 0006 Stage 8 (最終)。adapter crate 解体・削除、kernel `*Query` facade (read_model 配下)、command 調停の use case inline 化 (Param 6型廃止)、crypto の kernel::interfaces::crypto 移動、server/src/api facade 6種 (DependOn* 非実装・FromRef<AppModule>)、`impl_database_delegation!` に5 trait 追加 + AppModule/Handler 二重委譲解消、`transfer`→`dto` rename + `Signal` trait 削除。確定値は ADR 0006 決定7/10 に writeback 済み | 2-7 |
 | 9 | `moderation-role-assignment` — 完了 (issue #45 / PR [#48](https://github.com/ShuttlePub/Emumet/pull/48) merge 2026-08-21) | Admin/Moderator ロール割当管理 API。Keto `administrate` permit 新設 (admins のみ)、自己 Admin 剥奪拒否 (decisions.md D1/D2) | — |
-| 10 | `moderation-account-report` — 設計確定 (2026-08-23 横断 grill 完了、[../features/moderation/decisions.md](../features/moderation/decisions.md) D4)。packet draft 済み | 通報(AccountReport)機能。ローカルアカウントのみ・3状態(open/resolved/dismissed)・ES aggregate・instance_moderate 流用。Ratcap admin-moderation は Emumet マージ後に publish | 9 |
+| 10 | `moderation-account-report` — 完了 (issue #53 / PR [#54](https://github.com/ShuttlePub/Emumet/pull/54) merge 2026-08-23) | 通報(AccountReport)機能。ローカルアカウントのみ・3状態(open/resolved/dismissed)・ES aggregate・instance_moderate 流用。Ratcap admin-moderation は publish 可能 | 9 |
 | 12 | `media-upload` — 完了 (issue #43 / PR [#44](https://github.com/ShuttlePub/Emumet/pull/44) merge 2026-08-19) | 画像アップロード API + S3 互換ストレージ (開発: RustFS) + Actor icon/image 反映 + Update 配送 (2026-08-12 C1 grill でブロッカー解消、packet draft 済み) | — |
 
 1-8 は [../decisions/0006-architecture-realignment-transaction-projection.md](../decisions/0006-architecture-realignment-transaction-projection.md)
@@ -27,6 +27,14 @@ packet 起こしは `architecture-foundation` から。
 
 ## 完了
 
+- `moderation-account-report` — issue #53 / PR #54 マージ済み(2026-08-23、
+  merge commit 48422b0)。通報(AccountReport)機能: 作成 client API
+  (ローカルアカウント限定、category [spam|harassment|other] + comment、other 時 comment
+  必須) + モデレーターハンドリング admin API (一覧 + resolve/dismiss、close_reason 必須、
+  二重クローズは Rejected)。ES aggregate (account_report_created /
+  account_report_closed) + tailing projector + ReportProjection。認可は
+  instance_moderate 流用。設計: features/moderation/decisions.md D4
+  (2026-08-23 横断 grill)
 - `block-mute-followups` — issue #51 / PR #52 マージ済み(2026-08-22、
   merge commit ffb87d8)。PR #23 レビュー観測 3 件の消化:
   重複 inbox Block no-op の実 DB 固定 (`inbox_block_duplicate_does_not_re_run_follow_removal`、

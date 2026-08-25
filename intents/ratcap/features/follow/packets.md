@@ -2,7 +2,9 @@
 
 > [../../packets/](../../packets/) に domain-level packet がある場合は参照。
 
-> **BLOCKED (2026-08-11)**: Emumet 側 `unfollow-api` packet(外向き Undo(Follow) REST API + REST フォロー一覧)の完了が先行条件。`intents/emumet/packets/backlog.md` 参照。
+> **READY (2026-08-24 更新)**: 先行条件だった Emumet `unfollow-api` (外向き Undo(Follow)
+> REST API + REST フォロー一覧) は issue #20 / PR #21 で 2026-08-12 マージ済み。
+> ブロッカー解消済み。
 
 ## Execution units
 

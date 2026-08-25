@@ -11,18 +11,8 @@ Emumet は ShuttlePub サービスのアカウント管理機能を提供する�
 |---|---|---|---|---|
 | 1 | `block-mute-management` | [block-mute](../features/block-mute/overview.md) | blocks/mutes 一覧 + 解除(追加 UI なし) | — |
 | 2 | `account-deactivation` | [account-deactivation](../features/account-deactivation/overview.md) | アカウント削除 + 確認ダイアログ | — |
-
-## Blocked(Emumet 側 packet 待ち)
-
-| # | execution unit | feature | 概要 | ブロッカー |
-|---|---|---|---|---|
-| 4 | `follow-management` | [follow](../features/follow/overview.md) | following/followers 一覧 + unfollow(フォローフォームなし) | Emumet `unfollow-api`(`intents/emumet/packets/backlog.md`) |
-
-## 後続(設計待ち)
-
-| # | execution unit | feature | 概要 | 依存 |
-|---|---|---|---|---|
-| 5 | `admin-moderation` | [admin-moderation](../features/admin-moderation/overview.md) | 停止/BAN UI + 通報キュー UI (/admin 集約) + 未対応件数バッジ。設計確定 (2026-08-23 横断 grill、decisions.md 参照) | Emumet `moderation-account-report` マージ後に publish (直列) |
+| 3 | `follow-management` | [follow](../features/follow/overview.md) | following/followers 一覧 + unfollow(フォローフォームなし) | — (ブロッカーだった Emumet `unfollow-api` は PR #21 で 2026-08-12 マージ済み、2026-08-24 に Blocked 解除) |
+| 4 | `admin-moderation` | [admin-moderation](../features/admin-moderation/overview.md) | 停止/BAN UI + 通報キュー UI (/admin 集約) + 未対応件数バッジ。設計確定 (2026-08-23 横断 grill、decisions.md 参照) | — (publish 条件だった Emumet `moderation-account-report` は PR #54 で 2026-08-23 マージ済み、2026-08-24 に Ready 化) |
 
 ## 完了
 
