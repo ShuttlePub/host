@@ -30,6 +30,20 @@ ActivityPub 連合との相互運用を提供する。**基盤は実装済み**�
 - Actor の icon/image 反映 → [../media-upload/overview.md](../media-upload/overview.md)
 - Block アクティビティ → [../block-mute/overview.md](../block-mute/overview.md)
 
+## 2026-08-24 境界改訂に伴う注記(ADR 0002/0003 amended)
+
+- **Followers / Following コレクションは Emumet 保持を継続する**。フォロワー関係の
+  永続権威は Emumet(ADR 0002 の切替保護の対象)。Follow/Accept の承認 UI・ポリシーは
+  ShuttlePub 側に置けるが、最終状態遷移は Emumet に記録する
+- **既存 Outbox 実装の配布方式は変更になる見込み**: 投稿コンテンツは ShuttlePub 保持に
+  なったため、outbox は ShuttlePub への透過プロキシ、またはコレクション URL のホスト
+  制約の検証結果次第で actor ドキュメントへの ShuttlePub URL 直接記載に移行する
+  (post-relay の verification pending を参照)
+- AP actor は Profile 単位(1 Profile = 1 actor)。現行実装の account = actor モデルは
+  段階移行の対象(ADR 0002 amended)
+- 投稿系の初期公開範囲は **Public / Unlisted のみ**(operator 判断 2026-08-24。
+  followers-only 等の限定公開と dereference 認証の設計は別途 ADR 化してから実装)
+
 ## Related
 
 - [packets.md](packets.md)
