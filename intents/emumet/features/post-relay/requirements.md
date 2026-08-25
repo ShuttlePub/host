@@ -38,8 +38,8 @@
 - Emumet ドメインの object URL への GET は発行元 ShuttlePub へ透過リバースプロキシ
   - document `id` と要求 URL の完全一致、`attributedTo` の正当性を確認
   - upstream のリダイレクトは拒否。ShuttlePub 障害時は 502(operator 判断 2026-08-24)
-- outbox の GET も同様にプロキシ(コレクション URL ホスト制約の検証結果次第で
-  actor ドキュメントへの直接記載に変更。ADR 0003)
+- outbox の GET も同様にプロキシで確定(検証済み: Misskey が異ホストコレクション URL を
+  アクター文書ごと拒否するため、actor ドキュメントへの ShuttlePub URL 直接記載は不可)
 - deletion marker(署名した Delete の `object_id / profile_id / link_id / deleted_at`)
   を保持し、削除済み object URL は upstream より優先して Tombstone/410 を返す
 

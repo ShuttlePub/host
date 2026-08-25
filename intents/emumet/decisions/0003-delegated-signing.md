@@ -69,9 +69,17 @@ operator のプロダクト vision(2026-08-24 確認): Emumet は Google Workspa
   - プロキシは document `id` と要求 URL の完全一致、および `attributedTo` の
     正当性を確認する。upstream のリダイレクトは拒否
   - ShuttlePub 障害時は 502 を返す(operator 判断 2026-08-24。キャッシュは将来拡張)
-  - outbox の配布方式(プロキシ vs actor ドキュメントへの ShuttlePub URL 直接記載)は、
-    コレクション URL のホスト制約の検証結果で確定する(2026-08-24 検証中。
-    確定まではプロキシ方式を前提とする)
+  - **コレクション URL のホスト制約は検証済み(2026-08-24)**: Misskey は actor 検証時に
+    outbox/followers/following の異ホスト URL を**アクター文書ごと拒否**する
+    (`ApPersonService.validateActor`)。したがってコレクション URL を ShuttlePub ホストに
+    直貼りする選択肢は**なし**。outbox もプロキシ配布で確定
+    - 補足: Mastodon はリモート outbox のコンテンツを一切 pull しない(push 型)ため、
+      outbox プロキシの実負荷は小さい。Misskey は followers/following の文書を
+      公開判定のため1回 fetch する(`isPublicCollection`)ので、プロキシは
+      コレクション文書を正しく返せる必要がある
+    - Mastodon/Misskey のコレクション GET はデフォルトでインスタンス/システム
+      アクター署名付き。upstream(ShuttlePub)は署名付き GET を受け付けること
+      (署名必須化は不要)
 - **deletion marker のみ Emumet に保持する**(operator 判断 2026-08-24):
   署名した Delete について `object_id / profile_id / link_id / deleted_at` を記録し、
   削除済み object の URL には upstream より優先して Tombstone または 410 を返す

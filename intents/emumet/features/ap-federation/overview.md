@@ -35,10 +35,10 @@ ActivityPub 連合との相互運用を提供する。**基盤は実装済み**�
 - **Followers / Following コレクションは Emumet 保持を継続する**。フォロワー関係の
   永続権威は Emumet(ADR 0002 の切替保護の対象)。Follow/Accept の承認 UI・ポリシーは
   ShuttlePub 側に置けるが、最終状態遷移は Emumet に記録する
-- **既存 Outbox 実装の配布方式は変更になる見込み**: 投稿コンテンツは ShuttlePub 保持に
-  なったため、outbox は ShuttlePub への透過プロキシ、またはコレクション URL のホスト
-  制約の検証結果次第で actor ドキュメントへの ShuttlePub URL 直接記載に移行する
-  (post-relay の verification pending を参照)
+- **既存 Outbox 実装の配布方式は変更になる**: 投稿コンテンツは ShuttlePub 保持に
+  なったため、outbox は ShuttlePub への透過プロキシに移行する(検証済み: Misskey が
+  異ホストコレクション URL をアクター文書ごと拒否するため直接記載は不可。
+  コレクション文書の `id` は要求 URL と一致させること)
 - AP actor は Profile 単位(1 Profile = 1 actor)。現行実装の account = actor モデルは
   段階移行の対象(ADR 0002 amended)
 - 投稿系の初期公開範囲は **Public / Unlisted のみ**(operator 判断 2026-08-24。

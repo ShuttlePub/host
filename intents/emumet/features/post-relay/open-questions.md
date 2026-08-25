@@ -15,15 +15,6 @@
 - unlink 後の旧 namespace のプロキシ継続条件(read-only 継続がデフォルト。
   遮断条件・期間の運用ルール)
 
-## Verification pending
-
-- **outbox / followers コレクション URL のホスト制約**(2026-08-24 調査中):
-  コレクション URL が actor と異ホストでも Mastodon/Misskey が fetch を受理するか。
-  受理されるなら actor ドキュメントに ShuttlePub の outbox URL を直接記載でき、
-  Emumet の outbox プロキシは不要になる(object URL のプロキシは ID 制約で残る)。
-  followers は ADR 0002 の切替保証との相性から、互換性が確認できても Emumet-hosted
-  を推奨(Oracle 助言 2026-08-24)
-
 ## Resolved
 
 - ~~外向き配送で既存の内部署名 API(`POST /internal/v1/accounts/{id}/sign`)を
@@ -40,3 +31,10 @@
 - ~~Activity/Note ID の採番権~~
   → **確定 (2026-08-24)**: リンクごとの名前空間
   (`/objects/<link-id>/<local-id>`)を Emumet が発行し、local 部は ShuttlePub が採番
+- ~~outbox / followers コレクション URL は actor と同一ホスト必須か~~
+  → **確定 (2026-08-24、Mastodon/Misskey ソース検証済み)**: **同一ホスト必須**。
+  Misskey は actor 検証(`ApPersonService.validateActor`)で outbox/followers/following の
+  異ホスト URL をアクター文書ごと拒否する。したがってコレクションの ShuttlePub 直貼りは不可。
+  outbox も含めて全コレクションを Emumet ホストで配布(outbox は ShuttlePub への透過
+  プロキシ、followers/following は Emumet のグラフから直接配布)で確定。
+  参考: Mastodon はリモート outbox のコンテンツを pull しない(push 型)

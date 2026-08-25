@@ -29,8 +29,8 @@ operator vision に基づく薄型境界):
 - 代理署名の提供(内部署名 API。狭い API 形・link capability 認可。ADR 0003 参照)
 - Emumet ドメイン object URL の透過プロキシ配布(document `id` 完全一致・
   `attributedTo` 検証・upstream リダイレクト拒否)
-- outbox のプロキシ配布(コレクション URL のホスト制約の検証結果次第で
-  actor ドキュメント直接記載に変更の可能性あり。ADR 0003 参照)
+- outbox のプロキシ配布(コレクション URL のホスト制約は検証済み: Misskey が異ホスト
+  コレクションをアクターごと拒否するため ShuttlePub 直貼りは不可。ADR 0003 参照)
 - deletion marker(署名した Delete の `object_id` 等)の保持と Tombstone/410 応答
 - 配送(ファンアウト・送信・再送・配送状態の記録)および投稿コンテンツの保存は
   ShuttlePub 側の責務であり本 feature のスコープ外
