@@ -3,6 +3,11 @@
 確定 2026-08-29 (grill Q1/Q9/Q10/Q14)。詳細な決定理由は `../interviews/booskiff.json`、
 一覧は `../decisions/2026-08-29-initial-shaping.md`。
 
+> 修正案 2026-08-29 (grill Q16): Web スタックを PureScript + Flame (SSR + hydration)
+> + Bun BFF に反転 (D11 修正案)。Ratcap を ShuttlePub フロントエンド群のモノレポ
+> (shuttlepub-frontends) へ再編し、design-tokens → styles → ui (Flame 共通) →
+> FrontApp + BFF の Design System 構成に揃えるため。
+
 ## 初動スコープ (Q1=B, Q14=B)
 
 **`drive-foundation`**: 1 つの実行単位に以下を含める。
@@ -10,9 +15,11 @@
 - **core (Rust)**: 認証 (信頼 issuer の JWT を JWKS 検証のみ) + Account 単位 Drive の
   CRUD (アップロード/一覧/表示/削除) + S3 互換保存基盤 + 課金ポリシー土台
   (Fluxer 式: コード内デフォルト + DB 上書き + 管理者 API)
-- **web (TanStack Start, SSR off)**: OAuth/OIDC ログイン + セッション Cookie による
-  Drive 一覧/アップロード/削除の最小 UI。BFF 責務 (セッション管理・トークン更新・
-  core 内部呼び出し) をサーバー関数/API ルートに内包
+- **web (PureScript + Flame, SSR + hydration / Q16 反転)**: OAuth/OIDC ログイン +
+  セッション Cookie による Drive 一覧/アップロード/削除の最小 UI。BFF 責務
+  (セッション管理・トークン更新・core 内部呼び出し) は Bun BFF (Ratcap パターン
+  転用) が担う。配置は shuttlepub-frontends モノレポの `apps/booskiff-web`
+  (core の Booskiff リポジトリとは分離)
 
 ## 機能境界 (何を「しない」か)
 

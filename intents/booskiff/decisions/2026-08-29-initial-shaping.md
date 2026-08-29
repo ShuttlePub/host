@@ -16,11 +16,22 @@ grill Q1-Q15 の結論。決定の経緯・検討肢・理由の完全版は
 | D8 (Q8) | プラン定義 | Fluxer 式: コード内デフォルト + DB 上書き + 管理者 API (初動から)。価格/プロバイダは env。self-host は everyone/mirror モード | 確定 |
 | D9 (Q9) | 共有 (輸送) | 初動スコープ外。リンク型 vs Account 型等の設計論点は features/ にメモ | 後続 slice |
 | D10 (Q10) | API 表面 | 独自 REST/OpenAPI のみ。Misskey 互換なし (UX 言及に留まる)。独自フロントあり | 確定 |
-| D11 (Q11) | フロント構成 | TanStack Start (SSR off) がフロント+BFF 兼任。Rust core は JWT 検証のみの純粋性を維持。リポジトリ同居 | 確定 |
+| D11 (Q11) | フロント構成 | ~~TanStack Start (SSR off) がフロント+BFF 兼任~~ **Q16 (同日) で反転: PureScript + Flame (SSR + hydration) + Bun BFF (Ratcap パターン転用)。配置は shuttlepub-frontends モノレポの apps/booskiff-web (core リポジトリとは分離)**。Rust core は JWT 検証のみの純粋性を維持 | 確定 (Q16 で修正) |
 | D12 (Q12) | アクセス制御 | 2 値: 非公開 (owner のみ、認証+presigned) / 公開参照 (推測不能キー付き公開 URL、immutable キャッシュ) | 確定 |
 | D13 (Q13) | 配布形態 | ShuttlePub 標準形: flake + deploy/self-hosting/ + ghcr イメージ + tag リリース | 確定 |
 | D14 (Q14) | 初動の境界 | core + web 最小限 (ログイン + Drive 一覧/アップ/削除) を 1 実行単位に含める | 確定 |
 | D15 (Q15) | 受け入れ基準 | 3 層検証: core 単体結合 / compose E2E (API) / web E2E (Playwright)。計量正確性は初動の受け入れ条件 | 確定 |
+
+## 意図的に将来 slice に送った論点
+
+## 決定の反転記録
+
+- **2026-08-29 Q16 (同日中の反転)**: D11 の Web スタックを TanStack Start から
+  PureScript + Flame + Bun BFF へ反転。経緯・根拠の完全版は interviews/booskiff.json
+  の Q16。発端は Ratcap の ShuttlePub フロントエンドモノレポ再編
+  (design-tokens → styles → ui → FrontApp + BFF)。SSR off / サーバー関数 BFF /
+  リポジトリ同居 (web を Booskiff リポジトリに同居させる方針) は廃止。
+  D10 (独自 REST/OpenAPI) と D15 (3 層検証) は維持。
 
 ## 意図的に将来 slice に送った論点
 
