@@ -1,23 +1,15 @@
 # Open Clarifications
 
-## C1 (open): Profile の Account 共有 / 組織アカウントは Emumet 現行未想定
+## C1 (解消済み 2026-08-29): Profile の Account 共有 / 組織アカウント
 
-- 背景: Booskiff のファイル所有者は Emumet Account 単位としたい
-  (mission.md Values 参照)。ただし「複数の Account が 1 Profile を共同運用する」
-  ケース (企業アカウント等) が Emumet で想定されているか不明だった
-- 2026-08-29 調査で判明: **現行は 1 Profile : 1 Account のみ共有なし**。
-  - intent 側: ADR 0002 (amended 2026-08-24) — Profile は Account に所属する actor、
-    共同管理の言及なし
-  - 実装側: `kernel/src/entity/profile.rs` の `account_id` は単数、
-    `profiles` テーブルは `account_id` 単一カラム + `REFERENCES accounts(id)`
-    (N:M 中間テーブルなし)
-- 論点:
-  - Booskiff は当面「所有者 = 1 Account」を invariant としてよい (現行 Emumet と整合)
-  - 将来 Emumet に組織アカウント / Profile 共同管理が入った場合、Booskiff の
-    所有者解決・Drive 課金紐付けの再検討が必要になる
-  - 「1 Account が複数 Profile を持つ」方向 (現行サポート) と
-    「複数 Account が 1 Profile を共有」方向 (未想定) は別物。後者が入ると
-    共有 Profile がどの Account の Drive を使うか等の問題が発生する
-- **再開条件: Emumet 側で組織アカウントの構想が進行中
-  (emumet C5 / features/org-accounts)。設計確定次第、Booskiff の
-  所有者解決・課金紐付けを再検討する**
+- 結論: emumet C5 (org-accounts) が grill で確定。**「所有者 = Account」は
+  組織 Account も含めて確定**。Profile : Account = N:1 が維持され、
+  共有 Profile が複数 Account の Drive を跨ぐ問題は発生しない
+- 確定内容 (emumet grill Q1-Q11 より Booskiff 関連):
+  - 組織 Drive は組織 Account 所有の専用 Drive (課金・容量は組織単位)
+  - Profile 移管時は参照ファイルを組織 Drive へコピー + 参照付け替え
+  - Booskiff 要件: (1) Drive の所有者として組織 Account を許可
+    (2) copy 系 API (移管時のファイルコピー用)
+- 決定記録: intents/emumet の features/org-accounts/overview.md、
+  interview/2026-08-29-org-accounts-grill.md
+- Booskiff 側の課金・容量の詳細設計は本ドメインの grill/stack で計画する

@@ -44,20 +44,16 @@
   packet backlog に登録(`mastodon-e2e-undo-coverage`) → **完了**
   (issue #46 / PR #47 マージ 2026-08-20。S10 双方向 Undo(Follow) を追加)
 
-## C5 (open 2026-08-29): 組織アカウント / Profile 共同管理の構想確定
+## C5 (解消済み 2026-08-29): 組織アカウント / Profile 共同管理の構想確定
 
-- 背景: Booskiff (ドライブストレージ) の設計議論で「複数の Account が 1 Profile を
-  共同運用する」ケース (企業アカウント等) が現行設計で未想定であることが判明。
-  operator 判断: 「将来かも」ではなく**すぐやりたい要件**
-- 現行の確認結果: Profile : Account = N:1 のみ (中間テーブルなし)。
-  intent 側 ADR 0002、実装側 `profiles.account_id` 単一 FK で確認済み
-- 論点: 実現パターン (組織 Account モデル vs Profile 共同編集者 N:M)、メンバー役割、
-  ログイン・認証 (Ory 整合)、課金主体、モデレーション整合。
-  詳細は [../features/org-accounts/](../features/org-accounts/overview.md)
-- **推奨方向 (2026-08-29)**: 組織 Account モデル。Profile : Account = N:1 を維持でき、
-  Booskiff の「所有者 = Account」への影響が最小
-- **次のアクション: grill で詰める** (intent-cli grill --domain emumet で
-  本 C5 を対象に指定)
+- 結論: **組織 Account モデルで確定**。Profile : Account = N:1 を維持。
+  メンバーロール3段階、スイッチ式認証、誰でも作成可 (複数可)、
+  Profile 移管 (2段階フロー、移管時の参照ファイルコピー)、
+  現行モデレーション + Warning イベント新設。
+  Ratcap への波及は API 契約のみ確定し UI 設計は Ratcap grill に引き継ぎ
+- 決定記録: [../features/org-accounts/overview.md](../features/org-accounts/overview.md)、
+  [../interview/2026-08-29-org-accounts-grill.md](../interview/2026-08-29-org-accounts-grill.md)
+  (Q1-Q11、CLI セッション記録: ../interviews/org-accounts.json)
 
 ## Recently Resolved
 
