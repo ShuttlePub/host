@@ -39,6 +39,21 @@ kernel の `image` クレートも現時点では使用箇所なし。
 - notes 系テーブルは Rust 実装を持たず、かつ SQL 自体に未定義参照・
   構文上の問題を含む (適用可否は未検証)。
 
+## 設計方向 (オーナー共有 2026-08-29、grill 前の前提)
+
+- **Actor Model + Event Sourcing の採用方向**: ShuttlePub 本体は Actor Model
+  ベースで構築したい意向。基盤としてオーナー自ら nitinol
+  (Rust 製 ES toolkit、actor runtime 搭載) を開発中で、本体実装の
+  土台にする想定。対象リポジトリの現行コードには未導入
+  (観察時点では依存も実装もない)。
+- **リレー機能の PoC**: stargate (ActivityPub デバッグツール兼) 上で
+  リレー PoC を進行中。実装確認済みの範囲: リレー Actor への Follow
+  を受けてリモート Actor を照会し Accept を配送する流れ、HTTP Signature
+  署名・検証。AP 連携部分の知見は stargate から本体へ持ち込む前提と
+  思われる (詳細は grill で確認予定)。
+- 上記は現行スケルトン (2023 年構成) とは別系統の新規実装方向であり、
+  既存コード資産との関係 (再利用 / 刷新) は未決定。
+
 ## サービス群構成との対応
 
 現状コードは Emumet / Ory / Booskiff を一切参照しない単体構成。

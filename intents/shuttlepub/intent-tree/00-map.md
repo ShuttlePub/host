@@ -15,18 +15,33 @@ intent (emumet / booskiff) が前提とする連携構成 (Emumet / Ory / Booski
 ```
 identity/mission.md          使命 (サービス群記録より) + 現状コードとの対応 (観察)
 product/overview.md          現状実装インベントリ (評価なし)
-technology/overview.md       現状スタック、未使用依存、データモデル観察
+technology/overview.md       現状スタック、未使用依存、設計方向 (nitinol / stargate)
+links/external.md            関連リポジトリ (nitinol, stargate, サービス群)
 features/                    (未整理)
 decisions/                   (未整理)
 clarifications/open.md       (未整理)
 ```
 
-## 未整理の論点 (観察で出たもの、優先順ではない)
+## 設計方向 (オーナー共有 2026-08-29、grill 前の前提)
 
-- 現行スケルトン (独自 Account/Profile/Follow、confidentials 認証) を
-  資産として継続するか、サービス群構成に寄せるか
+- 本体は **Actor Model + Event Sourcing** で構築する方向。基盤ライブラリ
+  **nitinol** (Rust 製 ES toolkit、actor runtime 搭載) を開発中。
+- **リレー機能の PoC** は **stargate** (AP デバッグツール兼) で進行中。
+  署名・検証・リモート Actor 照会・Accept 配送まで実装確認済み。
+- 上記は 2023 年スケルトンとは別系統の新規実装方向。既存コード資産との
+  関係は未決定。
+
+## 未整理の論点 (grill 候補、優先順ではない)
+
+- 2023 年スケルトンと新規実装方向 (nitinol ベース) の関係:
+  全面刷新か、部分的再利用 (層構成・postgres 基盤など) か
+- リレー (stargate PoC) の位置づけ: 本体の機能として内蔵するか、
+  別サービスとして切り出すか (Emumet の連合中継との責務分界も絡む)
+- Emumet / Ory / Booskiff との連携設計 (現行コードには存在しない)。
+  nitinol ベースにすると Emumet (独自 ES 実装) とのイベント整合性
+  設計も論点
 - migration 内の notes / turbo quote 系スキーマの扱い (Rust 実装なし、
-  SQL 自体の適用可否も未検証)
+  SQL 自体の適用可否も未検証)。turbo quote の設計意図は未確認
 - 未使用依存 (redis / meilisearch / lettre / image) の去就
 - ユーザー層・機能境界の固有記録 (現行は emumet 記録の参照のみ)
 
