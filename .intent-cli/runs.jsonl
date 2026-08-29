@@ -75,3 +75,5 @@
 {"ts":"2026-08-24T15:41:38.8918723+00:00","execution_unit":"oauth2-consent-flow","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/RatCap","pr":7}
 {"ts":"2026-08-24T15:42:57.4876801+00:00","execution_unit":"oauth2-consent-flow","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/RatCap","pr":7}
 {"ts":"2026-08-24T15:42:57.4876801+00:00","execution_unit":"oauth2-consent-flow","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/RatCap","pr":7}
+{"ts":"2026-08-29T10:51:35.0893962+00:00","execution_unit":"drive-foundation","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/drive-foundation/"}
+{"ts":"2026-08-29T10:51:42.5900718+00:00","execution_unit":"drive-foundation","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Booskiff#1","reason":"https://github.com/ShuttlePub/Booskiff/issues/1"}

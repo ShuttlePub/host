@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-24T15:42:57.4926411+00:00",
+  "updated_at": "2026-08-29T10:51:42.5900718+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -432,6 +432,28 @@
         "url": "https://github.com/ShuttlePub/RatCap/issues/6"
       },
       "linked_pr": "https://github.com/ShuttlePub/RatCap/pull/7",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "drive-foundation",
+      "title": "drive-foundation: \u9023\u643A Drive \u57FA\u76E4 \u002B \u8AB2\u91D1\u30DD\u30EA\u30B7\u30FC\u571F\u53F0 \u002B \u6700\u5C0F Web UI",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/booskiff/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/drive-foundation/implementation.md",
+        "review_context": ".intent-cli/issues/drive-foundation/review-context.md",
+        "yaml": ".intent-cli/issues/drive-foundation/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Booskiff",
+        "number": 1,
+        "url": "https://github.com/ShuttlePub/Booskiff/issues/1"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
