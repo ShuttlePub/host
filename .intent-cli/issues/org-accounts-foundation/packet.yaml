@@ -1,0 +1,74 @@
+implementation_issue_packet:
+  issue_title: "org-accounts-foundation: 組織 Account 基盤 — Account 種別 (personal/organization) + 組織作成 + メンバーシップ 3段階ロール (Owner/Admin/Member)"
+  issue_kind: feature
+  source_execution_unit: org-accounts-foundation
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: kernel/src/entity, kernel/src/repository, kernel/src/read_model, application/src/service, server/src/route, server/src/api, driver/src/database/postgres, migrations
+  target_part: "Account kind 判別 + OrganizationMembership エンティティ/テーブル/CRUD repository + 組織作成・招待・ロール管理 use case + REST API (client)"
+  dependencies: []
+  technical_baseline:
+    - "Account aggregate: kernel/src/entity/account.rs。struct フィールド id/name/is_bot/status/deleted_at/version/nanoid/created_at。kind 判別列なし (is_bot のみ)。AccountEvent enum (#[serde(tag=\"type\")], vodca prefix=account snake_case): Created{name,is_bot,nanoid,auth_account_id} / Updated{is_bot} / Deactivated / Suspended{reason,suspended_at,expires_at} / Unsuspended / Banned{reason,banned_at} / Unbanned / Reactivated"
+    - "永続化パターン: AggregateRepository<Account> (kernel/src/repository/aggregate.rs) + PostgresAccountRepository (driver/src/database/postgres/account_repository.rs) + account_events テーブル (PK(id,version), seq BIGSERIAL, event_name + data JSONB)。projection テーブル accounts。AccountReadModel (kernel/src/read_model/account.rs) で create/update + link_auth_account"
+    - "Account↔AuthAccount 結合: auth_emumet_accounts テーブル (emumet_id, auth_id)。1 AuthAccount が複数 Account を持てる (find_by_auth_id が Vec<Account> を返す)。組織作成はこの経路で自然 (作成者の auth_account_id が既に個人 Account にリンク済みでも問題ない)"
+    - "AuthAccount は CRUD エンティティ (kernel/src/entity/auth_account.rs、ADR 0006 Stage 6 で ES から移行済み)。AuthAccountRepository::find_or_create (kernel/src/repository/auth_account.rs)。メンバーシップも同じく CRUD で始める (将来の連合要件時に ES 化を検討)"
+    - "ハンドラでの認証 AccountId 解決の定形: OidcAuthInfo::from(claims) → api.resolve_auth_account_id(auth_info) → AuthAccountId (server/src/api/mod.rs:36-62)。各 facade (AccountApi/AdminAccountApi/MeApi) がこれをラップ (server/src/api/)"
+    - "ルート: server/src/route.rs。api_v1 に route_account + route_reports + route_me + route_media、/api/v1/admin に route_admin_account + route_admin_reports (auth_middleware 適用済み)。新規 client ルートは route/account/mod.rs に OrgAccountRouter trait 追加 → api_v1 に .route_org_account() で登録"
+    - "API facade パターン: AccountApi (server/src/api/account.rs) 相当の薄い層を新設 (OrgAccountApi)。エラーマッピングは既存共有 ErrorStatus マッピング (PermissionDenied → 403、NotFound → 404、Rejected → 422、不正入力 → 400)"
+    - "組織/メンバー系コードは現存しない (organization|member|membership|invite のコードヒット 0 件、Keto namespace に Organization なし)。全て新規"
+    - "migration 命名規則: migrations/YYYYMMDDHHMMSS_description.sql (例: 20260824000001_add_account_report.sql)。account_reports/account_report_events が最新の追加例"
+  intent_references:
+    - intents/emumet/features/org-accounts/overview.md
+    - intents/emumet/features/org-accounts/open-questions.md
+    - intents/emumet/interview/2026-08-29-org-accounts-grill.md
+  acceptance_criteria:
+    - "accounts テーブルに kind テキスト列 ('personal' | 'organization') が追加され、既存レコードは 'personal' に backfill される migration がある"
+    - "AccountEvent::Created に kind フィールドが追加され、serde デフォルトで旧イベント (kind なし) は 'personal' としてデシリアライズできる (後方互換)"
+    - "組織 Account は Account::create 相当の新規 factory でのみ作成でき、kind=personal の Account を organization に変える経路 (API・イベント・直接 SQL を除くコード経路) は存在しない"
+    - "認証済みユーザーが POST /api/v1/organizations (仮パス) で組織を作成できる。作成と同時に作成者 (AuthAccount のリンク先個人 Account) が Owner のメンバーシップが作成される"
+    - "Owner/Admin が POST /api/v1/organizations/{org_id}/invites (仮) でメンバー招待 (role: admin | member) を作成でき、被招待者が POST .../invites/{invite_id}/accept で承諾するとメンバーシップが確定する。招待は組織のメンバー一覧で確認できる"
+    - "ロール変更は Owner のみ (PUT .../members/{account_id}/role)。除名は Owner/Admin が可能だが Owner は除名不可。脱退はメンバー自身が可能だが最後の Owner は脱退不可 (Rejected)"
+    - "GET /api/v1/me/organizations (仮) で自分の所属組織一覧 (org account_id, 名前, 自分のロール) が取得できる"
+    - "メンバーシップは organization_members テーブル (org_account_id, member_account_id, role, invited_by, created_at, PK(org_account_id, member_account_id)) に CRUD 永続化され、CRUD repository port (kernel/src/repository) + Postgres 実装 + read model が作られる"
+    - "組織ロールの判定は organization_members テーブルの直接クエリで行う。Keto に Organization namespace は新設しない (Accepted Baseline 参照)。既存の Keto Account namespace (owners/editors/signers) は個人 Account リソースのまま維持"
+    - "自分が所属しない組織のメンバー管理 API を呼ぶと 403、存在しない組織/メンバーは 404、ロール不足の操作は 403、矛盾した状態遷移 (最後の Owner 脱退等) は 422 になる"
+    - "ユースケース単体テスト (mock repo/権限) で作成・招待フロー・ロール変更・除名・脱退・権限拒否が検証される。既存の Account 作成フロー (個人) に回帰がない (既存テスト全緑)"
+
+intent_placement:
+  primary_intent: intents/emumet/features/org-accounts/overview.md
+  supporting_intents:
+    - intents/emumet/features/org-accounts/packets.md
+    - intents/emumet/interview/2026-08-29-org-accounts-grill.md
+  new_intent_needed: false
+  placement_rationale: "org-accounts feature の execution unit 1 (features/org-accounts/packets.md unit 1)。grill Q1/Q3/Q5 (対象ユースケース・3段階ロール・作成資格) の実装。intent-tree 新規ノード不要"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/org-accounts/packets.md
+    summary: "unit 1 に issue/PR リンクを追記"
+  adr:
+    required: true
+    target_paths:
+      - intents/emumet/decisions/0007-organization-accounts.md
+    decision_title: "Organization accounts: Account kind 判別 + メンバーシップ CRUD + 組織ロールは DB 直接判定 (Keto Organization namespace は新設しない)"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: "メンバーシップ CRUD パターンの確定値 (テーブル形状・repository 形状・エラーマッピング) と、kind 追加による AccountEvent 後方互換の実際の扱い"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/decisions/0007-organization-accounts.md
+    - intents/emumet/features/org-accounts/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "REST API (/api/v1/organizations*, /api/v1/me/organizations)"

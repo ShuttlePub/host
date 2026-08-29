@@ -1,0 +1,68 @@
+implementation_issue_packet:
+  issue_title: "moderation-warning-event: AccountEvent::Warning 新設 + 通報 resolve 時の「警告で解決」 (warned resolution) + 警告履歴 admin 参照"
+  issue_kind: feature
+  source_execution_unit: moderation-warning-event
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: kernel/src/entity, kernel/src/read_model, application/src/service, server/src/route, server/src/api, driver/src/database/postgres
+  target_part: "AccountEvent::Warned バリアント + ReportResolution::Warned + warn use case + 警告履歴 read query/API"
+  dependencies: []
+  technical_baseline:
+    - "AccountEvent (kernel/src/entity/account.rs:45-76): #[serde(tag=\"type\")] + vodca(prefix=\"account\", snake_case)。新バリアントは Warned { reason, warned_at } (event_name: \"warned\")。apply() への追加と CommandEnvelope 経路の既存パターンに従う。旧イベントとの後方互換は新バリアント追加のみなので影響なし"
+    - "設計上の確定: AccountStatus は変えない (grill Q10: 警告は状態変化を伴わない。Active のまま)。chk_not_both_suspended_and_banned 等の CHECK 制約への影響なし。警告は処分履歴としてイベントに残すだけで、N 回警告での自動エスカレーションは将来論点"
+    - "AccountReport (kernel/src/entity/account_report.rs): AccountReportEvent::{Created, Closed}、ReportStatus::{Open, Closed{resolution, close_reason}}、ReportResolution::{Resolved, Dismissed}。 Warned を ReportResolution に追加する"
+    - "通報ハンドリング (moderation-account-report 完了、issue #53/PR #54): POST /api/v1/admin/reports/{id}/resolve|dismiss、close_reason 必須、二重クローズは Rejected (422)。resolve/dismiss を resolution 指定の単一エンドポイントに拡張するか warned 専用エンドポイントを追加するかは実装判断 (推奨: 既存エンドポイントを {resolution} 対応に拡張しつつ既存パスは後方互換維持)"
+    - "認可: instance_moderate() (application/src/permission.rs:24、admins + moderators 包含は ory/keto/namespaces.ts で確定済み)。変更不要"
+    - "警告履歴の参照: account_events テーブルを event_name='warned' + id=account_id でフィルタする read query (AccountReadModel へのメソッド追加)。新テーブル不要"
+    - "組織への警告も同一イベントで扱う (grill Q10: AccountId 対象・多態化しない。org-accounts-foundation で kind 列追加後も Warned の発行対象に制限を設けない)"
+  intent_references:
+    - intents/emumet/features/moderation/overview.md
+    - intents/emumet/features/moderation/decisions.md
+    - intents/emumet/features/org-accounts/overview.md
+    - intents/emumet/interview/2026-08-29-org-accounts-grill.md
+  acceptance_criteria:
+    - "AccountEvent::Warned { reason, warned_at } が追加され、serde 規約 (tag type、snake_case 'warned') に従い、account_events テーブルに event_name='warned' で保存される"
+    - "Warned イベント発行で Account の status は変わらない (Active のまま)。AccountStatus / CHECK 制約の変更はない"
+    - "ReportResolution に Warned が追加され、通報 resolve 時に warned を選択できる (close_reason 必須は維持)。ReportProjection の resolution に warned が記録される"
+    - "既存の resolved/dismissed 経路は後方互換のまま動作する (既存テスト全緑)"
+    - "instance_moderate 権限を持つ Admin/Moderator が Warned を発行でき、権限なしは 403"
+    - "admin がアカウントの警告履歴 (warned イベント一覧: reason, warned_at) を参照できる read query + API がある"
+    - "ユースケース単体テストで warn 発行・通報 warned 解決・権限拒否・二重クローズ拒否が検証される"
+  intent_placement:
+    primary_intent: intents/emumet/features/moderation/overview.md
+    supporting_intents:
+      - intents/emumet/features/moderation/decisions.md
+      - intents/emumet/features/org-accounts/overview.md
+    new_intent_needed: false
+    placement_rationale: "moderation feature の拡張 (decisions.md D4 通報設計の resolution 追加)。org-accounts grill Q10 の決定の実装。新規 intent ノード不要"
+  knowledge_updates:
+    intent_tree:
+      required: true
+      target_paths:
+        - intents/emumet/features/moderation/decisions.md
+        - intents/emumet/features/moderation/packets.md
+      summary: "D4 へ warned resolution の追加を追記、packets.md へ unit 追記"
+    adr:
+      required: false
+      target_paths: []
+      decision_title: ""
+    diagram:
+      required: false
+      target_paths: []
+      diagram_type: none
+    docs:
+      required: false
+      target_paths: []
+      summary: ""
+  closeout_learning:
+    expected: "resolution 拡張の実装形状 (既存エンドポイント拡張 vs 専用エンドポイント) の確定値"
+    write_back_required: true
+    write_back_targets:
+      - intents/emumet/features/moderation/decisions.md
+      - intents/emumet/features/moderation/packets.md
+  guide_reachability:
+    no_role_facing_surface: false
+    routes:
+      - guide_surface: guide workflow task implementation-loop
+        role: implementation
+        target_surface: "REST API (/api/v1/admin/accounts/{id}/warnings*, 通報 resolve の warned 対応)"

@@ -3,7 +3,27 @@
 intent interview (../interview/2026-07-22-initial-shaping.md) と実装インベントリに基づく
 順序付き backlog。packet 実体は `.intent-cli/issues/<unit>/`。
 
-## Ready(切り出し可能)
+**2026-08-29 追記**: 下の旧 Ready テーブル (#1-#12) は 2026-08-29 時点で全て
+完了済み (各 packet の issue/PR は完了セクションに記録。GitHub open issue なし)。
+新規の Ready backlog はこの追記以降のセクションを参照。
+
+## Ready (2026-08-29 stack 追加)
+
+org-accounts (C5 解消、2026-08-29 grill Q1-Q11 確定) の packet 群。
+設計の正源: ../features/org-accounts/overview.md「確定設計」、
+../interview/2026-08-29-org-accounts-grill.md。
+
+| # | execution unit | 概要 | 依存 |
+|---|---|---|---|
+| W1 | `org-accounts-foundation` | Account 種別 (personal/organization) + 組織作成 (作成者=最初のオーナー) + メンバーシップ (Owner/Admin/Member) CRUD + 招待/承認 + 所属組織一覧 | — |
+| W2 | `org-accounts-auth-context` | スイッチ式認証: 個人 identity のまま組織コンテキスト指定 (仮: ヘッダ)、メンバーロール判定 + コンテキスト付き主体解決、組織コンテキストでの Profile 操作 | W1 |
+| W3 | `profile-transfer` | Profile 移管 2段階フロー (申請→承認/却下/取消)、所有移転 (account_id 付け替え) + イベント、参照ファイルコピー要求の port (Booskiff 連携は stub) | W1 |
+| W4 | `moderation-warning-event` | AccountEvent::Warning 新設 + 通報 resolve 時の「警告で解決」 (warned resolution) + 警告履歴 admin 参照 | — |
+
+packet 化の未対象スコープ (将来): リモートメンバー加入、移管の戻し、
+組織の課金、AP 上の組織 actor 型。
+
+## Ready(切り出し可能) — 旧テーブル (全て完了済み、2026-08-29 確認)
 
 | # | execution unit | 概要 | 依存 |
 |---|---|---|---|

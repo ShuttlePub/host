@@ -1,0 +1,72 @@
+implementation_issue_packet:
+  issue_title: "profile-transfer: Profile 移管 (個人→組織) — 2段階フロー (申請→承認) + 所有移転イベント + 参照ファイルコピー要求 port (部分ユニーク化含む)"
+  issue_kind: feature
+  source_execution_unit: profile-transfer
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: kernel/src/entity, kernel/src/repository, kernel/src/read_model, application/src/service, server/src/route, server/src/api, driver/src/database/postgres, migrations
+  target_part: "ProfileTransferRequest aggregate + 移管フロー use case + ProfileEvent::AccountTransferred + profiles.account_id 部分ユニーク化 migration + ファイルコピー要求 port"
+  dependencies:
+    - org-accounts-foundation
+  technical_baseline:
+    - "Profile (kernel/src/entity/profile.rs): account_id は単一 AccountId。ProfileEvent: Created{account_id,...} / Updated{display_name,summary,icon,banner} (account_id を含まない)。所有権移転イベント・コードは存在しない (transfer/reassign/reparent/change_owner のコードヒット 0)"
+    - "profiles.account_id は BIGINT UNIQUE NOT NULL + FK ON DELETE CASCADE (init.sql:35,132)。1 Account = 1 Profile。read model は ProfileReadModel::find_by_account_id (単一返し)。1:1 を前提とする既存コードへの影響は personal アカウントのみに限定するため、部分ユニーク (kind='personal' のみ UNIQUE) 化する"
+    - "Profile::update は last-write-wins (ExpectedVersion なし、profile.rs:122)。移転は新 ProfileEvent バリアントとして実装し、apply で account_id を更新"
+    - "Account 作成フロー (application/src/service/account/create.rs): Account 作成 + Owner relation (Keto) + auth リンク。移管はこの逆ではなく account_id の付け替え (grill Q6: acct/Actor URI・鍵・フォロー関係は Profile スコープ維持。付け替えで済む)"
+    - "ES 実装パターン: AggregateRepository<Profile> + profile_events テーブル + ProfileProjector (tailing、version-gated upsert)。AccountReport (kernel/src/entity/account_report.rs) が直近の新 aggregate 実装例 (account_reports/account_report_events、seq BIGSERIAL)"
+    - "移管元の個人は移管後 Profile を持たなくなる (1 personal = 1 Profile)。個人が新たに Profile を作り直せるかは既存の Profile 作成経路に依存 (auth-context で整理済みの前提)"
+    - "参照ファイル (icon/banner の ImageId) の実体は Booskiff/S3 側。Emumet からのコピー要求は port (kernel/src/interfaces 相当) で定義し、実装は stub/no-op。Booskiff 実装後の実連携は別 packet"
+    - "移管フローの状態管理: pending → accepted/rejected/cancelled (grill Q7)。GitHub リポジトリ移管と同じ2段階"
+  intent_references:
+    - intents/emumet/features/org-accounts/overview.md
+    - intents/emumet/features/org-accounts/open-questions.md
+    - intents/emumet/interview/2026-08-29-org-accounts-grill.md
+  acceptance_criteria:
+    - "ProfileTransferRequest aggregate + イベント + テーブル (profile_transfer_requests) + CRUD/ES 永続化が実装される (AccountReport と同型のパターンでよい)"
+    - "移管元 (Profile の所有者個人) が POST /api/v1/profiles/{profile_id}/transfer (仮) で移管先 org を指定して申請できる。移管先は自分がメンバーの組織のみ (404/403)"
+    - "移管先 org の Owner/Admin (個人 identity + メンバーロール判定) が承認・却下できる。承認前は移管元が取消可能。受理後の取消・却下は Rejected (422)"
+    - "承認で Profile の account_id が移管先 org に付け替わり、所有移転イベント (ProfileEvent::AccountTransferred) が保存される。acct/Actor URI・nanoid・署名鍵・フォロー関係は変わらない"
+    - "移管元個人が移管後に新しい Profile を作成できる (既存作成経路の制約に従う)"
+    - "profiles.account_id の UNIQUE 制約が部分ユニーク化 (kind='personal' のみ UNIQUE) される migration があり、組織が複数 Profile を持てるようになる。個人 1:1 制約は維持される"
+    - "承認時に参照ファイル (icon/banner) のコピー要求がコピー port に発行される (実装は stub。port のシグネチャと呼び出しがテストで検証される)"
+    - "移管中 (pending) の同一 Profile への重複申請は Rejected (422)"
+    - "ユースケース単体テストで申請→承認・却下・取消・重複拒否・権限拒否が検証され、既存テスト全緑"
+
+intent_placement:
+  primary_intent: intents/emumet/features/org-accounts/overview.md
+  supporting_intents:
+    - intents/emumet/features/org-accounts/packets.md
+    - intents/emumet/interview/2026-08-29-org-accounts-grill.md
+  new_intent_needed: false
+  placement_rationale: "org-accounts feature の execution unit 3 (features/org-accounts/packets.md unit 3)。grill Q6/Q7/Q9 (Profile 移管のみ・2段階フロー・参照ファイルコピー) の実装"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/org-accounts/packets.md
+    summary: "unit 3 に issue/PR リンクを追記"
+  adr:
+    required: true
+    target_paths:
+      - intents/emumet/decisions/0007-organization-accounts.md
+    decision_title: "Profile 移管: ProfileEvent::AccountTransferred + profiles.account_id 部分ユニーク化 (personal のみ 1:1) + ファイルコピーは port/stub"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: "部分ユニーク migration の実際の定義 (Postgres partial unique index) と、コピー port の確定シグネチャ"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/decisions/0007-organization-accounts.md
+    - intents/emumet/features/org-accounts/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "REST API (/api/v1/profiles/{id}/transfer*, 移管管理 API)"

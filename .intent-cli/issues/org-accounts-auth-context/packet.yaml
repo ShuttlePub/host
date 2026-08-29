@@ -1,0 +1,70 @@
+implementation_issue_packet:
+  issue_title: "org-accounts-auth-context: スイッチ式認証 — 個人 identity のまま組織コンテキストを指定して操作 (ヘッダ方式・メンバーロール判定・組織コンテキストの Profile 操作)"
+  issue_kind: feature
+  source_execution_unit: org-accounts-auth-context
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: server/src/auth.rs, server/src/api, server/src/route, application/src/service, application/src/permission.rs
+  target_part: "組織コンテキストの解決 (ヘッダ→メンバーシップ検証→主体 AccountId 解決) + SessionContext 拡張 + 組織コンテキストでの Profile 操作経路"
+  dependencies:
+    - org-accounts-foundation
+  technical_baseline:
+    - "AuthClaims は {iss, sub, aud, exp} のみ (server/src/auth.rs:51-57)。組織/ロール claim は存在しない。Hydra 発行・RS256/JWKS 検証 (auth_middleware)。コンテキストはトークンに載せずリクエスト単位で持つ方針"
+    - "主体解決の定形: OidcAuthInfo::from(claims) → resolve_auth_account_id (server/src/api/mod.rs:36-62) → AuthAccountId。AccountId への変換は AccountReadModel::find_by_auth_id (Vec<Account>) + auth_emumet_accounts リンク"
+    - "SessionContext (application/src/service/session_context.rs:7-10): { auth_account_id, instance_roles: Vec<InstanceRole> }。GetSessionContextUseCase は DependOnPermissionChecker のみ依存。org コンテキストの保持場所として自然な拡張点"
+    - "組織メンバーシップ判定: org-accounts-foundation で organization_members テーブル + CRUD repo が作成済み (前提)。ロール判定は DB 直接クエリ (Keto Organization namespace は新設しない確定)"
+    - "既存の権限ヘルパ (application/src/permission.rs): account_view/account_edit/account_deactivate/account_sign (Keto Account namespace、owners/editors/signers) + instance_moderate/instance_administrate。組織コンテキストではこれらに加えて membership ベースの判定を併用"
+    - "Profile 更新の既存経路: application/src/service/account_detail/update.rs (account_edit 権限チェック → ProfileProjection 経由)。組織コンテキストではこの権限チェックをメンバーロール判定に読み替える経路が必要"
+    - "Axum の Extension<AuthClaims> 挿入 (auth.rs:347) の後に組織コンテキスト解決レイヤを挟む形が自然 (ミドルウェア or facade 内解決)"
+  intent_references:
+    - intents/emumet/features/org-accounts/overview.md
+    - intents/emumet/features/org-accounts/open-questions.md
+    - intents/emumet/interview/2026-08-29-org-accounts-grill.md
+  acceptance_criteria:
+    - "コンテキスト未指定 (ヘッダなし) のリクエストは現行通り個人として動作する (後方互換。既存テスト全緑)"
+    - "組織コンテキストを指定するリクエストヘッダ (仮: X-Organization-Id) を受け取り、指定 org が (a) 存在し (b) 要求者がそのメンバーであることを検証する。非存在は 404、非メンバーは 403"
+    - "コンテキスト解決結果 (org AccountId + 要求者の OrgRole) が SessionContext に含まれる (auth_account_id + instance_roles + org_context)"
+    - "組織コンテキストで既存の Profile 更新経路を呼ぶと、Keto account_edit の代わりにメンバーロール判定 (Member 以上で許可) が適用される"
+    - "組織コンテキストで Profile 作成が行える (現行の作成経路にコンテキスト対応。現行に作成 API がない場合は最小限の新設を含む)。作成された Profile の account_id は org AccountId"
+    - "1 組織 1 Profile 制約は現行維持 (profiles.account_id UNIQUE のまま)。組織が既に Profile を持つ場合の 2 個目作成は 422"
+    - "ロールに応じた操作制限が効く: 例としてメンバー管理 API は組織コンテキストでも Owner/Admin のみ (foundation の判定を流用)"
+    - "ユースケース/ハンドラ単体テストでコンテキスト未指定 (個人)・所属 org 指定・非所属 org 指定 (403)・非存在 org 指定 (404) が検証される"
+
+intent_placement:
+  primary_intent: intents/emumet/features/org-accounts/overview.md
+  supporting_intents:
+    - intents/emumet/features/org-accounts/packets.md
+    - intents/emumet/interview/2026-08-29-org-accounts-grill.md
+  new_intent_needed: false
+  placement_rationale: "org-accounts feature の execution unit 2 (features/org-accounts/packets.md unit 2)。grill Q4 (スイッチ式認証) の実装"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/org-accounts/packets.md
+    summary: "unit 2 に issue/PR リンクを追記"
+  adr:
+    required: true
+    target_paths:
+      - intents/emumet/decisions/0007-organization-accounts.md
+    decision_title: "スイッチ式認証: 組織コンテキストはリクエストヘッダで持ち、主体解決は AuthClaims→個人 Account→membership 検証→org AccountId"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: "コンテキスト解決の実装形状 (ミドルウェア vs facade 内) の確定値と、SessionContext 拡張の実際の型形状"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/decisions/0007-organization-accounts.md
+    - intents/emumet/features/org-accounts/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "REST API (組織コンテキスト対応の既存/新規エンドポイント、セッションコンテキスト API)"
