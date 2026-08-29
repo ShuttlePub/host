@@ -1,0 +1,72 @@
+implementation_issue_packet:
+  issue_title: "drive-foundation: 連携 Drive 基盤 + 課金ポリシー土台 + 最小 Web UI"
+  issue_kind: feature
+  source_execution_unit: drive-foundation
+  domain: booskiff
+  target_repo: ShuttlePub/Booskiff
+  target_path: core/, web/, deploy/self-hosting/, flake.nix
+  target_part: "Booskiff 全体の初期基盤 (Rust core + TanStack Start web + セルフホスト配布構成)"
+  dependencies: []
+  technical_baseline:
+    - "Rust (Axum, Emumet と同系) + PostgreSQL + flake/just 開発環境"
+    - "TanStack Start (SSR off) + Bun、BFF 責務はサーバー関数/API ルートに内包"
+    - "S3 互換ストレージ (MinIO 等) をバックエンドに必須"
+    - "信頼 issuer (Emumet/Ory) の JWKS による JWT 検証"
+    - "OpenAPI 駆動の独自 REST API (Misskey 互換なし)"
+  intent_references:
+    - "intents/booskiff/intent-tree/00-map.md"
+    - "intents/booskiff/product/overview.md"
+    - "intents/booskiff/technology/overview.md"
+    - "intents/booskiff/decisions/2026-08-29-initial-shaping.md (D1-D15)"
+  acceptance_criteria:
+    - "core: 信頼 issuer の JWT を JWKS で検証し、Account コンテキストを解決できる (検証のみ、トークン発行・セッションは持たない)"
+    - "core: Account 単位 Drive の CRUD (アップロード/一覧/表示/削除) が動く。アップロードはサーバー経由で受信バイトを正確に計測し、プランの容量上限超過を拒否できる"
+    - "core: 課金ポリシー土台 (Fluxer 式) — コード内デフォルト値テーブル + DB 上書き層 + 管理者 API が動く。セルフホストは everyone 相当 (全員 premium 制限)、mirror モード選択可"
+    - "core: ダウンロードは短命 presigned URL を発行しクライアントが S3 に直 GET できる。public-read ACL は使わない"
+    - "core: ファイルはデフォルト非公開。公開参照は推測不能キー付き公開 URL (immutable キャッシュ) で配信でき、解除・削除で無効化される"
+    - "web: OAuth/OIDC ログイン (Kratos/Hydra 連携) + HTTP-only Cookie セッションで、ブラウザが JWT を見ない Drive UI (一覧/アップロード/削除) が使える"
+    - "検証: (1) core 単体・結合テスト (計量正確性・上限拒否・presigned・公開制御) (2) compose 上 E2E: 認証→アップ→計量→presigned DL→公開 URL→削除 (3) web E2E (Playwright): ログイン→アップロード→一覧→削除"
+    - "deploy/self-hosting/ の compose で MinIO+Postgres+web+core が起動し、ブラウザから Drive UI が使える"
+
+# G461: optional packet-time intent-maintenance metadata. OPTIONAL and
+# backward-compatible — packets that omit this whole block stay valid.
+# Fill it in or explicitly decline each part while the design context is
+# fresh; `improve` (G456 / G460) is the later safety net, not a substitute.
+intent_placement:
+  primary_intent: intents/booskiff/intent-tree/00-map.md
+  supporting_intents:
+    - intents/booskiff/product/overview.md
+    - intents/booskiff/technology/overview.md
+  new_intent_needed: false
+  placement_rationale: "初動 shaping (grill Q1-Q15) の intent 書き戻しは本 packet 作成時に既に実施済み (00-map, product, technology, decisions, features)。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/booskiff/intent-tree/00-map.md"
+    summary: "実装で確定した構成 (ディレクトリ名、API パス等) がずれたら 00-map を更新する。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: "実装中に変わった決定 (層構成の再検討結果、課金スキーマの確定形など) を decisions/ または technology/overview.md に追記する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/booskiff/technology/overview.md"
+    - "intents/booskiff/decisions/2026-08-29-initial-shaping.md"
+# G645/G661: guide reachability is explicit and checked at closeout.
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: ShuttlePub/Booskiff リポジトリ (core/, web/)
