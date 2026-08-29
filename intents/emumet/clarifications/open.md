@@ -44,6 +44,21 @@
   packet backlog に登録(`mastodon-e2e-undo-coverage`) → **完了**
   (issue #46 / PR #47 マージ 2026-08-20。S10 双方向 Undo(Follow) を追加)
 
+## C5 (open 2026-08-29): 組織アカウント / Profile 共同管理の構想確定
+
+- 背景: Booskiff (ドライブストレージ) の設計議論で「複数の Account が 1 Profile を
+  共同運用する」ケース (企業アカウント等) が現行設計で未想定であることが判明。
+  operator 判断: 「将来かも」ではなく**すぐやりたい要件**
+- 現行の確認結果: Profile : Account = N:1 のみ (中間テーブルなし)。
+  intent 側 ADR 0002、実装側 `profiles.account_id` 単一 FK で確認済み
+- 論点: 実現パターン (組織 Account モデル vs Profile 共同編集者 N:M)、メンバー役割、
+  ログイン・認証 (Ory 整合)、課金主体、モデレーション整合。
+  詳細は [../features/org-accounts/](../features/org-accounts/overview.md)
+- **推奨方向 (2026-08-29)**: 組織 Account モデル。Profile : Account = N:1 を維持でき、
+  Booskiff の「所有者 = Account」への影響が最小
+- **次のアクション: grill で詰める** (intent-cli grill --domain emumet で
+  本 C5 を対象に指定)
+
 ## Recently Resolved
 
 - 2026-08-25T14:11:06Z — unlink 後の旧 namespace (`/objects/<link-id>/...`) のプロキシ継続条件・遮断ルール

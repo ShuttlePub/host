@@ -18,4 +18,6 @@
   - 「1 Account が複数 Profile を持つ」方向 (現行サポート) と
     「複数 Account が 1 Profile を共有」方向 (未想定) は別物。後者が入ると
     共有 Profile がどの Account の Drive を使うか等の問題が発生する
-- **再開条件: Emumet 側で組織アカウント・共同管理の構想が出た時点で再検討する**
+- **再開条件: Emumet 側で組織アカウントの構想が進行中
+  (emumet C5 / features/org-accounts)。設計確定次第、Booskiff の
+  所有者解決・課金紐付けを再検討する**
