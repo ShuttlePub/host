@@ -39,24 +39,22 @@ kernel の `image` クレートも現時点では使用箇所なし。
 - notes 系テーブルは Rust 実装を持たず、かつ SQL 自体に未定義参照・
   構文上の問題を含む (適用可否は未検証)。
 
-## 設計方向 (オーナー共有 2026-08-29、grill 前の前提)
+## 設計方向 (2026-08-29 grill 確定、decisions/2026-08-29-initial-shaping.md 参照)
 
-- **Actor Model + Event Sourcing の採用方向**: ShuttlePub 本体は Actor Model
-  ベースで構築したい意向。基盤としてオーナー自ら nitinol
-  (Rust 製 ES toolkit、actor runtime 搭載) を開発中で、本体実装の
-  土台にする想定。対象リポジトリの現行コードには未導入
-  (観察時点では依存も実装もない)。
-- **リレー機能の PoC**: stargate (ActivityPub デバッグツール兼) 上で
-  リレー PoC を進行中。実装確認済みの範囲: リレー Actor への Follow
-  を受けてリモート Actor を照会し Accept を配送する流れ、HTTP Signature
-  署名・検証。AP 連携部分の知見は stargate から本体へ持ち込む前提と
-  思われる (詳細は grill で確認予定)。
-- 上記は現行スケルトン (2023 年構成) とは別系統の新規実装方向であり、
-  既存コード資産との関係 (再利用 / 刷新) は未決定。
+- **Actor Model + Event Sourcing の採用** (D1): 2023 年スケルトンは全面刷新し、
+  nitinol (Rust 製 ES toolkit、actor runtime 搭載) ベースで再構成する。
+  stargate (edition 2024、app-cmd/driver/kernel/server) を構成の参考基盤とする。
+- **リレーは本体に内蔵** (D2): stargate は PoC として位置づけ、AP 連携の
+  実装知見を本体へ移管する。
+- **イベント基盤の分離** (D8): 本体 (nitinol) と Emumet (独自 ES) の
+  イベントストアは完全分離、連携は HTTP API のみ。
+- **永続化** (D6): nitinol postgres アダプタ (別リポジトリ、実装中) 完了まで
+  in-memory。アダプタ完成後に postgres へ切换 (将来 slice)。
+- **ドメイン語彙** (D7): turbo / turbo_quote (ブースト / 引用の独自語) を維持。
 
 ## サービス群構成との対応
 
-現状コードは Emumet / Ory / Booskiff を一切参照しない単体構成。
-サービス群の現行 intent (emumet/booskiff) が前提とする連携構成
-(Emumet 経由の認証・代理署名、Booskiff 経由のメディア) はコード上
-未実装。移行方針は未決定 (本ドメインの shaping 対象)。
+現行コードは Emumet / Ory / Booskiff を一切参照しない単体構成。
+初動 (note-foundation) は Emumet 非依存で nitinol 基盤を検証し、capability
+(post-relay / 署名 API) が Emumet 側で完成した後に API 接続する (D3/D4)。
+その際の要求定義 (契約書) は note-foundation の受け入れ基準に含める (D10)。

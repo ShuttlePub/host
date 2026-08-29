@@ -2,48 +2,44 @@
 
 - Domain: `shuttlepub`
 - Target repo: `ShuttlePub/ShuttlePub`
-- Initial map: **初動整理 2026-08-29** (コード観察ベース、grill 未実施)
+- Initial map: **初動確定 2026-08-29** (grill Q1-Q11、記録: `interviews/shuttlepub.json`)
 
-## ドメイン形状 (初動整理)
+## ドメイン形状 (初動確定)
 
 ShuttlePub は「ShuttlePub サービス群の SNS 本体 (タイムライン構築・投稿
-永続化)」を目指すドメイン。ただし現状コード (最終コミット 2023-04-30) は
-独自アカウント管理を前提とした CRUD スケルトンのみで、サービス群の現行
-intent (emumet / booskiff) が前提とする連携構成 (Emumet / Ory / Booskiff)
-とは乖離している。乖離は観察として記録し、ここでは評価しない。
+永続化)」を目指すドメイン。2023 年スケルトン (最終コミット 2023-04-30) は
+初動 grill で**全面刷新**が決定 (D1)。現行実装は nitinol (Rust 製 ES
+toolkit、actor runtime 搭載) ベースで再構成する。リレー機能は本体に内蔵
+(D2、stargate の PoC 知見を移管)。サービス群の現行 intent (emumet /
+booskiff) が前提とする連携構成 (Emumet / Ory / Booskiff) とは、初動は
+Emumet 側先行 (D3) で、本体は非依存部分の実装から着手 (D4)。
 
 ```
 identity/mission.md          使命 (サービス群記録より) + 現状コードとの対応 (観察)
 product/overview.md          現状実装インベントリ (評価なし)
 technology/overview.md       現状スタック、未使用依存、設計方向 (nitinol / stargate)
 links/external.md            関連リポジトリ (nitinol, stargate, サービス群)
+decisions/                   2026-08-29 grill の決定一覧 (D1-D11)
 features/                    (未整理)
-decisions/                   (未整理)
 clarifications/open.md       (未整理)
+interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
 ```
 
-## 設計方向 (オーナー共有 2026-08-29、grill 前の前提)
+## 初動実行単位 (packet-ready)
 
-- 本体は **Actor Model + Event Sourcing** で構築する方向。基盤ライブラリ
-  **nitinol** (Rust 製 ES toolkit、actor runtime 搭載) を開発中。
-- **リレー機能の PoC** は **stargate** (AP デバッグツール兼) で進行中。
-  署名・検証・リモート Actor 照会・Accept 配送まで実装確認済み。
-- 上記は 2023 年スケルトンとは別系統の新規実装方向。既存コード資産との
-  関係は未決定。
+**`note-foundation`**: nitinol 土台 + Note ドメイン (turbo/turbo_quote 語彙で
+投稿・reply・ブースト・引用・reaction) + タイムライン投影 + stargate からの
+連合面移植 (署名モック、in-memory 永続化) + Emumet 契約書。
+受け入れ基準・検証方法は decisions D10、packet は `.intent-cli/issues/note-foundation/`。
 
-## 未整理の論点 (grill 候補、優先順ではない)
+## 将来 slice (依存順の目安)
 
-- 2023 年スケルトンと新規実装方向 (nitinol ベース) の関係:
-  全面刷新か、部分的再利用 (層構成・postgres 基盤など) か
-- リレー (stargate PoC) の位置づけ: 本体の機能として内蔵するか、
-  別サービスとして切り出すか (Emumet の連合中継との責務分界も絡む)
-- Emumet / Ory / Booskiff との連携設計 (現行コードには存在しない)。
-  nitinol ベースにすると Emumet (独自 ES 実装) とのイベント整合性
-  設計も論点
-- migration 内の notes / turbo quote 系スキーマの扱い (Rust 実装なし、
-  SQL 自体の適用可否も未検証)。turbo quote の設計意図は未確認
-- 未使用依存 (redis / meilisearch / lettre / image) の去就
-- ユーザー層・機能境界の固有記録 (現行は emumet 記録の参照のみ)
+1. **Emumet 接続**: capability 署名 (D3 の完成条件が揃い次第)。リレーの
+   署名切替 + post-relay 受け口の実接続
+2. **postgres 永続化**: nitinol postgres アダプタ (別リポジトリ、実装中)
+   完成後の切换
+3. **フロントエンド**: 別リポジトリとして構築 (D9)
+4. turbo quote 以外の独自概念・UI 語彙の再検討 (必要時 grill)
 
 ## ホストデータ
 

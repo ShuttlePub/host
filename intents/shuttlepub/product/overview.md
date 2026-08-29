@@ -50,5 +50,5 @@ Account / Profile / Follow の CRUD 土台と未実装の signup/login エンド
 - 認証・認可基盤 → Ory (Kratos/Hydra)
 - ファイル保管 → Booskiff
 
-※ 現状コードがこの Non-goal 構成に追随するかは本ドメインの今後の
-shaping 対象。ここでは記録のみ。
+※ 2026-08-29 grill で全面刷新 (D1) + Emumet 側先行 (D3) が決定。
+初回実行単位 `note-foundation` (decisions/2026-08-29-initial-shaping.md 参照)。
