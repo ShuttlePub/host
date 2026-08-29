@@ -1,0 +1,70 @@
+implementation_issue_packet:
+  issue_title: "note-foundation: nitinol 基盤 + Note ドメイン + 連合面移植 (署名モック)"
+  issue_kind: feature
+  source_execution_unit: note-foundation
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: kernel/, application/, driver/, server/, docs/
+  target_part: "ShuttlePub 本体の新規基盤 (nitinol ベース ES + Note ドメイン + stargate 由来の連合面)"
+  dependencies: []
+  technical_baseline:
+    - "Rust (edition 2024、stargate 準拠) + nitinol (ES toolkit、actor runtime。本体と並行開発中の基盤)"
+    - "永続化は nitinol-persistence 組込の in-memory EventStore/SnapshotStore (postgres アダプタは別リポジトリで実装中、完成後の slice で切换)"
+    - "axum (REST API) + OpenAPI 駆動の独自 REST (Misskey 互換なし)"
+    - "連合面は stargate から移植: http-msgsign-draft ベースの HTTPSig 署名・検証、リモート Actor 解決、inbox Follow 受理→Accept 返送 (署名はモック or 自前鍵)"
+    - "ドメイン語彙: ブースト=turbo、引用=turbo_quote (AP に公式語がないための独自語、decisions D7)"
+    - "Emumet / Ory / Booskiff との実接続は含めない (D3: Emumet 側の capability/post-relay 完成後の slice)"
+  intent_references:
+    - "intents/shuttlepub/intent-tree/00-map.md"
+    - "intents/shuttlepub/product/overview.md"
+    - "intents/shuttlepub/technology/overview.md"
+    - "intents/shuttlepub/decisions/2026-08-29-initial-shaping.md (D1-D11)"
+    - "intents/shuttlepub/interviews/shuttlepub.json (grill Q1-Q11)"
+    - "intents/shuttlepub/links/external.md"
+  acceptance_criteria:
+    - "nitinol ベース workspace で ProcessSystem / EventSourceSystem が起動する"
+    - "Note aggregate (投稿・reply・turbo・turbo_quote・reaction) のイベント decide/apply が実装され、in-memory EventStore で永続化・replay が検証される"
+    - "Projector によるタイムライン read model が構築でき、取得 REST API が応答する"
+    - "連合面: inbox で Follow を受理しモック署名で Accept を返送、リモート Actor 解決と HTTPSig 検証が動作する (stargate 移植)"
+    - "Emumet への契約書 (capability 署名 API + post-relay 受け口の要求定義) が docs/ に記録されている"
+    - "各 aggregate の単体テスト + replay 検証テストが CI で回る"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/intent-tree/00-map.md
+  supporting_intents:
+    - intents/shuttlepub/product/overview.md
+    - intents/shuttlepub/technology/overview.md
+  new_intent_needed: false
+  placement_rationale: "初動 shaping (grill Q1-Q11) の intent 書き戻しは本 packet 作成前に実施済み (00-map, product, technology, decisions, interviews)。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/intent-tree/00-map.md"
+    summary: "実装で確定した構成 (クレート名、イベント family 名、API パス等) がずれたら 00-map / technology/overview.md を更新する。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: "実装中に変わった決定 (Note イベント語彙の確定形、連合面の構成、Emumet 契約の変更点など) を decisions/ または technology/overview.md に追記する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/technology/overview.md"
+    - "intents/shuttlepub/decisions/2026-08-29-initial-shaping.md"
+# G645/G661: guide reachability is explicit and checked at closeout.
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: ShuttlePub/ShuttlePub リポジトリ (kernel/, application/, driver/, server/, docs/)
