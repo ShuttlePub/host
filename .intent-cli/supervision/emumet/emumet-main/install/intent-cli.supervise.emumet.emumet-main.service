@@ -1,0 +1,13 @@
+# intent-cli.supervise.emumet.emumet-main
+# verification-status: emitted-but-unverified on macOS
+[Unit]
+Description=intent-cli.supervise.emumet.emumet-main operator-managed intent-cli supervision
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/env intent-cli "notify" "supervise" "--domain" "emumet" "--team" "emumet-main" "--repo" "ShuttlePub/Emumet" "--owner-role" "orchestration" "--bound" "900" "--interval" "300" "--routing-root" "/home/turtton/Documents/ShuttlePub/host" "--write" "--format" "json"
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target
