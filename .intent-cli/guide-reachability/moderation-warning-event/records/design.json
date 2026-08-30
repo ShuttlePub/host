@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "moderation-warning-event",
+  "role": "design",
+  "host_commit": "52d6442",
+  "recorded_at": "2026-08-30T16:25:09.9515333+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": null
+}
