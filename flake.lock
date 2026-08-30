@@ -23,11 +23,11 @@
     "intent-system": {
       "flake": false,
       "locked": {
-        "lastModified": 1786399194,
-        "narHash": "sha256-03TaPQJTiyg6Y1ubLj5XZUYpx82UAVqwHxlsL0W1g0s=",
+        "lastModified": 1788038260,
+        "narHash": "sha256-oVALpoogNsYLkeO+6kGBGX5GLJg4O91Bu47mVaO4i7E=",
         "owner": "J-Tech-Japan",
         "repo": "intent-system",
-        "rev": "478dd57b5de609e47dbe678c82f714fd0e463dd8",
+        "rev": "5d553b7a0aeecf8d9939080eada9772963fe35c8",
         "type": "github"
       },
       "original": {
@@ -42,11 +42,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1786410390,
-        "narHash": "sha256-gzj7jjg/m6dcaysIo8oR4nTlWH/90BsICcTMC6g9qL0=",
+        "lastModified": 1788048630,
+        "narHash": "sha256-GTvzsen308GaJdG0RTvyphOoAwglkJgNXNbRScCzBU8=",
         "owner": "turtton",
         "repo": "intent-system-flake",
-        "rev": "a0716a6e11698697f377fc057f743f9bbc2bb87f",
+        "rev": "993432802671ff93d4f4f97dbd62ab29428c9319",
         "type": "github"
       },
       "original": {
