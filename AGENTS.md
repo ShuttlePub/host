@@ -75,6 +75,14 @@ remove an entry only after verifying against a newer binary.
   `--domain <d>` explicitly on multi-domain hosts; check the printed
   `session path` in the output; delete any stray file under the wrong
   domain immediately.
+- **packet revision after publish** (verified 0.26.0, 2026-08-30): no
+  intent-cli command revises an already-published packet/issue (`packet
+  draft` never overwrites existing files; no retitle/update command exists
+  in the binary's `packet`/`intent`/`issue` groups). Verified path: hand-edit
+  the packet files under `.intent-cli/issues/<unit>/`, hand-edit
+  `queue-state.json` (jq), then sync the GitHub issue with `gh issue edit
+  --title --body`. Record a revision-history note in the packet so the
+  divergence from the originally published body is auditable.
 
 ## Wrong-host detection (G301)
 

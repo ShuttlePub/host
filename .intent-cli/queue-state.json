@@ -1,10 +1,10 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-29T10:51:42.5900718+00:00",
+  "updated_at": "2026-08-30T02:59:44.136284294+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
-      "title": "\u5916\u5411\u304D unfollow REST API(Undo(Follow) \u914D\u9001) \u002B REST followers/following \u4E00\u89A7",
+      "title": "外向き unfollow REST API(Undo(Follow) 配送) + REST followers/following 一覧",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -27,7 +27,7 @@
     },
     {
       "execution_unit": "block-mute-federation",
-      "title": "block-mute-federation: Block \u30A2\u30AF\u30C6\u30A3\u30D3\u30C6\u30A3\u9023\u5408 (\u9001\u4FE1 Block/Undo(Block) \u002B inbox \u53D7\u4FE1\u51E6\u7406) \u002B E2E",
+      "title": "block-mute-federation: Block アクティビティ連合 (送信 Block/Undo(Block) + inbox 受信処理) + E2E",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -50,7 +50,7 @@
     },
     {
       "execution_unit": "architecture-foundation",
-      "title": "architecture-foundation: TransactionManager port \u5C0E\u5165\u30FBno-op commit \u5EC3\u6B62\u30FBevent seq \u5217\u8FFD\u52A0 (ADR 0006 Stage 1)",
+      "title": "architecture-foundation: TransactionManager port 導入・no-op commit 廃止・event seq 列追加 (ADR 0006 Stage 1)",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -73,7 +73,7 @@
     },
     {
       "execution_unit": "account-aggregate-repository",
-      "title": "account-aggregate-repository: AggregateRepository port (Rehydrated\u003CAccount\u003E) \u002B driver \u5B9F\u88C5 \u002B \u540C\u5024\u30C6\u30B9\u30C8\u4E26\u8D70 (ADR 0006 Stage 2)",
+      "title": "account-aggregate-repository: AggregateRepository port (Rehydrated<Account>) + driver 実装 + 同値テスト並走 (ADR 0006 Stage 2)",
       "state": "completed",
       "dependencies": [
         "architecture-foundation"
@@ -98,7 +98,7 @@
     },
     {
       "execution_unit": "projection-outbox-projector",
-      "title": "projection-outbox-projector: account_events log tailing \u002B application::projection AccountProjector \u65B0\u8A2D \u002B \u76F4\u63A5 Signal emit \u505C\u6B62 (ADR 0006 Stage 3)",
+      "title": "projection-outbox-projector: account_events log tailing + application::projection AccountProjector 新設 + 直接 Signal emit 停止 (ADR 0006 Stage 3)",
       "state": "completed",
       "dependencies": [
         "architecture-foundation",
@@ -124,7 +124,7 @@
     },
     {
       "execution_unit": "account-write-usecases",
-      "title": "account-write-usecases: CreateAccount / UpdateAccountDetail / moderation \u3092 UoW \u306B\u79FB\u884C\u3001SigningKey executor \u53D7\u3051\u53D6\u308A\u5316\u3001Keto post-commit provisioning (ADR 0006 Stage 4)",
+      "title": "account-write-usecases: CreateAccount / UpdateAccountDetail / moderation を UoW に移行、SigningKey executor 受け取り化、Keto post-commit provisioning (ADR 0006 Stage 4)",
       "state": "completed",
       "dependencies": [
         "architecture-foundation",
@@ -151,7 +151,7 @@
     },
     {
       "execution_unit": "crud-ap-transactions",
-      "title": "crud-ap-transactions: Block / Inbox Follow / Inbox Block \u3092 tx \u002B \u914D\u9001 outbox \u5316\u3001Mute / Accept / Undo \u7CFB\u3092\u51AA\u7B49 repo \u64CD\u4F5C\u5316 (ADR 0006 Stage 5)",
+      "title": "crud-ap-transactions: Block / Inbox Follow / Inbox Block を tx + 配送 outbox 化、Mute / Accept / Undo 系を冪等 repo 操作化 (ADR 0006 Stage 5)",
       "state": "completed",
       "dependencies": [
         "architecture-foundation"
@@ -176,7 +176,7 @@
     },
     {
       "execution_unit": "auth-account-crud-migration",
-      "title": "auth-account-crud-migration: AuthAccount \u3092 ES\u2192CRUD \u79FB\u884C\u3001find-or-create \u539F\u5B50\u5316\u3001\u540C\u671F projection \u4F8B\u5916\u9664\u53BB (ADR 0006 Stage 6)",
+      "title": "auth-account-crud-migration: AuthAccount を ES→CRUD 移行、find-or-create 原子化、同期 projection 例外除去 (ADR 0006 Stage 6)",
       "state": "completed",
       "dependencies": [
         "architecture-foundation"
@@ -201,7 +201,7 @@
     },
     {
       "execution_unit": "es-aggregates-migration",
-      "title": "es-aggregates-migration: Profile / Metadata \u3092 ES repository \u002B tailing projector \u30D1\u30BF\u30FC\u30F3\u306B\u79FB\u884C (ADR 0006 Stage 7)",
+      "title": "es-aggregates-migration: Profile / Metadata を ES repository + tailing projector パターンに移行 (ADR 0006 Stage 7)",
       "state": "completed",
       "dependencies": [
         "account-aggregate-repository",
@@ -228,7 +228,7 @@
     },
     {
       "execution_unit": "di-cleanup-adapter-removal",
-      "title": "di-cleanup-adapter-removal: route facade newtype \u5C0E\u5165\u30FBDI \u59D4\u8B72\u96C6\u7D04\u30FBadapter \u30AF\u30EC\u30FC\u30C8\u524A\u9664 (ADR 0006 Stage 8)",
+      "title": "di-cleanup-adapter-removal: route facade newtype 導入・DI 委譲集約・adapter クレート削除 (ADR 0006 Stage 8)",
       "state": "completed",
       "dependencies": [
         "account-aggregate-repository",
@@ -257,7 +257,7 @@
     },
     {
       "execution_unit": "crud-ap-transactions-reapply",
-      "title": "crud-ap-transactions-reapply: Block / Inbox Follow / Inbox Block \u3092 tx \u002B \u914D\u9001 outbox \u5316\u3001Mute / Accept / Undo \u7CFB\u3092\u51AA\u7B49 repo \u64CD\u4F5C\u5316 (ADR 0006 Stage 9 = Stage 5 re-apply)",
+      "title": "crud-ap-transactions-reapply: Block / Inbox Follow / Inbox Block を tx + 配送 outbox 化、Mute / Accept / Undo 系を冪等 repo 操作化 (ADR 0006 Stage 9 = Stage 5 re-apply)",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -280,7 +280,7 @@
     },
     {
       "execution_unit": "media-upload",
-      "title": "media-upload: \u753B\u50CF\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9 API \u002B S3 \u4E92\u63DB\u30B9\u30C8\u30EC\u30FC\u30B8\u9023\u643A \u002B Actor icon/image \u53CD\u6620",
+      "title": "media-upload: 画像アップロード API + S3 互換ストレージ連携 + Actor icon/image 反映",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -303,7 +303,7 @@
     },
     {
       "execution_unit": "moderation-role-assignment",
-      "title": "moderation-role-assignment: InstanceRole(Admin/Moderator) \u5272\u5F53\u30FB\u5265\u596A\u306E admin REST API (Keto PermissionWriter \u7D4C\u7531)",
+      "title": "moderation-role-assignment: InstanceRole(Admin/Moderator) 割当・剥奪の admin REST API (Keto PermissionWriter 経由)",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -326,7 +326,7 @@
     },
     {
       "execution_unit": "mastodon-e2e-undo-coverage",
-      "title": "Mastodon \u5B9F\u6A5F E2E \u306B Undo(Follow) \u76F8\u4E92\u904B\u7528\u30B7\u30CA\u30EA\u30AA (S10) \u3092\u8FFD\u52A0",
+      "title": "Mastodon 実機 E2E に Undo(Follow) 相互運用シナリオ (S10) を追加",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -349,7 +349,7 @@
     },
     {
       "execution_unit": "account-unban-reactivate",
-      "title": "account-unban-reactivate: unban (Banned\u2192Active) admin API \u002B reactivate (deactivated \u5FA9\u5E30) API \u3068 AccountEvent \u62E1\u5F35",
+      "title": "account-unban-reactivate: unban (Banned→Active) admin API + reactivate (deactivated 復帰) API と AccountEvent 拡張",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -371,7 +371,7 @@
     },
     {
       "execution_unit": "block-mute-followups",
-      "title": "block-mute-followups: inbox Block/Undo(Block) \u30C6\u30B9\u30C8\u62E1\u5145 \u002B Iceshrimp E2E S10 Undo(Block) \u76F8\u624B\u5074\u89B3\u6E2C assert",
+      "title": "block-mute-followups: inbox Block/Undo(Block) テスト拡充 + Iceshrimp E2E S10 Undo(Block) 相手側観測 assert",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -393,7 +393,7 @@
     },
     {
       "execution_unit": "moderation-account-report",
-      "title": "moderation-account-report: \u901A\u5831(AccountReport)\u6A5F\u80FD \u2014 \u4F5C\u6210 API \u002B \u30E2\u30C7\u30EC\u30FC\u30BF\u30FC\u30CF\u30F3\u30C9\u30EA\u30F3\u30B0 API (ES aggregate\u30013\u72B6\u614B)",
+      "title": "moderation-account-report: 通報(AccountReport)機能 — 作成 API + モデレーターハンドリング API (ES aggregate、3状態)",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -416,7 +416,7 @@
     },
     {
       "execution_unit": "oauth2-consent-flow",
-      "title": "OAuth2 \u660E\u793A\u540C\u610F\u753B\u9762 (BFF standalone HTML \u30DA\u30FC\u30B8 \u002B i18n \u30B9\u30B3\u30FC\u30D7\u30E9\u30D9\u30EB)",
+      "title": "OAuth2 明示同意画面 (BFF standalone HTML ページ + i18n スコープラベル)",
       "state": "completed",
       "dependencies": [],
       "blocked_by": [],
@@ -439,7 +439,7 @@
     },
     {
       "execution_unit": "drive-foundation",
-      "title": "drive-foundation: \u9023\u643A Drive \u57FA\u76E4 \u002B \u8AB2\u91D1\u30DD\u30EA\u30B7\u30FC\u571F\u53F0 \u002B \u6700\u5C0F Web UI",
+      "title": "drive-foundation: 連携 Drive 基盤 (Rust core) + 課金ポリシー土台",
       "state": "queued",
       "dependencies": [],
       "blocked_by": [],
@@ -454,6 +454,20 @@
         "number": 1,
         "url": "https://github.com/ShuttlePub/Booskiff/issues/1"
       },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "drive-web-ui",
+      "title": "drive-web-ui: 最小 Web UI (PureScript + Flame SSR/hydration + Bun BFF) — shuttlepub-frontends モノレポ apps/booskiff-web",
+      "state": "queued",
+      "dependencies": [
+        "drive-foundation"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/booskiff/clarifications/open.md",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

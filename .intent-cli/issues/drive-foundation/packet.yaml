@@ -1,32 +1,33 @@
 implementation_issue_packet:
-  issue_title: "drive-foundation: 連携 Drive 基盤 + 課金ポリシー土台 + 最小 Web UI"
+  issue_title: "drive-foundation: 連携 Drive 基盤 (Rust core) + 課金ポリシー土台"
   issue_kind: feature
   source_execution_unit: drive-foundation
   domain: booskiff
   target_repo: ShuttlePub/Booskiff
-  target_path: core/, web/, deploy/self-hosting/, flake.nix
-  target_part: "Booskiff 全体の初期基盤 (Rust core + TanStack Start web + セルフホスト配布構成)"
+  target_path: core/, deploy/self-hosting/, flake.nix
+  target_part: "Booskiff core の初期基盤 (Rust: 認証 + Drive CRUD + S3 基盤 + 課金ポリシー土台 + 管理者 API)。Web UI は shuttlepub-frontends モノレポ対象の別実行単位 drive-web-ui"
   dependencies: []
   technical_baseline:
     - "Rust (Axum, Emumet と同系) + PostgreSQL + flake/just 開発環境"
-    - "TanStack Start (SSR off) + Bun、BFF 責務はサーバー関数/API ルートに内包"
     - "S3 互換ストレージ (MinIO 等) をバックエンドに必須"
-    - "信頼 issuer (Emumet/Ory) の JWKS による JWT 検証"
-    - "OpenAPI 駆動の独自 REST API (Misskey 互換なし)"
+    - "信頼 issuer (Emumet/Ory) の JWT を JWKS で検証のみ (core はトークン発行・セッションを持たない)"
+    - "OpenAPI 駆動の独自 REST API (Misskey 互換なし)。Account コンテキストのみ (Profile 概念は出さない)"
   intent_references:
     - "intents/booskiff/intent-tree/00-map.md"
     - "intents/booskiff/product/overview.md"
     - "intents/booskiff/technology/overview.md"
-    - "intents/booskiff/decisions/2026-08-29-initial-shaping.md (D1-D15)"
+    - "intents/booskiff/decisions/2026-08-29-initial-shaping.md (D1-D21)"
   acceptance_criteria:
     - "core: 信頼 issuer の JWT を JWKS で検証し、Account コンテキストを解決できる (検証のみ、トークン発行・セッションは持たない)"
-    - "core: Account 単位 Drive の CRUD (アップロード/一覧/表示/削除) が動く。アップロードはサーバー経由で受信バイトを正確に計測し、プランの容量上限超過を拒否できる"
-    - "core: 課金ポリシー土台 (Fluxer 式) — コード内デフォルト値テーブル + DB 上書き層 + 管理者 API が動く。セルフホストは everyone 相当 (全員 premium 制限)、mirror モード選択可"
+    - "core: owner (owner_type + owner_id ポリモーフィック、D19) 単位 Drive の CRUD (アップロード/一覧/表示/削除) が動く。アップロードはサーバー経由で受信バイトを正確に計測し、デフォルト制限 (1 GB/user、100 MB/file、100 req/min、D20) で超過を拒否できる"
+    - "core: フラット (1 階層) のフォルダ (D16/D21)。ファイル → フォルダは 0..1 の folder_id 参照 (parent_id ツリーは持たない)"
+    - "core: file レコードは「オリジナル + 派生オブジェクト」を許容する設計 (S3 キー prefix 規約 or file_objects 1:N、D16) — 後続のサムネイル slice を非破壊で追加できること"
+    - "core: 課金ポリシー土台 (Fluxer 式) — コード内デフォルト値テーブル + DB 上書き層 + 管理者 API が動く。計量はストレージ使用量 (受信バイト) のみ (D17)。セルフホストは everyone 相当 (全員 premium 制限)、mirror モード選択可"
+    - "core: 管理者 API は管理者トークン (named token / token id) を共通認証ミドルウェア (トークン → 固定 admin ロールの抽象化) 経由で検証する (D18)。エンドポイントはグローバルトークン直接判定を持たない"
     - "core: ダウンロードは短命 presigned URL を発行しクライアントが S3 に直 GET できる。public-read ACL は使わない"
     - "core: ファイルはデフォルト非公開。公開参照は推測不能キー付き公開 URL (immutable キャッシュ) で配信でき、解除・削除で無効化される"
-    - "web: OAuth/OIDC ログイン (Kratos/Hydra 連携) + HTTP-only Cookie セッションで、ブラウザが JWT を見ない Drive UI (一覧/アップロード/削除) が使える"
-    - "検証: (1) core 単体・結合テスト (計量正確性・上限拒否・presigned・公開制御) (2) compose 上 E2E: 認証→アップ→計量→presigned DL→公開 URL→削除 (3) web E2E (Playwright): ログイン→アップロード→一覧→削除"
-    - "deploy/self-hosting/ の compose で MinIO+Postgres+web+core が起動し、ブラウザから Drive UI が使える"
+    - "検証: (1) core 単体・結合テスト (計量正確性・制限拒否・presigned・公開制御・フォルダ・管理者 API) (2) compose 上 E2E (API レベル): 認証→アップ→計量→presigned DL→公開 URL→削除"
+    - "deploy/self-hosting/ の compose で MinIO+Postgres+core が起動し、API が使える"
 
 # G461: optional packet-time intent-maintenance metadata. OPTIONAL and
 # backward-compatible — packets that omit this whole block stay valid.
@@ -38,7 +39,7 @@ intent_placement:
     - intents/booskiff/product/overview.md
     - intents/booskiff/technology/overview.md
   new_intent_needed: false
-  placement_rationale: "初動 shaping (grill Q1-Q15) の intent 書き戻しは本 packet 作成時に既に実施済み (00-map, product, technology, decisions, features)。"
+  placement_rationale: "初動 shaping (grill Q1-Q22) の intent 書き戻しは既に実施済み (00-map, product, technology, decisions, features)。"
 knowledge_updates:
   intent_tree:
     required: true
@@ -69,4 +70,8 @@ guide_reachability:
   routes:
     - guide_surface: guide workflow task implementation-loop
       role: implementation
-      target_surface: ShuttlePub/Booskiff リポジトリ (core/, web/)
+      target_surface: ShuttlePub/Booskiff リポジトリ (core/)
+
+# 改訂履歴: 2026-08-30 Q16 (D11 反転) と grill Q17-Q22 (D16-D21) を反映し、
+# web (TanStack Start) を本 packet から分離。Web UI は shuttlepub-frontends
+# モノレポ対象の別実行単位 drive-web-ui として queue に追加済み。
