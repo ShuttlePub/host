@@ -67,6 +67,14 @@ remove an entry only after verifying against a newer binary.
   record every answer durably before proceeding; stop only at a structured
   stop condition (backlog empty + rediscovery finds nothing →
   `今のところ追加質問はありません`).
+- **record-answer domain default hazard** (verified 0.26.0, 2026-08-30):
+  `interview record-answer --session <id>` WITHOUT `--domain <d>` silently
+  resolves the session under the host's default domain (here: emumet),
+  creating a stray `<default-domain>/interviews/<id>.json` with no warning
+  even when the session name matches another domain. Fix: ALWAYS pass
+  `--domain <d>` explicitly on multi-domain hosts; check the printed
+  `session path` in the output; delete any stray file under the wrong
+  domain immediately.
 
 ## Wrong-host detection (G301)
 
