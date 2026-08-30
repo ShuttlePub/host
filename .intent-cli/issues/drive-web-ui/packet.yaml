@@ -1,0 +1,64 @@
+implementation_issue_packet:
+  issue_title: "drive-web-ui: 最小 Web UI (PureScript + Flame SSR/hydration + Bun BFF) — shuttlepub-frontends apps/booskiff-web"
+  issue_kind: feature
+  source_execution_unit: drive-web-ui
+  domain: booskiff
+  target_repo: shuttlepub-frontends
+  target_path: apps/booskiff-web
+  target_part: "Booskiff drive の最小 Web UI (Flame SSR + hydration) と Bun BFF"
+  dependencies: [drive-foundation]
+  technical_baseline:
+    - "PureScript + Flame (SSR + hydration) — D11 (Q16 反転後)"
+    - "Bun BFF: OAuth/OIDC (Kratos/Hydra 連携、Ratcap bff/ パターン転用)、HTTP-only Cookie セッション、トークン更新、セッション→JWT 変換"
+    - "core (ShuttlePub/Booskiff) は REST/OpenAPI (D10)、JWT Bearer (機械 API)、ブラウザは JWT を一切見ない"
+    - "アップロード = BFF 経由ストリーミング (core へ中継)、ダウンロード = core 発行の短命 presigned URL へリダイレクト (D5)"
+  intent_references:
+    - "intents/booskiff/intent-tree/00-map.md"
+    - "intents/booskiff/decisions/2026-08-29-initial-shaping.md (D11/D14/D15)"
+    - "intents/booskiff/technology/overview.md"
+  acceptance_criteria:
+    - "SSR された Drive 画面 (ファイル/フォルダ一覧) が hydration され、ログイン・一覧・詳細表示がブラウザのみで完結する"
+    - "BFF 経由の OAuth/OIDC ログインが HTTP-only Cookie セッションで完結し、ブラウザの storage に JWT が残らない"
+    - "アップロードが BFF → core へストリーミング中継され、100 MB/file 上限・進捗表示・クォータ更新が動く"
+    - "ダウンロードが presigned URL へのリダイレクトで完結し、削除・フラットフォルダ CRUD が動く"
+    - "Playwright Web E2E (D15) が core + MinIO + Postgres + web の compose 上でグリーン"
+  revision_history:
+    - "2026-08-30: 初版ドラフト。Q16 反転後の Web slice として切出し (drive-foundation から分離)。"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/booskiff/intent-tree/00-map.md
+  supporting_intents:
+    - intents/booskiff/decisions/2026-08-29-initial-shaping.md
+    - intents/booskiff/technology/overview.md
+  new_intent_needed: false
+  placement_rationale: "00-map.md に drive-web-ui 行が既に存在する (drive-foundation 分離時に追加済み)。初動 web slice として該当行の状態を更新するだけでよい。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/booskiff/intent-tree/00-map.md
+    summary: "drive-web-ui 行を実装済み状態に更新し、初動スコープ (ログイン + Drive 一覧/アップ/削除) の完了を反映する。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "D11 (Q16) の Web スタック反転は decisions/2026-08-29-initial-shaping.md に既に記録済みのため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "初動 slice のためユーザー向け docs 更新はなし (self-hosting 手順は drive-foundation 側)。"
+closeout_learning:
+  expected: "Flame SSR + hydration と Bun BFF の組み合わせで初動スコープが実現可能だったか (ページ構成・状態管理の実装上の落とし穴) を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - intents/booskiff/technology/overview.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "shuttlepub-frontends リポジトリ (apps/booskiff-web)"
