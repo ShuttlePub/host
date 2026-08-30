@@ -83,6 +83,18 @@ remove an entry only after verifying against a newer binary.
   `queue-state.json` (jq), then sync the GitHub issue with `gh issue edit
   --title --body`. Record a revision-history note in the packet so the
   divergence from the originally published body is auditable.
+- **issue publish-flow title fallback** (verified 0.26.0, 2026-08-30):
+  `issue publish-flow` created the issue with `title_source:
+  "fallback-untitled"` ("drive-web-ui (untitled)") even though packet.yaml
+  carried a valid `issue_title` — the identical structure resolved correctly
+  for drive-foundation#1 earlier. Root cause not isolated (candidate: strict
+  YAML schema silently falling back on unknown keys such as
+  `revision_history`). Fix: after publish-flow, check the `title-fallback`
+  warning in the JSON output and retitle with `gh issue edit` BEFORE
+  `automation issue-publish` (pre-boundary hand-fix, same precedent as the
+  packet-revision entry). Also: pass `--repo` owner-qualified
+  (`ShuttlePub/shuttlepub-frontends`); a bare repo name resolves against the
+  operator's personal account.
 
 ## Wrong-host detection (G301)
 

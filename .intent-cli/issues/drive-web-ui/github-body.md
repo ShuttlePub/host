@@ -28,7 +28,7 @@ core (Rust、ShuttlePub/Booskiff#1) が REST API を提供してから実装を�
 
 ## Target Repo / Path / Part
 
-Repository: `shuttlepub-frontends`
+Repository: `ShuttlePub/shuttlepub-frontends`
 
 Target paths: `apps/booskiff-web`
 

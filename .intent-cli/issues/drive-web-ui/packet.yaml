@@ -3,7 +3,7 @@ implementation_issue_packet:
   issue_kind: feature
   source_execution_unit: drive-web-ui
   domain: booskiff
-  target_repo: shuttlepub-frontends
+  target_repo: ShuttlePub/shuttlepub-frontends
   target_path: apps/booskiff-web
   target_part: "Booskiff drive の最小 Web UI (Flame SSR + hydration) と Bun BFF"
   dependencies: [drive-foundation]
@@ -24,6 +24,10 @@ implementation_issue_packet:
     - "Playwright Web E2E (D15) が core + MinIO + Postgres + web の compose 上でグリーン"
   revision_history:
     - "2026-08-30: 初版ドラフト。Q16 反転後の Web slice として切出し (drive-foundation から分離)。"
+    - "2026-08-30: publish-flow が issue_title を読まず title-fallback (untitled) で
+      ShuttlePub/shuttlepub-frontends#8 を作成したため、gh issue edit でタイトルを手修正
+      (CLI drift: drive-foundation#1 では同じ packet.yaml 構造でタイトル解決が成功した)。
+      intent-target 適用前の pre-boundary 修正。"
 
 # G461: optional packet-time intent-maintenance metadata.
 intent_placement:
