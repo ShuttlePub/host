@@ -1,0 +1,10 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "account-unban-reactivate",
+  "host_commit": "47e8664",
+  "recorded_at": "2026-08-30T14:30:24.7986284+00:00",
+  "targets": [
+    "intents/emumet/features/moderation/packets.md"
+  ],
+  "note": null
+}

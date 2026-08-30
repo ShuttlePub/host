@@ -1,0 +1,10 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "block-mute-followups",
+  "host_commit": "30de8ce",
+  "recorded_at": "2026-08-30T14:30:24.9261714+00:00",
+  "targets": [
+    "intents/emumet/features/block-mute/decisions.md"
+  ],
+  "note": null
+}

@@ -1,0 +1,13 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "media-upload",
+  "host_commit": "2045a3c",
+  "recorded_at": "2026-08-30T14:30:24.2947347+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": null
+}
