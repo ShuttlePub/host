@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-08-30T07:42:27.8951737+00:00",
+  "updated_at": "2026-08-30T19:08:50.812127+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -463,7 +463,7 @@
     {
       "execution_unit": "drive-web-ui",
       "title": "drive-web-ui: \u6700\u5C0F Web UI (PureScript \u002B Flame SSR/hydration \u002B Bun BFF) \u2014 shuttlepub-frontends \u30E2\u30CE\u30EC\u30DD apps/booskiff-web",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "drive-foundation"
       ],
@@ -479,6 +479,7 @@
         "number": 8,
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/8"
       },
+      "linked_pr": "https://github.com/ShuttlePub/shuttlepub-frontends/pull/9",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
