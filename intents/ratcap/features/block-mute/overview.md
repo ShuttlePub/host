@@ -13,14 +13,14 @@
 
 ## Acceptance criteria summary
 
-- `bff/schema.graphql` に `Relation` 型と `unblockAccount` / `unmuteAccount` mutation、 `blocks` / `mutes` query が追加される。
-- `bff/emumet/client.ts` の `EmumetClient` 契約に `unblock` / `unmute` / `listBlocks` / `listMutes` メソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
-- `bff/resolvers.ts` に各リゾルバが実装され、未認証時は `UNAUTHENTICATED`、成功時は `Boolean` または `RelationConnection` を返す。
+- `apps/emumet-web/bff/schema.graphql` に `Relation` 型と `unblockAccount` / `unmuteAccount` mutation、 `blocks` / `mutes` query が追加される。
+- `apps/emumet-web/bff/emumet/client.ts` の `EmumetClient` 契約に `unblock` / `unmute` / `listBlocks` / `listMutes` メソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
+- `apps/emumet-web/bff/resolvers.ts` に各リゾルバが実装され、未認証時は `UNAUTHENTICATED`、成功時は `Boolean` または `RelationConnection` を返す。
 - PureScript 側で生成型を再生成後、`spago build` が成功する。
 - ブロック / ミュート一覧(Settings 配下のセクション)が追加され、対象の識別子と種別を表示する。
 - 一覧項目から解除でき、解除後は一覧へ即座に反映される。
 - ブロック / ミュート**追加**の操作 UI は存在しない。
-- `bun test` の BFF テストにブロック / ミュートリゾルバのテストが追加され全て通る。
+- `bun test`（apps/emumet-web 配下） の BFF テストにブロック / ミュートリゾルバのテストが追加され全て通る。
 
 ## Related
 

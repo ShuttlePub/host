@@ -9,11 +9,11 @@
    - フロントエンドは mutation 結果を `App.Api.GraphQL.Types` に独自 DTO としてデコードする（生成型への依存を減らす）。
 
 2. **EmumetClient 抽象に `followAccount` を追加する**
-   - `bff/emumet/client.ts` に `FollowResult` 型と `followAccount` メソッドを追加し、`real.ts` / `mock.ts` で同一契約を実装する。
+   - `apps/emumet-web/bff/emumet/client.ts` に `FollowResult` 型と `followAccount` メソッドを追加し、`real.ts` / `mock.ts` で同一契約を実装する。
    - REST 呼び出しは `POST /api/v1/accounts/{accountId}/follow`、ボディ `{ target }`、Bearer トークン付与。
 
 3. **フォロー UI はアカウント詳細画面に配置する**
-   - 現状のアカウント詳細 (`src/App/View/AccountDetail.purs`) にフォローセクションを追加する。
+   - 現状のアカウント詳細 (`apps/emumet-web/src/App/View/AccountDetail.purs`) にフォローセクションを追加する。
    - 将来的に設定ハブや専用ページに移動してもよいが、初回 slice では詳細画面に配置して実装コストを抑える。
 
 4. **フォロー/フォロワー一覧は初回 slice では実装しない**

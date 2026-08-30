@@ -5,7 +5,7 @@
 ## Decisions
 
 - **GraphQL スキーマの再利用**
-  - `Account.moderation` フィールドと `Moderation` / `ModerationType` 型は既存の `bff/schema.graphql` のものをそのまま利用する。
+  - `Account.moderation` フィールドと `Moderation` / `ModerationType` 型は既存の `apps/emumet-web/bff/schema.graphql` のものをそのまま利用する。
   - 新規追加は `suspendAccount` / `unsuspendAccount` / `banAccount` の 3 mutation のみとする。
 
 - **BFF 認可設計**
@@ -28,7 +28,7 @@
   - `unsuspendAccount(id)` と `banAccount(id, reason)` は 204 成功を期待する。
 
 - **UI 配置方針（初期）**
-  - 管理操作はアカウント詳細画面 (`src/App/View/AccountDetail.purs`) に「Admin」セクションとして配置する。
+  - 管理操作はアカウント詳細画面 (`apps/emumet-web/src/App/View/AccountDetail.purs`) に「Admin」セクションとして配置する。
   - 別途 `/admin` ルートを作るかどうかは [open-questions.md](open-questions.md) の解決後に決定する。
 
 - **状態反映方式**

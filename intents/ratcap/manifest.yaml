@@ -1,7 +1,7 @@
 version: "1"
 layout_version: tree-v1
 project_type: product-app
-target_repo: ShuttlePub/RatCap
+target_repo: ShuttlePub/shuttlepub-frontends
 branch_policy: direct-main
 metadata_policy: host-metadata
 entrypoints:

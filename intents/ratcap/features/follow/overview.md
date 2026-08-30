@@ -18,11 +18,11 @@
 
 ## Acceptance criteria summary
 
-- `bff/schema.graphql` に following/followers を取得する query と `unfollowAccount` mutation が追加される。
-- `bff/emumet/client.ts` の `EmumetClient` 契約に一覧取得と unfollow のメソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
-- `bff/resolvers.ts` に各リゾルバが実装され、未認証時は `UNAUTHENTICATED` を返す。
+- `apps/emumet-web/bff/schema.graphql` に following/followers を取得する query と `unfollowAccount` mutation が追加される。
+- `apps/emumet-web/bff/emumet/client.ts` の `EmumetClient` 契約に一覧取得と unfollow のメソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
+- `apps/emumet-web/bff/resolvers.ts` に各リゾルバが実装され、未認証時は `UNAUTHENTICATED` を返す。
 - PureScript 側で生成型を再生成後、`spago build` が成功する。
 - アカウント詳細画面(または設定ハブ)に following / followers 一覧が表示される。
 - 一覧の各項目に unfollow ボタンがあり、実行後に一覧へ即座に反映される。
 - 新規フォローの入力フォームは UI に存在しない。
-- `bun test` の BFF テストに一覧取得・unfollow のテストが追加され全て通る。
+- `bun test`（apps/emumet-web 配下） の BFF テストに一覧取得・unfollow のテストが追加され全て通る。

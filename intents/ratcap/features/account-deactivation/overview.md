@@ -14,10 +14,10 @@
 
 ## Acceptance criteria summary
 
-- `bff/schema.graphql` に `deleteAccount(id: ID!): Boolean!` mutation が追加される。
-- `bff/emumet/client.ts` の `EmumetClient` 契約に `deleteAccount` メソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
-- `bff/resolvers.ts` に `deleteAccount` リゾルバが実装され、未認証時は `UNAUTHENTICATED`、成功時は `true` を返す。
+- `apps/emumet-web/bff/schema.graphql` に `deleteAccount(id: ID!): Boolean!` mutation が追加される。
+- `apps/emumet-web/bff/emumet/client.ts` の `EmumetClient` 契約に `deleteAccount` メソッドが追加され、`real.ts` / `mock.ts` の両方が実装される。
+- `apps/emumet-web/bff/resolvers.ts` に `deleteAccount` リゾルバが実装され、未認証時は `UNAUTHENTICATED`、成功時は `true` を返す。
 - PureScript 側で生成型を再生成後、`spago build` が成功する。
 - アカウント詳細画面に「危険領域」セクションが追加され、確認ダイアログでアカウント名を入力して一致した場合のみ削除を実行する。
 - 削除成功後、自動でアカウント一覧 (`/`) へ遷移する。
-- `bun test` の BFF テストに `deleteAccount` リゾルバのテストが追加され全て通る。
+- `bun test`（apps/emumet-web 配下） の BFF テストに `deleteAccount` リゾルバのテストが追加され全て通る。

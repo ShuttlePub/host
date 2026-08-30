@@ -1,6 +1,6 @@
 # ratcap
 
-Target repo: `ShuttlePub/Ratcap`
+Target repo: `ShuttlePub/shuttlepub-frontends` (旧 `ShuttlePub/RatCap` から 2026-08-30 rename。旧 URL は GitHub redirect で継続。アプリ資産は `apps/emumet-web/`)
 
 Bootstrapped by `intent-cli intent init`.
 

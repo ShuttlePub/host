@@ -6,23 +6,23 @@
 
 ### 関連ソースファイル
 
-- BFF GraphQL スキーマ: `bff/schema.graphql`
-- BFF Emumet クライアント契約: `bff/emumet/client.ts`
-- BFF Emumet リアル実装: `bff/emumet/real.ts`
-- BFF Emumet モック実装: `bff/emumet/mock.ts`
-- BFF リゾルバ: `bff/resolvers.ts`
-- BFF コンテキスト: `bff/context.ts`
-- BFF サーバー: `bff/server.ts`
-- PureScript ルート定義: `src/App/Route.purs`
-- PureScript モデル: `src/App/Model.purs`
-- PureScript Message: `src/App/Message.purs`
-- PureScript クライアント更新: `src/Client/Update.purs`
-- PureScript GraphQL API: `src/App/Api/GraphQL.purs`
-- PureScript GraphQL DTO: `src/App/Api/GraphQL/Types.purs`
-- アカウント詳細 View: `src/App/View/AccountDetail.purs`
-- 設定 View: `src/App/View/Settings.purs`
-- トップレベル View: `src/App/View.purs`
-- 生成型ディレクトリ: `src/Generated/`
+- BFF GraphQL スキーマ: `apps/emumet-web/bff/schema.graphql`
+- BFF Emumet クライアント契約: `apps/emumet-web/bff/emumet/client.ts`
+- BFF Emumet リアル実装: `apps/emumet-web/bff/emumet/real.ts`
+- BFF Emumet モック実装: `apps/emumet-web/bff/emumet/mock.ts`
+- BFF リゾルバ: `apps/emumet-web/bff/resolvers.ts`
+- BFF コンテキスト: `apps/emumet-web/bff/context.ts`
+- BFF サーバー: `apps/emumet-web/bff/server.ts`
+- PureScript ルート定義: `apps/emumet-web/src/App/Route.purs`
+- PureScript モデル: `apps/emumet-web/src/App/Model.purs`
+- PureScript Message: `apps/emumet-web/src/App/Message.purs`
+- PureScript クライアント更新: `apps/emumet-web/src/Client/Update.purs`
+- PureScript GraphQL API: `apps/emumet-web/src/App/Api/GraphQL.purs`
+- PureScript GraphQL DTO: `apps/emumet-web/src/App/Api/GraphQL/Types.purs`
+- アカウント詳細 View: `apps/emumet-web/src/App/View/AccountDetail.purs`
+- 設定 View: `apps/emumet-web/src/App/View/Settings.purs`
+- トップレベル View: `apps/emumet-web/src/App/View.purs`
+- 生成型ディレクトリ: `apps/emumet-web/src/Generated/`
 
 ### Emumet エンドポイント
 

@@ -17,4 +17,4 @@
 
 - **target_type の GraphQL 表現**
   - Emumet は `target_type` を文字列で返すが、 GraphQL 側で enum (`RelationTargetType`) に昇格させるか、 `String` のままにするか未決定。
-  - enum にすると `bff/emumet/real.ts` の写像と PureScript 生成型の安定性が高まるが、 Emumet の新しい target タイプ追加時にスキーマ変更が必要になる。
+  - enum にすると `apps/emumet-web/bff/emumet/real.ts` の写像と PureScript 生成型の安定性が高まるが、 Emumet の新しい target タイプ追加時にスキーマ変更が必要になる。

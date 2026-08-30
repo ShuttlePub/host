@@ -2,7 +2,9 @@
 # Automation bindings for the `ratcap` intent domain (tree-v1).
 
 # Implementation (child) repository this domain's issues target.
-child_repo: ShuttlePub/RatCap
+# 2026-08-30: RatCap → shuttlepub-frontends へ rename (decisions/2026-08-30-monorepo-extraction.md D1)。
+# アプリ資産は apps/emumet-web/ 配下。
+child_repo: ShuttlePub/shuttlepub-frontends
 
 # Execution-unit namespace filter used by `next-slice` and
 # `automation summary` to select which execution units belong to this

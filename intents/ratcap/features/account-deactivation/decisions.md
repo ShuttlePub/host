@@ -5,11 +5,11 @@
 ## Decisions
 
 1. **BFF GraphQL スキーマを拡張する**
-   - フロントエンドから直接 Emumet REST を呼ばず、必ず `bff/schema.graphql` に `deleteAccount(id: ID!): Boolean!` mutation を追加して BFF 経由とする。
+   - フロントエンドから直接 Emumet REST を呼ばず、必ず `apps/emumet-web/bff/schema.graphql` に `deleteAccount(id: ID!): Boolean!` mutation を追加して BFF 経由とする。
    - これにより、認証・認可・エラーハンドリングを BFF 側で一元管理できる。
 
 2. **EmumetClient 抽象にメソッドを追加する**
-   - `bff/emumet/client.ts` の `EmumetClient` インターフェースに `deleteAccount(id: string): Promise<void>` を追加し、`real.ts` / `mock.ts` の両方で同一契約を実装する。
+   - `apps/emumet-web/bff/emumet/client.ts` の `EmumetClient` インターフェースに `deleteAccount(id: string): Promise<void>` を追加し、`real.ts` / `mock.ts` の両方で同一契約を実装する。
    - 既存の `deleteMetadata` と同じく、リゾルバは `void` 返却を `true` に変換する。
 
 3. **SSR + クライアントハイドレーションを維持する**

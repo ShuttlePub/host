@@ -7,12 +7,12 @@
 ### Packet 1: BFF ブロック / ミュート層
 
 - **対象ファイル**
-  - `bff/schema.graphql`
-  - `bff/emumet/client.ts`
-  - `bff/emumet/real.ts`
-  - `bff/emumet/mock.ts`
-  - `bff/resolvers.ts`
-  - 新規 `bff/resolvers.test.ts` または既存 BFF テストファイル
+  - `apps/emumet-web/bff/schema.graphql`
+  - `apps/emumet-web/bff/emumet/client.ts`
+  - `apps/emumet-web/bff/emumet/real.ts`
+  - `apps/emumet-web/bff/emumet/mock.ts`
+  - `apps/emumet-web/bff/resolvers.ts`
+  - 新規 `apps/emumet-web/bff/resolvers.test.ts` または既存 BFF テストファイル
 
 - **作業内容**
   - `Relation` 型、 `RelationConnection` 型、 4 つの GraphQL 操作(`blocks` / `mutes` query、 `unblockAccount` / `unmuteAccount` mutation)を SDL に追加する(2026-08-11 スコープ変更: 追加系 mutation は含めない)。
@@ -23,21 +23,21 @@
   - BFF テストに mock client を使った mutation / query テストを追加する。
 
 - **完了条件**
-  - `bun test` が既存テストを含めて全て通る。
-  - `bff/schema.graphql` の変更後、 `bun scripts/sync-graphql.ts` がエラーなく実行できる。
+  - `bun test`（apps/emumet-web 配下） が既存テストを含めて全て通る。
+  - `apps/emumet-web/bff/schema.graphql` の変更後、 `(cd apps/emumet-web && bun scripts/sync-graphql.ts)` がエラーなく実行できる。
 
 ### Packet 2: PureScript GraphQL クライアントと状態管理
 
 - **対象ファイル**
-  - `src/App/Api/GraphQL.purs`
-  - `src/App/Api/GraphQL/Types.purs`（必要に応じて `RelationResponse` を追加）
-  - `src/App/Message.purs`
-  - `src/App/Model.purs`
-  - `src/Client/Update.purs`
-  - `src/Generated/`（再生成）
+  - `apps/emumet-web/src/App/Api/GraphQL.purs`
+  - `apps/emumet-web/src/App/Api/GraphQL/Types.purs`（必要に応じて `RelationResponse` を追加）
+  - `apps/emumet-web/src/App/Message.purs`
+  - `apps/emumet-web/src/App/Model.purs`
+  - `apps/emumet-web/src/Client/Update.purs`
+  - `apps/emumet-web/src/Generated/`（再生成）
 
 - **作業内容**
-  - `bun scripts/sync-graphql.ts` を実行して生成型を更新する。
+  - `(cd apps/emumet-web && bun scripts/sync-graphql.ts)` を実行して生成型を更新する。
   - `RelationResponse` 型とその Decode/Encode インスタンスを追加する。
   - `GraphQL.purs` に 4 つの関数を追加する。
   - `Message.purs` にブロック / ミュート関連の Message を追加する。
@@ -51,11 +51,11 @@
 ### Packet 3: UI 実装とルーティング
 
 - **対象ファイル**
-  - `src/App/Route.purs`
-  - `src/App/View.purs`
-  - `src/App/View/AccountDetail.purs`
-  - `src/App/View/Settings.purs` または新規 View ファイル
-  - `src/App/Theme.purs`（必要に応じてボタン用クラス追加）
+  - `apps/emumet-web/src/App/Route.purs`
+  - `apps/emumet-web/src/App/View.purs`
+  - `apps/emumet-web/src/App/View/AccountDetail.purs`
+  - `apps/emumet-web/src/App/View/Settings.purs` または新規 View ファイル
+  - `packages/ui/src/ShuttlePub/UI/Theme.purs`（必要に応じてボタン用クラス追加。2026-08-30 抽出済み、app 内では `ShuttlePub.UI.Theme` 参照）
 
 - **作業内容**
   - ブロック / ミュート一覧を Settings 配下のセクションとして表示する(2026-08-11 スコープ変更: AccountDetail への追加ボタンは実装しない)。

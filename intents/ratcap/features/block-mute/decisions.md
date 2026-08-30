@@ -21,8 +21,8 @@
   - これにより、Emumet 側の仕様変更（新しい target 形式の追加など）に BFF 変更なく追従できる。
 
 - **UI の配置方針 (2026-07-28 決定)**
-  - ブロック / ミュートの**操作**はアカウント個別ページ (`src/App/View/AccountDetail.purs`) で行う。
-  - ブロック / ミュート済みアカウントの**一覧表示**は Settings 配下 (`src/App/View/Settings.purs`) にセクションとして配置する。
+  - ブロック / ミュートの**操作**はアカウント個別ページ (`apps/emumet-web/src/App/View/AccountDetail.purs`) で行う。
+  - ブロック / ミュート済みアカウントの**一覧表示**は Settings 配下 (`apps/emumet-web/src/App/View/Settings.purs`) にセクションとして配置する。
 
 - **enforcement の所在 (2026-07-28 決定)**
   - ブロック / ミュートの正源は Emumet のアクターレベルに置く。ActivityPub の Block はアクター間アクティビティであり、連合の拒否判定もアクター単位で行われるため、identity レベルへの移管は enforcement の二重化を招く。リモートの identity は特定不能であり、粒度としても actor 単位が自然。
