@@ -72,3 +72,7 @@ implementation_issue_packet:
 implementation_issue:
   issue_title: "es-aggregates-migration: Profile / Metadata を ES repository + tailing projector パターンに移行 (ADR 0006 Stage 7)"
   target_repo: ShuttlePub/Emumet
+
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []

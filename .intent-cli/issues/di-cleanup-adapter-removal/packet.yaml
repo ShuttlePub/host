@@ -72,3 +72,7 @@ implementation_issue_packet:
 implementation_issue:
   issue_title: "di-cleanup-adapter-removal: route facade newtype 導入・DI 委譲集約・adapter クレート削除 (ADR 0006 Stage 8)"
   target_repo: ShuttlePub/Emumet
+
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []

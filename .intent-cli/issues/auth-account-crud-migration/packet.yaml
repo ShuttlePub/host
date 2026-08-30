@@ -67,3 +67,8 @@ implementation_issue_packet:
 implementation_issue:
   issue_title: "auth-account-crud-migration: AuthAccount を ES→CRUD 移行、find-or-create 原子化、同期 projection 例外除去 (ADR 0006 Stage 6)"
   target_repo: ShuttlePub/Emumet
+
+# Top-level declaration (0.27.1 schema; the nested copy inside implementation_issue_packet is the legacy wrapped form)
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []

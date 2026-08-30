@@ -68,3 +68,7 @@ implementation_issue:
   target_repo: ShuttlePub/Emumet
   dependencies: []
   blocked_by: []
+
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []

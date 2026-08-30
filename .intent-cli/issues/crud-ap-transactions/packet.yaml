@@ -69,3 +69,7 @@ implementation_issue:
   dependencies:
     - architecture-foundation
   blocked_by: []
+
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []

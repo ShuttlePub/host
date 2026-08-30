@@ -66,3 +66,11 @@ implementation_issue_packet:
       - guide_surface: guide workflow task implementation-loop
         role: implementation
         target_surface: "REST API (/api/v1/admin/accounts/{id}/warnings*, 通報 resolve の warned 対応)"
+
+# Top-level declaration (0.27.1 schema; mirrors the nested legacy route declaration above)
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "REST API (/api/v1/admin/accounts/{id}/warnings*, 通報 resolve の warned 対応)"

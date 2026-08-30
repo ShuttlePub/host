@@ -70,3 +70,8 @@ implementation_issue_packet:
   guide_reachability:
     no_role_facing_surface: true
     routes: []
+
+# Top-level declaration (0.27.1 schema; the nested copy above is the legacy wrapped form, kept for history)
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
