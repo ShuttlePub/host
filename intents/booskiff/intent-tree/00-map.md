@@ -26,7 +26,7 @@ Drive CRUD + フラットフォルダ + S3 基盤 + 課金ポリシー土台 + �
 Web UI は含めない。受け入れ基準・検証方法は decisions D1-D21、packet は
 `.intent-cli/issues/drive-foundation/`。
 
-**`drive-web-ui`** (queued、packet 未作成): 最小 Web UI (ログイン + Drive 一覧/
+**`drive-web-ui`** (queued、GitHub: ShuttlePub/shuttlepub-frontends#8): 最小 Web UI (ログイン + Drive 一覧/
 アップロード/削除)。PureScript + Flame (SSR + hydration) + Bun BFF (Ratcap パターン転用)、
 配置は shuttlepub-frontends モノレポの apps/booskiff-web (D11/Q16)。core リポジトリとは分離。
 
