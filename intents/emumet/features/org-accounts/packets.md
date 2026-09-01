@@ -6,7 +6,11 @@
 
 1. `org-accounts-foundation` — 組織 Account 基盤: Account 種別
    (personal/organization) + 組織作成 + メンバーシップ (3段階ロール) 管理 API
-   (packet: `.intent-cli/issues/org-accounts-foundation/`) — depends on: —
+   (packet: `.intent-cli/issues/org-accounts-foundation/`) — depends on: —。
+   実装: Emumet [issue #55](https://github.com/ShuttlePub/Emumet/issues/55) /
+   [PR #56](https://github.com/ShuttlePub/Emumet/pull/56)
+   (2026-09-01 squash merge `d01d424`)。設計 write-back:
+   [ADR 0007](../../decisions/0007-organization-accounts.md)
 2. `org-accounts-auth-context` — スイッチ式認証: 個人 identity のまま
    組織コンテキストを指定して操作する認証・認可 (ヘッダ/claim 方式、
    メンバーロール判定 + コンテキスト付き AccountId 解決、組織コンテキストでの
