@@ -91,10 +91,22 @@ remove an entry only after verifying against a newer binary.
   YAML schema silently falling back on unknown keys such as
   `revision_history`). Fix: after publish-flow, check the `title-fallback`
   warning in the JSON output and retitle with `gh issue edit` BEFORE
-  `automation issue-publish` (pre-boundary hand-fix, same precedent as the
-  packet-revision entry). Also: pass `--repo` owner-qualified
-  (`ShuttlePub/shuttlepub-frontends`); a bare repo name resolves against the
-  operator's personal account.
+   `automation issue-publish` (pre-boundary hand-fix, same precedent as the
+   packet-revision entry). Also: pass `--repo` owner-qualified
+   (`ShuttlePub/shuttlepub-frontends`); a bare repo name resolves against the
+   operator's personal account.
+- **notify supervise install PATH hazard** (verified 0.27.1, 2026-08-31): the
+  generated systemd unit uses `ExecStart=/usr/bin/env intent-cli ...`, but the
+  systemd user environment PATH does not include the direnv-provided intent-cli,
+  so the unit crash-loops with exit 127 (`status=217`/`203`-adjacent env lookup
+  failure). Fix: create a drop-in overriding ExecStart to
+  `/run/current-system/sw/bin/nix develop <host-root> --command intent-cli
+  notify supervise ...` (same args as the generated unit), e.g. under
+  `~/.config/systemd/user/<unit>.service.d/override.conf`; a copy of the
+  override is kept at
+  `.intent-cli/supervision/<domain>/<team>/install/service.d/override.conf`
+  for review. `/nix/var/nix/profiles/default/bin/nix` did not exist on this
+  host — use the path verified with `command -v nix` in a login shell.
 
 ## Wrong-host detection (G301)
 
