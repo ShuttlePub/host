@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "org-accounts-foundation",
+  "role": "design",
+  "host_commit": "108edd5e43a96988bbcbe5f7d36b7c719581d296",
+  "recorded_at": "2026-09-01T15:52:46.4761043+00:00",
+  "targets": [
+    "intents/emumet/decisions/0007-organization-accounts.md",
+    "intents/emumet/features/org-accounts/packets.md"
+  ],
+  "note": null
+}
