@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-02T12:53:06.8502252+00:00",
+  "updated_at": "2026-09-02T17:59:23.2703948+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -511,7 +511,7 @@
     {
       "execution_unit": "org-accounts-auth-context",
       "title": "org-accounts-auth-context: \u30B9\u30A4\u30C3\u30C1\u5F0F\u8A8D\u8A3C \u2014 \u500B\u4EBA identity \u306E\u307E\u307E\u7D44\u7E54\u30B3\u30F3\u30C6\u30AD\u30B9\u30C8\u3092\u6307\u5B9A\u3057\u3066\u64CD\u4F5C (\u30D8\u30C3\u30C0\u65B9\u5F0F\u30FB\u30E1\u30F3\u30D0\u30FC\u30ED\u30FC\u30EB\u5224\u5B9A\u30FB\u7D44\u7E54\u30B3\u30F3\u30C6\u30AD\u30B9\u30C8\u306E Profile \u64CD\u4F5C)",
-      "state": "queued",
+      "state": "review",
       "dependencies": [
         "org-accounts-foundation"
       ],
@@ -527,6 +527,7 @@
         "number": 57,
         "url": "https://github.com/ShuttlePub/Emumet/issues/57"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/58",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
