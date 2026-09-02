@@ -3,6 +3,19 @@
   "entries": [
     {
       "domain": "booskiff",
+      "team": "booskiff-frontends",
+      "mode": "herdr-only",
+      "updated_at": "2026-09-02T16:54:32.203188+00:00",
+      "transitions": [
+        {
+          "from": "agmsg",
+          "to": "herdr-only",
+          "at": "2026-09-02T16:54:32.203188+00:00"
+        }
+      ]
+    },
+    {
+      "domain": "booskiff",
       "team": "booskiff-main",
       "mode": "herdr-only",
       "updated_at": "2026-09-02T16:45:21.6883085+00:00",
