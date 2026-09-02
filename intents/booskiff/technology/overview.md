@@ -110,3 +110,19 @@ Q11 の初版 (TanStack Start / SSR off) を反転し、PureScript + Flame の S
 + Bun BFF を採用。発端は Ratcap の ShuttlePub フロントエンドモノレポ再編
 (design-tokens → styles → ui → FrontApp + BFF) で、web は shuttlepub-frontends
 モノレポの apps/booskiff-web に配置する。core (Rust) は JWT 検証のみの純粋性を維持。
+
+**closeout learning (drive-web-ui 実装、2026-09-03)**: Flame SSR + hydration ×
+Bun BFF で初動スコープ (ログイン + Drive 一覧/アップ/削除 + フォルダ CRUD + presigned DL)
+は実現可能だった。ページ構成は Login/Drive の 2 ビューで、`renderPage` (SSR) から
+`resumeMount` + PreMount 状態注入で hydration へ SSR 状態を引き継ぐ形で成立する。
+セッションは HttpOnly 暗号化 Cookie (AES-GCM sealed AppSession) に閉じ込め、
+「ブラウザは JWT を一切見ない」方針を実現した。実装上の落とし穴:
+
+- アップロード進捗表示は Flame から直接扱えず、XHR の progress イベント用の FFI が必要
+- BFF 中継は `duplex: "half"` + Content-Length 厳格継承の完全ストリーミングが必須。
+  バッファリングすると core 側の受信バイト計量・メモリ効率の前提が崩れる
+- presigned URL はホスト名が SigV4 署名に含まれるため、E2E では core を MinIO と
+  netns 共有してブラウザ到達 URL と署名を整合させた (本番でも core 発行 URL の
+  外部到達可能性に注意)
+- core のエラー (413/507/411) は BFF が素通しする設計にすると UI のクォータ表示と
+  矛盾なく整合する

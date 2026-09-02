@@ -29,9 +29,14 @@ decisions D1-D21、packet は `.intent-cli/issues/drive-foundation/`。
 4 層ではない — 再検証の結論)、REST は `/v1/*`、公開参照は `/public/{key}`。
 課金スキーマは `billing_rules` / `storage_usage` / `plan_assignments` の 3 テーブル。
 
-**`drive-web-ui`** (queued、GitHub: ShuttlePub/shuttlepub-frontends#8): 最小 Web UI (ログイン + Drive 一覧/
-アップロード/削除)。PureScript + Flame (SSR + hydration) + Bun BFF (Ratcap パターン転用)、
+**`drive-web-ui`** (実装完了 2026-08-30、GitHub: ShuttlePub/shuttlepub-frontends#8 / PR #9):
+最小 Web UI (ログイン + Drive 一覧/アップロード/削除 + フラットフォルダ CRUD)。
+PureScript + Flame (SSR + hydration) + Bun BFF (Ratcap パターン転用)、
 配置は shuttlepub-frontends モノレポの apps/booskiff-web (D11/Q16)。core リポジトリとは分離。
+確定構成: BFF は HttpOnly 暗号化 Cookie (AES-GCM sealed AppSession) でセッションを保持し
+ブラウザに JWT を出さない。アップロードは BFF → core の無バッファストリーミング中継、
+ダウンロードは 302 → presigned URL (TTL 900s)。検証: compose 完全スタック
+(Postgres + MinIO + core + web) の Playwright E2E 13 シナリオ green。
 
 ## 将来 slice (依存順の目安)
 
