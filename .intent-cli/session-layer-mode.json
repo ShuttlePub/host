@@ -2,6 +2,24 @@
   "schema_version": "1",
   "entries": [
     {
+      "domain": "booskiff",
+      "team": "booskiff-main",
+      "mode": "herdr-only",
+      "updated_at": "2026-09-02T16:45:21.6883085+00:00",
+      "transitions": [
+        {
+          "from": "agmsg",
+          "to": "agmsg",
+          "at": "2026-09-02T16:40:13.8846498+00:00"
+        },
+        {
+          "from": "agmsg",
+          "to": "herdr-only",
+          "at": "2026-09-02T16:45:21.6883085+00:00"
+        }
+      ]
+    },
+    {
       "domain": "emumet",
       "mode": "herdr-only",
       "updated_at": "2026-08-11T10:31:05.0475755+00:00",
