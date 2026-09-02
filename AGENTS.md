@@ -107,6 +107,22 @@ remove an entry only after verifying against a newer binary.
   `.intent-cli/supervision/<domain>/<team>/install/service.d/override.conf`
   for review. `/nix/var/nix/profiles/default/bin/nix` did not exist on this
   host — use the path verified with `command -v nix` in a login shell.
+- **supervise install first-cycle-proof failure + ExecStart drift** (verified
+  0.27.1, 2026-09-02): on 0.27.1 the generated unit's ExecStart pins the
+  nix-store absolute path of the installing binary plus an embedded
+  `--bash-executable <nix-store bash>` (no longer `/usr/bin/env intent-cli`),
+  so the drop-in override from the previous entry remains necessary — keep
+  overriding ExecStart with `nix develop <host-root> --command ...`. Also,
+  `notify supervise install --write` fails its first-cycle proof
+  (`first-cycle-proof-failed`: the managed supervisor proc never writes a
+  first cycle within the 30s `--startup-bound`, and no child log is even
+  created — suspected CLI/Linux bug, report candidate upstream), yet ALL
+  artifacts (install/<unit>.service, bound.json, emission-policy.json) are
+  still produced and a manual one-shot supervision run succeeds and appends
+  to cycles.jsonl. Procedure that works: run install, IGNORE the proof
+  failure, write the drop-in override, register via systemd (the long-run
+  unit cycles fine when systemd owns the process). Verified on both
+  booskiff-main and booskiff-frontends teams (2026-09-02).
 
 ## Wrong-host detection (G301)
 
