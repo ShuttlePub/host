@@ -1,0 +1,13 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "drive-foundation",
+  "role": "design",
+  "host_commit": "40c20cd",
+  "recorded_at": "2026-09-02T16:53:59.8720318+00:00",
+  "targets": [
+    "intents/booskiff/intent-tree/00-map.md",
+    "intents/booskiff/technology/overview.md",
+    "intents/booskiff/decisions/2026-08-29-initial-shaping.md"
+  ],
+  "note": null
+}

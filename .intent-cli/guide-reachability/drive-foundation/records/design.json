@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "drive-foundation",
+  "role": "design",
+  "host_commit": "66c89b3",
+  "recorded_at": "2026-09-02T16:54:00.1513276+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": null
+}
