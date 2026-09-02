@@ -30,6 +30,11 @@ Rust + Axum + PostgreSQL + flake/just 開発環境は Emumet と統一。
 層構成 (Emumet の kernel/application/driver/server 4 層) は Booskiff 規模に
 合わせて再検証する (「A の材料で B の設計」を許容)。
 
+**再検証の結論 (drive-foundation 実装で確定、2026-09-03)**: 4 層分割は行わず、
+単一 crate (`core/`) のドメイン別モジュール構成を採用した
+(`admin/`, `auth/`, `billing/`, `drive/`, `storage.rs` 等)。現規模ではモジュール
+境界で十分で、層分割は将来規模が育った時点で再評価する。
+
 ## 転送経路 (Q5、既存サービス調査ベース)
 
 - **アップロード**: クライアント → web/BFF → core → S3。サーバーがバイトを受け、
@@ -39,6 +44,12 @@ Rust + Axum + PostgreSQL + flake/just 開発環境は Emumet と統一。
   public-read ACL は使わない
 - 参照: Misskey (アップ=サーバー経由、DL=S3 直) / Mastodon (DL=S3 直 or CDN) /
   Discord (200MiB 超のみ presigned アップ) の実例に準拠
+
+REST surface 確定 (drive-foundation 実装): `/v1/folders`, `/v1/files`,
+`/v1/files/{id}/download-url` (presigned), `/v1/files/{id}/publish`、
+管理者系は `/v1/admin/*`、公開参照は `/public/{key}` (推測不能キー)。
+運用エンドポイント `/healthz`・`/readyz` あり。完全版は Booskiff リポジトリの
+`openapi.json` を正とする。
 
 ## ストレージバックエンド (Q6=A)
 
@@ -69,6 +80,11 @@ S3 互換のみ (MinIO でセルフホスト要件をカバー)。Emumet 内蔵�
 - revocation 前提: 短命 JWT + 期限切れ待ち (Q3)
 - デフォルト制限 (Q21=A): 1 GB / user、100 MB / file、100 req/min。
   運用データを見て段階緩和
+
+スキーマ確定形 (drive-foundation 実装、2026-09-03): DB 3 テーブル構成 —
+`billing_rules` (DB 上書き層)、`storage_usage` (受信バイト計量)、
+`plan_assignments` (プラン割当)。billing モジュールは
+plans/rules/resolve/assignments/usage/provider 分割。
 
 ## 管理者 API (Q19=A)
 

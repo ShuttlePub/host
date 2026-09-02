@@ -47,3 +47,29 @@ grill Q1-Q15 の結論。決定の経緯・検討肢・理由の完全版は
 - copy 系 API (emumet C1 委譲、メモ: features/)
 - 支払いプロバイダの具体実装 (Stripe 等。抽象化+無効モードは初動済み)
 - 単体運用モードの認証 (Kratos 同居 or 簡易ローカル認証)
+
+## 実装時確定メモ (drive-foundation closeout, 2026-09-03)
+
+drive-foundation 実装 (ShuttlePub/Booskiff PR #2、2026-08-30 マージ) で確定した事項。
+初動 shaping で「再検討・再検証」としていた論点の結論と、API surface の確定形。
+
+- **D2 層構成の再検証結果**: Emumet 式 4 層 (kernel/application/driver/server) は採用
+  せず、単一 crate (`core/`) のドメイン別モジュール構成を採用
+  (`admin/`, `auth/`, `billing/`, `drive/`, `storage.rs` 等)。Booskiff の現規模では
+  モジュール境界で十分であり、層分割は将来規模が育った時点で再評価する。
+- **D10 API surface 確定**: REST は `/v1/*` プレフィックス。
+  `/v1/folders`, `/v1/files`, `/v1/files/{id}/download-url` (presigned),
+  `/v1/files/{id}/publish` (公開 URL 発行), `/v1/billing/status`,
+  管理者系 `/v1/admin/tokens`・`/v1/admin/billing/rules`・
+  `/v1/admin/owners/{owner_type}/{owner_id}/{plan,usage}`。公開参照は `/public/{key}`
+  (推測不能キー)。運用上の `/healthz`・`/readyz` あり。
+- **D7/D8/D17 課金スキーマ確定形**: migration 上の 3 テーブル構成 —
+  `billing_rules` (DB 上書き層), `storage_usage` (受信バイト計量), `plan_assignments`
+  (プラン割当)。billing モジュールは plans/rules/resolve/assignments/usage/provider
+  分割で、コード内デフォルト → rules → plan の解決順を保持。
+- **D16 派生オブジェクト許容の実現方式**: `files` + `file_objects` (1:N) 方式を採用
+  (S3 キー prefix 規約ではない)。命名標準方式として後続サムネイル slice を非破壊追加可。
+- **D18 named token 実現**: `admin_tokens` テーブルでトークン個別識別 (named token) を
+  実装。共通認証ミドルウェア経由で全 endpoint が固定 admin ロールを解決する形を確認。
+- **D13 配布形態の具体化**: `deploy/self-hosting/` は compose.yml + Caddyfile +
+  Containerfile (+ dockerignore) の構成。`e2e/` に compose 上 E2E を配置。

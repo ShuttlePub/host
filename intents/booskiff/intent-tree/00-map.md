@@ -21,10 +21,13 @@ interviews/booskiff.json     初動 shaping の決定記録 (Q1-Q22)
 
 ## 初動実行単位 (packet-ready)
 
-**`drive-foundation`** (GitHub: ShuttlePub/Booskiff#1): core (Rust: 認証 + owner 単位
-Drive CRUD + フラットフォルダ + S3 基盤 + 課金ポリシー土台 + 管理者 API)。
-Web UI は含めない。受け入れ基準・検証方法は decisions D1-D21、packet は
-`.intent-cli/issues/drive-foundation/`。
+**`drive-foundation`** (GitHub: ShuttlePub/Booskiff#1、PR #2 で実装完了 2026-08-30):
+core (Rust: 認証 + owner 単位 Drive CRUD + フラットフォルダ + S3 基盤 +
+課金ポリシー土台 + 管理者 API)。Web UI は含めない。受け入れ基準・検証方法は
+decisions D1-D21、packet は `.intent-cli/issues/drive-foundation/`。
+実装で確定した構成: 単一 crate (`core/`) のドメイン別モジュール構成 (Emumet 式
+4 層ではない — 再検証の結論)、REST は `/v1/*`、公開参照は `/public/{key}`。
+課金スキーマは `billing_rules` / `storage_usage` / `plan_assignments` の 3 テーブル。
 
 **`drive-web-ui`** (queued、GitHub: ShuttlePub/shuttlepub-frontends#8): 最小 Web UI (ログイン + Drive 一覧/
 アップロード/削除)。PureScript + Flame (SSR + hydration) + Bun BFF (Ratcap パターン転用)、
