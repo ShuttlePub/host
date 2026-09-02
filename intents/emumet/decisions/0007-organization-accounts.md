@@ -123,6 +123,53 @@ repository port は CRUD 系統
   Active メンバーシップを持つもの」を actor として走査する形に確定
   (1 AuthAccount が複数 personal Account を持ちうる前提)
 
+### 6. スイッチ式認証: X-Organization-Id による組織コンテキスト解決 (unit 2 確定、2026-09-02、PR #58 より)
+
+unit 2 `org-accounts-auth-context` (Emumet issue #57 / PR #58、squash merge
+`c33fe53`) で確定した設計細部。grill Q4 (スイッチ式認証) の実装。
+
+- **ヘッダ契約**: `X-Organization-Id` (server/src/auth.rs
+  `ORGANIZATION_ID_HEADER`) に組織 Account の **nanoid** を指定する。
+  未指定リクエストは現行通り個人コンテキスト (後方互換)
+- **middleware による解決**: `organization_context_middleware`
+  (server/src/api/organization_context.rs) が header を読み、auth 解決済みの
+  AuthClaims → AuthAccountId を経て `resolve_organization_context`
+  (server/src/api/mod.rs) を呼び、結果を
+  `RequestOrganizationContext(Option<OrganizationContext>)` として request
+  extensions に挿入する。`SessionContext` (application/src/service/
+  session_context.rs) は `org_context: Option<OrganizationContext>` を持ち、
+  `GET /api/v1/me/session-context` の応答に org_context が含まれる
+- **404 → 403 の順序**: `resolve_organization_context` はまず指定 nanoid の
+  Account を引き `kind == Organization` でなければ `NotFound` (404)、
+  存在が確定した後に actor の Active メンバーシップを走査し、なければ
+  `PermissionDenied` (403) とする。**存在確認が権限確認に先行する**順序で確定
+  (org 存在は nanoid 知識で観測可能だが、非メンバーには role を含む
+  コンテキストを返さない方針)
+- **membership 判定は OrgRole 直接クエリ (Keto 非適用)**: コンテキスト解決は
+  `OrganizationMembershipRepository::find` による DB 直接クエリで role を取得し
+  `OrganizationContext` に格納する。Keto check は呼ばない (決定3 の確定)。
+  組織コンテキストでの既存 Profile 更新経路
+  (account_detail/update.rs `update_account_detail_in_context`) も Keto
+  `account_edit` permission check を**呼ばず**、
+  `check_organization_account_edit` (org context が対象 Account の owner かの
+  一致チェック、不一致は 403) でゲートする。Member 以上の担保はコンテキスト
+  解決時の Active membership 必須で行う 2 層構成 (member ロール自体の再評価は
+  更新経路では行わない)
+- **org nanoid round-trip 契約の実装形**: `OrganizationContext` は
+  `org_account_id` (内部 BIGINT) に加えて **`org_account_nanoid: String`**
+  を保持し、session-context 応答と組織 Profile 作成応答は nanoid を返す。
+  内部 id を API surface に出さない決定4 の契約をコンテキスト経路でも
+  維持する (review repair で追加: `OrganizationContext.org_account_nanoid`
+  を resolve 時に格納し、応答 DTO は nanoid を返却)
+- **組織 Profile 作成の 1:1 制約**: `CreateOrganizationProfileUseCase`
+  (application/src/service/profile.rs) は `ProfileQuery::find_by_account_id(
+  org_account_id)` が既存なら `Rejected` ("Organization profile already
+  exists") → 422。`profiles.account_id` UNIQUE は維持 (組織でも Profile は
+  1:1 — unit 1 packet の N:1 維持方針を組織では 1:1 に狭めて確定)
+- UoW: org Profile 作成は `TransactionManager::transaction` 内で
+  ES save (Profile Created) + 同期 read model 書込みを同一 tx で行う
+  (Profile 集約の既存パターンに準拠)
+
 ## 却下案と理由
 
 - **Keto Organization namespace の新設 (組織ロールを relation tuple で管理)**
@@ -140,13 +187,19 @@ repository port は CRUD 系統
 
 ## Consequences
 
-- 後続 unit の基盤: unit 2 `org-accounts-auth-context` (スイッチ式認証)
-  と unit 3 `profile-transfer` は本テーブルと `AccountKind` 判別を前提とする
+- unit 2 `org-accounts-auth-context` は本 ADR の基盤 + 決定6 として着地済み
+  (2026-09-02)。unit 3 `profile-transfer` は本テーブルと `AccountKind` 判別、
+  および個人 identity + 組織コンテキスト両経路のロール判定を前提とする
 - 組織 Account は Account 集約・projection・モデレーション (通報/Suspend/Ban)
   の既存経路にそのまま乗る。Profile の AP actor 型は現行 Person のまま維持
   (Organization actor 型への対応は将来検討、packets.md 残スコープ参照)
 - e2e / test_mode の TRUNCATE リスト等の運用面に `organization_members` を
   含める必要がある (Account 従属テーブルとして)
+- 組織コンテキストを解釈する既存エンドポイントは opt-in 拡張
+  (`RequestOrganizationContext` 既定 None) のため、未対応エンドポイントは
+  従来通り個人コンテキストとして動作する。新規エンドポイントで org context を
+  受ける場合は extensions からの取得と 2 層構成 (Active membership + 所有
+  一致) の踏襲が必要
 
 ## Links
 
@@ -157,7 +210,10 @@ repository port は CRUD 系統
 - [interview/2026-08-29-org-accounts-grill.md](../interview/2026-08-29-org-accounts-grill.md)
 - Emumet [issue #55](https://github.com/ShuttlePub/Emumet/issues/55) /
   [PR #56](https://github.com/ShuttlePub/Emumet/pull/56)
-  (2026-09-01 squash merge `d01d424`)
+  (2026-09-01 squash merge `d01d424`、unit 1)
+- Emumet [issue #57](https://github.com/ShuttlePub/Emumet/issues/57) /
+  [PR #58](https://github.com/ShuttlePub/Emumet/pull/58)
+  (2026-09-02 squash merge `c33fe53`、unit 2 — 決定6)
 - 実装参照: kernel/src/entity/organization_membership.rs、
   kernel/src/repository/organization_membership.rs、
   application/src/service/organization/{create,list,membership}.rs、

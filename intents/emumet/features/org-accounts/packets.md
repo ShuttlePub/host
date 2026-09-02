@@ -15,7 +15,11 @@
    組織コンテキストを指定して操作する認証・認可 (ヘッダ/claim 方式、
    メンバーロール判定 + コンテキスト付き AccountId 解決、組織コンテキストでの
    Profile 操作) (packet: `.intent-cli/issues/org-accounts-auth-context/`) —
-   depends on: org-accounts-foundation
+   depends on: org-accounts-foundation。 実装: Emumet
+   [issue #57](https://github.com/ShuttlePub/Emumet/issues/57) /
+   [PR #58](https://github.com/ShuttlePub/Emumet/pull/58)
+   (2026-09-02 squash merge `c33fe53`)。設計 write-back:
+   [ADR 0007](../../decisions/0007-organization-accounts.md) 決定6
 3. `profile-transfer` — Profile 移管: 個人→組織の 2段階フロー
    (申請→承認、参照ファイルのコピー要求 port、所有移転イベント)
    (packet: `.intent-cli/issues/profile-transfer/`) — depends on: org-accounts-foundation
