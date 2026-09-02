@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "org-accounts-auth-context",
+  "role": "design",
+  "host_commit": "e8dfac0be1673c3d179d95976e428ec4e498457a",
+  "recorded_at": "2026-09-02T19:07:43.3514458+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": "guide workflow task implementation-loop (\u6C4E\u7528 loop) \u306F issue-to-pr dispatch \u3067 issue packet \u306E acceptance criteria (X-Organization-Id header \u5951\u7D04\u30FBsession-context\u30FBorg Profile \u4F5C\u6210\u30FB404/403 \u898F\u5247\u3092\u884C\u5358\u4F4D\u3067\u5217\u6319) \u306B\u5230\u9054\u3059\u308B\u7D4C\u8DEF\u304C\u6587\u8A00\u4E0A\u78BA\u7ACB\u3002implementation role \u306E reachability \u306F\u5341\u5206\u3068\u5224\u5B9A\u3057 guide \u6587\u8A00\u66F4\u65B0\u306A\u3057"
+}
