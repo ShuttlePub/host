@@ -1,2 +1,4 @@
 **/cycles.jsonl
 **/cycles-archive/
+**/.supervision.lock
+**/runtime/
