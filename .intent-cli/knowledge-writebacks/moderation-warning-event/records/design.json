@@ -1,0 +1,9 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "moderation-warning-event",
+  "role": "design",
+  "host_commit": "6b4ff5200bfe997c0b57566b510d80ba58ba8935",
+  "recorded_at": "2026-09-03T14:45:30.4746584+00:00",
+  "targets": [],
+  "note": null
+}
