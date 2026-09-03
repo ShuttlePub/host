@@ -96,3 +96,4 @@
 {"ts":"2026-09-03T14:34:50.6509018+00:00","execution_unit":"moderation-warning-event","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":60}
 {"ts":"2026-09-03T14:35:15.8727579+00:00","execution_unit":"moderation-warning-event","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":60}
 {"ts":"2026-09-03T14:35:15.8727579+00:00","execution_unit":"moderation-warning-event","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":60}
+{"ts":"2026-09-03T14:42:55.5823287+00:00","execution_unit":"profile-transfer","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#61","reason":"https://github.com/ShuttlePub/Emumet/issues/61"}
