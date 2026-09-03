@@ -1,0 +1,7 @@
+execution_unit: moderation-warning-event
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/moderation-warning-event"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/moderation-warning-event/github-body.md"
+created_issue_number: 59
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/59"
+published_label_name: null

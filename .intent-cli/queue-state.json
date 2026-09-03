@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-02T18:15:34.1703133+00:00",
+  "updated_at": "2026-09-03T13:27:54.6375129+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -528,6 +528,47 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/57"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/58",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "moderation-warning-event",
+      "title": "moderation-warning-event: AccountEvent::Warning \u65B0\u8A2D \u002B \u901A\u5831 resolve \u6642\u306E\u300C\u8B66\u544A\u3067\u89E3\u6C7A\u300D (warned resolution) \u002B \u8B66\u544A\u5C65\u6B74 admin \u53C2\u7167",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/moderation-warning-event/implementation.md",
+        "review_context": ".intent-cli/issues/moderation-warning-event/review-context.md",
+        "yaml": ".intent-cli/issues/moderation-warning-event/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 59,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/59"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "profile-transfer",
+      "title": "profile-transfer: Profile \u79FB\u7BA1 (\u500B\u4EBA\u2192\u7D44\u7E54) \u2014 2\u6BB5\u968E\u30D5\u30ED\u30FC (\u7533\u8ACB\u2192\u627F\u8A8D) \u002B \u6240\u6709\u79FB\u8EE2\u30A4\u30D9\u30F3\u30C8 \u002B \u53C2\u7167\u30D5\u30A1\u30A4\u30EB\u30B3\u30D4\u30FC\u8981\u6C42 port (\u90E8\u5206\u30E6\u30CB\u30FC\u30AF\u5316\u542B\u3080)",
+      "state": "queued",
+      "dependencies": [
+        "org-accounts-foundation"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/profile-transfer/implementation.md",
+        "review_context": ".intent-cli/issues/profile-transfer/review-context.md",
+        "yaml": ".intent-cli/issues/profile-transfer/packet.yaml"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
