@@ -23,7 +23,11 @@
 3. `profile-transfer` — Profile 移管: 個人→組織の 2段階フロー
    (申請→承認、参照ファイルのコピー要求 port、所有移転イベント)
    (packet: `.intent-cli/issues/profile-transfer/`) — depends on: org-accounts-foundation
-   (認証コンテキストは必須ではない — 承認は個人 identity + メンバーロール判定)
+   (認証コンテキストは必須ではない — 承認は個人 identity + メンバーロール判定)。
+   実装: Emumet [issue #61](https://github.com/ShuttlePub/Emumet/issues/61) /
+   [PR #62](https://github.com/ShuttlePub/Emumet/pull/62)
+   (2026-09-04 squash merge `a34f524`)。設計 write-back:
+   [ADR 0007](../../decisions/0007-organization-accounts.md) 決定7
 4. `moderation-warning-event` — AccountEvent::Warning 新設 + 通報 resolve 時の
    「警告で解決」 (packet: `.intent-cli/issues/moderation-warning-event/`) —
    depends on: — (moderation-account-report 完了済み)

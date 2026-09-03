@@ -170,6 +170,58 @@ unit 2 `org-accounts-auth-context` (Emumet issue #57 / PR #58、squash merge
   ES save (Profile Created) + 同期 read model 書込みを同一 tx で行う
   (Profile 集約の既存パターンに準拠)
 
+### 7. Profile 移管: 2段階フロー + 所有移転イベント + 参照ファイルコピー port (unit 3 確定、2026-09-04、PR #62 より)
+
+unit 3 `profile-transfer` (Emumet issue #61 / PR #62、squash merge `a34f524`) で
+確定した設計細部。grill Q6 (Account 変換経路なし) / Q7 (2段階フロー) /
+Q9 (参照ファイルコピー) の実装。構造は AccountReport と同型の
+ES aggregate + tailing projector パターン (AC1)。
+
+- **永続化**: ES イベントテーブル `profile_transfer_request_events`
+  (id, version, event_name, JSONB data, seq — tailing projector 用 seq index) +
+  read テーブル `profile_transfer_requests` (status / version / nanoid UNIQUE)。
+  状態は `pending → accepted / rejected / cancelled` (grill Q7 確定通り、
+  承認前の取消のみ可で受理後の取消・却下は Rejected 422)
+- **route shape (nanoid ベース、決定4/6 と整合)**: 申請
+  `POST /api/v1/profiles/{profile_nanoid}/transfer-requests` (移管元個人、
+  移管先は自分がメンバーの org のみで 404/403)、応答
+  `POST /api/v1/profile-transfer-requests/{request_nanoid}/{accept|reject|cancel}`。
+  承認・却下は移管先 org の Owner/Admin が個人 identity + メンバーロールの
+  DB 直接判定で行う (決定3 通り Keto 不呼出)
+- **承認 = 所有移転イベント**: accept 時に同一 tx で Profile aggregate に
+  `ProfileEvent::AccountTransferred` を保存し read model を同期更新する。
+  acct / Actor URI / nanoid / 署名鍵 / フォロー関係は不変 (AC4)。
+  移管元個人は移管後に新規 Profile を作成可能 (AC5)
+- **owner_kind + partial unique index (AC6)**: `profiles` に
+  `owner_kind TEXT NOT NULL DEFAULT 'personal'` を追加し accounts.kind で
+  backfill。`profiles.account_id` の全件 UNIQUE は削除し
+  `profiles_personal_account_unique ON (account_id) WHERE owner_kind='personal'`
+  に置換 (migration `20260904000001_profile_transfer.sql`)。個人 1:1 は DB
+  制約で維持しつつ、組織は複数 Profile を所有可能になった。**これに伴い
+  決定6 の「組織 Profile 作成は 1:1 に狭める app-level チェック」は
+  supersede され、`CreateOrganizationProfileUseCase` の "already exists"
+  Rejected チェックは除去済み** (unit3 AC6)。**closeout 学び** (packet
+  closeout_learning の問いへの回答): partial unique index の実定義は
+  `CREATE UNIQUE INDEX ... WHERE status = 'pending'` / `WHERE owner_kind =
+  'personal'` の 2 本で、アプリの Rejected と DB 制約の二重担保とした
+- **重複 pending の一意性**: read テーブル側に
+  `profile_transfer_requests_one_pending_per_profile ON (profile_id)
+  WHERE status='pending'` を敷き、移管中の同一 Profile への重複申請は
+  app 側で Rejected (422) (AC8)
+- **参照ファイルコピー port (AC7)**: `ProfileMediaCopyGateway::request_copy(
+  ProfileMediaCopyRequest { from_account_id, to_account_id, image_ids })`
+  (kernel/src/storage.rs) — packet closeout_learning の問い「コピー port の
+  確定シグネチャ」への回答。accept の transaction 完了**後に**呼び出し、
+  失敗は `tracing::warn!` に留める **fail-open** (所有移転の成否とコピーを
+  分離)。icon / banner の ImageId が存在する場合のみ発行。現行実装は
+  `NoopProfileMediaCopyGateway` (driver/src/storage.rs) の stub で、
+  Booskiff コピー API 実連携は後続 packet (grill Q9 の Booskiff 側要件)
+- **review で検出された既知事項 (後続 cleanup 候補)**: duplicate pending race
+  で DB partial unique 違反が 500 として表面化しうる経路の残存、
+  test_mode の TRUNCATE リストに `profile_transfer_requests` /
+  `profile_transfer_request_events` が未追加 (organization_members と同じ
+  運用債務、Consequences 参照)、dead_code helper 2 件
+
 ## 却下案と理由
 
 - **Keto Organization namespace の新設 (組織ロールを relation tuple で管理)**
@@ -188,8 +240,10 @@ unit 2 `org-accounts-auth-context` (Emumet issue #57 / PR #58、squash merge
 ## Consequences
 
 - unit 2 `org-accounts-auth-context` は本 ADR の基盤 + 決定6 として着地済み
-  (2026-09-02)。unit 3 `profile-transfer` は本テーブルと `AccountKind` 判別、
-  および個人 identity + 組織コンテキスト両経路のロール判定を前提とする
+  (2026-09-02)。unit 3 `profile-transfer` も決定7 として着地済み (2026-09-04)。
+  組織は複数 Profile を所有可能になり (owner_kind partial unique)、参照
+  ファイルコピーの実連携 (Booskiff copy API、Noop stub の置換) と
+  test_mode TRUNCATE 追加・dead_code cleanup は後続 packet の論点
 - 組織 Account は Account 集約・projection・モデレーション (通報/Suspend/Ban)
   の既存経路にそのまま乗る。Profile の AP actor 型は現行 Person のまま維持
   (Organization actor 型への対応は将来検討、packets.md 残スコープ参照)
@@ -214,6 +268,9 @@ unit 2 `org-accounts-auth-context` (Emumet issue #57 / PR #58、squash merge
 - Emumet [issue #57](https://github.com/ShuttlePub/Emumet/issues/57) /
   [PR #58](https://github.com/ShuttlePub/Emumet/pull/58)
   (2026-09-02 squash merge `c33fe53`、unit 2 — 決定6)
+- Emumet [issue #61](https://github.com/ShuttlePub/Emumet/issues/61) /
+  [PR #62](https://github.com/ShuttlePub/Emumet/pull/62)
+  (2026-09-04 squash merge `a34f524`、unit 3 — 決定7)
 - 実装参照: kernel/src/entity/organization_membership.rs、
   kernel/src/repository/organization_membership.rs、
   application/src/service/organization/{create,list,membership}.rs、
