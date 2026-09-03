@@ -93,3 +93,6 @@
 {"ts":"2026-09-03T13:27:11.5708809+00:00","execution_unit":"moderation-warning-event","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/moderation-warning-event/"}
 {"ts":"2026-09-03T13:27:12.6675728+00:00","execution_unit":"profile-transfer","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/profile-transfer/"}
 {"ts":"2026-09-03T13:27:54.6375129+00:00","execution_unit":"moderation-warning-event","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#59","reason":"https://github.com/ShuttlePub/Emumet/issues/59"}
+{"ts":"2026-09-03T14:34:50.6509018+00:00","execution_unit":"moderation-warning-event","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":60}
+{"ts":"2026-09-03T14:35:15.8727579+00:00","execution_unit":"moderation-warning-event","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":60}
+{"ts":"2026-09-03T14:35:15.8727579+00:00","execution_unit":"moderation-warning-event","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":60}

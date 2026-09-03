@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-03T13:27:54.6375129+00:00",
+  "updated_at": "2026-09-03T14:35:15.9244754+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -536,7 +536,7 @@
     {
       "execution_unit": "moderation-warning-event",
       "title": "moderation-warning-event: AccountEvent::Warning \u65B0\u8A2D \u002B \u901A\u5831 resolve \u6642\u306E\u300C\u8B66\u544A\u3067\u89E3\u6C7A\u300D (warned resolution) \u002B \u8B66\u544A\u5C65\u6B74 admin \u53C2\u7167",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
@@ -550,6 +550,7 @@
         "number": 59,
         "url": "https://github.com/ShuttlePub/Emumet/issues/59"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/60",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
