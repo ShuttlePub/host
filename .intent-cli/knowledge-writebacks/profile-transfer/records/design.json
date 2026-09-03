@@ -1,0 +1,9 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "profile-transfer",
+  "role": "design",
+  "host_commit": "f2b4c2c095867662b598a0050ada9d89b6d95799",
+  "recorded_at": "2026-09-03T22:15:43.9972978+00:00",
+  "targets": [],
+  "note": null
+}
