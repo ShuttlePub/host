@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-03T14:42:55.5823287+00:00",
+  "updated_at": "2026-09-03T21:52:22.7434896+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -559,7 +559,7 @@
     {
       "execution_unit": "profile-transfer",
       "title": "profile-transfer: Profile \u79FB\u7BA1 (\u500B\u4EBA\u2192\u7D44\u7E54) \u2014 2\u6BB5\u968E\u30D5\u30ED\u30FC (\u7533\u8ACB\u2192\u627F\u8A8D) \u002B \u6240\u6709\u79FB\u8EE2\u30A4\u30D9\u30F3\u30C8 \u002B \u53C2\u7167\u30D5\u30A1\u30A4\u30EB\u30B3\u30D4\u30FC\u8981\u6C42 port (\u90E8\u5206\u30E6\u30CB\u30FC\u30AF\u5316\u542B\u3080)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "org-accounts-foundation"
       ],
@@ -575,6 +575,7 @@
         "number": 61,
         "url": "https://github.com/ShuttlePub/Emumet/issues/61"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/62",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
