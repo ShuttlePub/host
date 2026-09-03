@@ -60,3 +60,22 @@
   (/admin/reports キュー + 詳細 + 停止/BAN UI 移動)、通報作成はアカウント詳細の
   ボタンから、ナビに未対応件数バッジ (GraphQL 件数クエリ)。
   実装順序は Emumet 先行・マージ後に Ratcap publish。
+
+### D4 続報: warned resolution の追加 — 2026-09-03
+
+- Context: moderation-warning-event (issue #59 / PR #60)。警告という軽い制裁で
+  通報を解決する経路が D4 当初の resolution 分類に無かった。
+- Decision:
+  - 専用エンドポイントは新設せず、既存 `POST /api/v1/admin/reports/{id}/resolve`
+    を拡張する。request に optional `resolution` フィールドを追加し、
+    `resolution="warned"` で警告経路 (warn use case) へ分岐、close_reason は従来通り。
+  - 警告は対象アカウント aggregate に `AccountEvent::Warned { reason, warned_at }`
+    (event_name `warned`) として記録する。D4 の「通報は作成後 immutable」とは
+    冲突しない (通報ではなくアカウント側の制裁イベントとして分離)。
+  - 警告履歴は `GET /api/v1/admin/accounts/{account_id}/warnings` で参照。
+    専用テーブルは設けず、account イベントストアから `event_name='warned'` を
+    導出する (read model port `find_warnings` → `AccountWarning { reason, warned_at }`)。
+  - ReportProjection の reports read model も resolution として `warned` を記録する。
+- Rationale: 警告は通報クローズ判断の一分類であり resolve の拡張で表現できる。
+  専用 EP は URL 空間と認可経路を二重化するだけで利点がない。履歴を ES イベントから
+  導出する形は ADR 0006 パターンに沿い、スキーマ追加なしで監査証跡を保持できる。

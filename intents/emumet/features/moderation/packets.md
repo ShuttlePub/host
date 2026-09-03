@@ -18,6 +18,10 @@
 4. `account-unban-reactivate` — unban (Banned→Active) admin API + reactivate (deactivated 復帰) client API + AccountEvent::Unbanned/Reactivated
    (packet: `.intent-cli/issues/account-unban-reactivate/`) — depends on: — (account-write-usecases の未実装ペア補完) —
    **completed: https://github.com/ShuttlePub/Emumet/pull/50** (issue https://github.com/ShuttlePub/Emumet/issues/49, merged 2026-08-22)
+5. `moderation-warning-event` — 通報「警告で解決」(resolve の resolution=warned 拡張) + AccountEvent::Warned + 警告履歴 API
+   (packet: `.intent-cli/issues/moderation-warning-event/`) — depends on: moderation-account-report —
+   **completed: https://github.com/ShuttlePub/Emumet/pull/60**
+   (issue https://github.com/ShuttlePub/Emumet/issues/59, merged 2026-09-03)
 
 ## 未パケット化の残スコープ
 
