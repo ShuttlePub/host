@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-03T21:52:22.7434896+00:00",
+  "updated_at": "2026-09-04T18:05:46.0917359+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -576,6 +576,28 @@
         "url": "https://github.com/ShuttlePub/Emumet/issues/61"
       },
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/62",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "ui-catalog-foundation",
+      "title": "ui-catalog-foundation: Flame \u88FD UI \u30AB\u30BF\u30ED\u30B0\u30A2\u30D7\u30EA (apps/ui-catalog) \u306E\u65B0\u8A2D \u2014 \u5171\u6709\u30B3\u30F3\u30DD\u30FC\u30CD\u30F3\u30C8/\u30C7\u30B6\u30A4\u30F3\u30C8\u30FC\u30AF\u30F3\u306E\u30B7\u30E7\u30FC\u30B1\u30FC\u30B9\u3068 JSON manifest",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/ratcap/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/ui-catalog-foundation/implementation.md",
+        "review_context": ".intent-cli/issues/ui-catalog-foundation/review-context.md",
+        "yaml": ".intent-cli/issues/ui-catalog-foundation/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/shuttlepub-frontends",
+        "number": 11,
+        "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/11"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
