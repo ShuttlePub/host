@@ -1,0 +1,64 @@
+implementation_issue_packet:
+  issue_title: "ui-catalog-visual-diff-ci: UI カタログのビジュアル差分 CI — Playwright スクリーンショット + reg-suit/R2 + PR コメントへの画像直接埋め込み"
+  issue_kind: feature
+  source_execution_unit: ui-catalog-visual-diff-ci
+  domain: ratcap
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/ui-catalog, .github/workflows"
+  target_part: "UI カタログのビジュアル差分パイプライン (Playwright + reg-suit + Cloudflare R2) と既存 CI への統合"
+  dependencies: [ui-catalog-foundation]
+  technical_baseline:
+    - "前提: apps/ui-catalog (ui-catalog-foundation) が存在し、ストーリー/状態が JSON manifest で列挙できる"
+    - "Playwright でカタログの各ストーリー/状態のスクリーンショットを取得"
+    - "Cloudflare R2 (S3 互換) に差分画像・レポートをライフサイクルルール付きでアップロード (期限付き自動削除)。レポート zip の DL 確認は不可"
+    - "reg-suit + S3 互換プラグイン (R2 接続) を第一候補。PR コメントへの画像直接埋め込みは reg-notify-github-plugin の能力を実装時に検証し、不足する場合は自前のアップロード + コメント生成ステップで補完"
+    - "既存 CI (check.yml、D8 で bun test 追加済みの先例) にジョブとして統合"
+  intent_references:
+    - "intents/ratcap/intent-tree/00-map.md"
+    - "intents/ratcap/drafts/storybook-introduction.md"
+    - "intents/ratcap/interviews/storybook-introduction.json"
+    - "intents/ratcap/decisions/2026-08-30-monorepo-extraction.md"
+  acceptance_criteria:
+    - "共有パッケージ (packages/ui / design-tokens / styles) の見た目変更を含む PR で CI がスクリーンショット差分を検出し、R2 にアップロードされた差分画像が PR コメントに直接表示される"
+    - "差分なし PR では緑 check になる"
+  revision_history:
+    - "2026-09-05: 初版ドラフト。storybook-introduction インタビュー確定事項の visual diff / PR 連携基盤を ui-catalog-foundation から分離。"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/ratcap/intent-tree/00-map.md
+  supporting_intents:
+    - intents/ratcap/drafts/storybook-introduction.md
+    - intents/ratcap/interviews/storybook-introduction.json
+    - intents/ratcap/decisions/2026-08-30-monorepo-extraction.md
+  new_intent_needed: false
+  placement_rationale: "ui-catalog-foundation と同じ ui-catalog 行群の後続として 00-map.md に反映する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/ratcap/intent-tree/00-map.md
+    summary: "ui-catalog-visual-diff-ci 行を実装済み状態に更新する (行自体は ui-catalog-foundation 側で追加済みの前提)。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "Storybook 不採用の決定記録は ui-catalog-foundation 側 (decisions/2026-09-05-ui-catalog-over-storybook.md) に集約。reg-suit/R2 選定はインタビュー確定事項のため別 ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "CI 基盤のためユーザー向け docs 更新はなし。"
+closeout_learning:
+  expected: "reg-notify-github-plugin の画像直接埋め込み能力の検証結果 (自前ステップ補完の要否) と R2 ライフサイクル運用の知見を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - intents/ratcap/technology/overview.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "shuttlepub-frontends リポジトリ (apps/ui-catalog, .github/workflows)"

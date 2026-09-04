@@ -1,0 +1,67 @@
+implementation_issue_packet:
+  issue_title: "ui-catalog-foundation: Flame 製 UI カタログアプリ (apps/ui-catalog) の新設 — 共有コンポーネント/デザイントークンのショーケースと JSON manifest"
+  issue_kind: feature
+  source_execution_unit: ui-catalog-foundation
+  domain: ratcap
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: apps/ui-catalog
+  target_part: "PureScript + Flame SSR + hydration 製の UI カタログアプリ (apps/ui-catalog) と agent 向け JSON manifest"
+  dependencies: []
+  technical_baseline:
+    - "Bun workspaces モノレポ (ShuttlePub/shuttlepub-frontends): apps/emumet-web + apps/booskiff-web + packages/{design-tokens,styles,ui,auth-core,auth-bun} (2026-08-30 D2)"
+    - "PureScript + Flame (SSR + hydration) + Bun サーバー: apps/emumet-web / apps/booskiff-web と同一構成を踏襲 (spago/dev.sh の先例を転用)"
+    - "spago workspace はアプリ側 spago.yaml に集約し、packages/ui は extraPackages の path: 参照で接続 (D6)"
+    - "Tailwind v4 は @shuttlepub/styles 経由。apps/ui-catalog/src/style.css の @source を packages 配下まで明示拡張する (content detection hazard: monorepo-extraction 運用知見)"
+    - "テーマ切替は packages/design-tokens/theme.js と同じ data-color / data-shape 属性方式 (Catppuccin Mocha / Tokyo Night × rounded / sharp)"
+    - "BFF/バックエンド非依存: fixture/static データのみでショーケースを構成する"
+  intent_references:
+    - "intents/ratcap/intent-tree/00-map.md"
+    - "intents/ratcap/drafts/storybook-introduction.md"
+    - "intents/ratcap/interviews/storybook-introduction.json"
+    - "intents/ratcap/decisions/2026-08-30-monorepo-extraction.md"
+  acceptance_criteria:
+    - "apps/ui-catalog 起動で packages/ui 全コンポーネント (Layout/Link/NotFound/Theme shell primitives) と design-tokens (色/radius/shadow) のショーケースを一覧でき、テーマ (Catppuccin Mocha / Tokyo Night × rounded / sharp) を切替確認できる"
+    - "SSR HTML と hydration 後の両方が表示される (実アプリと同一経路でレンダリング)"
+    - "カタログが JSON manifest (コンポーネント名・ストーリー/状態・直接 URL 一覧) を出力し、agent がブラウザなしでカタログ内容を列挙できる"
+  revision_history:
+    - "2026-09-05: 初版ドラフト。storybook-introduction インタビュー (6 問確定) からカタログ基盤 slice として切出し (visual diff / PR 連携は後続ユニット ui-catalog-visual-diff-ci)。"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/ratcap/intent-tree/00-map.md
+  supporting_intents:
+    - intents/ratcap/drafts/storybook-introduction.md
+    - intents/ratcap/interviews/storybook-introduction.json
+    - intents/ratcap/decisions/2026-08-30-monorepo-extraction.md
+  new_intent_needed: false
+  placement_rationale: "ui-catalog は共有デザイン/コンポーネント確認基盤として 00-map.md に行追加する。Storybook 不採用の決定は decisions/ に新規記録するが intent ノードの新設は不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/ratcap/intent-tree/00-map.md
+    summary: "ui-catalog 行 (foundation + visual-diff-ci) を追加する。併せて map 冒頭の Target repo が ShuttlePub/Ratcap のまま残っているため ShuttlePub/shuttlepub-frontends に修正する。"
+  adr:
+    required: true
+    target_paths:
+      - intents/ratcap/decisions/2026-09-05-ui-catalog-over-storybook.md
+    decision_title: "Storybook 不採用・Flame 製カスタムカタログ採用の決定 (closeout 時に決定記録ファイルを作成する)"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "内部開発者向け基盤のためユーザー向け docs 更新はなし。"
+closeout_learning:
+  expected: "2 つ目以降の PureScript アプリ追加に伴う spago workspace 配置 (D6 の再検討条件への回答) と Tailwind @source 配線・テーマ切替 UI の実装上の知見を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - intents/ratcap/technology/overview.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "shuttlepub-frontends リポジトリ (apps/ui-catalog)"

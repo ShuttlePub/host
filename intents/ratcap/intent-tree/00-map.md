@@ -1,7 +1,7 @@
 # Intent Map
 
 - Domain: `ratcap`
-- Target repo: `ShuttlePub/Ratcap`
+- Target repo: `ShuttlePub/shuttlepub-frontends` (旧 `ShuttlePub/RatCap`、2026-08-30 rename)
 - Upstream backend: [`ShuttlePub/Emumet`](https://github.com/ShuttlePub/Emumet) (Rust ActivityPub サーバー)
 
 ## ドメインの形
@@ -40,3 +40,12 @@ Ratcap は Emumet の Web フロントエンド。PureScript + Flame (Elm アー
 - ほぼすべての feature は **BFF GraphQL スキーマ拡張** (`bff/schema.graphql`) が前提。変更後は `bun scripts/sync-graphql.ts` で PureScript 型を再生成する。
 - **admin-moderation は blocked**: ロール解決の正源は Keto とし、Emumet にセッションコンテキスト解決エンドポイントを新設する方針 (2026-07-28 決定・Emumet 側実装中)。BFF は TTL キャッシュで利用する。
 - block-mute の配置は決定済み (2026-07-28): 操作はアカウント個別ページ、一覧は Settings 配下。enforcement の正源は Emumet アクターレベルに据え置く。
+
+## 共有 UI カタログ (ui-catalog)
+
+共有デザイン/コンポーネントの確認基盤。Storybook は不採用 (PureScript/Flame では強みが活きないため)、Flame 製カスタムカタログ `apps/ui-catalog` を採用 (2026-09-05 storybook-introduction インタビュー確定)。
+
+| ユニット | 内容 | 状態 |
+|---|---|---|
+| ui-catalog-foundation | カタログアプリ新設 + ショーケース + テーマ切替 + JSON manifest | stacked (2026-09-05) |
+| ui-catalog-visual-diff-ci | Playwright スクショ + reg-suit/R2 + PR コメント画像埋め込み | backlog (depends on foundation) |
