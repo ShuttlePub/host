@@ -102,3 +102,6 @@
 {"ts":"2026-09-03T21:52:22.7342453+00:00","execution_unit":"profile-transfer","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":62}
 {"ts":"2026-09-04T18:05:38.8237257+00:00","execution_unit":"ui-catalog-foundation","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/ui-catalog-foundation/"}
 {"ts":"2026-09-04T18:05:46.0917359+00:00","execution_unit":"ui-catalog-foundation","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#11","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/11"}
+{"ts":"2026-09-05T02:16:54.0102576+00:00","execution_unit":"ui-catalog-foundation","event":"review-started","by":"intent-cli"}
+{"ts":"2026-09-05T02:23:46.6882888+00:00","execution_unit":"ui-catalog-foundation","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":12}
+{"ts":"2026-09-05T02:23:46.6882888+00:00","execution_unit":"ui-catalog-foundation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":12}

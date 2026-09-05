@@ -47,5 +47,5 @@ Ratcap は Emumet の Web フロントエンド。PureScript + Flame (Elm アー
 
 | ユニット | 内容 | 状態 |
 |---|---|---|
-| ui-catalog-foundation | カタログアプリ新設 + ショーケース + テーマ切替 + JSON manifest | stacked (2026-09-05) |
+| ui-catalog-foundation | カタログアプリ新設 + ショーケース + テーマ切替 + JSON manifest | done (2026-09-05, #11 / PR #12) |
 | ui-catalog-visual-diff-ci | Playwright スクショ + reg-suit/R2 + PR コメント画像埋め込み | backlog (depends on foundation) |
