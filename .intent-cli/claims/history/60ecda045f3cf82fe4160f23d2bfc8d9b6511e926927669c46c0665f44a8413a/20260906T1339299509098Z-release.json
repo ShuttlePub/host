@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:drive-foundation-followups",
+  "actor": "design",
+  "team": "booskiff-main",
+  "recorded_at": "2026-09-06T13:39:29.9509098+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "booskiff-main",
+  "displaced_claimed_at": "2026-09-06T13:15:47.52912+00:00",
+  "base_commit": "f3ab05906ee1b81e793f8a83cf4cbc3707cd98b7"
+}

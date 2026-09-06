@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:drive-foundation-followups",
-  "actor": "design",
-  "team": "booskiff-main",
-  "claimed_at": "2026-09-06T13:15:47.52912+00:00",
-  "base_commit": "02385b4fe19649dcd7e36787dbe93147c24efc09"
-}
