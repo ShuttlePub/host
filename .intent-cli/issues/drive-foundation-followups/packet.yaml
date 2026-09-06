@@ -1,0 +1,69 @@
+implementation_issue_packet:
+  issue_title: "drive-foundation-followups: レビュー nit 集約 (バリデーション・競合安全・キャッシュ・文書化)"
+  issue_kind: feature
+  source_execution_unit: drive-foundation-followups
+  domain: booskiff
+  target_repo: ShuttlePub/Booskiff
+  target_path: core/
+  target_part: "Booskiff core の堅牢化 follow-up。drive-foundation (PR #2) レビュー時 nit 8件の是正。バリデーション追加・upsert/フォルダ生成の原子化・課金解決キャッシュ・レート制限の整理・挙動の仕様文書化"
+  dependencies:
+    - drive-foundation
+  technical_baseline:
+    - "Rust (Axum) + PostgreSQL。drive-foundation の既存層構成を踏襲 (本 slice はリファクタではなく品質是正)"
+    - "既存の振る舞い契約 (制限値・公開制御 2 値など) は変えない。追加するのは検証・競合安全・キャッシュと文書化のみ"
+    - "元指摘: 手動 issue ShuttlePub/Booskiff#3 (code-reviewer subagent, 2026-08-30, PR #2 review)。本 packet の正式 issue 発行後に #3 は superseded として close する"
+  intent_references:
+    - "intents/booskiff/intent-tree/00-map.md"
+    - "intents/booskiff/product/overview.md"
+    - "intents/booskiff/technology/overview.md"
+    - "intents/booskiff/decisions/2026-08-29-initial-shaping.md (D1-D21)"
+  acceptance_criteria:
+    - "ファイル名 (UploadQuery.name) に長さ検証が入る (255 字上限・空拒否等、フォルダ名検証と同等規約)。超過時は検証エラー (4xx)。同値テストあり"
+    - "files.rs の DefaultBodyLimit::max(...) レイヤについて、Body 直接抽出ハンドラでは実質 no-op という誤解を招く構造を整理する (撤去するか CountingBody による実強制へ一本化)。サイズ超過時の応答を結合テストで固定"
+    - "課金解決 (global rules + owner rules + plan) にキャッシュを導入: in-memory TTL + 管理者書き込み (rule upsert / plan 変更) 時の即時無効化。通常リクエストで rules/plan クエリが毎回打たれないことをテストで確認。無効化の正確性テストあり"
+    - "RateLimiters がプロセス内メモリ (複数レプリカ非共有) である制約をドキュメントに明記。rpm 変更で limiter 再生成 → burst リセットの挙動を確認し、in-place 更新に改めるか意図的制約として明記するかを決定して反映"
+    - "rules.rs upsert_rule の 2 段 upsert を原子化 (INSERT ... ON CONFLICT 単文など)。同時 INSERT 競合で unique violation による 500 にならないことを競合テストで固定 (成功上書き or 409)"
+    - "ensure_owned_folder の事前チェックと INSERT を原子化 (ON CONFLICT DO NOTHING + 再 SELECT など)。同時フォルダ生成競合で FK 違反による 500 にならず、既存フォルダ再利用または 404/409 で返ることを競合テストで固定"
+    - "/public/{key} は無認証・帯域計量は初動外という仕様をドキュメント化し、DoS 緩和として per-IP の緩いレート制限 (規定値を明記) を付与。この判断を仕様ドキュメントに記録"
+    - "immutable キャッシュ設計により unpublish/削除後もブラウザ/CDN キャッシュが残る仕様を文書化する (外部キャッシュの即時失効は保証しない旨、レスポンスヘッダ方針含む)"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/booskiff/intent-tree/00-map.md
+  supporting_intents:
+    - intents/booskiff/technology/overview.md
+  new_intent_needed: false
+  placement_rationale: "drive-foundation のレビュー follow-up であり、既存 intent の枠組み内での品質是正。新規 intent ノードは不要"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "ShuttlePub/Booskiff リポジトリ内の運用/仕様ドキュメント (core 配下 docs または README)"
+    summary: "/public/{key} の無認証仕様・immutable キャッシュの unpublish 非失効・RateLimiters のレプリカ非共有制約の 3 点を本 slice で文書化する"
+closeout_learning:
+  expected: "是正時に実挙動を確認して得た知見 (例: DefaultBodyLimit の実効性確認結果、競合パターンの分類) があれば technology/overview.md に追記検討"
+  write_back_required: false
+  write_back_targets: []
+# G645/G661: guide reachability is explicit and checked at closeout.
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: ShuttlePub/Booskiff リポジトリ (core/)
+
+# 出典: 手動 GitHub issue ShuttlePub/Booskiff#3 (PR #2 レビュー nit 集約,
+# code-reviewer subagent, 2026-08-30) を intent-cli packet として正式化したもの。
+# 本 packet 由来の正式 issue を発行した後、#3 は superseded リンクを付けて close する。

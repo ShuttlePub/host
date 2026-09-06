@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-05T02:23:46.6972592+00:00",
+  "updated_at": "2026-09-06T13:31:51.3339822+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -599,6 +599,30 @@
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/11"
       },
       "linked_pr": "https://github.com/ShuttlePub/shuttlepub-frontends/pull/12",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "drive-foundation-followups",
+      "title": "drive-foundation-followups: \u30EC\u30D3\u30E5\u30FC nit \u96C6\u7D04 (\u30D0\u30EA\u30C7\u30FC\u30B7\u30E7\u30F3\u30FB\u7AF6\u5408\u5B89\u5168\u30FB\u30AD\u30E3\u30C3\u30B7\u30E5\u30FB\u6587\u66F8\u5316)",
+      "state": "queued",
+      "dependencies": [
+        "drive-foundation"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/booskiff/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/drive-foundation-followups/implementation.md",
+        "review_context": ".intent-cli/issues/drive-foundation-followups/review-context.md",
+        "yaml": ".intent-cli/issues/drive-foundation-followups/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Booskiff",
+        "number": 4,
+        "url": "https://github.com/ShuttlePub/Booskiff/issues/4"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
