@@ -86,6 +86,32 @@ S3 互換のみ (MinIO でセルフホスト要件をカバー)。Emumet 内蔵�
 `plan_assignments` (プラン割当)。billing モジュールは
 plans/rules/resolve/assignments/usage/provider 分割。
 
+## 課金・容量の詳細設計 (grill 第2ラウンド 2026-09-06、Q23-Q31)
+
+- **プラン値 (コード内デフォルト)**: free 5 GB / premium 100 GB・980円/月 /
+  add-on +50GB・500円/月。単ファイル 100 MB・100 req/min 維持。為替前提 $1=170円。
+  管理者が rules/plan で上書き可能 (Fluxer 式は不変)
+- **前払い期間制**: 自動引き落とし型サブスクは採用しない (BTC は自動更新不可、
+  PayPay 継続課金は個人事業主で未確認のため)。1/3/6/12ヶ月を前払い購入し、
+  期限前にリマインダー、支払いで延長。期限切れで即降格 (猶予状態なし)
+- **決済チャネル**: BTCPay Server 自前運用 (BTC オンチェーン + Lightning、
+  円建て請求・受取時換算・即時円転、invoice/txid/レート保存) 主軸 +
+  PayPal (fiat 主経路) + PayPay (国内単発決済、継続課金可否等は申込時に確認)。
+  ETH は後回し。カード直接 PSP は当面不採用。有効化ゲートは DB フラグ +
+  admin パネル (booskiff-web、初期値 OFF)
+- **over-quota**: read-only 縮退。アップロード・新規フォルダ・新規 publish を
+  ブロックし、DL・削除・既存公開 URL 配信は継続
+- **ゴミ箱**: `deleted_at` 論理削除 + 7 日後のアプリ側スイープ GC で物理削除
+  (S3 ライフサイクル非依存)。ゴミ箱内も容量計上。完全削除・復元 API あり。
+  ゴミ箱移動で公開 URL 配信停止、復元で publish 状態も復活
+- **課金 UI**: ユーザー課金ページと admin コントロールパネル (課金 ON/OFF、
+  plan 手動割当、プロバイダ設定) は booskiff-web に実装。Emumet は参照 API のみ
+- **self-host**: 既定 mirror モード (全員 free 相当、admin で変更可。everyone も選択可)。
+  プロバイダ設定も管理画面から行え、公式と同じ運用が可能なオープン構成
+
+損益モデル・市場調査の根拠は `../decisions/2026-08-29-initial-shaping.md` (D22-D28)。
+後続論点: 組織単位課金 (emumet 組織管理機能依存)、ETH 決済、カード PSP 再交渉。
+
 ## 管理者 API (Q19=A)
 
 管理者トークン (X-Admin-Token 等) + 単一ロール (admin) で初動実装。
