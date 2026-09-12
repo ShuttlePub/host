@@ -123,6 +123,36 @@ remove an entry only after verifying against a newer binary.
   failure, write the drop-in override, register via systemd (the long-run
   unit cycles fine when systemd owns the process). Verified on both
   booskiff-main and booskiff-frontends teams (2026-09-02).
+- **worker claim G779 title-token gate blocks packet-published issues**
+  (verified 0.27.1, 2026-09-13): on a claims-enabled host, `worker claim` (and
+  anything gated behind it, e.g. `worker complete` requiring
+  `intent-issue-in-progress`) parses the issue title with
+  `^(?:[A-Z][A-Z0-9]*-G?[0-9]+|G[0-9]+)(?![A-Za-z0-9])` (WorkerClaimCommand.cs,
+  J-Tech-Japan/intent-system) — i.e. it only accepts a leading G-number-style
+  token, NOT the EU slug. Packet-published issues titled `<eu-slug>: ...`
+  (the publish-flow convention) are refused with `claim.registry.refused:
+  could not resolve a leading execution-unit token from the issue title` even
+  when the execution-unit claim is held. Upstream bug-report candidate.
+  Workaround that works end-to-end without worker claim/complete: lead runs
+  the herdr-skill closeout path directly —
+  `automation pr-transition --transition approved --write` (no claim gate),
+  `closeout pr --repo <r> --pr <n> --issue <m> --domain <d> --write`, then
+  `gh pr merge --squash` YOURSELF and verify merge (closeout only records;
+  it does not merge). Side findings: (a) `claim acquire/release --write`
+  commits and pushes but leaves the local checkout one commit behind origin —
+  `git pull --ff-only` afterwards before further claim-registry commands read
+  the store; (b) `worker complete` on an unclaimed issue refuses with
+  `complete.stale.not-claimed`; (c) `automation host-queue-item-recovery`
+  unsafe-stops with `missing-published-issue-labels` when the issue lacks
+  `intent-pr-created` (which only worker complete applies) — so that recovery
+  path cannot substitute for worker complete either.
+- **closeout pr does not merge on GitHub (re-confirmed)** (verified 0.27.1,
+  2026-09-13): extends the draft-PR pitfall — even for a ready-for-review PR
+  with `intent-pr-approved`, `closeout pr --write` records `pr-merged` and
+  flips queue to completed but leaves the GitHub PR OPEN. Always run
+  `gh pr merge --squash` (or have the worker merge) after closeout, then run
+  the squash-merge verification (state=MERGED, origin/main head = squash
+  commit, `git diff <base>..origin/main --stat`).
 
 ## Wrong-host detection (G301)
 

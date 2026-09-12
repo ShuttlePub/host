@@ -107,3 +107,5 @@
 {"ts":"2026-09-05T02:23:46.6882888+00:00","execution_unit":"ui-catalog-foundation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":12}
 {"ts":"2026-09-06T13:31:34.7401355+00:00","execution_unit":"drive-foundation-followups","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/drive-foundation-followups/"}
 {"ts":"2026-09-06T13:31:51.3339822+00:00","execution_unit":"drive-foundation-followups","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Booskiff#4","reason":"https://github.com/ShuttlePub/Booskiff/issues/4"}
+{"ts":"2026-09-12T16:01:57.9734571+00:00","execution_unit":"drive-foundation-followups","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Booskiff","pr":5}
+{"ts":"2026-09-12T16:01:57.9734571+00:00","execution_unit":"drive-foundation-followups","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Booskiff","pr":5}
