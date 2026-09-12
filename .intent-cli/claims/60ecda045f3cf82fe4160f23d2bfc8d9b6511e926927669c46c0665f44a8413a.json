@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:drive-foundation-followups",
-  "actor": "opencode-worker",
-  "team": "booskiff-main",
-  "claimed_at": "2026-09-12T15:52:47.506216+00:00",
-  "base_commit": "7ac200be1e842b99d63aeb35272874d4f68c8fd7"
-}

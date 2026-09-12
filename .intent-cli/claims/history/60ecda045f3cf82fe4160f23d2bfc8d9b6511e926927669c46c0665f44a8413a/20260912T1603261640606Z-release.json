@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:drive-foundation-followups",
+  "actor": "opencode-worker",
+  "team": "booskiff-main",
+  "recorded_at": "2026-09-12T16:03:26.1640606+00:00",
+  "reason": "PR #5 merged; unit completed",
+  "displaced_holder": "opencode-worker",
+  "displaced_team": "booskiff-main",
+  "displaced_claimed_at": "2026-09-12T15:52:47.506216+00:00",
+  "base_commit": "0f83f2eb2a9ea0976c3c263b65028c4577e9915f"
+}
