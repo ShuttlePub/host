@@ -111,3 +111,5 @@
 {"ts":"2026-09-12T16:01:57.9734571+00:00","execution_unit":"drive-foundation-followups","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Booskiff","pr":5}
 {"ts":"2026-09-13T13:45:50.5064584+00:00","execution_unit":"note-foundation","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/note-foundation/"}
 {"ts":"2026-09-13T13:46:04.1154782+00:00","execution_unit":"note-foundation","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/ShuttlePub#12","reason":"https://github.com/ShuttlePub/ShuttlePub/issues/12"}
+{"ts":"2026-09-13T13:48:09.7829229+00:00","execution_unit":"ui-catalog-visual-diff-ci","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/ui-catalog-visual-diff-ci/"}
+{"ts":"2026-09-13T13:49:07.9996416+00:00","execution_unit":"ui-catalog-visual-diff-ci","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#13","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/13"}
