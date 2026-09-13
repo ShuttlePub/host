@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-12T16:01:57.9837066+00:00",
+  "updated_at": "2026-09-13T13:46:04.1154782+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -622,6 +622,28 @@
         "repo": "ShuttlePub/Booskiff",
         "number": 4,
         "url": "https://github.com/ShuttlePub/Booskiff/issues/4"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "note-foundation",
+      "title": "note-foundation: nitinol \u57FA\u76E4 \u002B Note \u30C9\u30E1\u30A4\u30F3 \u002B \u9023\u5408\u9762\u79FB\u690D (\u7F72\u540D\u30E2\u30C3\u30AF)",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/note-foundation/implementation.md",
+        "review_context": ".intent-cli/issues/note-foundation/review-context.md",
+        "yaml": ".intent-cli/issues/note-foundation/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/ShuttlePub",
+        "number": 12,
+        "url": "https://github.com/ShuttlePub/ShuttlePub/issues/12"
       },
       "worker_role": "implementation",
       "review_role": "review",
