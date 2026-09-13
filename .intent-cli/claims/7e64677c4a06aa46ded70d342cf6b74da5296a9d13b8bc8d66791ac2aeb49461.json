@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:note-foundation",
-  "actor": "design",
-  "team": "shuttlepub-main",
-  "claimed_at": "2026-09-13T13:43:50.4819091+00:00",
-  "base_commit": "ea62ff09f14f97961fa74a1640cd062b6ce20085"
-}
