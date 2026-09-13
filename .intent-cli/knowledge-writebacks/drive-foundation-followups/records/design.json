@@ -1,0 +1,11 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "drive-foundation-followups",
+  "role": "design",
+  "host_commit": "06fdcda",
+  "recorded_at": "2026-09-13T13:57:24.2922123+00:00",
+  "targets": [
+    "ShuttlePub/Booskiff \u30EA\u30DD\u30B8\u30C8\u30EA\u5185\u306E\u904B\u7528/\u4ED5\u69D8\u30C9\u30AD\u30E5\u30E1\u30F3\u30C8 (core \u914D\u4E0B docs \u307E\u305F\u306F README)"
+  ],
+  "note": "docs/drive/{public-access,caching,rate-limiting}.md \u002B docs/README.md (Booskiff 0b4a6d1) \u306B\u6587\u66F8\u5316"
+}
