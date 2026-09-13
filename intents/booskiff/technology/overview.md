@@ -51,6 +51,13 @@ REST surface 確定 (drive-foundation 実装): `/v1/folders`, `/v1/files`,
 運用エンドポイント `/healthz`・`/readyz` あり。完全版は Booskiff リポジトリの
 `openapi.json` を正とする。
 
+運用仕様の書き戻し (drive-foundation-followups クローズアウト債務の解消、
+2026-09-13): `/public/{key}` の無認証仕様、immutable キャッシュと unpublish
+非失効の運用含意、RateLimiters がプロセス内でレプリカ間非共有である制約の
+3 点を Booskiff リポジトリ `docs/drive/` (public-access.md / caching.md /
+rate-limiting.md、索引は docs/README.md) に文書化した
+(Booskiff コミット `0b4a6d1`)。
+
 ## ストレージバックエンド (Q6=A)
 
 S3 互換のみ (MinIO でセルフホスト要件をカバー)。Emumet 内蔵のフォールバック S3 とは
