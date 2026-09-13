@@ -27,7 +27,7 @@ ShuttlePub/<host-repo>          ← 集約 host リポジトリ(トポロジーA
   intents/
     shuttlepub/                 ← domain(対象: ShuttlePub/ShuttlePub)追加予定
     emumet/                     ← domain(対象: ShuttlePub/Emumet)✅ 登録済み
-    ratcap/                     ← domain(対象: ShuttlePub/RatCap)✅ 登録済み
+    ratcap/                     ← domain(対象: ShuttlePub/shuttlepub-frontends。旧 ShuttlePub/RatCap から 2026-08-30 rename)✅ 登録済み
     # stellar / satellite       ← 当面対象外(必要になった時点で同手順で追加)
   AGENTS.md
 ```
@@ -44,6 +44,8 @@ ShuttlePub/<host-repo>          ← 集約 host リポジトリ(トポロジーA
 | `HOST_ROOT` | host リポジトリのローカル checkout パス | `~/work/<host-repo>` |
 | 対象 domain | 登録済み: `emumet` `ratcap` / 追加予定: `shuttlepub` / 当面対象外: `stellar` `satellite` | 対象 repo は `ShuttlePub/<Capitalized名>` |
 
+> ※ ratcap domain の対象 repo は 2026-08-30 に `ShuttlePub/RatCap` → `ShuttlePub/shuttlepub-frontends` へ rename 済み(`intents/ratcap/decisions/2026-08-30-monorepo-extraction.md` D1)。旧名は GitHub redirect で継続するが、新規の参照・コマンドは新名を使うこと。旧名での `gh` アクセスは新 repo へ silent redirect されるため、旧名・新名で同一 issue/PR が「重複存在」するように見える点に注意。
+
 ---
 
 ## Phase 0: 現状の棚卸し
@@ -52,7 +54,7 @@ ShuttlePub/<host-repo>          ← 集約 host リポジトリ(トポロジーA
 
 ### 0-1. 既存セットアップの所在を特定する
 
-試験導入済みの各リポジトリ(少なくとも Emumet / RatCap。ShuttlePub 本体等も)について、intent メタデータがどこにあるか特定する:
+試験導入済みの各リポジトリ(少なくとも Emumet / shuttlepub-frontends(当時の RatCap)。ShuttlePub 本体等も)について、intent メタデータがどこにあるか特定する:
 
 ```bash
 # 実装リポジトリ内に直接置いていないか(本来は無いはず)
@@ -76,9 +78,9 @@ gh repo list ShuttlePub --limit 100
 
 ```bash
 gh issue list -R ShuttlePub/Emumet --label intent-target --state open
-gh issue list -R ShuttlePub/RatCap --label intent-target --state open
+gh issue list -R ShuttlePub/shuttlepub-frontends --label intent-target --state open
 gh pr list -R ShuttlePub/Emumet --state open
-gh pr list -R ShuttlePub/RatCap --state open
+gh pr list -R ShuttlePub/shuttlepub-frontends --state open
 ```
 
 **方針(推奨):** 飛行中の issue/PR は旧セットアップ側で完了(closeout/merge)させてから切り替える。途中の queue 状態を新 host に引っ越す公式手段はなく、`.intent-cli/queue-state.json` の手動マージは docs が明示的に禁止している。完了させられないものは「旧 host では中断し、新 host 側で packet から切り直す」判断をオペレーターが下す。
@@ -105,7 +107,7 @@ git clone https://github.com/<HOST> "$HOST_ROOT" && cd "$HOST_ROOT"
 
 host の checkout を cwd とする AI エージェント(Claude / Codex / Copilot 等)の会話に、次を貼る(同居マシン想定の `herdr-only` 版):
 
-> 既存の対象実装リポジトリ群 ShuttlePub/ShuttlePub, ShuttlePub/Emumet, ShuttlePub/RatCap に intent-cli を追加します。空の分離した intent 用ホストリポジトリだけを開いています。まずインストール済みのガイドで intent-cli を理解し、ホストを初期化して同居する単一マシンのチーム用に `herdr-only` を記録してください。
+> 既存の対象実装リポジトリ群 ShuttlePub/ShuttlePub, ShuttlePub/Emumet, ShuttlePub/shuttlepub-frontends(旧 RatCap) に intent-cli を追加します。空の分離した intent 用ホストリポジトリだけを開いています。まずインストール済みのガイドで intent-cli を理解し、ホストを初期化して同居する単一マシンのチーム用に `herdr-only` を記録してください。
 
 (対象リポジトリ群はその時点の追加予定に合わせて書き換える。分散チーム / 既存 agmsg 投資がある場合は末尾を「`agmsg` を記録してください」に変える)
 

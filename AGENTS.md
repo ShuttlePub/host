@@ -25,6 +25,20 @@ Child implementation repos do NOT own this state.
 - Do NOT call `intent-cli run` (advanced runtime) or `dotnet run` as a
   fallback. Do NOT ask `intent-cli` to launch Claude/Codex.
 
+## Repo topology notes
+
+- `ShuttlePub/RatCap` was renamed to `ShuttlePub/shuttlepub-frontends` on
+  2026-08-30 (intents/ratcap/decisions/2026-08-30-monorepo-extraction.md D1).
+  GitHub silently redirects API/URL access under the old name to the new repo,
+  so e.g. `gh issue view N --repo ShuttlePub/RatCap` returns the NEW repo's
+  issue — old-name and new-name queries can make one issue/PR look like
+  "duplicates in two repos" (a false duplicate report for issue #10 happened
+  on 2026-09-13). Always use the new name and treat old-name results as the
+  same object. The local clone is `~/Documents/ShuttlePub/shuttlepub-frontends`.
+- Historical records under `intents/**` (decisions / interviews / packets) and
+  `.intent-cli/**` legitimately reference the old `ShuttlePub/RatCap` name from
+  before the rename — do NOT rewrite them; they are accurate as-of records.
+
 ## intent-cli knowledge recovery (post-compression)
 
 - `intent-cli` is **self-describing**: never answer intent-cli command /
