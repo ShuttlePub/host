@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:ui-catalog-visual-diff-ci",
-  "actor": "design",
-  "team": "ratcap-main",
-  "claimed_at": "2026-09-13T13:47:51.5552882+00:00",
-  "base_commit": "956749cb16f7d7dc5b6df4a29cd3287023ea28c0"
-}

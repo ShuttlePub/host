@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:ui-catalog-visual-diff-ci",
+  "actor": "design",
+  "team": "ratcap-main",
+  "recorded_at": "2026-09-13T13:49:43.8267954+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "ratcap-main",
+  "displaced_claimed_at": "2026-09-13T13:47:51.5552882+00:00",
+  "base_commit": "c8e41d461b0d967b59d1321f825c09635d390df7"
+}
