@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "oauth2-consent-flow",
+  "role": "design",
+  "host_commit": "f6cff24",
+  "recorded_at": "2026-09-13T13:50:35.8521068+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": null
+}

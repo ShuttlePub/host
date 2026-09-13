@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "oauth2-consent-flow",
+  "role": "design",
+  "host_commit": "f6cff24",
+  "recorded_at": "2026-09-13T13:50:17.1525446+00:00",
+  "targets": [
+    "intents/ratcap/packets/backlog.md",
+    "intents/ratcap/features/oauth2-consent/packets.md"
+  ],
+  "note": null
+}

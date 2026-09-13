@@ -1,0 +1,13 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "ui-catalog-foundation",
+  "role": "design",
+  "host_commit": "02385b4",
+  "recorded_at": "2026-09-13T13:50:35.983564+00:00",
+  "targets": [
+    "intents/ratcap/intent-tree/00-map.md",
+    "intents/ratcap/decisions/2026-09-05-ui-catalog-over-storybook.md",
+    "intents/ratcap/technology/overview.md"
+  ],
+  "note": null
+}
