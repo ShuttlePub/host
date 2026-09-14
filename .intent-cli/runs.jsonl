@@ -121,3 +121,5 @@
 {"ts":"2026-09-14T12:43:38.1391608+00:00","execution_unit":"note-foundation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":13}
 {"ts":"2026-09-14T12:55:16.9347491+00:00","execution_unit":"hydra-oidc-real-e2e","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":18}
 {"ts":"2026-09-14T12:55:16.9347491+00:00","execution_unit":"hydra-oidc-real-e2e","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":18}
+{"ts":"2026-09-14T12:59:23.2366991+00:00","execution_unit":"login-flow-oauth-start","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/login-flow-oauth-start/"}
+{"ts":"2026-09-14T12:59:26.3141079+00:00","execution_unit":"login-flow-oauth-start","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#20","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/20"}

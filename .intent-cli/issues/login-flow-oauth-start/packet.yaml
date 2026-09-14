@@ -1,0 +1,58 @@
+implementation_issue_packet:
+  issue_title: "login-flow-oauth-start: booskiff-web real モードのログイン導線修正 — Kratos 認証成功後に Hydra OAuth を自動開始"
+  issue_kind: bug
+  source_execution_unit: login-flow-oauth-start
+  domain: ratcap
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/booskiff-web/src (Client/Update.purs), apps/booskiff-web/bff, apps/booskiff-web/e2e/real"
+  target_part: "real モード (USE_MOCK=false) で /auth/login 成功後に Hydra OAuth 開始までが UI 導線として完結するようにする"
+  dependencies:
+    - "hydra-oidc-real-e2e (shuttlepub-frontends#15 / PR #18 マージ済): real E2E 基盤。本 unit の検証はその workaround 解除で行う"
+  technical_baseline:
+    - "不具合: apps/booskiff-web/src/Client/Update.purs:311-317 が login 成功 (POST /auth/login → LoginResponse.authenticated) を直接 SessionChecked にマップする。real BFF の login は Kratos cookie を forward するだけで booskiff_session を発行しないため、/drive で API 401 になる (shuttlepub-frontends#17 として起票済)"
+    - "real モードのセッション確立には /auth/oauth/start による PKCE (S256) フロー → Hydra authorize → consent → callback → id_token 検証 (PR #14 で fail-closed 化済) が必須"
+    - "mock モードは bff/auth-mock.ts の mockLogin が直接 booskiff_session を発行するため無影響。mock 導線 (mock E2E 16 件) を壊してはならない"
+    - "hydra-oidc-real-e2e の E2E (apps/booskiff-web/e2e/real/tests/auth.spec.ts) は #17 回避のため /auth/oauth/start へ明示遷移する workaround 入り。本 unit の完了でその workaround を解除できる"
+    - "モード判定: BFF は USE_MOCK で分岐。UI 側がモードを知る経路が必要なら /auth/session レスポンス拡張または login レスポンスへの mode 同梱が候補 (BFF 主導リダイレクトなら不要)"
+  intent_references:
+    - "intents/ratcap/intent-tree/00-map.md"
+    - "intents/ratcap/features/oauth2-consent/packets.md"
+  acceptance_criteria:
+    - "real モードで UI のログインフォーム送信から Hydra OAuth 開始 → consent → callback → booskiff_session 発行 → /drive 到達までが、テストによる明示的な /auth/oauth/start 遷移なしに UI 導線のみで完結する"
+    - "real E2E の enterCredentials workaround (oauth/start 明示遷移) を解除しても real suite が green (#19 の return_to=/login SPA 経路 workaround は drive-ssr-resume-dom 完了まで維持してよい)"
+    - "mock モードの既存ログイン導線 (mock E2E 16 件) および bun test bff/ 97 件が無回帰"
+    - "導線の設計判断 (BFF が login 成功を 302 で /auth/oauth/start に繋ぐか、UI が遷移を行うか) とその理由が PR 本文に記録される"
+intent_placement:
+  primary_intent: intents/ratcap/intent-tree/00-map.md
+  supporting_intents:
+    - intents/ratcap/features/oauth2-consent/packets.md
+  new_intent_needed: false
+  placement_rationale: "既存の oauth2-consent feature の導線不備修正であり、新規 intent は不要"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: "real モード認証が Kratos (資格情報) と Hydra (セッション発行) の二段構成であることの導線設計知見"
+  write_back_required: true
+  write_back_targets:
+    - intents/ratcap/technology/overview.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/booskiff-web)"
