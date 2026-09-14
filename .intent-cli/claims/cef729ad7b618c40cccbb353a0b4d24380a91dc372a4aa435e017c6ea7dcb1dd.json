@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:hydra-oidc-real-e2e",
+  "actor": "design",
+  "team": "ratcap-main",
+  "claimed_at": "2026-09-14T11:24:29.5021622+00:00",
+  "base_commit": "3d641a0b607a4a16bf04e00890459634bc94f468"
+}
