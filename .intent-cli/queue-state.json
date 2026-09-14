@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-13T13:49:07.9996416+00:00",
+  "updated_at": "2026-09-14T11:27:15.5031033+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -668,6 +668,28 @@
         "repo": "ShuttlePub/shuttlepub-frontends",
         "number": 13,
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/13"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "hydra-oidc-real-e2e",
+      "title": "hydra-oidc-real-e2e: booskiff-web real \u30E2\u30FC\u30C9 (Hydra OIDC) E2E \u2014 Hydra\u002BKratos \u5165\u308A compose \u3067\u306E\u8A8D\u8A3C\u30D5\u30ED\u30FC\u5B9F\u691C\u8A3C",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/ratcap/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/hydra-oidc-real-e2e/implementation.md",
+        "review_context": ".intent-cli/issues/hydra-oidc-real-e2e/review-context.md",
+        "yaml": ".intent-cli/issues/hydra-oidc-real-e2e/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/shuttlepub-frontends",
+        "number": 15,
+        "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/15"
       },
       "worker_role": "implementation",
       "review_role": "review",
