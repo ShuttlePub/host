@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-14T11:27:15.5031033+00:00",
+  "updated_at": "2026-09-14T12:36:31.8574189+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -653,7 +653,7 @@
     {
       "execution_unit": "ui-catalog-visual-diff-ci",
       "title": "ui-catalog-visual-diff-ci: UI \u30AB\u30BF\u30ED\u30B0\u306E\u30D3\u30B8\u30E5\u30A2\u30EB\u5DEE\u5206 CI \u2014 Playwright \u30B9\u30AF\u30EA\u30FC\u30F3\u30B7\u30E7\u30C3\u30C8 \u002B reg-suit/R2 \u002B PR \u30B3\u30E1\u30F3\u30C8\u3078\u306E\u753B\u50CF\u76F4\u63A5\u57CB\u3081\u8FBC\u307F",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "ui-catalog-foundation"
       ],
