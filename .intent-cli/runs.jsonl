@@ -117,3 +117,5 @@
 {"ts":"2026-09-14T11:27:15.5031033+00:00","execution_unit":"hydra-oidc-real-e2e","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#15","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/15"}
 {"ts":"2026-09-14T12:36:31.8471923+00:00","execution_unit":"ui-catalog-visual-diff-ci","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":16}
 {"ts":"2026-09-14T12:36:31.8471923+00:00","execution_unit":"ui-catalog-visual-diff-ci","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":16}
+{"ts":"2026-09-14T12:43:38.1391608+00:00","execution_unit":"note-foundation","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":13}
+{"ts":"2026-09-14T12:43:38.1391608+00:00","execution_unit":"note-foundation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":13}

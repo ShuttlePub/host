@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-14T12:36:31.8574189+00:00",
+  "updated_at": "2026-09-14T12:43:38.1480223+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -631,7 +631,7 @@
     {
       "execution_unit": "note-foundation",
       "title": "note-foundation: nitinol \u57FA\u76E4 \u002B Note \u30C9\u30E1\u30A4\u30F3 \u002B \u9023\u5408\u9762\u79FB\u690D (\u7F72\u540D\u30E2\u30C3\u30AF)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
