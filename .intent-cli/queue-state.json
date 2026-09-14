@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-14T13:01:59.9491123+00:00",
+  "updated_at": "2026-09-14T14:28:49.4487605+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -699,7 +699,7 @@
     {
       "execution_unit": "login-flow-oauth-start",
       "title": "login-flow-oauth-start: booskiff-web real \u30E2\u30FC\u30C9\u306E\u30ED\u30B0\u30A4\u30F3\u5C0E\u7DDA\u4FEE\u6B63 \u2014 Kratos \u8A8D\u8A3C\u6210\u529F\u5F8C\u306B Hydra OAuth \u3092\u81EA\u52D5\u958B\u59CB",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "hydra-oidc-real-e2e (shuttlepub-frontends#15 / PR #18 \u30DE\u30FC\u30B8\u6E08): real E2E \u57FA\u76E4\u3002\u672C unit \u306E\u691C\u8A3C\u306F\u305D\u306E workaround \u89E3\u9664\u3067\u884C\u3046"
       ],

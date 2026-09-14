@@ -125,3 +125,5 @@
 {"ts":"2026-09-14T12:59:26.3141079+00:00","execution_unit":"login-flow-oauth-start","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#20","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/20"}
 {"ts":"2026-09-14T13:01:56.7289852+00:00","execution_unit":"drive-ssr-resume-dom","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/drive-ssr-resume-dom/"}
 {"ts":"2026-09-14T13:01:59.9491123+00:00","execution_unit":"drive-ssr-resume-dom","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#21","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/21"}
+{"ts":"2026-09-14T14:28:49.4349885+00:00","execution_unit":"login-flow-oauth-start","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":22}
+{"ts":"2026-09-14T14:28:49.4349885+00:00","execution_unit":"login-flow-oauth-start","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":22}
