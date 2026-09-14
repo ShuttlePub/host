@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:drive-ssr-resume-dom",
+  "actor": "design",
+  "team": "ratcap-main",
+  "recorded_at": "2026-09-14T13:02:16.4723328+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "ratcap-main",
+  "displaced_claimed_at": "2026-09-14T13:00:29.536416+00:00",
+  "base_commit": "8bf7229c8c5aea74c18929a374259684494ba481"
+}

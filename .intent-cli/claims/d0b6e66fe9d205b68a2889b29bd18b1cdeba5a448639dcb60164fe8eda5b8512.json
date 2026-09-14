@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:drive-ssr-resume-dom",
-  "actor": "design",
-  "team": "ratcap-main",
-  "claimed_at": "2026-09-14T13:00:29.536416+00:00",
-  "base_commit": "0d4529bda065c18d2fe406eef4147d585a45a780"
-}
