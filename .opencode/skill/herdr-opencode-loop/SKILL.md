@@ -71,6 +71,7 @@ description: "Use when driving the herdr × opencode cross-harness implementatio
    - `git log origin/main --oneline -1` が squash commit（`... (#<n>)`）と一致
    - `git diff <base-sha>..origin/main --stat` に想定 diff が出る（`<base-sha>` は手順 2 で控えた base SHA）
 5. ADR / backlog writeback は host 側で実施し、host repo へ commit/push する。
+6. **worker pane/tab を必ず畳む**。closeout・実マージ検証が終わったら、その unit の worker opencode tab と、起動時に `herdr tab create` して opencode が使わずに残った空 shell tab を `herdr tab close <tab-id>` で閉じる（`herdr tab list` で対象を特定。lead 自身の tab と無関係な既存 tab は閉じない）。完了済み unit の worktree も `git worktree remove` + ローカル branch 削除で撤去する。pane 残置は毎回発生しやすい運用汚れなので、closeout 手順の一部として省略しない（2026-09-14 login-flow-oauth-start / drive-ssr-resume-dom で operator 指摘）。
 
 ### 4. sandbox 内で commit/push できない場合（bundle 運用）
 
@@ -150,6 +151,7 @@ Fix clippy warnings in PR #33. In application/src/service/activitypub/inbox/hand
 - [ ] 差し戻し時は `request-update` ラベル + 具体的な repair notes を必ず送信
 - [ ] worker 停滞時は追加プロンプトで促し、直接手を出すのは最後の手段
 - [ ] closeout 後は squash merge 対応の実マージ検証を実施
+- [ ] worker pane/tab（opencode tab + 起動時の空 shell tab）を `herdr tab close` で畳み、worktree・ローカル branch も撤去済み
 
 ## 未検証事項・制約
 
