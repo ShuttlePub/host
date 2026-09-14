@@ -1,0 +1,57 @@
+implementation_issue_packet:
+  issue_title: "drive-ssr-resume-dom: 認証済み /drive フルページロード時の resume DOM 破損修正 (フォルダセクション重複・ハンドラ不活化)"
+  issue_kind: bug
+  source_execution_unit: drive-ssr-resume-dom
+  domain: ratcap
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/booskiff-web/src (Client.purs, Client/Update.purs, App/View, Server.purs), apps/booskiff-web/e2e"
+  target_part: "SSR + resumeMount した /drive の DOM が正しく復元され、フォルダ/ファイル操作のハンドラが動作するようにする"
+  dependencies:
+    - "hydra-oidc-real-e2e (shuttlepub-frontends#15 / PR #18 マージ済): 本不具合を検出した real E2E 基盤。workaround 解除の検証に使用"
+  technical_baseline:
+    - "症状 (shuttlepub-frontends#19 として起票済): 認証済み /drive のフルページロードで data-testid=folder-create-submit と folder-list が 2 要素に増殖、アップロードセクション内にフォルダ名 textbox が混入、フォルダ名入力しても作成ボタンが disabled のまま (ハンドラ不活化)"
+    - "切り分け済み: SSR 出力 HTML は正常 (renderPage 単体実行で各 testid がちょうど 1 つ)。破損はクライアント側 (resumeMount または直後の update patch) で発生"
+    - "FileDetail のフルリロードは正常に動作する。Drive view 固有の構造 (uploadSection + folderSection + リスト群) への依存が疑われる"
+    - "mock E2E は /drive のフルロードを一度も通らない (SPA 遷移のみ、reload 系テストは FileDetail のみ) ためこの不具合を未検出だった — カバレッジ穴の存在自体が課題"
+    - "調査の手がかり: Client.purs の resumeMount + Client/Update.purs の LoadDrive → FilesLoaded/FoldersLoaded/BillingLoaded patch 経路、Server.purs の FS.serialize/injectState と resume 時 model round-trip の一致"
+    - "hydra-oidc-real-e2e の E2E は #19 回避のため callback の return_to=/login + 永続化の API 検証で workaround 中。本 unit の完了で解除できる"
+  intent_references:
+    - "intents/ratcap/intent-tree/00-map.md"
+  acceptance_criteria:
+    - "認証済み /drive のフルページロードで DOM が正しく resume され (各 data-testid が 1 つ)、フォルダ作成・ファイル操作のハンドラが動作する"
+    - "不具合を固定する回帰テストが存在する (mock E2E に /drive フルリロードのテストを追加し、修正前に red になることを確認してから実装すること)"
+    - "real E2E の #19 workaround (return_to=/login SPA 経路 + 永続化の API 検証) を解除しても real suite が green"
+    - "既存スイート無回帰: mock E2E 16 件、real E2E 4 件、bun test bff/ 97 件、spago test 全パス"
+intent_placement:
+  primary_intent: intents/ratcap/intent-tree/00-map.md
+  supporting_intents: []
+  new_intent_needed: false
+  placement_rationale: "booskiff-web の SSR/hydration 不具合修正であり、新規 intent は不要"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: "Flame の resumeMount / SSR state round-trip に関する落とし穴と、E2E カバレッジ (フルロード vs SPA 遷移) の教訓"
+  write_back_required: true
+  write_back_targets:
+    - intents/ratcap/technology/overview.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/booskiff-web)"
