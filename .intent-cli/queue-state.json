@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-09-14T14:28:49.4487605+00:00",
+  "updated_at": "2026-09-14T15:04:33.9080207+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -723,7 +723,7 @@
     {
       "execution_unit": "drive-ssr-resume-dom",
       "title": "drive-ssr-resume-dom: \u8A8D\u8A3C\u6E08\u307F /drive \u30D5\u30EB\u30DA\u30FC\u30B8\u30ED\u30FC\u30C9\u6642\u306E resume DOM \u7834\u640D\u4FEE\u6B63 (\u30D5\u30A9\u30EB\u30C0\u30BB\u30AF\u30B7\u30E7\u30F3\u91CD\u8907\u30FB\u30CF\u30F3\u30C9\u30E9\u4E0D\u6D3B\u5316)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "hydra-oidc-real-e2e (shuttlepub-frontends#15 / PR #18 \u30DE\u30FC\u30B8\u6E08): \u672C\u4E0D\u5177\u5408\u3092\u691C\u51FA\u3057\u305F real E2E \u57FA\u76E4\u3002workaround \u89E3\u9664\u306E\u691C\u8A3C\u306B\u4F7F\u7528"
       ],
