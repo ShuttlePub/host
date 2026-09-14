@@ -1,0 +1,61 @@
+implementation_issue_packet:
+  issue_title: "hydra-oidc-real-e2e: booskiff-web real モード (Hydra OIDC) E2E — Hydra+Kratos 入り compose での認証フロー実検証"
+  issue_kind: feature
+  source_execution_unit: hydra-oidc-real-e2e
+  domain: ratcap
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/booskiff-web/e2e, compose.e2e.yml (または新規 compose.e2e.real.yml), .github/workflows"
+  target_part: "booskiff-web の real モード (USE_MOCK=false, Hydra OIDC) 認証フローを実スタックで検証する E2E 基盤"
+  dependencies: []
+  technical_baseline:
+    - "前提: apps/booskiff-web は main に存在し、mock モード (USE_MOCK=true) の実スタック E2E が compose.e2e.yml + Playwright で 16 件動作している (drive-web-ui + issue #10 / PR #14 時点)"
+    - "real OAuth 経路 (bff/auth-real.ts) は emumet-web からの踏襲で単体テスト済み: PR #14 で id_token 署名/issuer/audience/expiry 検証・missing_id_token の fail-closed・auth ルート method 405・/api mutation の Origin/Referer 検証が追加され、mock JWKS サーバーによる単体テスト 97 件でカバー済み"
+    - "未カバー: 実 Hydra+Kratos を起動した E2E。トークン交換・JWKS 取得・セッション発行が実設定で通ることの検証が存在しない (issue #10 Medium-2 として分離された経緯)"
+    - "emumet-web (同 monorepo または sibling) に real OAuth 経路の先例あり。Hydra/Kratos の compose 設定はそこから移植可能"
+    - "Kratos 側のテストユーザー (identity) は seed/provisioning スクリプトで作成する設計とする"
+  intent_references:
+    - "intents/ratcap/intent-tree/00-map.md"
+    - "intents/ratcap/features/oauth2-consent/packets.md"
+  acceptance_criteria:
+    - "Hydra+Kratos 入り compose で USE_MOCK=false の booskiff-web スタックが起動し、Playwright で real OAuth ログイン → callback → セッション発行 → 認証済み drive 操作 → logout の一連の E2E がパスする"
+    - "不正な認証応答 (改ざん/欠落 id_token 等、実 Hydra 設定で再現可能な範囲) でログインが失敗しセッションが発行されないことが実地で確認できる"
+    - "既存の mock モード E2E (16 件) と単体テスト (bun test / spago test) が引き続き全パスし、CI で mock/real 両スイートが green になる"
+  revision_history:
+    - "2026-09-13: 初版。shuttlepub-frontends issue #10 Medium-2 (real モード Hydra OIDC E2E 不在) をオペレーター決定で PR #14 から分離し、独立 unit として packet 化。"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/ratcap/intent-tree/00-map.md
+  supporting_intents:
+    - intents/ratcap/features/oauth2-consent/packets.md
+  new_intent_needed: false
+  placement_rationale: "booskiff-web / drive-web-ui 系の行群の follow-up として 00-map.md に行を追加する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/ratcap/intent-tree/00-map.md
+    summary: "hydra-oidc-real-e2e 行を追加し、完了時に実装済み状態へ更新する。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "Hydra+Kratos 採用自体は oauth2-consent-flow 系の既存決定に含まれる。E2E 追加は実装判断のため別 ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "CI/E2E 基盤のためユーザー向け docs 更新はなし (real E2E のローカル実行手順は child repo 側 README に追記する)。"
+closeout_learning:
+  expected: "Hydra+Kratos E2E の起動時間・安定性 (flake 率)・CI 実行コストと、実設定で検出された認証経路の挙動差異を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - intents/ratcap/technology/overview.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "shuttlepub-frontends リポジトリ (apps/booskiff-web/e2e, compose.e2e.yml, .github/workflows)"

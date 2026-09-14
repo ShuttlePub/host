@@ -1,0 +1,7 @@
+execution_unit: hydra-oidc-real-e2e
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/hydra-oidc-real-e2e"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/hydra-oidc-real-e2e/github-body.md"
+created_issue_number: 15
+created_issue_url: "https://github.com/ShuttlePub/shuttlepub-frontends/issues/15"
+published_label_name: null
