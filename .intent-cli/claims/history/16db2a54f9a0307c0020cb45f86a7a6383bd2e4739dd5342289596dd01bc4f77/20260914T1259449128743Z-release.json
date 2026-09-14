@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:login-flow-oauth-start",
+  "actor": "design",
+  "team": "ratcap-main",
+  "recorded_at": "2026-09-14T12:59:44.9128743+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "ratcap-main",
+  "displaced_claimed_at": "2026-09-14T12:56:08.4412128+00:00",
+  "base_commit": "440b039379d239292da0bc8af016b9709c7c2fba"
+}
