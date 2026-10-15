@@ -49,3 +49,11 @@ Ratcap は Emumet の Web フロントエンド。PureScript + Flame (Elm アー
 |---|---|---|
 | ui-catalog-foundation | カタログアプリ新設 + ショーケース + テーマ切替 + JSON manifest | done (2026-09-05, #11 / PR #12) |
 | ui-catalog-visual-diff-ci | Playwright スクショ + reg-suit/R2 + PR コメント画像埋め込み | backlog (depends on foundation) |
+
+## SNS UIの将来候補への導線 (2026-10-15)
+
+[Discord由来のpacket候補](../../shuttlepub/packets/candidates.md)のUIは
+`ShuttlePub/shuttlepub-frontends` をtarget repoとする。SNS UIの正式domainは未決なので、
+現段階ではshuttlepubの意図から参照しratcapへ同じ仕様を複製しない。
+既存Emumet UIのfollow・block/mute・管理権限の導線は再利用候補。
+新規SNS画面や、上記候補が実装済みであることを意味しない。

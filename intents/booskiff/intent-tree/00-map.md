@@ -48,6 +48,12 @@ PureScript + Flame (SSR + hydration) + Bun BFF (Ratcap パターン転用)、
 6. **単体運用モードの認証**: Kratos 同居 or 簡易ローカル認証 (Q3 で後送り)
 7. **管理者 RBAC / OIDC 連携**: ミドルウェア抽象化と named token は初動済み (D18)
 
+## 受領した追加意図 (2026-10-15)
+
+[画像metadataの候補](../features/media-metadata.md): 利用条件の指定 (D02) と、
+通常／センシティブタグ・補完 (D11)。fileと投稿添付の境界を決めてから
+Booskiff／ShuttlePub／frontendsへ分割する。実装仕様未確定、queue未登録。
+
 ## ホストデータ
 
 - キュー・packet: `.intent-cli/issues/` (queue-state は `.intent-cli/queue-state.json`)

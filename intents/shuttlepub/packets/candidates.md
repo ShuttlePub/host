@@ -1,0 +1,320 @@
+# Discord 提案からの packet 候補
+
+受領日: 2026-10-15。17 件の原案を意図の単位で整理した候補一覧。
+全件 **candidate** であり、ready ではない。優先順位未決、queue 未登録、
+issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は shaping 用の案で、
+実装方式や受け入れ基準の決定ではない。
+
+意図の正本は [social-experience.md](../product/social-experience.md)、
+受領原文は [intake draft](../drafts/discord-feature-intake-2026-10-15.md)、
+原文の機械可読記録は [source JSON](../interviews/discord-feature-intake-2026-10-15.json)。
+原文の他製品の現状・API・時期についての記述は、受領した仮説・参考情報であり、
+2026-10-15 現在の互換性や実現可能性を保証しない。
+
+## 索引
+
+| ID | 原文 | 意図 | primary domain | 最初の target repo | 後続 repo | status |
+|---|---|---|---|---|---|---|
+| D01 | S01 | 独り言の文脈と作者から通常 RT に見える体験 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends | candidate |
+| D02 | S02 | 添付画像の利用許諾を指定 | booskiff (仮) | ShuttlePub/Booskiff (契約決定後) | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
+| D03 | S03 | 設定絵文字で 1 操作リアクション | shuttlepub | ShuttlePub/shuttlepub-frontends | 必要時 ShuttlePub/ShuttlePub | candidate |
+| D04 | S04 | 特定投稿者に絞る投稿検索 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends | candidate |
+| D05 | S05 | 開いた投稿への再訪 | shuttlepub | ShuttlePub/shuttlepub-frontends | 同期が必要なら ShuttlePub/ShuttlePub | candidate |
+| D06 | S06 | リモート情報の閲覧と自 identity での操作 | shuttlepub | ShuttlePub/Emumet | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
+| D07 | S07 | 投稿編集と連合上の更新 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/Emumet、ShuttlePub/shuttlepub-frontends | candidate |
+| D08 | S08 | 個人単位のドメインブロック・ミュート | emumet | ShuttlePub/Emumet | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
+| D09 | S09 | 他鯖のカスタム絵文字リアクションに便乗 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
+| D10 | S10 | 種類別のセンシティブ設定と更新反映 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
+| D11 | S11 | 画像の通常・センシティブタグ | booskiff (仮) | ShuttlePub/Booskiff (契約決定後) | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
+| D12 | S12 | 投稿・検索の内容に応じた案内と制御 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
+| D13 | S13 | 投稿ごとの反応 Allow リスト | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、課金案なら Booskiff との調整 | candidate |
+| D14 | S14 | サーバーを越えるモデレーション証跡 | emumet / shuttlepub (未決) | 未決 (Emumet / ShuttlePub の共同調査) | 調査結論後に判断 | candidate (調査) |
+| D15 | S15 | 安全対策の準備を条件に一般登録を開放 | emumet | ShuttlePub/Emumet | ShuttlePub/shuttlepub-frontends | candidate |
+| D16 | S16 | タグ通報によるトレンド抑制 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
+| D17 | S17 | turbo 時に見た元投稿と現在の内容を検証 | shuttlepub | ShuttlePub/ShuttlePub | 必要時 ShuttlePub/Emumet、ShuttlePub/shuttlepub-frontends | candidate |
+
+## 共通の分割方針
+
+- D01–D17 は意図候補 ID。既存の決定記録の D 番号とは別の名前空間。
+  1 候補をそのまま 1 実行 packet にしない。契約整理後、target repo ごとに
+  独立して検証できる最小単位へ分割し、producer の契約と consumer の接続を分ける。
+- SNS UI の primary domain は暫定で shuttlepub、実装先は
+  `ShuttlePub/shuttlepub-frontends`。既存 ratcap domain はフロントエンドモノレポの
+  歴史的記録を持つが、本一覧の全文を複製しない。必要な実装 packet から参照する。
+- 既存 Note / reply / turbo / turbo_quote / reaction / timeline 基盤を拡張対象にする。
+  現在の main の観察は [意図の正本](../product/social-experience.md) を参照し、
+  2026-08-29 の旧実装インベントリを現在の機能欠如の根拠にしない。
+- Note の連合送受信、認証接続、永続化等の土台は別の依存として確認する。
+  各候補にまとめて再実装する前提を置かない。
+
+<a id="d01"></a>
+
+## D01 — contextual-commentary
+
+- **意図**: [I01](../product/social-experience.md#i01)。元投稿への独り言について、
+  フォロワーには対象を把握しやすくし、引用された作者からは普通の RT に見えるようにしたい。
+- **仮 slug**: `contextual-commentary`。
+- **target repo 別分割**: ShuttlePub で対象投稿・独り言・turbo/turbo_quote の関係と
+  配送上の表現を整理する契約候補。frontends で文脈の表示と投稿導線の候補。
+- **最小受付・検証案**: 作者・投稿者・フォロワーそれぞれの画面と連合受信結果を
+  例示し、作者側の通常 RT 表示とフォロワー側の文脈理解が両立する条件を確認する。
+- **依存**: turbo/turbo_quote 基盤、表示・通知・連合データの契約。
+- **未決事項**: 作者への見え方の適用範囲、誰が独り言へ到達できるか。
+  時系列的前後の投稿取得、リンクを自動引用にしない方式は原案の代替仮説として比較する。
+  秘密保持保証にも単なる通知抑制にも決めつけない。
+- **既存との関係**: 既存 turbo_quote の拡張か別導線かを判断する。
+  [初動決定](../decisions/2026-08-29-initial-shaping.md) D5/D7 の語彙・機能を尊重する。
+
+<a id="d02"></a>
+
+## D02 — media-reuse-license
+
+- **意図**: [I02](../product/social-experience.md#i02)。添付画像について他者が利用できる範囲を作者が示す。
+- **仮 slug**: `media-reuse-license`。
+- **target repo 別分割**: Booskiff のファイルメタデータを第一候補とするが、先に
+  ShuttlePub とファイル単位 / 投稿添付単位の責務・参照契約を決める。
+  後続は Booskiff の保存 API、ShuttlePub の添付・連合写像、frontends の指定・表示に分ける。
+- **最小受付・検証案**: 許諾を指定した画像を添付し、閲覧側で同じ内容を確認できる。
+  同じファイルを異なる投稿で使った場合の扱いを契約例で検証する。
+- **依存**: Booskiff ファイル参照・メディア添付契約。D11 とメタデータ構造を共有できるか確認する。
+- **未決事項**: CC BY ND は既定値の案で、版・適用単位・既存画像への適用は未決。
+  外部配送形式、後からの変更、指定できる権限と利用範囲の語彙も未決。
+- **既存との関係**: [Booskiff の使命](../../booskiff/identity/mission.md) のファイル管理を候補根拠にする。
+  公開 / 非公開のアクセス制御と利用許諾は別の属性として契約を詰める。
+
+<a id="d03"></a>
+
+## D03 — quick-reaction
+
+- **意図**: [I03](../product/social-experience.md#i03)。毎回選択画面を開かず、設定した絵文字で 1 操作リアクションする。
+- **仮 slug**: `quick-reaction`。
+- **target repo 別分割**: frontends の設定・投稿上のボタンを第一候補。
+  端末間同期等で必要になれば ShuttlePub に設定保存 API を独立候補として切る。
+- **最小受付・検証案**: 設定済み絵文字が 1 操作で送信され、未設定時や送信失敗時の状態が分かる。
+  キーボード操作でも同じ導線を確認する。
+- **依存**: 既存 reaction API、SNS UI の投稿表示。
+- **未決事項**: 設定の保存先、解除・再送の操作、利用不能な絵文字へ変化した場合の挙動。
+- **既存との関係**: Note reaction の操作短縮。D09 のリモート絵文字対応を必須依存にしない。
+
+<a id="d04"></a>
+
+## D04 — note-search-author-filter
+
+- **意図**: [I04](../product/social-experience.md#i04)。投稿検索を特定の投稿者に絞り、少なくとも 1 ユーザーを対象にできる。
+- **仮 slug**: `note-search-author-filter`。
+- **target repo 別分割**: ShuttlePub の投稿者条件付き検索契約・検索投影候補、frontends の条件入力・結果表示候補。
+- **最小受付・検証案**: 同じ語を含む複数投稿者の投稿を用意し、指定した 1 actor の閲覧可能な投稿だけを返す。
+  該当なし・ページ境界でも条件が維持されることを確認する。
+- **依存**: 投稿検索・永続化 / 検索投影方針、actor 識別、閲覧可否の適用。
+- **未決事項**: ローカル / リモートの検索対象、全文検索の方式、複数ユーザー条件。
+  ローカル限定検索は原文中の他製品の追記であり、この候補の必須条件にしない。
+- **既存との関係**: 既存 timeline の取得と検索を区別し、検索基盤が必要なら別 packet に分割する。
+
+<a id="d05"></a>
+
+## D05 — view-history
+
+- **意図**: [I05](../product/social-experience.md#i05)。一度開いた投稿へ後から戻れるようにする。
+- **仮 slug**: `view-history`。
+- **target repo 別分割**: frontends の履歴記録・再訪画面を第一候補。
+  アカウント同期を必要とする場合のみ ShuttlePub の履歴保存・取得契約を先行候補へ追加する。
+- **最小受付・検証案**: 明示的に開いた投稿が履歴へ入り、再表示できる。
+  削除済み・閲覧不可へ変わった投稿を開く場合の結果も確認する。
+- **依存**: 投稿詳細画面、安定した投稿 ID、保存先の決定。
+- **未決事項**: 「開いた」の判定、保持期間、削除・停止操作、端末間同期。
+  日付・キーワード・投稿者・メディアタイプの絞り込みは追加候補として段階分割する。
+- **既存との関係**: D04 の検索契約は必要なら再利用するが、全投稿検索と個人履歴検索を混同しない。
+
+<a id="d06"></a>
+
+## D06 — remote-discovery-and-actions
+
+- **意図**: [I06](../product/social-experience.md#i06)。自鯖を離れず他鯖の過去投稿・
+  フォロー / フォロワー詳細を見て、自分の identity からフォローやスター等を実行する。
+- **仮 slug**: `remote-discovery-and-actions`。
+- **target repo 別分割**: Emumet のリモート actor・関係一覧取得契約を先行候補にし、
+  ShuttlePub のリモート投稿取得・reaction 等の操作候補、frontends の統合導線を分ける。
+- **最小受付・検証案**: 対応 peer を 1 種選び、ページ付き関係一覧・過去投稿の取得と
+  自 actor による操作を確認する。取得不能・部分取得・古い情報を区別して表示する。
+- **依存**: Emumet の既存 actor / follow / followers / following と署名契約、Note 連合接続。
+- **未決事項**: 取得範囲・更新頻度、相手の公開範囲、API 差異、サーバー / クライアントの取得責務。
+  ShuttlePub 同士の相互通信、製品別 API、最終手段のスクレイピングは原案の方式仮説で、採用未決。
+  原文の API パスや取得可能性を実装前に検証する。
+- **既存との関係**: [Emumet の責務](../../emumet/product/overview.md) と既存関係 API を再利用する。
+  新しい共通 actor 管理や独立した follow 基盤を SNS 側に作る前提にしない。
+
+<a id="d07"></a>
+
+## D07 — note-edit-federation
+
+- **意図**: [I07](../product/social-experience.md#i07)。投稿を編集し、ActivityPub 互換性を考慮して変更を連合先へ反映する。
+- **仮 slug**: `note-edit-federation`。
+- **target repo 別分割**: ShuttlePub の revision・編集権限・ローカル表示更新、Note Update の
+  送受信を分ける。Emumet に署名・転送 type 契約の拡張が必要なら独立候補にし、UI 編集導線は frontends。
+- **最小受付・検証案**: ローカル編集後の本文と revision が整合し、対応 peer が更新を受け取る。
+  古い更新・重複更新・非対応 peer の扱いを契約テストで確認する。
+- **依存**: Note 送受信契約、更新主体の認証・認可、元投稿の識別。
+- **未決事項**: 編集可能項目・期限、ローカル / リモート編集履歴の保持、引用・通知・検索の再投影。
+  原文の issue comment は設計調査の参考で、特定方式の採用根拠にはしない。
+- **既存との関係**: Note 基盤の更新機能。D10/D11 の後変更反映と D17 の版検証へ共通契約を提供する候補。
+
+<a id="d08"></a>
+
+## D08 — personal-domain-controls
+
+- **意図**: [I08](../product/social-experience.md#i08)。サーバー防御の全体ブロックとは別に、個人がドメイン単位で自衛できる。
+- **仮 slug**: `personal-domain-controls`。
+- **target repo 別分割**: Emumet の個人ドメイン方針保存・取得候補、ShuttlePub の投稿フィルタ候補、
+  frontends の設定・適用状態表示候補。先に API と対象 identity の契約を決める。
+- **最小受付・検証案**: A が指定したドメインの投稿が A の閲覧から除かれ、B の設定には影響しない。
+  解除後の表示と timeline / 検索等の対象面を検証する。
+- **依存**: Emumet の既存 block/mute と権限、ShuttlePub の閲覧経路への適用。
+- **未決事項**: block と mute の差、サブドメインの一致規則、boost 経由・通知・既存 follow の扱い。
+- **既存との関係**: 既存のユーザー対象 block/mute をドメイン粒度へ拡張する候補。
+  [frontends 側の既存要求](../../ratcap/features/block-mute/requirements.md) と統合し、全体ブロックを置換しない。
+
+<a id="d09"></a>
+
+## D09 — remote-emoji-reaction-reuse
+
+- **意図**: [I09](../product/social-experience.md#i09)。他鯖のカスタム絵文字で付いたリアクションに、同じ絵文字で便乗できる。
+- **仮 slug**: `remote-emoji-reaction-reuse`。
+- **target repo 別分割**: ShuttlePub の絵文字 identity・取得 / 利用条件・連合 reaction 表現候補、
+  frontends の既存リアクションからの操作候補。Emumet の配送契約変更が必要なら分割する。
+- **最小受付・検証案**: 名前が同じでドメインが違う絵文字を区別し、選んだものと同じ identity で反応できる。
+  利用不能 / 取得不能な絵文字の扱いも確認する。
+- **依存**: 既存 reaction、カスタム絵文字の参照と Note 連合接続。
+- **未決事項**: 外部絵文字の利用許可、キャッシュ・削除、相手側の表現差。Akkoma で可能という原文情報は調査対象。
+- **既存との関係**: reaction 基盤の拡張。D03 の短縮操作とは別候補として扱い、後から接続できる。
+
+<a id="d10"></a>
+
+## D10 — sensitive-content-policy
+
+- **意図**: [I10](../product/social-experience.md#i10)。閲覧注意の二択を越えて種類別に表示を選び、後からの変更も連合先へ反映したい。
+- **仮 slug**: `sensitive-content-policy`。
+- **target repo 別分割**: ShuttlePub の分類・閲覧判定・互換 fallback 契約候補、
+  frontends の分類指定・閲覧設定候補。必要な更新配送を D07 / Emumet 接続へ分割する。
+- **最小受付・検証案**: 少数の分類で閲覧設定に従った表示になること、分類を変更した後に
+  ローカル表示と対応 peer の受信内容が更新されることを確認する。
+- **依存**: D11 の画像タグとの共通語彙、D07 相当の更新配送契約。
+- **未決事項**: 分類の管理者・自由入力の有無、投稿 / 画像への適用単位、非対応 peer への CW 写像。
+- **既存との関係**: D11 はメタデータ付与、D10 は閲覧方針と更新反映を担う候補。
+  別々のセンシティブ分類モデルを作らず、先に共通契約を詰める。
+
+<a id="d11"></a>
+
+## D11 — media-tagging
+
+- **意図**: [I11](../product/social-experience.md#i11)。画像に複数の任意タグを付け、
+  通常タグとセンシティブタグを区別する。既存タグの補完も欲しい。
+- **仮 slug**: `media-tagging`。
+- **target repo 別分割**: Booskiff メタデータを第一候補とし、ファイル単位 / 投稿添付単位の
+  保存・上書き・更新伝播契約を ShuttlePub と先に決める。保存 API、ShuttlePub の
+  連合 CW 写像、frontends の付与・補完 UI を独立候補に分ける。
+- **最小受付・検証案**: 複数の通常 / センシティブタグを保存・再表示できる。
+  通常タグを独自の外部必須仕様にせず、センシティブタグ名が外部向け CW へ入る契約例を検証する。
+- **依存**: メディア添付参照、D02 と共有するメタデータ責務、D10 の分類・D07 の更新契約。
+- **未決事項**: タグの共有範囲・正規化・補完辞書、参照中ファイルへの変更、複数画像の CW 集約。
+  相手鯖が通常タグを実際に無視することは保証せず、送信表現を決める。
+- **既存との関係**: Booskiff ファイル管理の拡張候補。投稿 hashtag と画像タグの区別を維持する。
+
+<a id="d12"></a>
+
+## D12 — contextual-content-guidance
+
+- **意図**: [I12](../product/social-experience.md#i12)。投稿・検索内容に応じて案内やリンクを示し、
+  必要な場合は投稿キャンセルや検索の制御を行う。支援先案内や災害時の誤誘導抑止等が原案の用途。
+- **仮 slug**: `contextual-content-guidance`。
+- **target repo 別分割**: ShuttlePub のルール評価・案内 / 拒否結果・適用面の契約候補、
+  frontends の案内と確認導線候補。管理権限は必要時に Emumet の既存権限と接続する。
+- **最小受付・検証案**: テスト用の明示ルールを 1 件設け、案内だけの場合と操作拒否の場合を区別して確認する。
+  UI を経由しない投稿 / 検索でも、確定した強制ルールが同じように適用される。
+- **依存**: 投稿受付・D04 等の検索契約、運用ルールの責任者と管理権限。
+- **未決事項**: 検出方法、対象・例外、誤検出時の救済、リンクの管理、利用者 / 管理者の裁量。
+  原文の例示をそのまま違法性判定や禁止語仕様へ変換しない。
+- **既存との関係**: moderation の権限を再利用し、外部の支援先情報は導入時に別途検証する。
+
+<a id="d13"></a>
+
+## D13 — interaction-allowlists
+
+- **意図**: [I13](../product/social-experience.md#i13)。「投稿内容に関係あるものしか反応できない」
+  という狙いを、投稿ごとの Allow リストと適用範囲で実現したい。重要情報発信・企業公式アカウント等も想定する。
+- **仮 slug**: `interaction-allowlists`。
+- **target repo 別分割**: ShuttlePub の policy・投稿操作 / 受信時の適用契約候補、
+  frontends の指定・反応可能状態の表示候補。課金・認定は未決の独立論点として残す。
+- **最小受付・検証案**: 対象と操作種別を明確にした policy 例で、reply / quote / turbo / reaction 等の
+  許可・拒否を API と UI で一致させる。非対応 peer の反応の扱いも契約例に含める。
+- **依存**: 反応の各コマンド、Note 連合受信、認証・認可。
+- **未決事項**: Allow の対象は人・グループ・反応内容等のどれか、複数リストの意味、公開範囲との関係。
+  絵文字だけ誰でも可、リポスト・いいねだけ可、リスト数 3〜5 件、追加枠の月額課金 / 公式認定は全て案。
+- **既存との関係**: 個人 block/mute とは別の投稿 policy 候補。
+  [Booskiff のみを課金ポイントとする既存方針](../../booskiff/identity/mission.md) と
+  SNS 機能の課金案をどう整合させるかは質問として残し、課金実装を確定しない。
+
+<a id="d14"></a>
+
+## D14 — cross-server-moderation-evidence (調査候補)
+
+- **意図**: [I14](../product/social-experience.md#i14)。悪質ユーザーに関する情報を公開する際、
+  その証跡が当該ユーザーの投稿に対応することを外部から検証し、サーバーを越えるモデレーションに使いたい。
+- **仮 slug**: `cross-server-moderation-evidence-research`。
+- **target repo 別分割**: 実装 packet ではなく共同契約の調査候補。Emumet の identity / 署名と
+  ShuttlePub の投稿来歴のどちらが何を証明するかを整理後、primary domain と target repo を決める。
+- **最小受付・検証案**: 誰が何を検証できるのか、悪意ある送信元も含む脅威モデル、証拠能力の限界、
+  データ公開・照合の影響と代替案を文書化し、採用 / 不採用 / 継続調査の判断材料を揃える。
+- **依存**: 投稿元情報の取得主体、署名・証跡の信頼モデル、運用上の公開・検証手続き。
+- **未決事項**: 投稿元 IP のハッシュを連合へ載せる案と BLAKE3 は方式仮説であり採用未確定。
+  IP の候補列挙による照合、共有 IP / 動的 IP、偽の入力、投稿との対応を何が保証するかを検討する。
+- **既存との関係**: 既存 HTTP 署名が投稿元 IP や主張の真実性まで保証するとは扱わない。
+  D17 の内容同一性とは証明対象を分ける。調査完了前に公開フィールドを追加しない。
+
+<a id="d15"></a>
+
+## D15 — registration-readiness-gate
+
+- **意図**: [I15](../product/social-experience.md#i15)。メール認証・CAPTCHA 等の対策準備が整わないまま
+  新規登録を一般開放し、スパム BOT の踏み台となることを防ぐ。
+- **仮 slug**: `registration-readiness-gate`。
+- **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
+  開放 API / 実際の登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。
+- **最小受付・検証案**: 必須条件を欠く設定では一般開放が拒否され、条件が揃えば開放できる。
+  設定変更後と UI を経由しない登録の入口でも整合することを確認する。
+- **依存**: [認証を Ory へ委譲する決定](../../emumet/decisions/0001-stellar-frozen-ory-authz.md)、
+  登録設定の実際の管理主体と管理者権限。
+- **未決事項**: 必須対策の組合せ、設定済みと稼働確認済みの違い、開放後に条件を失った場合、
+  招待登録・セルフホストでの扱い。メール認証と CAPTCHA を無条件に両方必須とは決めない。
+- **既存との関係**: ShuttlePub に認証基盤を新設せず、Emumet / Ory の登録・管理設定へ接続する候補。
+
+<a id="d16"></a>
+
+## D16 — tag-report-and-trend-moderation
+
+- **意図**: [I16](../product/social-experience.md#i16)。複数鯖をまたぐ荒らしに使われるタグを通報し、
+  自動または手動でトレンド掲載を下げられるようにする。
+- **仮 slug**: `tag-report-and-trend-moderation`。
+- **target repo 別分割**: ShuttlePub のタグ通報・審査記録候補とトレンド抑制投影候補、
+  frontends の通報 / 審査 UI 候補。Emumet は必要時に既存の管理権限を提供する。
+- **最小受付・検証案**: タグを通報し、管理者の抑制判断後に対象タグのトレンド掲載へ反映される。
+  原投稿の削除とトレンド抑制を区別し、解除後の扱いも確認する。
+- **依存**: hashtag の識別、トレンド生成契約、管理者 / moderator 権限。
+- **未決事項**: タグ正規化、自動判定の閾値、虚偽・大量通報、抑制期限、適用範囲。
+  トレンド基盤が必要なら先に独立 packet にし、自動抑制は手動経路から分割できる。
+- **既存との関係**: 画像タグ D11 と区別する。既存アカウント通報の有無だけでタグ通報の完成を判断しない。
+
+<a id="d17"></a>
+
+## D17 — turbo-content-verification
+
+- **意図**: [I17](../product/social-experience.md#i17)。turbo した人が当時見た元投稿と、
+  turbo を見る人に現在表示される投稿が同じ内容かを検証できるようにする。
+- **仮 slug**: `turbo-content-verification`。
+- **target repo 別分割**: ShuttlePub の対象 revision / 内容 commitment・検証結果契約候補、
+  必要時 Emumet の署名契約候補、frontends の同一・変更・検証不能表示候補。
+- **最小受付・検証案**: 同一内容、編集済み、削除 / 取得不能、署名を持たない外部投稿の例で、
+  同一性の確認結果と検証不能を区別する。本文以外に何を比較するかを固定して検証する。
+- **依存**: D07 の revision / 更新モデル、turbo 基盤、Note 連合の識別・配送契約。
+- **未決事項**: 元投稿の署名を載せる案の実現可能性、正規化と署名対象、添付等の対象範囲、
+  過去版の保持、署名鍵変更、比較時点。HTTP 配送署名と永続的な内容証明を同一視しない。
+- **既存との関係**: 既存 turbo を版と結び付ける拡張候補。D14 の IP 証跡とは独立して調査できる。

@@ -23,6 +23,15 @@ GitHub issue #2 の未完了項目であり、**最初の packet 候補**(2026-0
 - リモートへのブロックは署名付き Block アクティビティとして配送される
 - inbox で受信した Block/Undo(Block) がローカル状態に反映される
 
+## 受領した追加意図 (2026-10-15、candidate)
+
+個別actorとは別に、利用者自身がdomain単位で内容を避けたい。
+管理者のHostModerationによるサーバー保護とは分け、Emumetで個人方針を保持し
+ShuttlePubで投稿をfilterする分割候補。主体・domain一致規則・block/muteの差・適用面は未決。
+[意図I08](../../../shuttlepub/product/social-experience.md#i08) /
+[候補D08](../../../shuttlepub/packets/candidates.md#d08) を参照。
+既存の完了packet・acceptanceは変更しない。
+
 ## Related
 
 - [requirements.md](requirements.md) / [acceptance.md](acceptance.md) / [open-questions.md](open-questions.md) / [packets.md](packets.md)

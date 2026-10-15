@@ -41,6 +41,20 @@ interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
 3. **フロントエンド**: 別リポジトリとして構築 (D9)
 4. turbo quote 以外の独自概念・UI 語彙の再検討 (必要時 grill)
 
+## 受領した将来意図 (2026-10-15)
+
+[social-experience](../product/social-experience.md) にDiscord由来の17意図を整理。
+[packet候補](../packets/candidates.md) はrepo別の分割案・依存・未決事項を持つ。
+[受領原文](../drafts/discord-feature-intake-2026-10-15.md)から追跡できる。
+方式・優先順位は未確定、実行queueへの追加やissue公開は行っていない。
+
+投稿・timelineは `ShuttlePub/ShuttlePub`、個人domain設定や登録防御は `ShuttlePub/Emumet`、
+画像metadataは `ShuttlePub/Booskiff` を第一候補、UIは `ShuttlePub/shuttlepub-frontends` とする。
+file／attachment境界とSNS UIの正式domainは未決。
+
+上記の初動記述は当時の履歴。現在のNote基盤と連合の限定範囲は
+[受領時の実装調査](../product/social-experience.md#責務と現状の根拠)を参照。
+
 ## ホストデータ
 
 - キュー・packet: `.intent-cli/issues/` (共用ルート。
