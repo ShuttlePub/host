@@ -185,15 +185,31 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 ## D07 — note-edit-federation
 
 - **意図**: [I07](../product/social-experience.md#i07)。投稿を編集し、ActivityPub 互換性を考慮して変更を連合先へ反映する。
+- **grillでの希望と技術確認**: [正規記録](../interviews/discord-feature-grill-2026-10-15.json)の
+  `d07-q01-attachment-edit-feasibility`。添付変更までできることへの条件付き希望・技術質問であり、
+  Aを確定選択した回答とは扱わない。[ActivityPubのUpdate](https://www.w3.org/TR/activitypub/#update-activity-inbox)と
+  [Mastodon編集API](https://docs.joinmastodon.org/methods/statuses/#edit)等から添付一覧更新は仕様上可能と判断する。
+  Mastodon main `861eb7892ad32abad8263805058a052eec169156`の受信処理・NoteSerializerにも対応実例を静的確認したが、
+  ShuttlePubとの相互運用試験は未実施。詳細な根拠は正規記録に保持する。
+- **候補の方向・状態**: 本文と添付の追加・差し替え・取り外しを含める方向のcandidateとし、対応peer検証待ち。
+  全peer対応や完全互換性を承認済み・実装readyとはしない。queue未登録・issue未公開・仮slug未予約を維持する。
 - **仮 slug**: `note-edit-federation`。
+- **添付変更の設計案**: 投稿IDを維持し完全な最新版をUpdateで伝え、添付参照を更新する。新画像には新URLを使うことで、
+  Booskiffの公開URL immutable契約と整合させる。共有元ファイルの上書き・自動削除・他投稿への波及は含めない。
+  投稿からの取り外し、元ファイル削除、旧版保持・閲覧は分け、外部コピー／キャッシュの消去を保証しない。
 - **target repo 別分割**: ShuttlePub の revision・編集権限・ローカル表示更新、Note Update の
-  送受信を分ける。Emumet に署名・転送 type 契約の拡張が必要なら独立候補にし、UI 編集導線は frontends。
-- **最小受付・検証案**: ローカル編集後の本文と revision が整合し、対応 peer が更新を受け取る。
-  古い更新・重複更新・非対応 peer の扱いを契約テストで確認する。
+  送受信を分ける。EmumetのNote Update受信は未実装で、既存のPerson Update配送とは区別する。
+  必要な署名・中継type契約の拡張を独立候補とし、UI編集導線はfrontendsで扱う。
+- **最小受付・検証案（未実施）**: ローカル編集後の本文・添付参照とrevisionの整合を確認する。
+  本文を非空に保ったfixtureで添付`[A,B] → [B,C] → []`を更新し、対応peerで追加・差し替え・全取り外しが
+  反映されるか確認する。古いUpdate・同じactivityの再送で旧状態へ戻らないことと、非対応peerの扱いを契約テストで検証する。
 - **依存**: Note 送受信契約、更新主体の認証・認可、元投稿の識別。
-- **未決事項**: 編集可能項目・期限、ローカル / リモート編集履歴の保持、引用・通知・検索の再投影。
+- **未決事項**: その他の編集可能項目（CW・poll等）・期限、旧本文・添付を誰が確認できるかと旧ファイル保持、
+  ローカル / リモート編集履歴の保持、既存反応・引用・通知・検索の再投影。
+  対応peer・versionごとの実測、更新順序・再取得・非対応peer、具体的な署名・中継契約。
   原文の issue comment は設計調査の参考で、特定方式の採用根拠にはしない。
 - **既存との関係**: Note 基盤の更新機能。D10/D11 の後変更反映と D17 の版検証へ共通契約を提供する候補。
+  D13の許可設定変更の無期限・受理済み反応維持は、本文編集へ自動適用しない。
 
 <a id="d08"></a>
 

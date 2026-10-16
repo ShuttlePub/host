@@ -84,7 +84,19 @@ ShuttlePub同士の通信、他製品API、最終手段のスクレイピング�
 ## I07
 
 投稿内容を編集し、ActivityPub互換性を保ちながら変更を他サーバーへ伝える。
-他サーバーの履歴保持、反応・引用・検索への影響は未決。出典S07／候補D07。
+[正規grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d07-q01-attachment-edit-feasibility`で、
+添付変更までできることへの条件付き希望と、APでの実現可能性の質問を受けた。Aの確定回答とは扱わない。
+[ActivityPubのUpdate](https://www.w3.org/TR/activitypub/#update-activity-inbox)と
+[Mastodon編集API](https://docs.joinmastodon.org/methods/statuses/#edit)等の一次資料確認を踏まえ、
+本文に加えて添付の追加・差し替え・取り外しを含める方向のcandidateとする。
+同じ投稿IDの完全な最新版をUpdateで伝え、添付参照を更新する設計案で、新画像には新URLを使い、Booskiffのimmutable契約と整合させる。
+共有元ファイルの上書き・自動削除・他投稿への変更波及や、外部コピー／キャッシュの消去保証は含めない。
+
+仕様上の成立性とMastodon実装の静的確認は、対応peerとの相互運用検証済みを意味しない。
+EmumetのNote Updateは未実装で、既存のPerson Updateとは別に必要な署名・中継type拡張を検討する。
+その他の編集項目（CW・poll等）・期限・旧添付保持・ローカル／リモート履歴・反応・引用・通知・検索への影響、
+更新順序・非対応peer・署名中継契約は未決。D13の許可設定変更の無期限・受理済み反応維持を本文編集へ自動適用しない。
+出典S07／候補D07。
 
 ## I08
 
