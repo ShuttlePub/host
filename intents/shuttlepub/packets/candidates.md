@@ -28,7 +28,7 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 | D10 | S10 | 種類別のセンシティブ設定と更新反映 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
 | D11 | S11 | 画像の通常・センシティブタグ | booskiff (仮) | ShuttlePub/Booskiff (契約決定後) | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
 | D12 | S12 | 投稿・検索の内容に応じた案内と制御 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
-| D13 | S13 | 投稿ごとの反応 Allow リスト | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、課金案なら Booskiff との調整 | candidate |
+| D13 | S13 | 投稿ごとの反応 Allow リスト | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
 | D14 | S14 | サーバーを越えるモデレーション証跡 | emumet / shuttlepub (未決) | 未決 (Emumet / ShuttlePub の共同調査) | 調査結論後に判断 | candidate (調査) |
 | D15 | S15 | 安全対策の準備を条件に一般登録を開放 | emumet | ShuttlePub/Emumet | ShuttlePub/shuttlepub-frontends | candidate |
 | D16 | S16 | タグ通報によるトレンド抑制 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
@@ -245,7 +245,7 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 - **仮 slug**: `interaction-allowlists`。
 - **target repo 別分割**: ShuttlePub の policy・投稿操作 / 受信時の適用契約候補、
   frontends の指定・反応可能状態の表示候補。必要時は Emumet の関係状態との接続を分ける。
-  課金・認定は未決の独立論点として残す。
+  リスト追加枠の課金・認定とBooskiff課金連携は初回の必須依存にしない。
 - **grillで採用済みの方針**: [正規記録](../interviews/discord-feature-grill-2026-10-15.json)を根拠とする。
   - `d13-q01-allowlist-subject` / `d13-q02-allowlist-selection`: 対象は人。
     個別指定と関係条件の両方を使い、対象外の人に許すアクションも別に設定する。
@@ -284,6 +284,10 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
     投稿者のフォロワー・相互フォローの3種類とする。相互は投稿者と操作する人の双方向のフォロー成立を指す。
     条件同士と個別指定の結合はOR、関係評価は新規操作の受理時点の最新状態とする方針を維持する。
     将来の条件追加を禁止せず、タイムライン用リストの再利用は後続のままとする。
+  - `d13-q17-list-quota-billing-scope`: 原案の保存リスト枠3〜5個と追加枠の月額課金・公式認定は初回範囲から外す。
+    この課金・認定やBooskiff課金連携を初回提供の必須依存にしない。原案は履歴として保持し、将来の採否は未決。
+    3〜5を個別指定人数・投稿数・投稿種別の記憶枠・タイムライン用リスト等の上限へ転用しない。
+    技術的な件数上限・レート制限・濫用対策の必要性や数値は別途設計する。
 - **最小受付・検証案**: 対象と操作種別を明確にした policy 例で、reply / quote / turbo / reaction 等の
   許可・拒否を API と UI で一致させる。更新通知の遅延・欠落・逆順、関係変更、設定変更と新規操作の
   競合、activity再送を検証する。非対応peerの独自表示が保証外であることも契約例に含める。
@@ -295,10 +299,9 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   非対応peerの詳細。後続タイムライン用リストの所有・公開・更新・再利用契約も未決。
   原案の絵文字だけ誰でも可、リポスト・いいねだけ可は履歴として保持するが、
   現在の許可モデルではいいねと絵文字を区別しない。
-  原案のリスト数3〜5件と追加枠の月額課金 / 公式認定は未決であり、タイムライン用リストの上限へ移さない。
 - **既存との関係**: 個人 block/mute とは別の投稿 policy 候補。
   [Booskiff のみを課金ポイントとする既存方針](../../booskiff/identity/mission.md) と
-  SNS 機能の課金案をどう整合させるかは質問として残し、課金実装を確定しない。
+  SNS 機能の課金案の整合は将来再検討時の制約として保持し、今回その方針変更や課金実装を確定しない。
 
 <a id="d14"></a>
 
