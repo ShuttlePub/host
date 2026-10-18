@@ -10,8 +10,8 @@
 ## 責務の第一候補
 
 Booskiffはfile保管・Account単位所有の正本なので、共通file metadataはBooskiffの候補。
-ただし同一fileを複数投稿で使う際の添付ごとの条件・分類はShuttlePubの責務になり得る。
-file／attachmentの保存単位・更新権限・参照時の優先順位を先に決める。
+利用条件はfile共通で各投稿から参照する方針を採用した。添付からの条件参照・分類の投影等はShuttlePubの責務になり得る。
+file／attachmentの保存正本・更新権限・参照時の優先順位を先に決める。利用条件の共通単位と、タグ／分類訂正の反映範囲は別の決定として扱う。
 ファイルmetadataをBooskiffへ確定配置した決定ではない。
 
 APIが必要なら `ShuttlePub/Booskiff`、投稿添付・CWへの写像なら `ShuttlePub/ShuttlePub`、
@@ -21,8 +21,10 @@ Emumetのmedia-uploadはactor icon/bannerの既存範囲として扱い、完了
 
 ## 候補と未決事項
 
-- [D02](../../shuttlepub/packets/candidates.md#d02): 利用条件の粒度・権利者・変更方針と
-  表示／連合への写像を定める。保存・取得・参照先表示で条件が食い違わないことを検証する。
+- [D02](../../shuttlepub/packets/candidates.md#d02): [grill記録](../../shuttlepub/interviews/discord-feature-grill-2026-10-15.json)の
+  `d02-q01-file-shared-license`で、利用条件の適用／参照単位をfile共通とし、同じfileを使うP1・P2で共通条件を示す方針を採用した。
+  投稿ごとの別条件は採用しない。CC BY ND既定は提案のまま、版・後変更の既存投稿への反映／法的効力・過去取得者への遡及、
+  同一bytes別fileの統合・他人fileの条件変更権限、保存正本／API・表示／連合写像は未決。Booskiff配置は確定しない。
 - [D11](../../shuttlepub/packets/candidates.md#d11): [grill記録](../../shuttlepub/interviews/discord-feature-grill-2026-10-15.json)の
   `d10-q01-managed-sensitive-taxonomy`で、初回のセンシティブ分類はサーバー管理側が用意し投稿者が選択、D10と共通とした。
   通常タグの自由入力・複数タグ・補完は維持し、その補完辞書のowner・共有範囲・正規化は未決。
