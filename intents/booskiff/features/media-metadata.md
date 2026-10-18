@@ -23,9 +23,11 @@ Emumetのmedia-uploadはactor icon/bannerの既存範囲として扱い、完了
 
 - [D02](../../shuttlepub/packets/candidates.md#d02): 利用条件の粒度・権利者・変更方針と
   表示／連合への写像を定める。保存・取得・参照先表示で条件が食い違わないことを検証する。
-- [D11](../../shuttlepub/packets/candidates.md#d11): 辞書owner・共有範囲・正規化・分類契約を
-  定める。通常タグの外部表現は「未送信」か「拡張送信して非対応側が無視」か未決。
-  D10と分類schemaを重複させない。
+- [D11](../../shuttlepub/packets/candidates.md#d11): [grill記録](../../shuttlepub/interviews/discord-feature-grill-2026-10-15.json)の
+  `d10-q01-managed-sensitive-taxonomy`で、初回のセンシティブ分類はサーバー管理側が用意し投稿者が選択、D10と共通とした。
+  通常タグの自由入力・複数タグ・補完は維持し、その補完辞書のowner・共有範囲・正規化は未決。
+  分類管理主体の決定はBooskiffへの保存配置・file／attachment単位や変更波及の確定ではない。
+  通常タグの外部表現は「未送信」か「拡張送信して非対応側が無視」か未決。D10と分類schemaを重複させない。
 
 実装仕様・優先順位は未確定、queue未登録、issue未公開。
 [受領原文S02/S11](../../shuttlepub/drafts/discord-feature-intake-2026-10-15.md)。
