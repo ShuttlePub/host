@@ -157,13 +157,20 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 ## D03 — quick-reaction
 
 - **意図**: [I03](../product/social-experience.md#i03)。毎回選択画面を開かず、設定した絵文字で 1 操作リアクションする。
+- **端末間の設定共有として採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d03-q01-cross-device-quick-reaction`。
+  同じ投稿用Profileでは常用絵文字設定を端末間で共通にし、別端末で再設定せず同じ絵文字を使える。
+  異なるProfile間／Account全体への共有や、保存repo・APIを確定する決定ではない。
+- **候補の状態**: 主要な利用意図は整理済み。設定保存／取得と技術・UX契約は設計／検証待ちで実装readyではない。
+  candidate・queue未登録・issue未公開を維持し、実装packetへ自動昇格しない。
 - **仮 slug**: `quick-reaction`。
 - **target repo 別分割**: frontends の設定・投稿上のボタンを第一候補。
-  端末間同期等で必要になれば ShuttlePub に設定保存 API を独立候補として切る。
-- **最小受付・検証案**: 設定済み絵文字が 1 操作で送信され、未設定時や送信失敗時の状態が分かる。
+  端末間共有に必要な設定保存／取得契約を別候補へ分け、保存先repo・APIは設計する。ShuttlePubへの確定配置とはしない。
+- **最小受付・検証案（未実施）**: 同じProfileの端末Aで設定すると端末Bでも共通設定が使え、毎回pickerを開かず1操作で反応できる。
+  設定済み絵文字が1操作で送信され、未設定時や送信失敗時の状態が分かる。
   キーボード操作でも同じ導線を確認する。
 - **依存**: 既存 reaction API、SNS UI の投稿表示。
-- **未決事項**: 設定の保存先、解除・再送の操作、利用不能な絵文字へ変化した場合の挙動。
+- **未決事項**: 設定保存／取得のrepo・API・認可／同期、異なるProfile間／Account全体の共有、設定できる数、未設定・失敗時の表示、
+  解除・再送／キーボード操作、利用不能な絵文字へ変化した場合の挙動。初回1つ・押し直し解除は設計案で、この回答による採用済みとはしない。
 - **既存との関係**: Note reaction の操作短縮。D09 のリモート絵文字対応を必須依存にしない。
 - **限定した実装確認（2026-10-19）**: `ShuttlePub/shuttlepub-frontends`の`4be1b633726a2f109c86e2756e2464ea674c4e93`で、
   `apps/emumet-web/src/App/Model.purs:15`の画面列挙と`apps/emumet-web/src/App/View/Settings.purs:15`以降の設定画面を確認した。
