@@ -16,7 +16,7 @@ candidate段階で、実装ready・実装packet・queue登録・issue公開を�
   作者の公開削除操作を禁止する方針ではない。
 - 保持期限を過ぎ、有効な保全もなければ物理削除対象にする。期限を超える調査用保全と物理破棄を分け、
   全投稿の永久保持にはしない。
-- `d07-q20-retain-existing-revisions-after-deletion`に基づき、保存済み編集旧版も投稿削除後は各版の元期限まで残す。
+- `d07-q20-retain-existing-revisions-after-deletion`に基づき、自鯖作者の投稿削除後も保存済み編集旧版は各版の元期限まで残す。
   削除で期限を短縮・延長・リセットしない。有効な保全は維持し、全保全終了後は元の通常期限に従う。
 
 ## 責務と既存意図との関係
@@ -32,6 +32,20 @@ candidate段階で、実装ready・実装packet・queue登録・issue公開を�
 
 2026-10-18の静的確認ではNote削除自体が未実装で、現行動作を物理削除と断定しない。
 Accountの論理削除とも区別する。固定commit・根拠は正規記録の`d07-q17-post-deletion-moderation-retention-boundary`を参照する。
+
+## リモートDeleteへの適用の検討
+
+`d07-q21-remote-moderation-scope-and-retention-review`は外部ユーザーへの対応範囲を確認して判断したい質問で、Bの確定選択ではない。
+Emumetには既存の[actor単位block/mute](../../emumet/features/block-mute/acceptance.md)があり、
+[D08の個人domain control](../packets/candidates.md#d08)は候補、[管理者HostModeration](../../emumet/features/moderation/overview.md)は将来範囲。
+[AccountReportはローカル対象で、リモート通報・AP Flagは別途設計](../../emumet/features/moderation/decisions.md)とされている。
+[D13](../packets/candidates.md#d13)では外部actorの新規反応も投稿元の受理時に制御する方針が既決だが、非対応peerの独自表示の阻止は保証しない。
+[D14](../packets/candidates.md#d14)は原案由来のサーバー横断の証拠検証の調査候補で、IP hash・BLAKE3は未採用であり、遠隔処分の機能ではない。
+外部ユーザーへの対応は自鯖の防御には意味があるが、元サーバーのアカウント・投稿をこちらから削除・停止する機能ではない。
+
+エージェントはBを推奨し、remote Delete時の最終受信内容を未通報でも一律30日追加保持することは初期必須にしない案へ見直した。
+この案は未承認で採用範囲を変更しない。既決の受信済みリモート旧版保持・指定保全も撤回しない。
+remote Delete時の既存旧版・有効保全の扱いは未決で、Q20の自鯖作者削除への決定を自動適用しない。
 
 ## 未決事項
 

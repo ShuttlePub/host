@@ -232,7 +232,7 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   `d07-q19-deleted-post-default-30-days`で、最新版は削除時点から標準30日と具体化した。詳細は正本を参照する。
   期限超過かつ有効保全なしなら物理削除対象とし、D07の編集旧版保持をこの共通責務へ接続する。
   公開削除操作の禁止・全投稿永久保持は採用せず、最新版の30日は旧版30日・保全30日とは別の選択とする。
-  `d07-q20-retain-existing-revisions-after-deletion`で、保存済み編集旧版は削除後も元期限まで残し、削除で期限を変更しない。
+  `d07-q20-retain-existing-revisions-after-deletion`で、自鯖作者削除後も保存済み編集旧版は元期限まで残し、削除で期限を変更しない。
   有効な保全は維持し、終了後は元通常期限に従う。Q20の新たな回答で確定し、過去Q17の未選択回答は書き換えない。
   2026-10-18のShuttlePub main静的確認ではNote削除自体が未実装で、現行動作を物理削除と断定しない。
   Accountの論理削除とも混同しない。固定commit・コード根拠は正規記録の`d07-q17-post-deletion-moderation-retention-boundary`を参照する。
