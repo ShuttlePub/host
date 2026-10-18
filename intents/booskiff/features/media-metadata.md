@@ -23,6 +23,8 @@ Emumetのmedia-uploadはactor icon/bannerの既存範囲として扱い、完了
 
 - [D02](../../shuttlepub/packets/candidates.md#d02): [grill記録](../../shuttlepub/interviews/discord-feature-grill-2026-10-15.json)の
   `d02-q01-file-shared-license`で、利用条件の適用／参照単位をfile共通とし、同じfileを使うP1・P2で共通条件を示す方針を採用した。
+  `d02-q02-preset-license-selection`で、初回はプリセット選択と「未指定」を採用し、独自文章／URLによる条件登録は初回外とした。公式原文リンクの表示は禁止しない。
+  具体プリセット一覧・版・既定値・管理者の追加可否は未決で、「未指定」を初期値や利用禁止とする決定ではない。
   投稿ごとの別条件は採用しない。CC BY ND既定は提案のまま、版・後変更の既存投稿への反映／法的効力・過去取得者への遡及、
   同一bytes別fileの統合・他人fileの条件変更権限、保存正本／API・表示／連合写像は未決。Booskiff配置は確定しない。
 - [D11](../../shuttlepub/packets/candidates.md#d11): [grill記録](../../shuttlepub/interviews/discord-feature-grill-2026-10-15.json)の
