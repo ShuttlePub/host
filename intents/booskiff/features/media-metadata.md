@@ -26,7 +26,10 @@ Emumetのmedia-uploadはactor icon/bannerの既存範囲として扱い、完了
 - [D11](../../shuttlepub/packets/candidates.md#d11): [grill記録](../../shuttlepub/interviews/discord-feature-grill-2026-10-15.json)の
   `d10-q01-managed-sensitive-taxonomy`で、初回のセンシティブ分類はサーバー管理側が用意し投稿者が選択、D10と共通とした。
   通常タグの自由入力・複数タグ・補完は維持し、その補完辞書のowner・共有範囲・正規化は未決。
-  分類管理主体の決定はBooskiffへの保存配置・file／attachment単位や変更波及の確定ではない。
+  `d11-q01-propagate-media-label-edits`で、一投稿内で直した画像の通常タグ・センシティブ分類を、同じ画像fileを使う自分の他投稿にも反映する方針を採用した。
+  本文／本文分類・同一bytesの別file・他人投稿は変更しない。分類管理主体や反映範囲の決定は、Booskiff正本配置・両属性の物理保存単位の確定ではない。
+  file／attachmentの責務・正本／優先順位／投影／認可、自分投稿の特定・同時編集／部分失敗等の反映契約は設計・検証する。
+  共通管理画面操作・再利用初期値・管理者訂正等は別論点で、再uploadや公開URL上書きを必須方式にはしない。
   通常タグの外部表現は「未送信」か「拡張送信して非対応側が無視」か未決。D10と分類schemaを重複させない。
 
 実装仕様・優先順位は未確定、queue未登録、issue未公開。
