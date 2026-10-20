@@ -262,13 +262,20 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   フォロー / フォロワー詳細を見て、自分の identity からフォローやスター等を実行する。
 - **初回の外部対応目標として採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d06-q01-mastodon-and-misskey`。
   ShuttlePub以外ではMastodon・Misskeyの両方を初回対象として目指す。全fork／全版／全サーバー・完全履歴・非公開情報取得の保証や相互運用検証済みとはしない。
+- **初回の操作範囲として採用済み**: `d06-q02-initial-remote-actions`。
+  発見した外部の人／投稿へ、自分の投稿用Profileからフォロー・いいね／絵文字リアクション・返信・リポスト・引用を自サーバーUI内で行えることを初回目標とする。
+  可視性・ブロック・投稿者の操作許可を尊重する。いいねと絵文字リアクションのwire表現の同一化や、D09の他鯖絵文字再利用の一括採用はしない。
+- **候補の状態**: 主要な利用意図は整理済み。製品版・情報取得／操作・認証／認可・配送／結果表示契約は設計・検証待ちで実装readyではない。
+  candidate・queue未登録・issue未公開を維持し、実装packetへ自動昇格しない。
 - **仮 slug**: `remote-discovery-and-actions`。
 - **target repo 別分割**: Emumet のリモート actor・関係一覧取得契約を先行候補にし、
   ShuttlePub のリモート投稿取得・reaction 等の操作候補、frontends の統合導線を分ける。
 - **最小受付・検証案（未実施）**: Mastodon・Misskeyそれぞれの対象版／アクセス範囲を定め、両方についてページ付き関係一覧・過去投稿の取得と
   自actorによる操作を確認する。取得不能・部分取得・古い情報を区別して表示する。一方を先行PoCにしても、もう一方を初回の受付範囲から外さない。
+  両製品でフォロー・いいね／絵文字・返信・リポスト・引用の操作対応表を作り、自分のProfileでの受理・保留・拒否・非対応・通信失敗を区別し、要求送信だけや未確認／非対応を成功と表示しない。
+  投稿者の操作許可・ブロック／可視性と各peerの制約を確認し、具体的な受理／配送完了等の契約や全操作の相互運用をこの検証案だけで確定しない。
 - **依存**: Emumet の既存 actor / follow / followers / following と署名契約、Note 連合接続。
-- **未決事項**: 両製品の対応版・アクセス／取得範囲・更新頻度、相手の公開範囲、API差異、サーバー／クライアントの取得責務。
+- **未決事項**: 両製品の対応版・アクセス／取得範囲・更新頻度、相手の公開範囲／認証条件、操作ごとのwire・引用等のpeer制約／認可・配送／結果表示、API差異、サーバー／クライアントの取得責務。
   ShuttlePub 同士の相互通信、製品別 API、最終手段のスクレイピングは原案の方式仮説で、採用未決。
   原文の API パスや取得可能性を実装前に検証する。
 - **既存との関係**: [Emumet の責務](../../emumet/product/overview.md) と既存関係 API を再利用する。
@@ -467,6 +474,9 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 - **未決事項**: block と mute の差、サブドメインの一致規則、boost 経由・通知・既存 follow の扱い。
 - **既存との関係**: 既存のユーザー対象 block/mute をドメイン粒度へ拡張する候補。
   [frontends 側の既存要求](../../ratcap/features/block-mute/requirements.md) と統合し、全体ブロックを置換しない。
+- **限定した実装確認（2026-10-20、domain方針の採用ではない）**: Emumet HEAD `ef82462a1ac29786701f07feed12e9efe7236f30`の[Block](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/block_mute.rs#L36)／[Mute API](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/block_mute.rs#L164)はlocal Account nanoidを主体とする個別対象の操作。
+  [Block処理](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/block.rs#L138-L160)は個別Blockを保存し相互followを解除、remote Blockをoutboxへ積み、[Mute処理](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/mute.rs#L55-L80)は個別Mute関係を保存する。[既存決定](../../emumet/features/block-mute/decisions.md)ではMuteは連合通知しない。
+  確認範囲ではdomain一致による投稿／通知filterは確認していない。[別候補としての受領記録](../../emumet/features/block-mute/overview.md#受領した追加意図-2026-10-15candidate)と本D08の効果は未決のまま、既存個別操作の効果をdomainへ自動採用したり、AccountをProfileへ読み替えたりしない。
 
 <a id="d09"></a>
 
