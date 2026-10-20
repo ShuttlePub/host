@@ -260,13 +260,15 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 
 - **意図**: [I06](../product/social-experience.md#i06)。自鯖を離れず他鯖の過去投稿・
   フォロー / フォロワー詳細を見て、自分の identity からフォローやスター等を実行する。
+- **初回の外部対応目標として採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d06-q01-mastodon-and-misskey`。
+  ShuttlePub以外ではMastodon・Misskeyの両方を初回対象として目指す。全fork／全版／全サーバー・完全履歴・非公開情報取得の保証や相互運用検証済みとはしない。
 - **仮 slug**: `remote-discovery-and-actions`。
 - **target repo 別分割**: Emumet のリモート actor・関係一覧取得契約を先行候補にし、
   ShuttlePub のリモート投稿取得・reaction 等の操作候補、frontends の統合導線を分ける。
-- **最小受付・検証案**: 対応 peer を 1 種選び、ページ付き関係一覧・過去投稿の取得と
-  自 actor による操作を確認する。取得不能・部分取得・古い情報を区別して表示する。
+- **最小受付・検証案（未実施）**: Mastodon・Misskeyそれぞれの対象版／アクセス範囲を定め、両方についてページ付き関係一覧・過去投稿の取得と
+  自actorによる操作を確認する。取得不能・部分取得・古い情報を区別して表示する。一方を先行PoCにしても、もう一方を初回の受付範囲から外さない。
 - **依存**: Emumet の既存 actor / follow / followers / following と署名契約、Note 連合接続。
-- **未決事項**: 取得範囲・更新頻度、相手の公開範囲、API 差異、サーバー / クライアントの取得責務。
+- **未決事項**: 両製品の対応版・アクセス／取得範囲・更新頻度、相手の公開範囲、API差異、サーバー／クライアントの取得責務。
   ShuttlePub 同士の相互通信、製品別 API、最終手段のスクレイピングは原案の方式仮説で、採用未決。
   原文の API パスや取得可能性を実装前に検証する。
 - **既存との関係**: [Emumet の責務](../../emumet/product/overview.md) と既存関係 API を再利用する。
@@ -275,6 +277,11 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   [remote actor解決](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/remote_actor.rs#L77)と[保存](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/remote_actor.rs#L259)でURL／inbox／鍵を扱い、[follow API](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/follow.rs#L10-L29)はactorURL／acct指定で自分のlocal accountからremote actorへのFollowに対応する。
   [関係一覧](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/relations.rs#L61-L87)と[helper](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/relations.rs#L103)はlocal accountの承認済み保存関係を返すもので、remote利用者の全following／followersをページ取得する実装とは区別する。
   この確認範囲ではremote過去投稿履歴取得も確認していない。全体的な機能欠如は断定せず、対応peer／製品別API／scraping方式の採用根拠にも扱わない。
+- **外部取得の公式資料調査（2026-10-20、実行試験・API採用ではない）**: Mastodonの[statuses](https://docs.joinmastodon.org/methods/accounts/#statuses)は公開投稿ならPublic、権限のある非公開投稿はuser tokenと`read:statuses`を要する。[followers](https://docs.joinmastodon.org/methods/accounts/#followers)／[following](https://docs.joinmastodon.org/methods/accounts/#following)は4.0以降Publicだが、本人の関係一覧非公開設定やインスタンスの認証要求（401）等を区別する。
+  Misskey公式develop `069d2d40a41b18dfb0cbd4c85a3f50c9fcc904ee`の[following](https://github.com/misskey-dev/misskey/blob/069d2d40a41b18dfb0cbd4c85a3f50c9fcc904ee/packages/backend/src/server/api/endpoints/users/following.ts#L21)／[followers](https://github.com/misskey-dev/misskey/blob/069d2d40a41b18dfb0cbd4c85a3f50c9fcc904ee/packages/backend/src/server/api/endpoints/users/followers.ts#L20)は`requireCredential: false`だが、それぞれ[一覧の可視性判定](https://github.com/misskey-dev/misskey/blob/069d2d40a41b18dfb0cbd4c85a3f50c9fcc904ee/packages/backend/src/server/api/endpoints/users/following.ts#L123-L143)・[同判定](https://github.com/misskey-dev/misskey/blob/069d2d40a41b18dfb0cbd4c85a3f50c9fcc904ee/packages/backend/src/server/api/endpoints/users/followers.ts#L115-L135)がある。
+  [users/notes](https://github.com/misskey-dev/misskey/blob/069d2d40a41b18dfb0cbd4c85a3f50c9fcc904ee/packages/backend/src/server/api/endpoints/users/notes.ts#L213-L218)は可視性・visitor UGC filterを適用し、[API認証判定](https://github.com/misskey-dev/misskey/blob/069d2d40a41b18dfb0cbd4c85a3f50c9fcc904ee/packages/backend/src/server/api/ApiCallService.ts#L403-L409)もmeta条件による。全サーバーで常に匿名取得できる保証とはしない。
+  [Misskey公式の公開範囲説明](https://misskey-hub.net/en/docs/for-users/features/note/#home)ではHomeは誰でも閲覧可能、Followers／Directは制限付き、LocalOnlyは連合されない。公開範囲と連合可否は区別する。
+  製品版・サーバー設定・rate limit・可視性ごとの取得可能性は実測待ち。相手APIのbearer認証情報と自分のAP署名identityは別で、他鯖への追加アカウント登録必須・認証回避／scraping採用や公開情報限定の製品仕様を決めたものではない。
 
 <a id="d07"></a>
 
