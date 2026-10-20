@@ -481,6 +481,9 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 - **初回の表示抑制面として採用済み**: `d08-q05-timeline-search-and-notification-filtering`。
   ミュート・ブロックの両方で、当該Profileのtimeline・投稿検索結果・通知に対象domainの人由来の投稿／通知を表示しない範囲を初回から含める。
   ミュートの関係保持とブロックの双方向新規操作制限は維持し、表示filterを操作拒否や保存データの削除・過去反応取消しへ変換しない。
+- **第三者のコメント付き引用として採用済み**: `d08-q06-hide-entire-third-party-quotes`。
+  対象domainの投稿を別domainの人がコメント付きで引用した場合、ミュート・ブロックとも当該Profileでは引用者のコメントを含む投稿全体を隠し、埋め込み部分だけの非表示にはしない。
+  引用者の自動block／mute・関係解除や全投稿の抑制、新規受理拒否・データ消去には拡大しない。手動コピー文／スクリーンショットの出典検出や純粋boostの追加ルールを採用するものでもない。
 - **仮 slug**: `personal-domain-controls`。
 - **target repo 別分割**: Emumet のProfile単位domain方針保存・取得／新規Follow受理・送信判定候補、ShuttlePub の投稿／通知filter・新規反応受理／操作判定候補、
   frontends の設定・適用状態表示候補。Profileを主体とするAPI・認可とAP identity対応の具体契約を決める。
@@ -489,16 +492,17 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   Pへの新規FollowとP投稿への返信・引用・リポスト・いいね／絵文字を個別に拒否し、D13で許可してもブロックを迂回しないこと、ブロックしていないQへ誤適用しないことを確認する。ミュートだけにはこの受理拒否を自動適用しない。
   Pから対象domainへの各新規操作もブロック中は拒否され、明示解除後は通常の可視性・権限等に従うことを確認する。UIだけでなくAPI側でも迂回させず、Qの操作へ誤適用しない。解除時の関係自動復元は未決のままとする。
   両機能について対象domainの投稿がtimeline・投稿検索結果で抑制され、通知も表示抑制されること、Pの設定をQへ誤適用しないことを確認する。
+  別domainの人による対象投稿の引用はコメント込みで全体が隠れ、その引用者の無関係な投稿はこのルールだけでは抑制されず、別Profileにも設定が波及しないことを確認する。
   既存通知の扱い・通知表示／配送とpushの具体契約は設計後に検証し、配信済みpushの回収や保存記録の削除はこの検証案で要求しない。解除後の表示も別途検証する。
 - **依存**: Emumet の既存 block/mute と権限、ShuttlePub の閲覧経路への適用。
-- **未決事項**: Profile主体の認可・保存／AP identity移行／同期契約、サブドメイン等の一致規則、他者boost／引用経由・直接URL閲覧・Account検索／一覧等の適用面、
+- **未決事項**: Profile主体の認可・保存／AP identity移行／同期契約、サブドメイン等の一致規則、純粋boost／再共有の表示・多段引用のactor帰属判定、直接URL閲覧／手動表示・Account検索／一覧等の適用面とAPI／index／非表示情報の境界、
   既存通知／backlogの遡及・push／表示と配送遅延・通知内の非表示actor情報の具体的扱い、解除後の表示／関係、
   既存反応の扱い、双方向新規操作のサーバー側認可／判定時点／受理・送信とAP routing契約、古い設定・再送・peer配送の整合、AP Block配送やpeer側反映、既存関係を解除する具体処理。
 - **既存との関係**: 既存のユーザー対象 block/mute をドメイン粒度へ拡張する候補。
   [frontends 側の既存要求](../../ratcap/features/block-mute/requirements.md) と統合し、全体ブロックを置換しない。
 - **限定した実装確認（2026-10-20、domain方針の採用ではない）**: Emumet HEAD `ef82462a1ac29786701f07feed12e9efe7236f30`の[Block](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/block_mute.rs#L36)／[Mute API](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/block_mute.rs#L164)はlocal Account nanoidを主体とする個別対象の操作。
   [Block処理](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/block.rs#L138-L160)は個別Blockを保存し相互followを解除、remote Blockをoutboxへ積み、[Mute処理](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/mute.rs#L55-L80)は個別Mute関係を保存する。[既存決定](../../emumet/features/block-mute/decisions.md)ではMuteは連合通知しない。
-  確認範囲ではdomain一致による投稿／通知filterは確認していない。[別候補としての受領記録](../../emumet/features/block-mute/overview.md#受領した追加意図-2026-10-15candidate)は背景に残し、基本差はQ1・Profile単位はQ2・新規受信操作拒否はQ3・自分からの新規操作制限はQ4・表示抑制3面はQ5で独立採用、その他の効果は未決とする。既存個別操作の効果をdomainへ自動採用したり、AccountをProfileへ読み替えたりしない。
+  確認範囲ではdomain一致による投稿／通知filterは確認していない。[別候補としての受領記録](../../emumet/features/block-mute/overview.md#受領した追加意図-2026-10-15candidate)は背景に残し、基本差はQ1・Profile単位はQ2・新規受信操作拒否はQ3・自分からの新規操作制限はQ4・表示抑制3面はQ5・第三者引用の全体抑制はQ6で独立採用、その他の効果は未決とする。既存個別操作の効果をdomainへ自動採用したり、AccountをProfileへ読み替えたりしない。
   同SHAの[Follow受信handler](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/inbox/handlers.rs#L37-L70)は関係保存・Acceptを行うが、確認したhandler範囲ではBlock照合／拒否を確認していない。既存関係の解除だけで、domain単位の新規Follow・返信・リアクションの遮断実装を証明せず、全体的な欠如／不具合とも断定しない。
   [既存ADR](../../emumet/decisions/0002-account-address-on-emumet-domain.md)は1 Profile＝1 actor／follow graphを採用し、現行Account＝actor実装を移行対象とする。D08のProfile単位はQ2で独立採用した方針であり、既存Account主体コードをProfile対応済みとは読み替えない。
 
