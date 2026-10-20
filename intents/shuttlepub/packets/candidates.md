@@ -181,12 +181,17 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 ## D04 — note-search-author-filter
 
 - **意図**: [I04](../product/social-experience.md#i04)。投稿検索を特定の投稿者に絞り、少なくとも 1 ユーザーを対象にできる。
+- **投稿者の対象範囲として採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d04-q01-local-and-remote-authors`。
+  初回から自サーバー・他サーバー両方の投稿者を指定できる。自サーバーが取得済みで検索者が閲覧できる投稿を検索対象とし、外部全履歴への問い合わせや完全収集は初回の約束にしない。
+- **候補の状態**: 主要な利用意図は整理済み。検索契約の設計・検証待ちで実装readyではない。
+  candidate・queue未登録・issue未公開を維持し、複数投稿者指定を追加要件にしない。
 - **仮 slug**: `note-search-author-filter`。
 - **target repo 別分割**: ShuttlePub の投稿者条件付き検索契約・検索投影候補、frontends の条件入力・結果表示候補。
-- **最小受付・検証案**: 同じ語を含む複数投稿者の投稿を用意し、指定した 1 actor の閲覧可能な投稿だけを返す。
+- **最小受付・検証案（未実施）**: 同じ語を含む自鯖／他鯖の複数投稿者の取得済み投稿を用意し、各actorを1人指定して、そのactorの閲覧可能な投稿だけを返す。
   該当なし・ページ境界でも条件が維持されることを確認する。
+  未取得・取得不能の投稿を検索できたと扱わず、結果を相手の完全な投稿履歴と誤表示しない。編集・削除／閲覧権変更との整合は契約設計後に検証する。
 - **依存**: 投稿検索・永続化 / 検索投影方針、actor 識別、閲覧可否の適用。
-- **未決事項**: ローカル / リモートの検索対象、全文検索の方式、複数ユーザー条件。
+- **未決事項**: キーワード検索／indexの方式・一致方法、ページングと編集・削除／閲覧権変更の整合、複数ユーザー条件。
   ローカル限定検索は原文中の他製品の追記であり、この候補の必須条件にしない。
 - **既存との関係**: 既存 timeline の取得と検索を区別し、検索基盤が必要なら別 packet に分割する。
 - **限定した実装確認（2026-10-20、方式採用ではない）**: `ShuttlePub/ShuttlePub` mainの`7eea43d82d8945e05348794fa22c668fe90075d3`で、
@@ -266,6 +271,10 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   原文の API パスや取得可能性を実装前に検証する。
 - **既存との関係**: [Emumet の責務](../../emumet/product/overview.md) と既存関係 API を再利用する。
   新しい共通 actor 管理や独立した follow 基盤を SNS 側に作る前提にしない。
+- **限定した実装確認（2026-10-20、方式採用ではない）**: ローカルEmumet HEAD `ef82462a1ac29786701f07feed12e9efe7236f30`の
+  [remote actor解決](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/remote_actor.rs#L77)と[保存](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/remote_actor.rs#L259)でURL／inbox／鍵を扱い、[follow API](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/follow.rs#L10-L29)はactorURL／acct指定で自分のlocal accountからremote actorへのFollowに対応する。
+  [関係一覧](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/relations.rs#L61-L87)と[helper](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/relations.rs#L103)はlocal accountの承認済み保存関係を返すもので、remote利用者の全following／followersをページ取得する実装とは区別する。
+  この確認範囲ではremote過去投稿履歴取得も確認していない。全体的な機能欠如は断定せず、対応peer／製品別API／scraping方式の採用根拠にも扱わない。
 
 <a id="d07"></a>
 
