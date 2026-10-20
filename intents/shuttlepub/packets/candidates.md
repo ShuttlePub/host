@@ -465,18 +465,25 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 ## D08 — personal-domain-controls
 
 - **意図**: [I08](../product/social-experience.md#i08)。サーバー防御の全体ブロックとは別に、個人がドメイン単位で自衛できる。
+- **初回の2機能と基本差として採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d08-q01-separate-domain-mute-and-block`。
+  ミュートは表示を抑えるが既存関係を切らず、ブロックは表示抑制に加えて対象domain利用者との既存フォロー／フォロワー関係を自分側の関係記録から両方向解除する。
+  外部peerでの遵守や全remoteデータの消去まで保証する決定ではない。
 - **仮 slug**: `personal-domain-controls`。
 - **target repo 別分割**: Emumet の個人ドメイン方針保存・取得候補、ShuttlePub の投稿フィルタ候補、
   frontends の設定・適用状態表示候補。先に API と対象 identity の契約を決める。
-- **最小受付・検証案**: A が指定したドメインの投稿が A の閲覧から除かれ、B の設定には影響しない。
+- **最小受付・検証案（未実施）**: Aが指定したdomainのミュートで表示が抑制され既存関係は残り、ブロックでは表示抑制と自分側の既存フォロー／フォロワー関係の両方向解除を確認する。
+  他利用者のProfileの設定・関係は変わらず、管理者の全体サーバーブロックを発生させない。
   解除後の表示と timeline / 検索等の対象面を検証する。
 - **依存**: Emumet の既存 block/mute と権限、ShuttlePub の閲覧経路への適用。
-- **未決事項**: block と mute の差、サブドメインの一致規則、boost 経由・通知・既存 follow の扱い。
+- **未決事項**: 設定主体と認可、サブドメイン等の一致規則、timeline／検索／通知・boost／引用経由等の適用面、解除後の表示／関係、
+  今後のフォロー／相互作用制御、AP Block配送やpeer側反映、既存関係を解除する具体処理・同期契約。
 - **既存との関係**: 既存のユーザー対象 block/mute をドメイン粒度へ拡張する候補。
   [frontends 側の既存要求](../../ratcap/features/block-mute/requirements.md) と統合し、全体ブロックを置換しない。
 - **限定した実装確認（2026-10-20、domain方針の採用ではない）**: Emumet HEAD `ef82462a1ac29786701f07feed12e9efe7236f30`の[Block](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/block_mute.rs#L36)／[Mute API](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/block_mute.rs#L164)はlocal Account nanoidを主体とする個別対象の操作。
   [Block処理](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/block.rs#L138-L160)は個別Blockを保存し相互followを解除、remote Blockをoutboxへ積み、[Mute処理](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/mute.rs#L55-L80)は個別Mute関係を保存する。[既存決定](../../emumet/features/block-mute/decisions.md)ではMuteは連合通知しない。
-  確認範囲ではdomain一致による投稿／通知filterは確認していない。[別候補としての受領記録](../../emumet/features/block-mute/overview.md#受領した追加意図-2026-10-15candidate)と本D08の効果は未決のまま、既存個別操作の効果をdomainへ自動採用したり、AccountをProfileへ読み替えたりしない。
+  確認範囲ではdomain一致による投稿／通知filterは確認していない。[別候補としての受領記録](../../emumet/features/block-mute/overview.md#受領した追加意図-2026-10-15candidate)は背景に残し、domain操作の基本差はQ1で独立採用、その他の効果は未決とする。既存個別操作の効果をdomainへ自動採用したり、AccountをProfileへ読み替えたりしない。
+  同SHAの[Follow受信handler](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/application/src/service/activitypub/inbox/handlers.rs#L37-L70)は関係保存・Acceptを行うが、確認したhandler範囲ではBlock照合／拒否を確認していない。既存関係の解除だけで、domain単位の新規Follow・返信・リアクションの遮断実装を証明せず、全体的な欠如／不具合とも断定しない。
+  [既存ADR](../../emumet/decisions/0002-account-address-on-emumet-domain.md)は1 Profile＝1 actor／follow graphを採用し、現行Account＝actor実装を移行対象とする。設定主体の設計根拠として参照し、D08をProfileごとに設定するか、同じAccount内の全Profileで共通にするかの選択を代行しない。
 
 <a id="d09"></a>
 
