@@ -213,7 +213,8 @@ CW・センシティブ指定の共有モデル／peer契約、既存メンシ�
 投稿filterを行う分割候補。
 [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d08-q01-separate-domain-mute-and-block`で、初回から両方を用意し、ミュートは表示を抑えるが関係を切らず、ブロックは表示抑制に加え対象domain利用者との既存フォロー／フォロワー関係を自分側の記録から解除する基本差を採用した。
 `d08-q02-profile-scoped-domain-controls`で、設定は投稿用Profileごとに適用し、同じAccount内を含む他Profileの表示・フォロー関係は変えない方針を採用した。Account全体やサーバー全体へ自動適用しない。
-全peerでの解除遵守や外部データ消去は保証しない。認可／保存・AP identity移行／同期、domain一致・適用面／通知／boost／引用、今後のフォローや反応・解除後／AP Block配送等は未決。出典S08／候補D08。
+`d08-q03-reject-new-inbound-actions`で、ブロック対象domainから当該Profileへの新規フォローと、その投稿への新規返信・引用・リポスト・いいね／絵文字リアクションを自サーバーの受理時に拒否する方針を採用した。I13の投稿許可でもブロックを上書きできず、いいねと絵文字は同じ許可判断でもwire表現の同一化はしない。
+全peerでの解除遵守・外部側の独自公開阻止や外部データ消去は保証しない。認可／保存・AP identity移行／同期、domain一致・適用面／通知／boost／引用、外向き操作・既存反応・解除後／AP Block配送等は未決。出典S08／候補D08。
 
 ## I09
 
