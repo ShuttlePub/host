@@ -25,8 +25,10 @@ ShuttlePub 全体で共有されるアカウントの正本を Event Sourcing + 
 どちらか一方を最低条件とするORを採用した。両方は必須にせず、対策なしの一般開放は認めない。
 `d15-q02-auto-stop-on-loss-of-configured-protection`で、開放後の設定変更で両方が無効に
 なった場合は新しい一般登録を自動停止する。一時的な外部障害や既存利用者の利用停止は含めない。
-具体的な準備済み判定、Ory identity登録とEmumet Account作成の対象・迂回防止、
-復旧後の再開方法・招待登録等の扱いは未決。ゲートの実装完了を意味しない。
+`d15-q03-manual-reopen-after-protection-restored`で、最低条件が復旧しても自動再開せず、
+管理者の再開操作後に新しい一般登録を受け付ける。再開時も最低条件を満たす必要があり、手動閉鎖を勝手に解除しない。
+具体的な準備済み／復旧判定、Ory identity登録とEmumet Account作成の対象・迂回防止、
+管理権限／本人確認・UI／API・通知・設定競合、一時障害・招待／セルフホスト等の扱いは未決。ゲートの実装完了を意味しない。
 [意図I15](../../../shuttlepub/product/social-experience.md#i15) /
 [候補D15](../../../shuttlepub/packets/candidates.md#d15) を参照。
 担当domainはemumet、target repoはEmumet。管理UIをfrontendsの後続候補に分ける。

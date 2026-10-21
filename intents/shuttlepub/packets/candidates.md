@@ -835,15 +835,18 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   特定CAPTCHA提供者・すべてのBOT対策の同等扱い・OAuthによる代替や、メール疎通／実稼働の判定方法までは決めていない。
 - **設定上の条件喪失時として採用済み**: `d15-q02-auto-stop-on-loss-of-configured-protection`。一般開放後の設定変更でメール認証とBOT対策が両方無効になったら、新しい一般登録の受付を自動停止する。
   一方が有効ならこの停止条件には該当しない。既存利用者のログイン・利用停止・強制退会を含まず、一時的な外部サービス障害への対応とは分ける。
+- **復旧後の再開として採用済み**: `d15-q03-manual-reopen-after-protection-restored`。最低条件が復旧しても受付は自動再開せず、管理者の再開操作を必要とする。
+  再開時も最低条件を満たさなければ開放できず、管理者による手動閉鎖も自動解除しない。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   開放 API / 実際の登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。
 - **最小受付・検証案（未実施）**: 準備済み判定の設計後、メールのみ／BOT対策のみ／両方／どちらもない設定の4例で、前3例は最低条件を満たし、最後だけは一般開放を拒否するOR条件を検証する。
   設定変更後と UI を経由しない登録の入口でも整合することを確認する。
   開放中に最後の対策を設定上無効にしたら新規一般登録が停止し、片方が残る場合はこの理由では停止しないことを確認する。検出タイミングや確認中フローは設計後に検証し、既存利用者の利用停止へ拡張しない。
+  停止→対策復旧後の待機→管理者の再開操作を区別し、復旧だけでは受け付けず、最低条件を満たす再開操作後に受け付けることを確認する。条件未達の再開を拒否し、手動閉鎖を勝手に解除しない。
 - **依存**: [認証を Ory へ委譲する決定](../../emumet/decisions/0001-stellar-frozen-ory-authz.md)、
   登録設定の実際の管理主体と管理者権限。
-- **未決事項**: 対象BOT対策の具体的な範囲と準備済み判定、設定済みと稼働確認済みの違い、Ory identity登録／Emumet Account作成の対象経路、停止の検出タイミング・確認中フロー・管理通知、復旧時の手動／自動再開、一時的な外部サービス障害、招待登録・セルフホスト例外。
+- **未決事項**: 対象BOT対策の具体的な範囲と準備済み／復旧判定、設定済みと稼働確認済みの違い、Ory identity登録／Emumet Account作成の対象経路、停止の検出タイミング・確認中フロー・管理通知、管理権限／本人確認・UI／API・設定競合、一時的な外部サービス障害、招待登録・セルフホスト例外。
 - **既存との関係**: ShuttlePub に認証基盤を新設せず、Emumet / Ory の登録・管理設定へ接続する候補。
 - **限定した実装確認（2026-10-21、実行検証なし）**: Emumet HEAD `ef82462a1ac29786701f07feed12e9efe7236f30`の[ローカルKratos設定](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/ory/kratos/kratos.yml#L11-L20)はself-service登録とpassword認証が有効で、[compose](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/compose.yml#L84)はKratosをdevモードで起動する。確認した設定にはverification／CAPTCHAの項目を確認していない。本番の設定状態や、これら対策の提供可否を断定する調査ではない。
   Emumetには別途、[AuthClaimsを受け取るPOST /api/v1/accounts](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/client.rs#L103-L119)と[そのルーティング](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/mod.rs#L54-L58)がある。Ory identity登録とEmumet Account作成は別入口として整理し、どの経路に準備条件を適用するかを調査する。D15のゲート実装や本番の準備完了を確認したものではない。
