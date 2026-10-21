@@ -20,8 +20,13 @@ ShuttlePub 全体で共有されるアカウントの正本を Event Sourcing + 
 ## 受領した追加意図 (2026-10-15、candidate)
 
 スパムBOTの踏み台を防ぐため、防御設定が整うまで一般登録を開けないようにしたい。
-メール認証・CAPTCHA等の条件案を保持する。Ory identity登録とEmumet Account作成の
-対象・AND条件か代替条件か・迂回防止は未決。
+2026-10-21の[grill記録](../../../shuttlepub/interviews/discord-feature-grill-2026-10-15.json)の
+`d15-q01-either-email-or-bot-protection`で、メール認証またはCAPTCHA等のBOT対策の
+どちらか一方を最低条件とするORを採用した。両方は必須にせず、対策なしの一般開放は認めない。
+`d15-q02-auto-stop-on-loss-of-configured-protection`で、開放後の設定変更で両方が無効に
+なった場合は新しい一般登録を自動停止する。一時的な外部障害や既存利用者の利用停止は含めない。
+具体的な準備済み判定、Ory identity登録とEmumet Account作成の対象・迂回防止、
+復旧後の再開方法・招待登録等の扱いは未決。ゲートの実装完了を意味しない。
 [意図I15](../../../shuttlepub/product/social-experience.md#i15) /
 [候補D15](../../../shuttlepub/packets/candidates.md#d15) を参照。
 担当domainはemumet、target repoはEmumet。管理UIをfrontendsの後続候補に分ける。
