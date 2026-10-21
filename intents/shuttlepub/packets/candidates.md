@@ -20,7 +20,7 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 | D02 | S02 | 添付画像の利用許諾を指定 | booskiff (仮) | ShuttlePub/Booskiff (契約決定後) | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
 | D03 | S03 | 設定絵文字で 1 操作リアクション | shuttlepub | ShuttlePub/shuttlepub-frontends | 必要時 ShuttlePub/ShuttlePub | candidate |
 | D04 | S04 | 特定投稿者に絞る投稿検索 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends | candidate |
-| D05 | S05 | 開いた投稿への再訪 | shuttlepub | ShuttlePub/shuttlepub-frontends | 同期が必要なら ShuttlePub/ShuttlePub | candidate |
+| D05 | S05 | 開いた投稿への再訪 | shuttlepub | ShuttlePub/shuttlepub-frontends | 端末間共有の保存／取得契約は必要、担当repoは設計待ち | candidate |
 | D06 | S06 | リモート情報の閲覧と自 identity での操作 | shuttlepub | ShuttlePub/Emumet | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
 | D07 | S07 | 投稿編集と連合上の更新 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/Emumet、ShuttlePub/shuttlepub-frontends | candidate |
 | D08 | S08 | 個人単位のドメインブロック・ミュート | emumet | ShuttlePub/Emumet | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
@@ -391,7 +391,8 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   公開範囲や配信権限は拡大せず、ブロック／ミュート・削除等との整合、旧履歴非公開・再承認扱いなしを維持する。
 - **仮 slug**: `note-edit-federation`。
 - **添付変更の設計案**: 投稿IDを維持し完全な最新版をUpdateで伝え、添付参照を更新する。新画像には新URLを使うことで、
-  Booskiffの公開URL immutable契約と整合させる。共有元ファイルの上書き・自動削除・他投稿への波及は含めない。
+  Booskiffの公開URL immutable契約と整合させる。共有元ファイルの上書き・自動削除、画像実体の差し替え・添付構成変更の他投稿への波及は含めない。
+  同fileを使う自分の他投稿へタグ／分類訂正を反映する[D11](#d11)の採用方針とは区別する。
   投稿からの取り外し、元ファイル削除、旧版保持・閲覧は分け、外部コピー／キャッシュの消去を保証しない。
 - **target repo 別分割**: ShuttlePub の revision・編集権限・ローカル表示更新、Note Update の
   送受信を分ける。EmumetのNote Update受信は未実装で、既存のPerson Update配送とは区別する。
@@ -911,7 +912,7 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   比較に必要な情報だけを別保持し、リポストが残る間は検証を続けられることを製品意図とする。
   旧履歴の一般公開や削除／閲覧不可投稿の再表示は追加しない。比較情報の十分性・方式は技術検証待ち。
 - **候補の状態**: 主要な利用意図は整理済み。方式・連合・表示・保持契約は調査／検証待ちで実装readyではない。
-  candidate・queue未登録・issue未公開を維持し、実装packetへ自動昇格しない。次に接続先D10／D11の共通意図を確認する。
+  candidate・queue未登録・issue未公開を維持し、実装packetへ自動昇格しない。接続先D10／D11との共通契約の設計・検証を依存として残す。
 - **仮 slug**: `turbo-content-verification`。
 - **target repo 別分割**: ShuttlePub の対象 revision / 内容 commitment・検証結果契約候補、
   必要時 Emumet の署名契約候補、frontends の同一・変更・検証不能表示候補。
