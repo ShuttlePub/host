@@ -830,6 +830,7 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 
 - **意図**: [I15](../product/social-experience.md#i15)。メール認証・CAPTCHA 等の対策準備が整わないまま
   新規登録を一般開放し、スパム BOT の踏み台となることを防ぐ。
+- **候補の状態**: 主要な利用意図は整理済み。準備判定・登録経路との接続・一時障害等の契約は設計・検証待ちで、実装readyとはしない。candidate・queue未登録・issue未公開・仮slug未予約を維持する。
 - **最低条件の組合せとして採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d15-q01-either-email-or-bot-protection`。
   メール認証またはCAPTCHA等のBOT対策のどちらか一方を用意すれば一般開放できるOR条件とする。両方の用意は可能だが必須ではなく、どちらもない状態は認めない。
   特定CAPTCHA提供者・すべてのBOT対策の同等扱い・OAuthによる代替や、メール疎通／実稼働の判定方法までは決めていない。
@@ -837,6 +838,8 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   一方が有効ならこの停止条件には該当しない。既存利用者のログイン・利用停止・強制退会を含まず、一時的な外部サービス障害への対応とは分ける。
 - **復旧後の再開として採用済み**: `d15-q03-manual-reopen-after-protection-restored`。最低条件が復旧しても受付は自動再開せず、管理者の再開操作を必要とする。
   再開時も最低条件を満たさなければ開放できず、管理者による手動閉鎖も自動解除しない。
+- **特定相手への招待の適用範囲として採用済み**: `d15-q04-exempt-targeted-invitations`。今回の最低条件は一般開放に適用し、招待登録を提供する場合も特定相手への招待には要求しない。
+  招待機能自体の新設・既存認証／招待承認の免除・公開無制限招待リンクによる一般登録の迂回・セルフホスト全般の条件解除を採用した回答ではない。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   開放 API / 実際の登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。
@@ -844,9 +847,10 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
   設定変更後と UI を経由しない登録の入口でも整合することを確認する。
   開放中に最後の対策を設定上無効にしたら新規一般登録が停止し、片方が残る場合はこの理由では停止しないことを確認する。検出タイミングや確認中フローは設計後に検証し、既存利用者の利用停止へ拡張しない。
   停止→対策復旧後の待機→管理者の再開操作を区別し、復旧だけでは受け付けず、最低条件を満たす再開操作後に受け付けることを確認する。条件未達の再開を拒否し、手動閉鎖を勝手に解除しない。
+  招待登録を提供する場合は一般開放の最低条件と特定相手への招待を分離し、招待例外を一般受付へ誤適用しないことを、入口・識別契約の設計後に検証する。既存の認証・招待承認は維持する。
 - **依存**: [認証を Ory へ委譲する決定](../../emumet/decisions/0001-stellar-frozen-ory-authz.md)、
   登録設定の実際の管理主体と管理者権限。
-- **未決事項**: 対象BOT対策の具体的な範囲と準備済み／復旧判定、設定済みと稼働確認済みの違い、Ory identity登録／Emumet Account作成の対象経路、停止の検出タイミング・確認中フロー・管理通知、管理権限／本人確認・UI／API・設定競合、一時的な外部サービス障害、招待登録・セルフホスト例外。
+- **未決事項**: 対象BOT対策の具体的な範囲と準備済み／復旧判定、設定済みと稼働確認済みの違い、Ory identity登録／Emumet Account作成の対象経路、特定招待の識別・入口との対応・実質的な一般開放経路への例外誤適用防止、停止の検出タイミング・確認中フロー・管理通知、管理権限／本人確認・UI／API・設定競合、一時的な外部サービス障害、セルフホスト例外。
 - **既存との関係**: ShuttlePub に認証基盤を新設せず、Emumet / Ory の登録・管理設定へ接続する候補。
 - **限定した実装確認（2026-10-21、実行検証なし）**: Emumet HEAD `ef82462a1ac29786701f07feed12e9efe7236f30`の[ローカルKratos設定](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/ory/kratos/kratos.yml#L11-L20)はself-service登録とpassword認証が有効で、[compose](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/compose.yml#L84)はKratosをdevモードで起動する。確認した設定にはverification／CAPTCHAの項目を確認していない。本番の設定状態や、これら対策の提供可否を断定する調査ではない。
   Emumetには別途、[AuthClaimsを受け取るPOST /api/v1/accounts](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/client.rs#L103-L119)と[そのルーティング](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/mod.rs#L54-L58)がある。Ory identity登録とEmumet Account作成は別入口として整理し、どの経路に準備条件を適用するかを調査する。D15のゲート実装や本番の準備完了を確認したものではない。
@@ -866,6 +870,9 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 - **未決事項**: タグ正規化、自動判定の閾値、虚偽・大量通報、抑制期限、適用範囲。
   トレンド基盤が必要なら先に独立 packet にし、自動抑制は手動経路から分割できる。
 - **既存との関係**: 画像タグ D11 と区別する。既存アカウント通報の有無だけでタグ通報の完成を判断しない。
+- **限定した実装確認（2026-10-21、実行検証なし）**: ShuttlePub main `7eea43d82d8945e05348794fa22c668fe90075d3`の[CreateNote型](https://github.com/ShuttlePub/ShuttlePub/blob/7eea43d82d8945e05348794fa22c668fe90075d3/kernel/src/types.rs#L22-L28)はID・author・content・kindを持ち、タグ専用項目はない。本文からのタグ識別やタグ通報API・トレンド生成の動作は今回の限定調査では確認していない。
+  [過去のSQL migration](https://github.com/ShuttlePub/ShuttlePub/blob/7eea43d82d8945e05348794fa22c668fe90075d3/migrations/20230216062352_init.sql#L72-L86)にはnotes.hashtagとhashtagsへの参照がある一方、[NoteService](https://github.com/ShuttlePub/ShuttlePub/blob/7eea43d82d8945e05348794fa22c668fe90075d3/application/src/service.rs#L44-L68)にはメモリ内ストアでの起動口とtimeline投影がある。古いDB定義だけを現行タグ／トレンド機能の稼働証拠とはしない。
+  Emumetの[AccountReport](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/kernel/src/entity/account_report.rs#L18-L28)の対象はAccountIdであり、D16のタグ通報とは別機能。既存権限の接続やタグ識別・トレンド基盤の必要性は設計・検証事項とし、プロジェクト全体の機能不存在を断定しない。
 
 <a id="d17"></a>
 
