@@ -360,8 +360,8 @@ I07の編集・I17の比較へ接続するが、具体モデルやpeer反映を�
 ## I15
 
 スパムBOTの踏み台を防ぐため、防御設定が整うまで一般登録を開けないようにする。
-メール認証・CAPTCHA等は条件候補。Ory identity登録とEmumet Account作成のどちらを、
-どの実動条件で制限するかは未決。出典S15／候補D15。
+[grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d15-q01-either-email-or-bot-protection`で、最低条件をメール認証またはCAPTCHA等のBOT対策のどちらか一方を用意することと採用した（OR）。両方用意してもよいが必須にはせず、対策なしの一般開放も認めない。
+具体的な準備済み／実稼働の判定、対象とするBOT対策、Ory identity登録とEmumet Account作成の対象経路、条件喪失時・招待／セルフホスト例外は未決。特定提供者やOAuth等の代替条件を決める回答ではない。出典S15／候補D15。
 
 ## I16
 

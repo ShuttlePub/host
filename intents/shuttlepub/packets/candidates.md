@@ -830,15 +830,17 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 
 - **意図**: [I15](../product/social-experience.md#i15)。メール認証・CAPTCHA 等の対策準備が整わないまま
   新規登録を一般開放し、スパム BOT の踏み台となることを防ぐ。
+- **最低条件の組合せとして採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d15-q01-either-email-or-bot-protection`。
+  メール認証またはCAPTCHA等のBOT対策のどちらか一方を用意すれば一般開放できるOR条件とする。両方の用意は可能だが必須ではなく、どちらもない状態は認めない。
+  特定CAPTCHA提供者・すべてのBOT対策の同等扱い・OAuthによる代替や、メール疎通／実稼働の判定方法までは決めていない。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   開放 API / 実際の登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。
-- **最小受付・検証案**: 必須条件を欠く設定では一般開放が拒否され、条件が揃えば開放できる。
+- **最小受付・検証案（未実施）**: 準備済み判定の設計後、メールのみ／BOT対策のみ／両方／どちらもない設定の4例で、前3例は最低条件を満たし、最後だけは一般開放を拒否するOR条件を検証する。
   設定変更後と UI を経由しない登録の入口でも整合することを確認する。
 - **依存**: [認証を Ory へ委譲する決定](../../emumet/decisions/0001-stellar-frozen-ory-authz.md)、
   登録設定の実際の管理主体と管理者権限。
-- **未決事項**: 必須対策の組合せ、設定済みと稼働確認済みの違い、開放後に条件を失った場合、
-  招待登録・セルフホストでの扱い。メール認証と CAPTCHA を無条件に両方必須とは決めない。
+- **未決事項**: 対象BOT対策の具体的な範囲と準備済み判定、設定済みと稼働確認済みの違い、Ory identity登録／Emumet Account作成の対象経路、開放後に条件を失った場合、招待登録・セルフホスト例外。
 - **既存との関係**: ShuttlePub に認証基盤を新設せず、Emumet / Ory の登録・管理設定へ接続する候補。
 - **限定した実装確認（2026-10-21、実行検証なし）**: Emumet HEAD `ef82462a1ac29786701f07feed12e9efe7236f30`の[ローカルKratos設定](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/ory/kratos/kratos.yml#L11-L20)はself-service登録とpassword認証が有効で、[compose](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/compose.yml#L84)はKratosをdevモードで起動する。確認した設定にはverification／CAPTCHAの項目を確認していない。本番の設定状態や、これら対策の提供可否を断定する調査ではない。
   Emumetには別途、[AuthClaimsを受け取るPOST /api/v1/accounts](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/client.rs#L103-L119)と[そのルーティング](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/mod.rs#L54-L58)がある。Ory identity登録とEmumet Account作成は別入口として整理し、どの経路に準備条件を適用するかを調査する。D15のゲート実装や本番の準備完了を確認したものではない。
