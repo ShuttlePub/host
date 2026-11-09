@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:profile-domain-policy-api-contract",
+  "actor": "e8-worker",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-09T23:38:24.1060319+00:00",
+  "base_commit": "c263f612e2b37a6f9f27a72bf16d97f6a1a02791"
+}
