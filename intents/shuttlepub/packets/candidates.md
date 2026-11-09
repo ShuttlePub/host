@@ -18,7 +18,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 |---|---|---|---|---|---|---|
 | D01 | S01 | 投稿詳細から前後の投稿・リポストをたどる文脈閲覧 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends | candidate |
 | D02 | S02 | 添付画像の利用許諾を指定 | booskiff (仮) | ShuttlePub/Booskiff (契約決定後) | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
-| D03 | S03 | 設定絵文字で 1 操作リアクション | shuttlepub | ShuttlePub/shuttlepub-frontends | 必要時 ShuttlePub/ShuttlePub | candidate |
+| D03 | S03 | 設定絵文字で 1 操作リアクション | shuttlepub | ShuttlePub/shuttlepub-frontends | ShuttlePub/ShuttlePub | candidate |
 | D04 | S04 | 特定投稿者に絞る投稿検索 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends | candidate |
 | D05 | S05 | 開いた投稿への再訪 | shuttlepub | ShuttlePub/shuttlepub-frontends | 端末間共有の保存／取得契約は必要、担当repoは設計待ち | candidate |
 | D06 | S06 | リモート情報の閲覧と自 identity での操作 | shuttlepub | ShuttlePub/Emumet | ShuttlePub/ShuttlePub、ShuttlePub/shuttlepub-frontends | candidate |
@@ -40,6 +40,11 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   `candidate-priority-q01-implementation-order`。小さく独立し、1 repo で完結しやすい単位を優先する
   （D03 / D15 / D08 など）。例示は固定順ではなく、D06 / D07 の基盤優先や特定候補の個別指定を決めたものでもない。
   具体的な着手順と queue 登録は別途決める。
+- **実装アプローチ（候補横断）**: [正規記録](../interviews/discord-feature-prioritization-2026-11-09.json)の
+  `candidate-priority-q02-implementation-approach`。フロントエンドモノレポ（`ShuttlePub/shuttlepub-frontends`）にSNSメインUIアプリの土台を作り、その後D03などのUIを作る。
+  まずD15（Emumet + emumet-web）とD03／D08のサーバー側を進める。ShuttlePub backendの着手には時間がかかる可能性があるため、UIを先に進める。
+  APIはSwagger／OpenAPIで定義だけ作り、バックエンド実装はまだ行わない。API定義の具体的な配置場所は確認中で、この回答では決めない。
+  このアプローチは全候補の固定順位やqueue登録を決めるものではなく、各候補を実装readyにするものでもない。
 - D01–D17 は意図候補 ID。既存の決定記録の D 番号とは別の名前空間。
   1 候補をそのまま 1 実行 packet にしない。契約整理後、target repo ごとに
   独立して検証できる最小単位へ分割し、producer の契約と consumer の接続を分ける。
