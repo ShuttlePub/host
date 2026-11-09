@@ -1,0 +1,86 @@
+implementation_issue_packet:
+  issue_title: "profile-domain-policy-api-contract: Profile identity・Follow・個別 block/mute・domain-controls の OpenAPI 契約と username 段階移行"
+  issue_kind: feature
+  source_execution_unit: profile-domain-policy-api-contract
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "server/src/openapi.rs, server/src/openapi/, server/src/schema/ (account.rs と新設 profile 系 schema), server/src/route/account/mod.rs (POST /api/v1/accounts と Profile 作成の検証・未実装エラー), openapi.json"
+  target_part: "Profile 単位の identity / Follow / 個別 block・mute / domain-controls の認可・revision・エラーを定める OpenAPI 契約と、username 段階移行 (optional・未実装エラー) の明記"
+  dependencies: []
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない。"
+    - "REST ルート追加は route/account/mod.rs + openapi.rs 登録 + openapi.json 再生成の3点セット。openapi_spec_matches_committed_file テストが生成物とコミット済み openapi.json の一致を検証する"
+    - "現状 POST /api/v1/accounts は {name, is_bot}、Profile 作成 (POST /api/v1/profiles) は {display_name, summary}。いずれも username を持たず、Account 単位 actor が前提 (ADR 0002 は 1 Profile = 1 actor を採用済みだが実装は未追従)"
+    - "E8 は契約のみ。Profile actor・Follow・domain policy の実処理と username の実保存は後続 unit (P1/P2/P3o/P3i/D8P/D8G/D8R) が担当し、本番 root router へは P4 まで mount しない"
+    - "共有ファイル (server/src/openapi.rs, route.rs, main.rs, DI, migrations/, openapi.json) は別レーン D15 の E15a registration-gate-control-plane と競合する。E15a マージ後に rebase して openapi.json を再生成してからマージする"
+    - "username 仕様: 形式 ^[a-z0-9][a-z0-9._-]{0,63}$ (ASCII 小文字 1〜64 文字)、暗黙の trim・小文字化なし。予約語 admin, administrator, root, system, support, security, moderator, api, ap, auth, oauth, oauth2, login, logout, register, settings, well-known。DB 一意・削除済み再利用なし。Account 名から自動導出しない"
+    - "username 段階: E8 optional (指定時は形式検証し、保存未実装なら作成副作用前に明示的な未実装エラー。黙って無視しない。読取値は未設定を表現可能) → P1〜P3 optional で保存 → FN で UI 必須送信 → P4 以後 required (OpenAPI も required へ)"
+    - "D08 ユーザー決定 (grill d08-q01〜q15): Profile 単位、完全一致 domain のみ、mute は表示抑制のみ、block は双方向 Follow 解除＋新規操作拒否・解除しても関係復元せず、AP Block は送らない。新規 Follow の受理・送信拒否は Emumet、返信・引用・リポスト・いいね／絵文字の受理・送信拒否は ShuttlePub 本体の後続責務"
+  intent_references:
+    - "intents/emumet/features/personal-domain-controls/overview.md"
+    - "intents/emumet/features/personal-domain-controls/packets.md"
+    - "intents/emumet/features/personal-domain-controls/acceptance.md"
+    - "intents/emumet/features/profile-federation/overview.md"
+    - "intents/shuttlepub/packets/candidates.md (D08 節)"
+    - "intents/shuttlepub/product/social-experience.md (I08)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json"
+    - "intents/emumet/decisions/0002-account-address-on-emumet-domain.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md"
+    - "intents/emumet/decisions/0007-organization-accounts.md"
+    - "intents/emumet/features/ap-federation/overview.md"
+    - "intents/emumet/features/block-mute/overview.md"
+  acceptance_criteria:
+    - "OpenAPI (生成物 openapi.json) に Profile identity・Follow・個別 block/mute・domain-controls (Profile × domain の mute/block 取得・設定・解除) の route/schema が定義され、認可 (現在の所有者のみ)・revision (競合)・エラー (401/403/404/409/422/501 等) が明記されている"
+    - "POST /api/v1/accounts の profile_username と Profile 作成の username は P4 まで optional。指定時は形式 (^[a-z0-9][a-z0-9._-]{0,63}$)・予約語を検証し、保存未実装の間は作成副作用 (Account/Profile/イベント作成) の前に明示的な未実装エラーを返す。指定値を黙って捨てない。username を省略した旧 payload は従来どおり成功する"
+    - "Profile の読取表現で username は未設定を表現でき、将来用 Profile actor・Follow・domain-controls route が本番未 mount であることが schema/route の説明文に記載されている"
+    - "外部 ID は nanoid。username を更新する API を通常の編集機能として設けない (PATCH 等で username を変更できる契約を追加しない)"
+    - "契約のみで、新しい関係処理・方針保存・username 保存の実装を含まない。本番 root router に新 route を mount しない"
+    - "openapi.json を再生成して openapi_spec_matches_committed_file が通り、旧作成 payload・新 payload (username 付き)・未実装エラー (副作用なし) の contract test が追加され、既存 Rust CI が通る"
+    - "共有ファイルは E15a マージ後の main に rebase し openapi.json を再生成してからマージする"
+intent_placement:
+  primary_intent: intents/emumet/features/personal-domain-controls/overview.md
+  supporting_intents:
+    - intents/emumet/features/profile-federation/overview.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/product/social-experience.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+    - intents/emumet/decisions/0002-account-address-on-emumet-domain.md
+    - intents/emumet/decisions/0003-delegated-signing.md
+    - intents/emumet/decisions/0007-organization-accounts.md
+    - intents/emumet/features/ap-federation/overview.md
+    - intents/emumet/features/block-mute/overview.md
+  new_intent_needed: false
+  placement_rationale: "D08 の Emumet 側契約。DC / PF feature は host で新設済みで、primary を DC、Profile 移行基盤の PF を supporting にする"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/personal-domain-controls/packets.md
+      - intents/emumet/features/personal-domain-controls/acceptance.md
+      - intents/shuttlepub/packets/candidates.md
+    summary: "queue 登録後に E8 の範囲だけ「queue 登録済み」と記録し、D08 の実装分割と username 必須化時期 (P4) を維持する。D08 全体を ready/完了にしない (host-only)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/personal-domain-controls/acceptance.md
+    summary: "E8 の契約・検証境界を acceptance.md に記録済み。実装 PR の差分に応じて追記"
+closeout_learning:
+  expected: "username の段階移行 (optional→required) と未実装エラーの確定形、OpenAPI で本番未 mount route を表現した方法"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/personal-domain-controls/packets.md
+    - intents/emumet/features/profile-federation/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "REST API 契約 (POST /api/v1/accounts, POST /api/v1/profiles, openapi.json)"
