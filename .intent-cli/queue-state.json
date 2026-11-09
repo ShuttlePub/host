@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-09T23:19:50.2556793+00:00",
+  "updated_at": "2026-11-09T23:21:34.6463031+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -760,6 +760,44 @@
         "repo": "ShuttlePub/ShuttlePub",
         "number": 14,
         "url": "https://github.com/ShuttlePub/ShuttlePub/issues/14"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "quick-reaction-api-contract",
+      "title": "quick-reaction-api-contract: \u30AF\u30A4\u30C3\u30AF\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3(\u5E38\u7528\u7D75\u6587\u5B57\u8A2D\u5B9A\u30FBProfile \u5225\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3)\u306E /api/v1 API \u5951\u7D04",
+      "state": "queued",
+      "dependencies": [
+        "shuttlepub-openapi-foundation"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/quick-reaction-api-contract/implementation.md",
+        "review_context": ".intent-cli/issues/quick-reaction-api-contract/review-context.md",
+        "yaml": ".intent-cli/issues/quick-reaction-api-contract/packet.yaml"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "shuttlepub-web-foundation",
+      "title": "shuttlepub-web-foundation: shuttlepub-frontends \u306B SNS \u30E1\u30A4\u30F3 UI \u30A2\u30D7\u30EA apps/shuttlepub-web \u306E\u571F\u53F0\u3068 OpenAPI schema \u53D6\u8FBC\u57FA\u76E4",
+      "state": "queued",
+      "dependencies": [
+        "shuttlepub-openapi-foundation"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/shuttlepub-web-foundation/implementation.md",
+        "review_context": ".intent-cli/issues/shuttlepub-web-foundation/review-context.md",
+        "yaml": ".intent-cli/issues/shuttlepub-web-foundation/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",

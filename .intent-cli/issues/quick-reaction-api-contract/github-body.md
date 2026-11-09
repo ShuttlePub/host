@@ -72,7 +72,7 @@ Target part: "Profile 単位の常用絵文字設定 API と Profile×投稿の 
 
 ## Related Links
 
-- 先行ユニット: shuttlepub-openapi-foundation({{S0}}、ShuttlePub/ShuttlePub)
+- 先行ユニット: shuttlepub-openapi-foundation(ShuttlePub/ShuttlePub#14、ShuttlePub/ShuttlePub)
 - 後続ユニット: quick-reaction-web-ui(ShuttlePub/shuttlepub-frontends、本契約に準拠する mock を使う)
 - 意図: intents/shuttlepub/product/social-experience.md (I03)、intents/shuttlepub/packets/candidates.md (D03)
 - 決定記録: intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d03-q01〜q07、q06 は訂正版)

@@ -73,7 +73,7 @@ Target part: "SNS メイン UI アプリ(PureScript + Flame SSR/hydration + Bun 
 
 ## Related Links
 
-- 先行ユニット: shuttlepub-openapi-foundation({{S0}}、ShuttlePub/ShuttlePub)— 生成 schema の producer
+- 先行ユニット: shuttlepub-openapi-foundation(ShuttlePub/ShuttlePub#14、ShuttlePub/ShuttlePub)— 生成 schema の producer
 - 後続ユニット: shuttlepub-web-emumet-auth(認証)、quick-reaction-web-ui(UI)
 - 既存の参考実装: apps/emumet-web、apps/booskiff-web、apps/ui-catalog(visual)
 - 意図: intents/shuttlepub/product/social-experience.md、intents/shuttlepub/packets/candidates.md (共通の分割方針、D03)
