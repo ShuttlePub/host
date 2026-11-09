@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:registration-gate-control-plane",
+  "actor": "design",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-09T23:18:30.0069661+00:00",
+  "base_commit": "ae54867d97020bc9c6bd9c5b046d0144e33b9c29"
+}
