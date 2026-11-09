@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:quick-reaction-web-ui",
+  "actor": "design",
+  "team": "shuttlepub-main",
+  "claimed_at": "2026-11-09T23:14:21.6239153+00:00",
+  "base_commit": "37b7f4af8698c734ede2bff7fa1fd0c862ed7d01"
+}
