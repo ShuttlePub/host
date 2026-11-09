@@ -37,3 +37,9 @@ ShuttlePubで投稿をfilterする分割候補。主体・domain一致規則・b
 - [requirements.md](requirements.md) / [acceptance.md](acceptance.md) / [open-questions.md](open-questions.md) / [packets.md](packets.md)
 - 既存パターン: `kernel/src/entity/follow.rs`, `application/src/service/activitypub/outbound_follow.rs`
 - TODO 元: https://github.com/ShuttlePub/Emumet/issues/2
+
+## 参照（2026-11 追記、完了 packet・acceptance は変更しない）
+
+D08 は [personal-domain-controls](../personal-domain-controls/overview.md)（DC）と
+[profile-federation](../profile-federation/overview.md)（PF）として feature 化した。
+本 feature の個別 block/mute は Account 単位のまま完了済みで、Profile 単位への移行は PF の unit（P2/P3o）が扱う。

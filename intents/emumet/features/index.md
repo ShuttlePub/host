@@ -14,6 +14,12 @@
 - [org-accounts](org-accounts/overview.md) —
   [packets](org-accounts/packets.md) /
   [open questions](org-accounts/open-questions.md)
+- [profile-federation](profile-federation/overview.md) —
+  [packets](profile-federation/packets.md) /
+  [acceptance](profile-federation/acceptance.md)（PF。D08 の Profile 単位移行基盤）
+- [personal-domain-controls](personal-domain-controls/overview.md) —
+  [packets](personal-domain-controls/packets.md) /
+  [acceptance](personal-domain-controls/acceptance.md)（DC。D08 個人 domain block/mute）
 - [registration-readiness-gate](registration-readiness-gate/overview.md) —
   [packets](registration-readiness-gate/packets.md) /
   [acceptance](registration-readiness-gate/acceptance.md)

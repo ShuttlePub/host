@@ -29,3 +29,9 @@
 - [decisions.md](decisions.md)
 - [open-questions.md](open-questions.md)
 - [packets.md](packets.md)
+
+## 参照（2026-11 追記、過去 packet・決定は変更しない）
+
+domain 単位の個人 block/mute（D08）の機能正本は emumet domain 側:
+[personal-domain-controls](../../../emumet/features/personal-domain-controls/overview.md)（unit 一覧・依存・到達範囲は
+[packets.md](../../../emumet/features/personal-domain-controls/packets.md)）。

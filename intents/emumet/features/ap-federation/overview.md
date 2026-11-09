@@ -48,3 +48,8 @@ ActivityPub 連合との相互運用を提供する。**基盤は実装済み**�
 
 - [packets.md](packets.md)
 - コード: `server/src/route/activitypub/`, `application/src/service/activitypub/`, `kernel/src/activitypub.rs`
+
+## 参照（2026-11 追記）
+
+Account 単位 actor から Profile 単位 actor への移行（in-place reset）は
+[profile-federation](../profile-federation/overview.md) が扱う。既存の完了 packet・acceptance は変更しない。

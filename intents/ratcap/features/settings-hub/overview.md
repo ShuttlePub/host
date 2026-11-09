@@ -21,3 +21,9 @@
 - ブロック/ミュートセクションは将来実装のため placeholder 表示とする。
 - 表示設定セクションは現在のテーマ/形状選択を維持し、将来の拡張に備える。
 - `spago build` が成功する。
+
+## 参照（2026-11 追記、過去 packet・決定は変更しない）
+
+D08 の個人 domain block/mute 設定の機能正本は emumet domain 側:
+[personal-domain-controls](../../../emumet/features/personal-domain-controls/overview.md) /
+[profile-federation](../../../emumet/features/profile-federation/overview.md)（Profile username の入力 UI は FN unit）。
