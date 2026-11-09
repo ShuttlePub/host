@@ -77,7 +77,7 @@ Target part: "リアクションピッカー最上段の常用絵文字、反応
 
 ## Related Links
 
-- 先行ユニット: shuttlepub-web-foundation({{F0}}、ShuttlePub/shuttlepub-frontends)、quick-reaction-api-contract({{S3}}、ShuttlePub/ShuttlePub)
+- 先行ユニット: shuttlepub-web-foundation(ShuttlePub/shuttlepub-frontends#27、ShuttlePub/shuttlepub-frontends)、quick-reaction-api-contract(ShuttlePub/ShuttlePub#15、ShuttlePub/ShuttlePub)
 - 意図: intents/shuttlepub/product/social-experience.md (I03)、intents/shuttlepub/packets/candidates.md (D03)
 - 決定記録: intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d03-q01〜q07、q06 は訂正版)
 

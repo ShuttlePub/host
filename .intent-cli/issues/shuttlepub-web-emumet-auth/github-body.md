@@ -75,7 +75,7 @@ Target part: "shuttlepub-web の Bun BFF における Hydra OIDC 認証、HttpOn
 
 ## Related Links
 
-- 先行ユニット: shuttlepub-web-foundation({{F0}}、ShuttlePub/shuttlepub-frontends)
+- 先行ユニット: shuttlepub-web-foundation(ShuttlePub/shuttlepub-frontends#27、ShuttlePub/shuttlepub-frontends)
 - 先例: apps/booskiff-web の認証経路・実 OIDC E2E、packages/auth-core・auth-bun
 - 意図: intents/shuttlepub/product/social-experience.md、intents/shuttlepub/packets/candidates.md、ratcap oauth2-consent の既存決定
 

@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-09T23:22:03.6730838+00:00",
+  "updated_at": "2026-11-09T23:22:42.0271797+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -780,6 +780,11 @@
         "review_context": ".intent-cli/issues/quick-reaction-api-contract/review-context.md",
         "yaml": ".intent-cli/issues/quick-reaction-api-contract/packet.yaml"
       },
+      "linked_issue": {
+        "repo": "ShuttlePub/ShuttlePub",
+        "number": 15,
+        "url": "https://github.com/ShuttlePub/ShuttlePub/issues/15"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
@@ -799,6 +804,11 @@
         "review_context": ".intent-cli/issues/shuttlepub-web-foundation/review-context.md",
         "yaml": ".intent-cli/issues/shuttlepub-web-foundation/packet.yaml"
       },
+      "linked_issue": {
+        "repo": "ShuttlePub/shuttlepub-frontends",
+        "number": 27,
+        "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/27"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
@@ -816,6 +826,11 @@
         "review_context": ".intent-cli/issues/registration-kratos-guard-contract/review-context.md",
         "yaml": ".intent-cli/issues/registration-kratos-guard-contract/packet.yaml"
       },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 64,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/64"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
@@ -832,6 +847,11 @@
         "implementation": ".intent-cli/issues/registration-gate-control-plane/implementation.md",
         "review_context": ".intent-cli/issues/registration-gate-control-plane/review-context.md",
         "yaml": ".intent-cli/issues/registration-gate-control-plane/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 65,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/65"
       },
       "worker_role": "implementation",
       "review_role": "review",
