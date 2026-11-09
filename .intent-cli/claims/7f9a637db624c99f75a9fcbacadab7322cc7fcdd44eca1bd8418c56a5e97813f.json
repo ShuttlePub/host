@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:registration-kratos-guard-contract",
+  "actor": "design",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-09T23:18:36.2581715+00:00",
+  "base_commit": "39d69b8b3a43536eb370b64382479a38ee9f3469"
+}
