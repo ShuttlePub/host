@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-web-emumet-auth",
+  "actor": "design",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-09T23:25:34.6111438+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-09T23:14:15.3777449+00:00",
+  "base_commit": "2e78d0a72b52ea9f8e2e6b437d8fc9e815f5fbfb"
+}
