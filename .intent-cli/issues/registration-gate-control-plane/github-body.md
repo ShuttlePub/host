@@ -55,7 +55,7 @@ Repository: `ShuttlePub/Emumet`
 | 管理者状態 | override | ラッチ | 観測 | 判定 |
 |---|---|---|---|---|
 | Closed | * | * | * | AdminClosed (拒否)。override は閉鎖状態を開かない |
-| Open | On | * | * | Accept。通常の自動停止・障害時拒否判定を行わない (q10) |
+| Open | On | * | * | Accept。通常の自動停止・障害時拒否判定を行わない (q10)。ただし effective な (準備済みの) 対策があれば登録時に課す。override は準備未完了・障害でも開放するだけで、準備済み保護を外さない |
 | Open | Off | ConfigLost | * | Stopped (拒否)。復旧しても自動で解除しない (q03) |
 | Open | Off | なし | configured が 0 件 | ラッチ ConfigLost 成立 → Stopped (q02) |
 | Open | Off | なし | configured ≥ 1 かつ effective が 0 件 | TemporaryReject (拒否)。いずれかが Healthy に戻れば自動で Accept (q06) |
@@ -66,15 +66,15 @@ Repository: `ShuttlePub/Emumet`
 - open: 最低条件を満たす (effective ≥ 1) 場合のみ成功し、ラッチを解除する (手動再開を兼ねる)。満たさない場合は拒否 (422 相当)
 - open + override (警告 ack 必須): 最低条件を満たさなくても開放でき、override=On にする。ack がなければ拒否
 - close: 手動閉鎖。override/ラッチの値は保持するが判定は常に AdminClosed
-- revoke override: override=Off。解除時点で最低条件を満たさない場合は管理者状態を Closed にする (以後の開放は通常の open で最低条件が必要)
+- revoke override: override=Off にして通常判定へ戻る。解除時点の観測を上表で再評価する (configured が 0 件ならラッチ ConfigLost で Stopped、configured ≥ 1 かつ effective 0 件なら TemporaryReject、effective ≥ 1 なら Accept)。管理者状態は Closed にしない
 - 観測の更新 (内部入力): 上表で判定を再計算する。ラッチの成立は『Open かつ override Off かつ configured 0 件』の観測時のみ
 
-この表は提案ではなく受け入れ基準の具体化である。実装上の細部 (型名・DB 列・API パス) は child が決めてよい。
+この表は提案ではなく受け入れ基準の具体化である。なお override の細部 (準備済み保護の扱い・解除後の挙動・通知・常時表示) は親が最終確認中で、本 packet の記述を現時点の仕様とする。変更があれば issue で連絡される。実装上の細部 (型名・DB 列・API パス) は child が決めてよい。
 表と矛盾する要求・仕様の曖昧さを見つけた場合は実装を進めずに issue へ質問すること (勝手に拡張しない)。
 
 ## 通知イベントと重複排除
 
-- 種別 (最低限): `outage_started` / `outage_recovered` (q06)、`protection_degraded` (q07。片方のみ障害)、`protection_lost_stopped` (q02 のラッチ成立。手動再開が必要であることを管理者が知るため)
+- 種別 (最低限): `outage_started` / `outage_recovered` (q06)、`protection_degraded` (q07。片方のみ障害)、`protection_lost_stopped` (q02 のラッチ成立。手動再開が必要であることを管理者が知るため)、`override_started` / `override_revoked` (override の開始・解除。誰が実行したかは監査記録にも残す)
 - 各イベントは安定した event ID を持ち、状態遷移と同一 transaction で保存される (E15w が後で同じ永続イベントを配送する。本 unit では配送しない)
 - 同一 episode (状態が継続している間) の probe/観測の反復では新しいイベントを作らない。episode が終わって再度発生した場合は新しい episode として生成する
 - 既読は管理者ごとの独立した記録。未読件数 API は呼び出した管理者の未読だけを返し、別の管理者の既読を共有・上書きしない
@@ -105,7 +105,7 @@ Repository: `ShuttlePub/Emumet`
 - 片方のみ障害: 動作中の対策のみ必須で継続し、防御低下の通知イベントが 1 回だけ生成される
 - 両方が一時障害: 一時拒否 + 障害通知。復旧観測で手動再開なしに自動で受付に戻り、復旧通知が生成される
 - 設定喪失: 停止ラッチ成立。復旧しても自動再開せず、手動再開のみで解除。再開時に最低条件未達なら拒否。手動閉鎖を自動解除しない
-- override: 警告 ack 必須、明示解除まで有効、有効中は通常の停止・障害拒否判定をしない、取得 API で常時判別できる。状態表が純粋状態機械のテストで固定されている
+- override: 警告 ack 必須、明示解除まで有効、有効中は通常の停止・障害拒否判定をしない (準備済みの保護は登録時に課す)、解除後は通常判定へ戻る、開始・解除が通知イベントになる、取得 API で常時判別できる (管理画面の全ページ常時警告表示 F15 が参照できる)。状態表が純粋状態機械のテストで固定されている
 - 状態遷移と通知イベントを同一 transaction で保存する。同一 episode の probe 反復で通知が増殖しない
 - 既読状態は管理者間で共有されない
 - revision による競合検出 (409)、監査記録、管理者以外は拒否 (401/403)。既存 API (login・POST /api/v1/accounts) の挙動は不変
