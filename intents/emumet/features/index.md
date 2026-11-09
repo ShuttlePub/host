@@ -14,3 +14,6 @@
 - [org-accounts](org-accounts/overview.md) —
   [packets](org-accounts/packets.md) /
   [open questions](org-accounts/open-questions.md)
+- [registration-readiness-gate](registration-readiness-gate/overview.md) —
+  [packets](registration-readiness-gate/packets.md) /
+  [acceptance](registration-readiness-gate/acceptance.md)
