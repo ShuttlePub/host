@@ -43,7 +43,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **実装アプローチ（候補横断）**: [正規記録](../interviews/discord-feature-prioritization-2026-11-09.json)の
   `candidate-priority-q02-implementation-approach`。フロントエンドモノレポ（`ShuttlePub/shuttlepub-frontends`）にSNSメインUIアプリの土台を作り、その後D03などのUIを作る。
   まずD15（Emumet + emumet-web）とD03／D08のサーバー側を進める。ShuttlePub backendの着手には時間がかかる可能性があるため、UIを先に進める。
-  APIはSwagger／OpenAPIで定義だけ作り、バックエンド実装はまだ行わない。API定義の具体的な配置場所は確認中で、この回答では決めない。
+  q02の時点ではAPI定義の配置場所は確認中だったが、`candidate-priority-q03-openapi-definition-location`で配置先と形式を決定した。`docs/openapi.json`は廃止予定のため使用せず、`ShuttlePub/ShuttlePub`のserver層でWebAPI定義だけを実装し、utoipa等でOpenAPI schemaを生成する。ハンドラーの本実装は行わず、frontendsのSNS UIがその定義を使う。
   このアプローチは全候補の固定順位やqueue登録を決めるものではなく、各候補を実装readyにするものでもない。
 - D01–D17 は意図候補 ID。既存の決定記録の D 番号とは別の名前空間。
   1 候補をそのまま 1 実行 packet にしない。契約整理後、target repo ごとに
