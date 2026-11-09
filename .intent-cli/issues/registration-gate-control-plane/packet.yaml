@@ -1,0 +1,76 @@
+implementation_issue_packet:
+  issue_title: "registration-gate-control-plane: 登録ゲートの管理 control plane (開閉・手動再開・override・状態遷移・通知イベント・管理者別既読)"
+  issue_kind: feature
+  source_execution_unit: registration-gate-control-plane
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/entity, kernel/src/repository, application/src/service, server/src/route, server/src/api, server/src/openapi.rs, server/src/route.rs, server/src/main.rs, driver/src/database/postgres, migrations, openapi.json"
+  target_part: "登録ゲート control plane: 純粋状態機械 + 永続化 (状態/revision/監査/通知イベント/管理者別既読) + 管理者 REST API + OpenAPI 再生成 (実 Kratos 遮断・実 provider 検証は含まない)"
+  dependencies: []
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない"
+    - "D15 (registration-readiness-gate) のユーザー決定 d15-q01〜q11 が仕様の正本 (issue 本文の『D15 決定の要約』参照)。本 unit は『管理者向け制御面と判定ロジックの契約』だけを実装し、実 Kratos registration の遮断 (E15d)・実 provider 検証 API (E15c)・外部 Webhook 配送 (E15w)・管理 UI (F15) は後続 unit が所有する"
+    - "観測時点 (Emumet HEAD ef82462): ローカル Kratos 設定 (ory/kratos/kratos.yml) は registration/password が有効で verification・CAPTCHA の項目は無い。Kratos は compose で v1.3.1 の dev モード起動。本 unit は Kratos 設定・compose を変更しない"
+    - "管理系 API の先例: server/src/route/report/admin.rs (AdminReportApi) の管理者認可 (Keto 判定、ADR 0004 の admin/moderator ロール)。管理者認可は既存の判定を再利用し、新しいロールモデルを作らない"
+    - "ES/CRUD 方針: ADR 0006 (transaction + projection)、直近 migration は migrations/20260904000001_profile_transfer.sql。本 unit の migration は最新番号の次を採番する (E8 など他 unit と共有ファイルを触るため、先に merge される前提 — 下記『共有ファイルと merge 順』)"
+    - "ゲート判定の入力 (対策の設定有無・検証 API の観測結果) は本 unit では kernel の型 + port として定義し、テスト fixture と内部 use case からのみ供給する。公開 HTTP で観測結果を書き込める無認可 endpoint を作らない (実観測の供給元は E15c)"
+    - "共有ファイル (server/src/openapi.rs, server/src/route.rs, server/src/main.rs, DI wiring, migrations/, openapi.json) は別レーン E8 (profile-domain-policy-api-contract) より先に merge する。E15a 取り込み後に E8 が OpenAPI を再生成する。編集は最小限にし、他 unit の差分を巻き込まない"
+  intent_references:
+    - intents/emumet/features/registration-readiness-gate/overview.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+  acceptance_criteria:
+    - "メール認証 OR BOT 対策の最低条件が判定できる (メールのみ/BOT のみ/両方/どちらもなし)。両方は必須ではなく、どちらもなしは通常の開放を拒否する"
+    - "両対策を設定済みで片方のみ障害なら、動作中の対策のみを必須にして受付継続 (障害側の検証は課さない) とし、防御低下の通知イベントが 1 回だけ生成される"
+    - "両対策が一時障害 (設定は保持) の間は一般登録の一時拒否となり、障害通知イベントを生成し、復旧観測で手動再開なしに自動で受付に戻り、復旧通知イベントを生成する"
+    - "設定喪失 (開放中に設定上の有効対策が 0 になる) で停止ラッチが成立し、対策が復旧しても自動再開しない。管理者の手動再開のみで解除され、再開時に最低条件を満たさなければ拒否される。管理者の手動閉鎖を自動で解除しない"
+    - "override は警告確認の明示 (ack) を必須とし、解除操作まで有効で、有効中は通常の自動停止・障害時一時拒否判定を行わず、『override 中』が取得 API で常に判別できる。override の状態表 (後述) が純粋状態機械のテストで固定されている"
+    - "状態遷移と通知イベントの保存が同一 DB transaction で行われる (片方だけ永続化される経路がない)。同一 episode 内で probe/観測を反復しても通知イベントが増殖しない"
+    - "通知一覧・未読件数・既読化が管理者ごとに独立し、ある管理者の既読が別の管理者の未読状態に影響しない"
+    - "状態変更は revision による楽観的競合検出 (不一致は 409) を持ち、全変更が監査記録 (誰が・何を・変更前後・理由・override の ack) に残る"
+    - "管理者以外は全 API で拒否される (401/403)。既存 API の挙動 (login・POST /api/v1/accounts を含む) は変更されない"
+    - "OpenAPI (openapi.json) が再生成され差分検査に通る。実 Kratos・実 provider・Webhook には接続しない (本 unit が完了しても実登録は守られない旨を API/ドキュメントに明記)"
+intent_placement:
+  primary_intent: intents/emumet/features/registration-readiness-gate/overview.md
+  supporting_intents:
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+  new_intent_needed: false
+  placement_rationale: "RG feature (registration-readiness-gate) は host 側で overview.md / packets.md / acceptance.md を新設済みで index 登録済み。E15a は packets.md の第1便 unit。candidates.md D15 節と grill 記録 d15-q01〜q11 がユーザー決定の正本"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/overview.md
+      - intents/emumet/features/registration-readiness-gate/packets.md
+      - intents/shuttlepub/packets/candidates.md
+    summary: "RG packets.md の E15a に issue/PR リンクを追記。candidates.md D15 節へ E15a の queue 登録・完了範囲だけを追記 (D15 全体は ready/完了にしない)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/acceptance.md
+    summary: "D15 の状態表・通知イベント契約・『実登録はまだ守らない』境界と、検証境界を acceptance.md に記録"
+closeout_learning:
+  expected: "確定した状態表 (状態×観測→判定)、通知イベント種別と episode 重複排除の定義、管理 API の最終形、revision/監査の契約"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "REST API (/api/v1/admin/registration-gate*: 状態取得・開閉・再開・override・通知一覧・既読) と OpenAPI (openapi.json)"

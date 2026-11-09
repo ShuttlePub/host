@@ -1,0 +1,77 @@
+implementation_issue_packet:
+  issue_title: "registration-kratos-guard-contract: Kratos v1.3.1 の registration pre-persist guard 実証と保護の実装所在の決定 (隔離検証・fixture)"
+  issue_kind: feature
+  source_execution_unit: registration-kratos-guard-contract
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "e2e/registration-guard (新設: 隔離 compose override・Kratos 設定 fixture・実験スクリプト・結果記録), ory/kratos (実験用 fixture のみ。本番設定の変更は禁止)"
+  target_part: "Kratos v1.3.1 実バイナリでの registration 遮断実証 (identity 未作成の証拠)・保護 (メール所有確認/BOT token 検証/ゲート判定) の実装所在の決定材料・観測契約・再現 fixture"
+  dependencies: []
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない。ADR は host の intents/emumet/decisions/registration-protection-placement.md に置かれる (child は host を編集しない。結論は PR 本文と成果物の結果記録に書き、host 側が ADR へ write-back する)"
+    - "観測時点 (Emumet HEAD ef82462): compose.yml は Kratos を oryd/kratos:v1.3.1 の dev モードで起動 (kratos-migrate + kratos)。ory/kratos/kratos.yml は registration (ui_url 設定) と password method が有効で、verification・CAPTCHA・hook の設定は無い。identity schema は ory/kratos/identity.schema.json、DB は compose の postgres 内 kratos DB"
+    - "D15 のユーザー決定 d15-q01〜q11 (issue 本文の要約参照)。特に q05 (検証 API の実応答を確認して初めて準備済み)、q06/q07 (一時障害・片方障害の扱い)、q08 (ゲート対象は Ory self-service registration のみ。ログイン済みの POST /api/v1/accounts は対象外)"
+    - "どの hook 段階 (flow 作成時 / persist 前 / persist 後) で、identity を作成せずに registration を拒否できるかは Kratos v1.3.1 で未確認。仮定せず実験で確定する。web_hook の失敗・timeout・不達時の挙動 (fail-open か fail-closed か) も実験で確定する"
+    - "このスパイクの成果物 (compose override・設定 fixture・スクリプト・結果記録) は E15c/E15d の入力になる。実装は E15c/E15d が所有し、本 unit は本番 Kratos 設定 (ory/kratos/kratos.yml、compose.yml の既存サービス) へ hook を接続しない"
+  intent_references:
+    - intents/emumet/features/registration-readiness-gate/overview.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/decisions/0001-stellar-frozen-ory-authz.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+  acceptance_criteria:
+    - "Kratos v1.3.1 実バイナリ (隔離 compose) で、browser flow と API flow の直接 registration、閉鎖前に作成された flow の submit、hook の timeout / 不達 / 非 2xx 応答、override 相当 (ゲートを通過させる設定) の実験結果が再現手順つきで記録されている"
+    - "ゲートが拒否した registration で identity が作成されていない証拠がある (Kratos admin API の identity 一覧/取得と DB の観測。拒否前後の identity 数と、拒否された試行のメールアドレスで identity が存在しないこと)"
+    - "拒否可能な hook 段階を特定し、identity 未作成のまま拒否できる段階と、persist 後に走るため identity が残ってしまう段階を区別して記録している"
+    - "既存 identity の login、およびログイン済み利用者の認証済み Account 追加 (POST /api/v1/accounts 相当の経路) がゲート設定の影響を受けないことを実験で示している"
+    - "メール所有確認・BOT token 検証・ゲート判定を、それぞれ Kratos ネイティブ機能と Emumet webhook のどちらで担うかを、実験結果に基づく推奨として根拠つきで記録している (最終決定は親が確認して host の ADR に記録)"
+    - "実効設定の観測方法 (Kratos が実際に使用している設定をどう観測するか。health 応答や設定ファイルの存在は ready の証拠にしない)、設定喪失の検出方法、検証 API 応答の意味 (応答 2xx/4xx/5xx/timeout を何と解釈するか)、provider と失敗分類 (空設定・無効資格情報・timeout・429/5xx) が文書化されている"
+    - "UI を迂回した直接 API registration、直接 browser flow など、UI 経路以外でもゲートが抜けない経路の確認結果と、抜け道が残る場合はその条件が記録されている"
+    - "隔離 compose・Kratos 設定 fixture・実験スクリプト・結果記録が再現可能な形でリポジトリに残り、1 つのコマンドで実験を再実行できる (README に手順)"
+    - "本番 Kratos 設定・既存 compose のサービス定義・既存アプリコードの挙動を変更していない。成立しない条件が見つかった場合は影響と代案を結果記録に明記する"
+intent_placement:
+  primary_intent: intents/emumet/features/registration-readiness-gate/overview.md
+  supporting_intents:
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/decisions/0001-stellar-frozen-ory-authz.md
+  new_intent_needed: false
+  placement_rationale: "RG feature (registration-readiness-gate) は host 側で overview.md / packets.md / acceptance.md を新設済みで index 登録済み。E15b は packets.md の第1便 unit で、保護の実装所在を決める ADR を intents/emumet/decisions/registration-protection-placement.md に新設する"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/overview.md
+      - intents/emumet/features/registration-readiness-gate/packets.md
+      - intents/shuttlepub/packets/candidates.md
+    summary: "RG packets.md の E15b に issue/PR リンクと実証結果の要約を追記。candidates.md D15 節へ E15b の queue 登録・完了範囲だけを追記 (D15 全体は ready/完了にしない)"
+  adr:
+    required: true
+    target_paths:
+      - intents/emumet/decisions/registration-protection-placement.md
+    decision_title: "登録保護の実装所在: メール所有確認・BOT token 検証・ゲート判定を Kratos ネイティブ / Emumet webhook のどこで担うか (Kratos v1.3.1 pre-persist guard 実証に基づく)"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/acceptance.md
+    summary: "実証結果・観測契約・検証 API 応答の意味・provider と失敗分類を acceptance.md に記録"
+closeout_learning:
+  expected: "拒否可能な hook 段階、fail-open/closed の実挙動、実効設定の観測方法、設定喪失の検出方法、検証 API 応答の解釈、UI 迂回経路の結論"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/decisions/registration-protection-placement.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/Emumet の e2e/registration-guard (隔離 compose・fixture・実験スクリプト・結果記録)"
