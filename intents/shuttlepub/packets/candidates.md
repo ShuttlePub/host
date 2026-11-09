@@ -880,6 +880,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **適用する登録経路として採用済み**: `d15-q08-ory-self-service-registration-only`。準備ゲートは新しい Ory identity を作る self-service registration に適用し、ログイン済み利用者による Emumet Account 追加（`POST /api/v1/accounts`）は対象外とする。Account 数上限等の濫用対策は別論点。
 - **無対策での管理者上書きとして採用済み**: `d15-q09-admin-confirmed-unprotected-override`。最低条件を満たさない状態でも、管理者が警告を明示的に確認したうえで一般開放できる上書き手段を認める。
 - **上書きの有効期間・表示として採用済み**: `d15-q10-override-until-admin-revokes`。対策が有効になっても自動解除せず、管理者の明示的な解除操作まで上書きを維持する。上書き中は通常ゲートの自動停止・障害時一時拒否判定を行わず、管理画面に上書き中である旨を常時表示する。
+- **管理者への通知先として採用済み**: `d15-q11-admin-notification-channels`。障害・復旧・防御低下の通知を管理画面内の通知一覧と未読表示で届け、管理画面を開いていない場合にも届く外部Webhookを初回から含める。メール通知は前提にしない。Webhookの設定・認証・payload・配送保証等の詳細は設計・検証に残す。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   Ory self-service identity 登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。
@@ -887,6 +888,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   設定だけが有効で検証APIが応答しない場合は準備済みと扱わないことも確認する。
   開放中に最低条件を満たす対策が残らない一時障害では新規一般登録だけを拒否し、管理者へ障害・復旧を通知して、API復旧後に自動受付再開することを確認する。
   メール認証とBOT対策の両方が設定済みで片方だけが障害なら、動作中の対策だけで受付を続け、障害側の検証を課さず、管理者へ通知することも確認する。設定喪失時の手動再開ルールとは区別する。
+  障害・復旧・防御低下の通知が管理画面内の通知一覧に表示され未読状態も示されること、管理画面を開いていなくても外部Webhookで届くことを確認する。メール通知に依存しない。
   準備ゲートが新しい Ory identity の self-service registration にだけ適用され、ログイン済み利用者の `POST /api/v1/accounts` による追加 Account 作成を拒否しないことを確認する。Account 数上限等の濫用対策は別論点として扱う。
   無対策の一般開放は通常拒否し、管理者が警告を明示確認した上書きだけ許可することを確認する。対策復旧後も管理者の明示解除までは上書きが続き、上書き中は通常の停止／障害判定を行わず、管理画面に常時表示することを確認する。
   設定変更後と UI を経由しない登録の入口でも整合することを確認する。
@@ -895,7 +897,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   招待登録を提供する場合は一般開放の最低条件と特定相手への招待を分離し、招待例外を一般受付へ誤適用しないことを、入口・識別契約の設計後に検証する。既存の認証・招待承認は維持する。
 - **依存**: [認証を Ory へ委譲する決定](../../emumet/decisions/0001-stellar-frozen-ory-authz.md)、
   登録設定の実際の管理主体と管理者権限。
-- **未決事項（技術設計・検証）**: 対象BOT対策の具体的な範囲と復旧判定、稼働確認後の監視、Ory self-service identity 登録経路へのゲート接続契約、特定招待の識別・入口との対応・実質的な一般開放経路への例外誤適用防止、停止の検出タイミング・確認中フロー、管理者権限・本人確認・UI/APIの詳細、管理通知の経路、対策設定と上書き状態の競合、セルフホスト例外。
+- **未決事項（技術設計・検証）**: 対象BOT対策の具体的な範囲と復旧判定、稼働確認後の監視、Ory self-service identity 登録経路へのゲート接続契約、特定招待の識別・入口との対応・実質的な一般開放経路への例外誤適用防止、停止の検出タイミング・確認中フロー、管理者権限・本人確認・UI/APIの詳細、通知の発生条件・順序・配送遅延、Webhookの宛先設定／認証／payload／再送・失敗時の扱い、対策設定と上書き状態の競合、セルフホスト例外。
 - **既存との関係**: ShuttlePub に認証基盤を新設せず、Emumet / Ory の登録・管理設定へ接続する候補。
 - **限定した実装確認（2026-10-21、実行検証なし）**: Emumet HEAD `ef82462a1ac29786701f07feed12e9efe7236f30`の[ローカルKratos設定](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/ory/kratos/kratos.yml#L11-L20)はself-service登録とpassword認証が有効で、[compose](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/compose.yml#L84)はKratosをdevモードで起動する。確認した設定にはverification／CAPTCHAの項目を確認していない。本番の設定状態や、これら対策の提供可否を断定する調査ではない。
   Emumetには別途、[AuthClaimsを受け取るPOST /api/v1/accounts](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/client.rs#L103-L119)と[そのルーティング](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/mod.rs#L54-L58)がある。`d15-q08-ory-self-service-registration-only`で準備ゲートは新しいOry identityのself-service registrationのみを対象とし、この追加Account作成経路は対象外と採用した。これは調査した既存経路の違いを示すもので、D15のゲート実装や本番の準備完了を確認したものではない。
