@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:quick-reaction-api-contract",
-  "actor": "design",
-  "team": "shuttlepub-main",
-  "claimed_at": "2026-11-09T23:14:02.7294404+00:00",
-  "base_commit": "3bf96baa5f48bb3ba97b215ab5011e24de58824b"
-}

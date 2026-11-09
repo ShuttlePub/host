@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:quick-reaction-api-contract",
+  "actor": "design",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-09T23:25:13.2379979+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-09T23:14:02.7294404+00:00",
+  "base_commit": "a5f55413da9960c7401746daabb693ec2ff37300"
+}
