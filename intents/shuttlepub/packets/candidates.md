@@ -513,13 +513,15 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **ブロック解除後のフォロー関係として採用済み**: `d08-q10-no-restore-follow-relationships`。解除時にブロックによって切れたフォロー／フォロワー関係は復元せず、解除用の関係一覧も保持しない。再びつながる場合は利用者が再フォローする。
 - **純粋boostの表示として採用済み**: `d08-q11-hide-pure-boosts`。ブロック／ミュートしていない人が対象domainの投稿をコメントなしでboostした場合も、boost全体を隠してタイムラインに表示しない。q06のコメント付き引用を引用投稿全体隠す方針と整合させる。
 - **ブロック時のActivityPub通知として採用済み**: `d08-q12-no-ap-block-activity`。相手サーバーへActivityPub Blockは明示送信せず、フォロー解除に必要な最小限の通知だけを送る。具体的な通知方式・連合契約は設計・検証に残す。
+- **Profile単位への移行・実処理の対象範囲として採用済み**: `d08-q13-profile-migration-persistence-and-unfollow`。既存Account単位のfollow実装からProfile単位への移行、設定の実際の保存、対象フォロー関係の実際の解除まで今回のD08に含める。API契約とスタブだけで済ませ、移行・適用を後続へ送る案は採用しない。移行・保存・連合処理の具体方式は設計・検証に残す。
 - **候補の状態**: 主要な利用意図は整理済み。Profile／domain判定・表示／通知・操作認可／連合・保存／同期等の設計・検証待ちで実装readyではない。
   candidate・queue未登録・issue未公開を維持し、実装packetへ自動昇格しない。
 - **仮 slug**: `personal-domain-controls`。
-- **target repo 別分割**: Emumet のProfile単位domain方針保存・取得／新規Follow受理・送信判定候補、ShuttlePub の投稿／通知filter・新規反応受理／操作判定候補、
+- **target repo 別分割**: Emumet のAccount単位からProfile単位へのfollow graph／AP identity移行、Profile単位domain方針の実保存・取得、既存フォロー関係の実解除、新規Follow受理・送信判定候補、ShuttlePub の投稿／通知filter・新規反応受理／操作判定候補、
   frontends の設定・適用状態表示候補。Profileを主体とするAPI・認可とAP identity対応の具体契約を決める。
 - **最小受付・検証案（未実施）**: Aが指定したdomainのミュートで表示が抑制され既存関係は残り、ブロックでは表示抑制と自分側の既存フォロー／フォロワー関係の両方向解除を確認する。
   同じAccountのProfile Pで設定しても別Profile Qの表示・フォロー関係は変わらず、他AccountのProfileにも影響せず、管理者の全体サーバーブロックを発生させない。
+  Profileごとの設定が実際に保存され再取得後も適用されること、既存Account単位のfollow実装をProfile単位へ移行し、ブロック対象の既存フォロー関係が実際に解除されることを確認する。Profile Pでの保存・解除は同じAccountのProfile Qへ波及させない。
   Pへの新規FollowとP投稿への返信・引用・リポスト・いいね／絵文字を個別に拒否し、D13で許可してもブロックを迂回しないこと、ブロックしていないQへ誤適用しないことを確認する。ミュートだけにはこの受理拒否を自動適用しない。
   Pから対象domainへの各新規操作もブロック中は拒否され、明示解除後は通常の可視性・権限等に従うことを確認する。UIだけでなくAPI側でも迂回させず、Qの操作へ誤適用しない。
   両機能について対象domainの投稿がtimeline・投稿検索結果で抑制され、通知も表示抑制されること、Pの設定をQへ誤適用しないことを確認する。
@@ -533,9 +535,9 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   ドメインブロック時に相手サーバーへActivityPub Blockを送らず、フォロー解除に必要な最小限の通知にとどめることを確認する。具体的な通知方式・連合契約は別途設計する。
   既存通知の扱い・通知表示／配送とpushの具体契約は設計後に検証し、配信済みpushの回収や保存記録の削除はこの検証案で要求しない。解除後の表示も別途検証する。
 - **依存**: Emumet の既存 block/mute と権限、ShuttlePub の閲覧経路への適用。
-- **未決事項**: Profile主体の認可・保存／AP identity移行／同期契約、ドメイン表記の正規化・判定時点、多段引用のactor帰属判定、直接閲覧の明示表示の対象範囲／UI／持続・古い状態／再読込／同期、Account検索／一覧等の適用面とAPI／index／非表示情報の境界、
+- **未決事項**: 今回含めるAccount単位followからProfile単位follow graph／AP identityへの移行、設定の実保存、対象フォロー関係の実解除について具体的な移行・保存・認可・同期方式、ドメイン表記の正規化・判定時点、多段引用のactor帰属判定、直接閲覧の明示表示の対象範囲／UI／持続・古い状態／再読込／同期、Account検索／一覧等の適用面とAPI／index／非表示情報の境界、
   既存通知／backlogの遡及・push／表示と配送遅延・通知内の非表示actor情報の具体的扱い、解除後の表示、
-  受信済みいいね／絵文字件数以外の既存反応・自分からの過去反応・リポスト件数、双方向新規操作のサーバー側認可／判定時点／受理・送信とAP routing契約、古い設定・再送・peer配送の整合、フォロー解除に必要な最小限の通知の具体方式・連合配送やpeer側反映、既存関係を解除する具体処理。
+  受信済みいいね／絵文字件数以外の既存反応・自分からの過去反応・リポスト件数、双方向新規操作のサーバー側認可／判定時点／受理・送信とAP routing契約、古い設定・再送・peer配送の整合、フォロー解除に必要な最小限の通知の具体方式・連合配送やpeer側反映、既存関係を実際に解除する具体処理。
 - **既存との関係**: 既存のユーザー対象 block/mute をドメイン粒度へ拡張する候補。
   [frontends 側の既存要求](../../ratcap/features/block-mute/requirements.md) と統合し、全体ブロックを置換しない。
 - **限定した実装確認（2026-10-20、domain方針の採用ではない）**: Emumet HEAD `ef82462a1ac29786701f07feed12e9efe7236f30`の[Block](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/block_mute.rs#L36)／[Mute API](https://github.com/ShuttlePub/Emumet/blob/ef82462a1ac29786701f07feed12e9efe7236f30/server/src/route/account/block_mute.rs#L164)はlocal Account nanoidを主体とする個別対象の操作。
