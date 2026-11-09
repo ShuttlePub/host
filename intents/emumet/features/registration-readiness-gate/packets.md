@@ -11,8 +11,8 @@ domain `emumet`。E15a〜E15w の target は `ShuttlePub/Emumet`、F15 のみ `S
 
 | unit | slug | 範囲 | 依存 | 状態 |
 |---|---|---|---|---|
-| E15a | `registration-gate-control-plane` | 管理者の開閉・手動再開・override・revision・監査・状態遷移・通知イベント・管理者別既読。実 Kratos 遮断・実 provider 検証は含まない | なし | 第1便（packet 化・queue 登録対象） |
-| E15b | `registration-kratos-guard-contract` | Kratos v1.3.1 の pre-persist guard 実証と保護の実装所在の決定（ADR）。本番 Kratos 設定への hook 接続は含まない | なし | 第1便（packet 化・queue 登録対象） |
+| E15a | `registration-gate-control-plane` | 管理者の開閉・手動再開・override・revision・監査・状態遷移・通知イベント・管理者別既読。実 Kratos 遮断・実 provider 検証は含まない | なし | queue 登録・issue 公開済み（[Emumet#65](https://github.com/ShuttlePub/Emumet/issues/65)） |
+| E15b | `registration-kratos-guard-contract` | Kratos v1.3.1 の pre-persist guard 実証と保護の実装所在の決定（ADR）。本番 Kratos 設定への hook 接続は含まない | なし | queue 登録・issue 公開済み（[Emumet#64](https://github.com/ShuttlePub/Emumet/issues/64)） |
 | E15c | `registration-protection-readiness` | E15b で決めた保護 adapter・実検証 API・設定世代・readiness 鮮度期限・設定喪失と一時障害の分類 | E15a, E15b | 後続（予定）。**E15b の所在・provider・観測契約を親が確認するまで draft しない** |
 | E15d | `registration-gate-enforcement` | 実 Kratos hook 配線・保護実行・継続 probe・ゲートと通知イベントの統合。本番 Kratos 設定変更は E15d が所有 | E15a, E15b, E15c | 後続（予定）。E15c と同じ draft ゲート |
 | E15w | `registration-admin-notification-webhook` | 永続イベントの外部 Webhook 配送（stable event ID・署名・timeout/再試行・失敗状態・管理者テスト/再試行） | E15a | 後続（予定） |
@@ -20,8 +20,8 @@ domain `emumet`。E15a〜E15w の target は `ShuttlePub/Emumet`、F15 のみ `S
 
 queue 登録済みの unit（登録成功後に追記する）:
 
-- E15a `registration-gate-control-plane` — （queue 登録後に issue リンクを追記）
-- E15b `registration-kratos-guard-contract` — （queue 登録後に issue リンクを追記）
+- E15a `registration-gate-control-plane` — [Emumet#65](https://github.com/ShuttlePub/Emumet/issues/65)（packet: `.intent-cli/issues/registration-gate-control-plane/`、2026-11-10 queue 登録・issue 公開）
+- E15b `registration-kratos-guard-contract` — [Emumet#64](https://github.com/ShuttlePub/Emumet/issues/64)（packet: `.intent-cli/issues/registration-kratos-guard-contract/`、2026-11-10 queue 登録・issue 公開）
 
 ## 依存図
 

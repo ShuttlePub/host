@@ -893,7 +893,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 
 - **意図**: [I15](../product/social-experience.md#i15)。メール認証・CAPTCHA 等の対策準備が整わないまま
   新規登録を一般開放し、スパム BOT の踏み台となることを防ぐ。
-- **候補の状態**: 主要な利用意図は整理済み。準備判定・登録経路との接続・一時障害等の契約は設計・検証待ちで、実装readyとはしない。candidate・queue未登録・issue未公開・仮slug未予約を維持する。
+- **候補の状態**: 主要な利用意図は整理済み。準備判定・登録経路との接続・一時障害等の契約は設計・検証待ちで、実装readyとはしない。D15全体はcandidateのまま（仮slug未予約）で、queue登録済みなのは下記「queue 登録状況」のE15a/E15bの2 unitだけ。
 - **最低条件の組合せとして採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d15-q01-either-email-or-bot-protection`。
   メール認証またはCAPTCHA等のBOT対策のどちらか一方を用意すれば一般開放できるOR条件とする。両方の用意は可能だが必須ではなく、どちらもない状態は通常認めない（管理者が警告を確認する明示上書きは`d15-q09`を参照）。
   特定CAPTCHA提供者・すべてのBOT対策の同等扱い・OAuthによる代替までは決めていない。
@@ -911,6 +911,8 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **無対策での管理者上書きとして採用済み**: `d15-q09-admin-confirmed-unprotected-override`。最低条件を満たさない状態でも、管理者が警告を明示的に確認したうえで一般開放できる上書き手段を認める。
 - **上書きの有効期間・表示として採用済み**: `d15-q10-override-until-admin-revokes`。対策が有効になっても自動解除せず、管理者の明示的な解除操作まで上書きを維持する。上書き中は通常ゲートの自動停止・障害時一時拒否判定を行わず、管理画面に上書き中である旨を常時表示する。
 - **管理者への通知先として採用済み**: `d15-q11-admin-notification-channels`。障害・復旧・防御低下の通知を管理画面内の通知一覧と未読表示で届け、管理画面を開いていない場合にも届く外部Webhookを初回から含める。メール通知は前提にしない。Webhookの設定・認証・payload・配送保証等の詳細は設計・検証に残す。
+- **queue 登録状況（2026-11-10、unit 範囲のみ）**: E15a `registration-gate-control-plane`（[Emumet#65](https://github.com/ShuttlePub/Emumet/issues/65)）と E15b `registration-kratos-guard-contract`（[Emumet#64](https://github.com/ShuttlePub/Emumet/issues/64)）を queue 登録済み・issue 公開済み（intent-target 適用）。packet は `.intent-cli/issues/registration-gate-control-plane/` と `.intent-cli/issues/registration-kratos-guard-contract/`、feature intent は [RG](../../emumet/features/registration-readiness-gate/overview.md)。
+  E15a は control plane（開閉・手動再開・override・状態遷移・通知イベント・管理者別既読）のみで実 Kratos 遮断・実 provider 検証を含まず、E15b は Kratos v1.3.1 の pre-persist guard 実証と保護の実装所在の決定材料（本番 Kratos 設定への hook 接続は含まない）。E15c/E15d は E15b の結果を親が確認するまで draft せず、E15w/F15 も後続のため未登録。D15 全体の ready／完了ではない。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   Ory self-service identity 登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。
