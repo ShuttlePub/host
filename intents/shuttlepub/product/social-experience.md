@@ -72,12 +72,13 @@ CC0は6種のCCライセンスとは別の、法の許す範囲で著作権等�
 ## I03
 
 常用絵文字を設定し、リアクションピッカー最上段から素早く選んで反応できるようにする。
-[grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d03-q01-cross-device-quick-reaction`で、同じ投稿用Profileの設定を端末間で共通にし、別端末でも再設定せず同じ絵文字を使う方針を採用した。
+[grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d03-q01-cross-device-quick-reaction`で、同じ投稿用Profileの設定を端末間で共通にし、別端末でも再設定せず同じ絵文字を使う方針を採用した。保存repoとAPIはq01では決めていなかったが、`d03-q07-shuttlepub-profile-settings-api`でShuttlePub backend（`ShuttlePub/ShuttlePub`）にProfile単位の設定API・保存を置くと決定した。Emumet側や端末ローカルには置かない。
 従来の候補記述にあった「投稿上に最大5個のボタンを表示してそれぞれ1操作」およびq01の「ピッカーを挟まず1アクション」というUI前提は、`d03-q06-favorites-in-picker-top-row-correction`で置換された。過去の質問・回答記録は変更せず、q01の同じ投稿用Profile内の端末間共有とq02の上限5個は維持する。常用絵文字は投稿上のリアクションボタンで開くピッカーの最上段に表示し、選択まで2操作とする。
 `d03-q03-toggle-to-remove-reaction`で採用したトグル動作は維持するが、q06によりUIを訂正した。反応済み投稿ではリアクションボタン／ピッカーの代わりに選択中の絵文字を表示し、それを押すと反応を解除してピッカーを再表示する。反応を変更する場合は解除後にピッカーで選ぶ（ピッカーから直接置換しない）。ShuttlePubの現行API `POST /api/notes/{id}/reactions` における1人1投稿1反応を維持する。
 `d03-q04-picker-only-when-unconfigured`の従来記述はq06で具体化された。常用絵文字未設定時はピッカー最上段の常用欄を表示せず、通常のリアクションピッカーだけを表示し、初期値絵文字のサーバー管理は導入しない。
 `d03-q05-unavailable-favorite-custom-emoji`の従来記述はq06で配置を訂正された。利用不能な常用絵文字はピッカー最上段でグレーアウトして選択不可とし、設定画面で「利用不可」と表示して入れ替えを促す。別絵文字での代替送信や設定の自動削除は行わない。
-`d03-q06-favorites-in-picker-top-row-correction`はq01〜q05の従来のUI前提解釈を置き換える訂正であり、元の質問・回答記録は維持する。異なるProfile間／Account全体の共有、保存先／API、再送・失敗時の挙動は引き続き設計・検証を残す。主要意図整理済みの候補で、実装readyとはしない。出典S03／候補D03。
+`d03-q06-favorites-in-picker-top-row-correction`はq01〜q05の従来のUI前提解釈を置き換える訂正であり、元の質問・回答記録は維持する。
+`d03-q07-shuttlepub-profile-settings-api`で常用絵文字設定の保存repoとProfile単位のAPI・保存をShuttlePub backend（`ShuttlePub/ShuttlePub`）に置くと決定した。D05の履歴ON/OFFやD13の従来設定も同じ保存基盤に置く案はあり得るが、ここでは決定しない。API契約・保存形式・認可／同期などの詳細、異なるProfile間／Account全体の共有、再送・失敗時の挙動は引き続き設計・検証を残す。主要意図整理済みの候補で、実装readyとはしない。出典S03／候補D03。
 
 ## I04
 
