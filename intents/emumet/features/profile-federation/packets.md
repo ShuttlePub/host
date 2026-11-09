@@ -13,7 +13,7 @@
 
 | # | unit | 概要 | 依存 | ADR | 状態 |
 |---|---|---|---|---|---|
-| E8 | `profile-domain-policy-api-contract` | Profile identity／Follow／個別 block/mute／domain-controls の OpenAPI 契約と username 段階移行の明記（DC 側 packet、実装は含まない） | なし | — | [DC packets.md](../personal-domain-controls/packets.md) 参照 |
+| E8 | `profile-domain-policy-api-contract` | Profile identity／Follow／個別 block/mute／domain-controls の OpenAPI 契約と username 段階移行の明記（DC 側 packet、実装は含まない） | なし | — | queue 登録済み・issue 公開済み（[Emumet#66](https://github.com/ShuttlePub/Emumet/issues/66)、2026-11-10）。[DC packets.md](../personal-domain-controls/packets.md) 参照 |
 | P1 | `profile-actor-identity-foundation` | username 実保存・一回限り設定、Profile actor 情報・鍵の型と repository、WebFinger／actor 文書生成。本番 `/ap/profiles/...` は未 mount | E8 | `decisions/profile-actor-identity.md` を新設 | 未 packet 化 |
 | P2 | `profile-social-graph-storage` | Profile 版 Follow・個別 block/mute・元 Follow activity ID・重複受信記録・配送 job の保存モデルと、in-place reset の隔離 DB 用 fixture。本番 migration は追加しない | E8 | — | 未 packet 化 |
 | P3o | `profile-relationship-outbound` | Profile 単位 Follow/unfollow・個別 block/mute の送信側 use case、関係変更＋job 予約、内部署名、永続配送 worker（本番未接続） | P1, P2 | — | 未 packet 化 |
