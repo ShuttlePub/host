@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-domain-policy-api-contract",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-09T23:32:33.4098788+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-09T23:18:03.4905523+00:00",
+  "base_commit": "068fa519436af8879bc5467139f22ce20f4a3bc9"
+}
