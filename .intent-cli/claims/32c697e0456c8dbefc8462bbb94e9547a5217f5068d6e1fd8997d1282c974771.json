@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:shuttlepub-openapi-foundation",
+  "actor": "design",
+  "team": "shuttlepub-main",
+  "claimed_at": "2026-11-09T23:13:07.6110847+00:00",
+  "base_commit": "4f945a14c778b41b19ff324cd2b8e694190dc8d2"
+}
