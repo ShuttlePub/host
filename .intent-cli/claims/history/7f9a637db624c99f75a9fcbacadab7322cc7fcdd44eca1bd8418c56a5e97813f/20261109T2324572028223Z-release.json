@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-kratos-guard-contract",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-09T23:24:57.2028223+00:00",
+  "reason": "packet published (issue-publish applied); handoff to implementation worker (G717)",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-09T23:18:36.2581715+00:00",
+  "base_commit": "7191b70250a8300e4402aecc860b4eb4a4e7e071"
+}
