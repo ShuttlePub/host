@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-09T23:22:42.0271797+00:00",
+  "updated_at": "2026-11-09T23:24:00.9424967+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -852,6 +852,45 @@
         "repo": "ShuttlePub/Emumet",
         "number": 65,
         "url": "https://github.com/ShuttlePub/Emumet/issues/65"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "shuttlepub-web-emumet-auth",
+      "title": "shuttlepub-web-emumet-auth: shuttlepub-web \u306E Emumet \u8A8D\u8A3C(Hydra OIDC \u30ED\u30B0\u30A4\u30F3\u30FBsession\u30FBProfile \u9078\u629E)",
+      "state": "queued",
+      "dependencies": [
+        "shuttlepub-web-foundation"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/shuttlepub-web-emumet-auth/implementation.md",
+        "review_context": ".intent-cli/issues/shuttlepub-web-emumet-auth/review-context.md",
+        "yaml": ".intent-cli/issues/shuttlepub-web-emumet-auth/packet.yaml"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "quick-reaction-web-ui",
+      "title": "quick-reaction-web-ui: shuttlepub-web \u306E\u30AF\u30A4\u30C3\u30AF\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3 UI(\u30D4\u30C3\u30AB\u30FC\u6700\u4E0A\u6BB5\u306E\u5E38\u7528\u7D75\u6587\u5B57\u30FBProfile \u8A2D\u5B9A UI)",
+      "state": "queued",
+      "dependencies": [
+        "shuttlepub-web-foundation",
+        "quick-reaction-api-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/quick-reaction-web-ui/implementation.md",
+        "review_context": ".intent-cli/issues/quick-reaction-web-ui/review-context.md",
+        "yaml": ".intent-cli/issues/quick-reaction-web-ui/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",
