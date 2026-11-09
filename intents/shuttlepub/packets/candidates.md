@@ -1,8 +1,8 @@
 # Discord 提案からの packet 候補
 
 受領日: 2026-10-15。17 件の原案を意図の単位で整理した候補一覧。
-全件 **candidate** であり、ready ではない。優先順位未決、queue 未登録、
-issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は shaping 用の案で、
+全件 **candidate** であり、ready ではない。着手基準は決定済みだが具体的な順序は未決、
+queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は shaping 用の案で、
 実装方式や受け入れ基準の決定ではない。後続grillで採用した方針は各節で明示するが、
 それだけで実装packetの受付条件が確定したり、candidateからreadyになったりはしない。
 
@@ -36,6 +36,10 @@ issue 未公開、仮 slug 未予約。ここに書く受付条件・検証は s
 
 ## 共通の分割方針
 
+- **着手方針（候補横断）**: [正規記録](../interviews/discord-feature-prioritization-2026-11-09.json)の
+  `candidate-priority-q01-implementation-order`。小さく独立し、1 repo で完結しやすい単位を優先する
+  （D03 / D15 / D08 など）。例示は固定順ではなく、D06 / D07 の基盤優先や特定候補の個別指定を決めたものでもない。
+  具体的な着手順と queue 登録は別途決める。
 - D01–D17 は意図候補 ID。既存の決定記録の D 番号とは別の名前空間。
   1 候補をそのまま 1 実行 packet にしない。契約整理後、target repo ごとに
   独立して検証できる最小単位へ分割し、producer の契約と consumer の接続を分ける。
