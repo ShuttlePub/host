@@ -1,0 +1,71 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-web-foundation: shuttlepub-frontends に SNS メイン UI アプリ apps/shuttlepub-web の土台と OpenAPI schema 取込基盤"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-web-foundation
+  domain: shuttlepub
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/shuttlepub-web, package.json, bun.lock, .github/workflows, apps/ui-catalog/visual"
+  target_part: "SNS メイン UI アプリ(PureScript + Flame SSR/hydration + Bun BFF)の土台、OpenAPI schema 取込・codegen 基盤、mock/real 切替、CI / visual 登録"
+  dependencies: [shuttlepub-openapi-foundation]
+  technical_baseline:
+    - "PureScript + Flame(SSR + hydration)+ Bun BFF。既存 apps/emumet-web・apps/booskiff-web の構成と共有 packages(design-tokens / styles / ui)に倣う"
+    - "API 契約は ShuttlePub/ShuttlePub が生成する OpenAPI schema(S0 の openapi/shuttlepub.json)。frontends は producer の commit SHA と checksum で固定して取り込む"
+    - "schema 取込経路: (1) 固定した生成 OpenAPI を取得 (2) OpenAPI から TypeScript の REST 型を生成 (3) 型付き adapter でアプリ所有の GraphQL SDL へ接続 (4) 既存方式で SDL から PureScript 型を生成 (5) fixture を OpenAPI に照合"
+    - "本 slice が frontends の root lockfile・workspace・CI・visual driver/case 登録・schema 取込基盤を所有する(後続ユニットはそれを使う)"
+    - "【モック合意ゲート】画面構成(レイアウト・画面遷移・デザイン)を決める UI 実装は、ユーザーとのモック合意が成立するまで実装 PR を出さない。モック合意は host の intent(ShuttlePub/host の intents/shuttlepub/ 配下)に記録される。画面実装を始める前にその合意記録を参照し(場所はこの issue 上のコメントで示される)、合意内容に従う。合意前に画面構成を独自に決めて実装しない。画面構成に依存しない部分は合意を待たずに先行してよい"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I03)"
+    - "intents/shuttlepub/packets/candidates.md (D03、共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+  acceptance_criteria:
+    - "他 repo の checkout やネットワークなしで、ビルドと mock 起動ができる(取り込んだ schema は repo 内に固定済み)"
+    - "codegen が再現可能で、生成物は手編集しない(再生成して差分がなければ CI がグリーン、差分があれば失敗)。schema は producer commit SHA と checksum で固定され、不一致を検知する"
+    - "mock と real の切替が明示的で、real が 501(未実装)や失敗を返したとき成功や mock へ黙って切り替えない"
+    - "fixture が取り込んだ OpenAPI に照合され、schema に反する fixture は失敗する"
+    - "SSR された画面が hydration され、mobile / desktop の両幅で表示できる"
+    - "初回の visual baseline が既存 visual CI 経路に登録されている"
+    - "既存アプリ(emumet-web / booskiff-web / ui-catalog)の CI を壊さず、新アプリが既存 CI へ登録されグリーン"
+    - "画面構成(レイアウト・画面遷移・デザイン)を決める UI 部分は、host intent に記録されたユーザーとのモック合意に従って実装され、その合意記録を参照して作られている(合意前の独自画面構成を含まない)"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D03 節・共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d03-q01〜q07、q06 は訂正版)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+  new_intent_needed: false
+  placement_rationale: "primary intent(social-experience.md)と candidates.md の共通の分割方針・D03 節に、F0 の unit・依存(S0)・到達範囲(UI 土台と schema 取込基盤)を追記する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に shuttlepub-web-foundation の範囲(UI 土台・schema 取込基盤、画面構成はモック合意ゲート)だけを「queue登録済み」と記録する。親 candidate 全体を ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "OpenAPI 生成 schema を正本とする決定は S0 の ADR が扱う。frontends 側の取込方式は本ユニットの実装記録で足り、独立した ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/technology/overview.md"
+    summary: "schema 取込経路(固定・型生成・SDL 接続・fixture 照合)、mock/real 切替、検証境界(オフラインビルド・codegen 再現・visual baseline)を記録する。"
+closeout_learning:
+  expected: "OpenAPI→TS 型→GraphQL SDL→PureScript 型の取込経路の落とし穴(固定方法、生成物の差分検出、fixture 照合)と mock/real 切替の運用を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/technology/overview.md"
+    - "intents/shuttlepub/product/social-experience.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/shuttlepub-web)"

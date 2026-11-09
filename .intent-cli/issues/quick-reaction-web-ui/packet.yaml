@@ -1,0 +1,75 @@
+implementation_issue_packet:
+  issue_title: "quick-reaction-web-ui: shuttlepub-web のクイックリアクション UI(ピッカー最上段の常用絵文字・Profile 設定 UI)"
+  issue_kind: feature
+  source_execution_unit: quick-reaction-web-ui
+  domain: shuttlepub
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/shuttlepub-web, packages/ui"
+  target_part: "リアクションピッカー最上段の常用絵文字、反応済み表示と解除、常用絵文字の Profile 設定 UI、S3 準拠のステートフル mock"
+  dependencies: [shuttlepub-web-foundation, quick-reaction-api-contract]
+  technical_baseline:
+    - "F0 の apps/shuttlepub-web と OpenAPI 取込基盤、S3(quick-reaction-api-contract)の /api/v1 契約・生成 schema を使う"
+    - "ShuttlePub の実保存 backend は未実装。受け入れは S3 準拠のステートフル mock で行い、FA(実認証)は mock 受け入れに不要"
+    - "UI は /api/v1 の契約のみを使い、既存 dev API `POST /api/notes/{id}/reactions` を呼ばない"
+    - "【モック合意ゲート】画面構成(レイアウト・画面遷移・デザイン)を決める UI 実装は、ユーザーとのモック合意が成立するまで実装 PR を出さない。モック合意は host の intent(ShuttlePub/host の intents/shuttlepub/ 配下)に記録される。画面実装を始める前にその合意記録を参照し(場所はこの issue 上のコメントで示される)、合意内容に従う。合意前に画面構成を独自に決めて実装しない。画面構成に依存しない部分は合意を待たずに先行してよい"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I03)"
+    - "intents/shuttlepub/packets/candidates.md (D03、共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d03-q01〜q07、q06 は訂正版)"
+  acceptance_criteria:
+    - "未反応投稿: リアクションボタンで開くピッカーの最上段に常用絵文字(最大 5)を表示し、選択まで 2 操作になる"
+    - "反応済み投稿: ピッカーの代わりに選択中の絵文字を表示し、押すと解除してピッカーを再表示する。変更は解除後にピッカーで選ぶ(ピッカーから直接置換しない)"
+    - "1 人 1 投稿 1 反応が UI 状態として保たれる"
+    - "常用絵文字が未設定なら最上段の常用欄を表示せず通常ピッカーのみ。サーバー管理の初期値絵文字を導入しない"
+    - "利用不可の常用絵文字はピッカー最上段でグレーアウトして選択不可、設定画面で「利用不可」と表示して入れ替えを促す。別絵文字での代替送信・設定の自動削除をしない"
+    - "利用不可になった選択済み反応でも解除できる"
+    - "Profile 設定 UI で常用絵文字を最大 5 件・一意・順序付きで設定でき、revision 競合・失敗・再送が処理される"
+    - "二重送信・送信失敗・Profile 切替で状態が壊れない(切替後に別 Profile の設定・反応を混ぜない)"
+    - "複数 session から同一 Profile の設定を参照でき、同じ常用絵文字が使える(S3 準拠 mock で検証)"
+    - "実保存 backend が未実装であることを完成として表示しない。dev reaction API を呼ばない"
+    - "キーボード操作でも同じ導線が使える"
+    - "画面構成(レイアウト・画面遷移・デザイン)を決める UI 部分は、host intent に記録されたユーザーとのモック合意に従って実装され、その合意記録を参照して作られている(合意前の独自画面構成を含まない)"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D03 節・共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d03-q01〜q07、q06 は訂正版)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+  new_intent_needed: false
+  placement_rationale: "primary intent(social-experience.md)の I03 節と candidates.md の D03 節に、F3 の unit・依存(F0、S3)・到達範囲(mock 受け入れ、実保存は未完成)を追記する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に quick-reaction-web-ui の範囲(S3 準拠 mock での UI、画面構成はモック合意ゲート、実保存・端末間同期は未完成)だけを「queue登録済み」と記録する。親 candidate 全体を ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "製品意図は grill 記録(d03-q01〜q07)で決定済みで、UI 実装に固有の新しい hard-to-reverse 決定はないため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "UI の到達範囲(mock 受け入れ・実保存未完成)、検証境界(stateful mock・複数 session・visual)を I03 / D03 に記録する。"
+closeout_learning:
+  expected: "ピッカー最上段・反応済み表示・利用不可の UI 実装での判断点と、mock と実 backend の差を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/shuttlepub-web)"

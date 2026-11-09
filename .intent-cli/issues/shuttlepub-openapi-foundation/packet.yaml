@@ -1,0 +1,68 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-openapi-foundation: ShuttlePub server 層への utoipa 導入と /api/v1 OpenAPI 契約基盤"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-openapi-foundation
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "server/, openapi/shuttlepub.json, Cargo.toml, Cargo.lock, .github/workflows/lint-and-test.yml"
+  target_part: "ShuttlePub server 層(Axum)の OpenAPI(utoipa)生成基盤、/api/v1 共通 DTO・エラー形式、/openapi.json 配信、再生成差分 CI"
+  dependencies: []
+  technical_baseline:
+    - "Axum server 層(ShuttlePub/ShuttlePub の server crate)へ utoipa 等を導入し、OpenAPI schema を生成する。生成 schema を契約の正本とする"
+    - "WebAPI の定義だけを実装し、ハンドラーの本実装は行わない。契約 route の未実装部分は明示的な 501 を返す"
+    - "frontends の SNS UI は本ユニットが生成する schema を取り込んで使う(producer の契約と consumer の接続は別ユニット)"
+    - "旧 docs/openapi.json は廃止予定であり、互換・移行を考慮しない"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I03)"
+    - "intents/shuttlepub/packets/candidates.md (D03、共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+  acceptance_criteria:
+    - "utoipa 由来の生成 schema が `openapi/shuttlepub.json` としてコミットされ、`GET /openapi.json` の配信内容と一致する"
+    - "契約 route の未実装部分は共通エラー形式の明示的 501 を返し、架空の成功応答や todo!/unimplemented! を使わない"
+    - "schema は決定的に再生成され(同一入力で byte 一致)、コミット済み schema との差分を CI が検出して失敗する"
+    - "/api/v1 用の DTO と共通エラー形式が定義され、schema に components として出力される"
+    - "既存 dev API(/api/notes 等)の挙動と既存テストを壊さない。既存 Rust CI(fmt / clippy -D warnings / test / build / git diff --check)がグリーン"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D03 節・共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d03-q01〜q07、q06 は訂正版)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+  new_intent_needed: false
+  placement_rationale: "SNS 体験の主 intent(social-experience.md)と candidates.md の D03 節・共通の分割方針に、S0 の unit・依存・到達範囲(契約基盤のみ)を追記する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に shuttlepub-openapi-foundation の範囲(契約基盤のみ、backend 本実装なし)だけを「queue登録済み」と記録し、実装完了後に到達範囲を更新する。親 candidate 全体を ready/完了にしない。"
+  adr:
+    required: true
+    target_paths: 
+      - "intents/shuttlepub/decisions/generated-openapi-contract.md"
+    decision_title: "生成 OpenAPI schema(utoipa)を ShuttlePub WebAPI 契約の正本とする"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/technology/overview.md"
+    summary: "契約の正本(生成 schema)・再生成手順・検証境界(schema 一致、501 契約 stub、再生成差分 CI)を記録する。"
+closeout_learning:
+  expected: "utoipa 導入での schema 決定性(キー順・整形)、再生成差分 CI の運用、501 契約 stub の扱いを記録する。ADR intents/shuttlepub/decisions/generated-openapi-contract.md は子 repo ではなく host 側の closeout 時に作成する(child は host を編集しない)。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md"
+    - "intents/shuttlepub/technology/overview.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (server/, openapi/shuttlepub.json)"

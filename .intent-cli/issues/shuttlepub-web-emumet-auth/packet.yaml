@@ -1,0 +1,72 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-web-emumet-auth: shuttlepub-web の Emumet 認証(Hydra OIDC ログイン・session・Profile 選択)"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-web-emumet-auth
+  domain: shuttlepub
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/shuttlepub-web, packages/auth-core, packages/auth-bun, apps/shuttlepub-web/e2e"
+  target_part: "shuttlepub-web の Bun BFF における Hydra OIDC 認証、HttpOnly session、Emumet API への Bearer 転送、認証済み Profile 選択"
+  dependencies: [shuttlepub-web-foundation]
+  technical_baseline:
+    - "apps/booskiff-web の実認証経路(Hydra OIDC ログイン・callback・session・logout・Bearer 転送)と実 OIDC E2E を先例として流用し、既存 packages/auth-core・auth-bun を使う"
+    - "認証基盤は Ory(Kratos/Hydra)。独自 IdP は作らない。ratcap oauth2-consent の既存決定を参照し、新しい認証方式の決定は行わない"
+    - "ブラウザは access token / ID token を保持しない(HttpOnly session のみ)。Emumet API 呼び出しは BFF が Bearer を付けて転送する"
+    - "F0(shuttlepub-web-foundation)の apps/shuttlepub-web・workspace・CI 上に実装する"
+    - "【モック合意ゲート】画面構成(レイアウト・画面遷移・デザイン)を決める UI 実装は、ユーザーとのモック合意が成立するまで実装 PR を出さない。モック合意は host の intent(ShuttlePub/host の intents/shuttlepub/ 配下)に記録される。画面実装を始める前にその合意記録を参照し(場所はこの issue 上のコメントで示される)、合意内容に従う。合意前に画面構成を独自に決めて実装しない。画面構成に依存しない部分は合意を待たずに先行してよい"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I03)"
+    - "intents/shuttlepub/packets/candidates.md (D03、共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+  acceptance_criteria:
+    - "PKCE と state を使った認可コードフローが成立し、state 不一致・PKCE 不一致は fail closed になる"
+    - "ID token の署名・issuer・audience・expiry を検証し、検証失敗はログインを成立させない"
+    - "session cookie は HttpOnly で、他のアプリ(emumet-web / booskiff-web 等)と混線しない(名前・属性・スコープ)"
+    - "ログイン後の return URL は安全な相対先のみ許可する(open redirect を許さない)"
+    - "状態変更(mutation)リクエストに CSRF 対策(Origin / トークン検証)がある"
+    - "Emumet へ転送する access token の audience が Emumet 実設定に合う"
+    - "未認証・期限切れ・権限不足は fail closed(明確なエラー/再ログイン)で、暗黙に認証済み扱いにしない"
+    - "認証済み利用者が自分の Profile を選択でき、選択結果が shuttlepub-web の Profile context に反映される"
+    - "Kratos/Hydra 実スタックで、ログイン→Emumet 読取→logout の E2E が成功する"
+    - "画面構成(レイアウト・画面遷移・デザイン)を決める UI 部分は、host intent に記録されたユーザーとのモック合意に従って実装され、その合意記録を参照して作られている(合意前の独自画面構成を含まない)"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D03 節・共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d03-q01〜q07、q06 は訂正版)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+  new_intent_needed: false
+  placement_rationale: "primary intent(social-experience.md)と candidates.md に、FA の unit・依存(F0)・到達範囲(Emumet 認証と Profile 選択)を追記する。認証方式の決定は ratcap oauth2-consent の既存決定を参照する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に shuttlepub-web-emumet-auth の範囲(Emumet 認証と Profile 選択、画面構成はモック合意ゲート)だけを「queue登録済み」と記録する。親 candidate 全体を ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "新しい認証方式の決定はなく、ratcap oauth2-consent の既存決定と booskiff-web の先例に従うため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/technology/overview.md"
+    summary: "認証経路(PKCE/state、ID token 検証、session 分離、CSRF、audience)と検証境界(実 OIDC E2E、改ざん・Origin・cookie・token 漏洩検査)を記録する。"
+closeout_learning:
+  expected: "booskiff-web の認証経路を新アプリへ流用した際の差分(session 名の分離、audience、Profile 選択)と E2E の落とし穴を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/technology/overview.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/shuttlepub-web, packages/auth-*)"

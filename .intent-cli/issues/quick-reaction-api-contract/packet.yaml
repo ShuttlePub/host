@@ -1,0 +1,70 @@
+implementation_issue_packet:
+  issue_title: "quick-reaction-api-contract: クイックリアクション(常用絵文字設定・Profile 別リアクション)の /api/v1 API 契約"
+  issue_kind: feature
+  source_execution_unit: quick-reaction-api-contract
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "server/, openapi/shuttlepub.json"
+  target_part: "Profile 単位の常用絵文字設定 API と Profile×投稿の reaction API の契約(型・schema・fixture・501 route)"
+  dependencies: [shuttlepub-openapi-foundation]
+  technical_baseline:
+    - "S0(shuttlepub-openapi-foundation)の utoipa 基盤・/api/v1 共通エラー形式・生成 schema(openapi/shuttlepub.json)の上に定義する"
+    - "契約のみで実保存・端末間同期の実処理・投稿処理は実装しない。route は明示的な 501"
+    - "UI 向けの正本は /api/v1/... のみ。既存 dev API の POST /api/notes/{id}/reactions は legacy development API で契約対象外、生成 schema に載せない"
+    - "常用絵文字設定の保存先は ShuttlePub backend の Profile 単位(Emumet 側や端末ローカルには置かない)"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I03)"
+    - "intents/shuttlepub/packets/candidates.md (D03、共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d03-q01〜q07、q06 は訂正版)"
+  acceptance_criteria:
+    - "Profile 設定の GET/PUT 契約: 順序付き常用絵文字(0〜最大5件)、一意性、revision による競合検出が型と schema で表現される"
+    - "Profile×投稿の reaction GET/PUT/DELETE 契約: 未反応・選択済み・置換・解除の状態が表現され、1 Profile・1 投稿・1 反応を契約で保証する"
+    - "絵文字は Unicode と custom emoji を識別でき、各絵文字の利用可否(利用不可)を応答で表現できる"
+    - "認可エラー・revision 競合・利用不可・不正入力(6 件以上・重複)・再送(同一リクエストの再実行)の結果が schema と fixture で定義される"
+    - "利用不可になった選択済み反応でも DELETE(解除)が成立する契約になっている"
+    - "全 route が明示的な 501(共通エラー形式)を返し、既存 dev API はこの契約・生成 schema に含まれない"
+    - "生成 schema(openapi/shuttlepub.json)が更新され、S0 の再生成差分 CI がグリーン"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D03 節・共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d03-q01〜q07、q06 は訂正版)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+  new_intent_needed: false
+  placement_rationale: "primary intent(social-experience.md)の I03 節と candidates.md の D03 節に、S3 の unit・依存(S0)・到達範囲(API 契約のみ、保存未実装)・既存 dev API との関係を追記する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に quick-reaction-api-contract の範囲だけを「queue登録済み」と記録し、D03 に「API契約のみ、保存未実装」と legacy dev API(POST /api/notes/{id}/reactions)との関係を記録する。親 candidate 全体を ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "S0 の ADR(生成 schema を契約の正本とする)に従うのみで、本ユニット固有の新しい hard-to-reverse 決定はないため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "契約の範囲(設定 GET/PUT・reaction GET/PUT/DELETE)、エラー・競合・利用不可の扱い、検証境界(schema・fixture・501)を I03 / D03 に記録する。"
+closeout_learning:
+  expected: "revision 競合・再送・利用不可の契約化で迷った点と確定した形(idempotency、DELETE と利用可否の独立)を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (server/, openapi/shuttlepub.json)"
