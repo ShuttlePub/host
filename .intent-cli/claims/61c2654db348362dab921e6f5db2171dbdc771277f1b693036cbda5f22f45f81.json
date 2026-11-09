@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:shuttlepub-web-emumet-auth",
+  "actor": "design",
+  "team": "shuttlepub-main",
+  "claimed_at": "2026-11-09T23:14:15.3777449+00:00",
+  "base_commit": "6d5950213b39ba04db7c9b7a64280cfa163ef44c"
+}
