@@ -129,3 +129,4 @@
 {"ts":"2026-09-14T14:28:49.4349885+00:00","execution_unit":"login-flow-oauth-start","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":22}
 {"ts":"2026-09-14T15:04:33.8791061+00:00","execution_unit":"drive-ssr-resume-dom","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":23}
 {"ts":"2026-09-14T15:04:33.8791061+00:00","execution_unit":"drive-ssr-resume-dom","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":23}
+{"ts":"2026-11-09T23:17:44.6382395+00:00","execution_unit":"shuttlepub-openapi-foundation","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/shuttlepub-openapi-foundation/"}
