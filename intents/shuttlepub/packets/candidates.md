@@ -177,6 +177,13 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **常用絵文字設定の保存先として採用済み**: `d03-q07-shuttlepub-profile-settings-api`。ShuttlePub backend（`ShuttlePub/ShuttlePub`）にProfile単位の設定APIと保存を作る。Emumet側や端末ローカルには置かない。D05の履歴ON/OFFやD13の従来設定も同じ基盤に置く案はあり得るが、ここでは決定しない。
 - **候補の状態**: 主要な利用意図と設定保存の担当repoは整理済み。設定APIの具体契約／保存形式など技術・UX契約は設計／検証待ちで実装readyではない。
   candidate・queue未登録・issue未公開を維持し、実装packetへ自動昇格しない。
+- **queue登録済みの実行unit（2026-11-09、D03の範囲のみ）**: 親candidate D03全体をreadyや完了にはしない。実保存・端末間同期の実処理は未実装のまま、API契約とmock受け入れのUIまでが登録範囲。
+  - S0 `shuttlepub-openapi-foundation`（ShuttlePub/ShuttlePub#14、依存なし）: server層へutoipaを導入しAPI契約基盤（`/api/v1`のDTO・エラー形式、生成`openapi/shuttlepub.json`、`/openapi.json`配信、再生成差分CI）を作る。契約routeは明示的な501。ADR `decisions/generated-openapi-contract.md`は実装完了時のhost closeoutで作成する。
+  - S3 `quick-reaction-api-contract`（ShuttlePub/ShuttlePub#15、依存S0）: **API契約のみ、保存未実装**。Profile設定GET/PUT（順序付き最大5件・一意・revision）とProfile×投稿のreaction GET/PUT/DELETE、Unicode/custom emoji識別・利用可否・認可/競合/利用不可エラーを型・schema・fixture・501 routeで定義する。既存dev API `POST /api/notes/{id}/reactions`はlegacy development APIとして契約対象外で、生成schemaに載せない（UI向け正本は`/api/v1/...`のみ）。
+  - F0 `shuttlepub-web-foundation`（ShuttlePub/shuttlepub-frontends#27、依存S0）: `apps/shuttlepub-web`の土台とOpenAPI取込基盤。画面構成に依存しない基盤（ビルド・CI・schema取込/codegen・BFF・SSR/hydration）は先行可、画面レイアウトはモック合意後（モック合意ゲート）。
+  - FA `shuttlepub-web-emumet-auth`（ShuttlePub/shuttlepub-frontends#28、依存F0）: Hydra OIDC認証・session・Emumet Bearer転送・Profile選択。認証フロー/BFFは先行可、ログイン画面等の画面はモック合意後。
+  - F3 `quick-reaction-web-ui`（ShuttlePub/shuttlepub-frontends#29、依存F0・S3）: ピッカー最上段の常用絵文字・反応済み表示/解除・Profile設定UI。S3準拠のステートフルmockで受け入れ、実保存backend未実装を完成と表示しない。UIの実装PRはモック合意まで出さず、画面実装前にhost intentの合意記録を参照する。FAは不要。
+  - 未登録のまま: S8 `personal-domain-content-api-contract`（別レーンのE8待ち）、F8。
 - **仮 slug**: `quick-reaction`。
 - **target repo 別分割**: ShuttlePub backend（`ShuttlePub/ShuttlePub`）にProfile単位の設定API・保存、frontends に設定画面・リアクションピッカーUIを置く。
   APIの具体的な契約・保存形式・認可と同期の詳細は設計する。D05／D13の設定を同じ保存基盤へ置くかは未決定。
