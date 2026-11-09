@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-openapi-foundation",
+  "actor": "design",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-09T23:21:24.7751812+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-09T23:13:07.6110847+00:00",
+  "base_commit": "e4b67b7d0f1d11ff3bfa30b3aaf57687c9f9768b"
+}
