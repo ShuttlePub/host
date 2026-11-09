@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-gate-control-plane",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-09T23:25:03.7786329+00:00",
+  "reason": "packet published (issue-publish applied); handoff to implementation worker (G717)",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-09T23:18:30.0069661+00:00",
+  "base_commit": "88771d7c3136c57dea398893c94d2d76c910bc7e"
+}
