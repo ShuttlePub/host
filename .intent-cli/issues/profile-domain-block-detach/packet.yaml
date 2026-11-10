@@ -1,0 +1,104 @@
+implementation_issue_packet:
+  issue_title: "profile-domain-block-detach: Profile の domain block 設定と両方向の関係解除・job 取消・最小通知予約の原子的実行と公開 API 接続 (P4 マージ後に有効化。復元・AP Block・投稿制御は含まない)"
+  issue_kind: feature
+  source_execution_unit: profile-domain-block-detach
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "application/src/ (block 設定 use case: domain-control の block 書込・両方向の関係解除・不要 job 取消・最小通知予約を原子的に実行), driver/src/ (必要な DB 実装), kernel/src/ (必要な port の追加のみ), server/src/ (domain-controls route の本番 root router への接続と block 書込の有効化。P4 が root router を一括所有するため P4 マージ後に行う), openapi.json (not mounted 注記の更新), 関連テスト (実 DB・署名付き mock peer)"
+  target_part: "domain block の設定を、既存の following/follower 両方向の関係解除・未送信 job 取消・送信済み分の最小限の後始末通知予約と同一 transaction で行い、公開 API (domain-controls) に接続する"
+  dependencies:
+    - "profile-domain-follow-guards"
+    - "profile-federation-in-place-cutover"
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない。"
+    - "確定済みの先行 unit: E8 (Emumet#66 / PR #70、squash 0bfa437)。P2 (Emumet#72 / PR #77、squash f523b86): 保存モデル・共通 enqueue interface・配送 worker 向け port・初期化対象/非対象一覧は host の PF acceptance.md『P2 確定契約』が正本。D8P (Emumet#73 / PR #76、squash b3e87f2): domain 正規化・tombstone revision・所有者認可・照合関数 FindDomainControlForActorUseCase (検証済み canonical actor ID の host と完全一致) は host の DC acceptance.md『D8P 確定契約』が正本で、domain-controls route は本番未 mount。P1 (Emumet#71 / PR #78) はレビュー修正中で、actor URL は {PUBLIC_BASE_URL}/ap/profiles/{nanoid}、Profile 鍵は新テーブル profile_signing_keys、本番 router 構築を server/src/root_router.rs に切り出す (確定形は P1 closeout で PF に記録される。P1 マージ前は PR #78 と Emumet#71 の契約に合わせ、曖昧なら issue で質問する)。P3o (Emumet#74)・P3i (Emumet#75)・FN (shuttlepub-frontends#34) は実装中または未マージ"
+    - "migration の分担 (親判断、2026-11-10): P1・D8P の非破壊の追加 migration (列・テーブル・index) は通常の migrations/ に置き本番適用してよい (D8P の 20260920000001_profile_domain_controls.sql は既に本番 migrations/ にある)。P4 (profile-federation-in-place-cutover) が所有するのは、旧連合データ初期化などの破壊的 migration と、P2 の新関係・配送テーブルの本番採番・配置 (driver/fixtures/profile_social_graph/ の 01 schema・02 reset)"
+    - "block の意味 (D08 決定 q01/q10/q12): 表示抑制に加え、対象 domain の利用者との既存 Follow/Follower 関係を自分側の記録から両方向に解除する。解除しても関係は復元しない (復元用関係一覧も保持しない。再び繋がるには利用者が再フォローする)。相手サーバーへ AP Block は明示送信せず、フォロー解除に必要な最小限の通知 (Undo/Reject) だけを送る"
+    - "関係の解除は P2 確定契約の end_active_between (両方向の有効な世代を終了、受理済みかは accepted_at で判別、終了理由 blocked) と、配送 job の cancel_undelivered_for_follow / cancel、共通 enqueue interface (ProfileDeliveryEnqueuer、関係変更と同一 transaction) を使う。block 本体の適用 (拒否判定・解除・job 予約) は use case の責務 (P2 の申し送り)"
+    - "解除時に送る activity は関係の作者に従う: 自分 (block した Profile) が送った Follow には、元 Follow activity ID を参照する Undo(Follow)。相手が送った Follow (相手作成) には、正当な Reject (元 Follow を参照) 等を使い、相手作成の Follow を自分が作者であるかのように Undo しない。pending 関係 (未 Accept) も解除する。受理済み関係は Follow/Follower 両方向を解除する"
+    - "未送信 job は取消 (cancel)。送信済み・結果不明 (in_flight で lease 切れ等) の場合は、相手側の状態を整えるために必要な後始末 (Undo/Reject) を予約する。配送中に競合した job の後始末も扱う"
+    - "ローカル適用は外部障害と独立: 相手サーバーの障害・配送失敗でも block と関係解除のローカル適用は成功し、巻き戻らない (関係状態と配送状態の分離、P3o の原則)。block 設定と関係解除・job 取消・最小通知予約は同一 transaction で原子的に行い、途中失敗は全体 rollback"
+    - "共通ロック規約は D8G が定めたものを使う (block 更新と Follow 更新の直列化、local/local は両 Profile を一定順序でロック)。D8P の revision 規則 (PUT の expected_revision、tombstone) と所有者認可・移管との直列化 (Profile 行 FOR SHARE) を壊さない"
+    - "domain-controls route (GET 一覧・GET/PUT/DELETE /{domain}) の本番 mount: P4 が root router を一括所有し、block 書込は D8R が有効化するまで本番で受け付けない。したがって本 unit は P4 のマージ後に、domain-controls の block 書込を有効化する (mute のみ先行公開するか全体を本 unit で mount するかは未決。P4 の既定は全体未 mount のまま維持で、本 unit が mount する。変更したい場合は issue で質問)。OpenAPI の CONTRACT ONLY / not mounted 注記は実際の mount 状態に合わせて更新する"
+    - "D08 のうち Emumet が実適用するのは Follow 制御 (D8G の新規 Follow 拒否と本 unit の既存関係解除) のみ。投稿 (返信・引用・リポスト・いいね/絵文字) の受理・送信拒否・表示抑制・既存反応件数の扱いは ShuttlePub の後続責務で、本 unit では実装しない。完了時に「D08 本番適用完了」と書かない"
+    - "自 host の domain を block 対象にした場合 (local/local 関係の扱い) の挙動が曖昧なら、実装で独断せず issue で質問する"
+    - "共有ファイル (server/src/openapi.rs, route.rs, main.rs, root_router.rs, DI wiring, migrations/, openapi.json) は他レーンと競合する。共有ファイルの統合は一件ずつ行い、その時点の main から OpenAPI を再生成する (openapi_spec_matches_committed_file を通す)"
+    - "検証は DATABASE_URL を設定した実 DB テストで行う。DB テストを skip のみで通過させない (test_with::env による skip は検証として数えない)"
+    - "D08 ユーザー決定 (grill d08-q01〜q15): Profile 単位、完全一致 domain のみ、mute は表示抑制のみ、block は双方向 Follow 解除＋新規操作拒否 (解除しても関係復元なし)、AP Block は送らない (フォロー解除に必要な最小限の通知のみ)、旧連合 identity は引き継がず新 Profile actor から開始 (旧連合データのみ初期化、DB 全消去ではない)、username は Profile ごとに一意・一度決めたら不変・移管後も維持"
+  intent_references:
+    - "intents/emumet/features/personal-domain-controls/overview.md"
+    - "intents/emumet/features/personal-domain-controls/packets.md"
+    - "intents/emumet/features/personal-domain-controls/acceptance.md"
+    - "intents/emumet/features/profile-federation/overview.md"
+    - "intents/emumet/features/profile-federation/packets.md"
+    - "intents/emumet/features/profile-federation/acceptance.md"
+    - "intents/shuttlepub/packets/candidates.md (D08 節)"
+    - "intents/shuttlepub/product/social-experience.md (I08)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q01〜q15)"
+    - "intents/emumet/decisions/0002-account-address-on-emumet-domain.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md"
+    - "intents/emumet/decisions/0007-organization-accounts.md"
+    - "intents/emumet/decisions/profile-actor-identity.md"
+    - ".intent-cli/issues/profile-domain-follow-guards/ (D8G packet)"
+    - ".intent-cli/issues/profile-federation-in-place-cutover/ (P4 packet)"
+    - "intents/emumet/decisions/profile-federation-in-place-reset.md"
+  acceptance_criteria:
+    - "Profile P が domain を block すると、同一 transaction で、block の保存、対象 domain の actor との pending を含む Follow/Follower 両方向の関係の終了、不要な配送 job の取消、最小限の後始末通知の予約が行われる。途中で失敗したら全て rollback され、一部だけ残らない"
+    - "pending (未 Accept) の関係も解除される。受理済みは Follow・Follower 両方向が解除される。対象は完全一致の domain の actor のみで、sub.example.com に example.com の block は影響しない"
+    - "自分が送った Follow の解除には、元 Follow activity ID を参照する Undo(Follow) が送られる。相手が送った Follow の解除には正当な Reject (元 Follow を参照) 等が送られ、相手作成の Follow を自分が作者であるかのように Undo しない (wire-level の activity 検査で確認)"
+    - "未送信の job は取り消される。送信済み・結果不明の job は必要な後始末が予約される。配送中に block が競合しても後始末が漏れず、二重送信が無害"
+    - "外部障害 (相手の 5xx・timeout・不達) でも block と関係解除のローカル適用は成功し巻き戻らない。AP Block activity は送られない (署名付き mock peer の受信内容で確認)"
+    - "block を解除 (DELETE 等) しても関係は復元されず、復元用関係一覧も保持されない。解除後に古い activity を再送しても関係が復活しない。再フォローは利用者の新しい操作"
+    - "domain-controls route が本番 root router に接続され (P4 マージ後)、現在の所有者のみが block を書き込める。revision 競合 (409)・不在 (404)・不正 domain (422)・認可 (401/403) が D8P 契約どおり。mute の挙動 (関係を切らず Follow を拒否しない) は変わらない"
+    - "block・解除は Profile ごとに分離され、同一 Account 内の別 Profile・他 Account の Profile の関係に影響しない。Profile 移管後も方針が Profile に付いたまま働く"
+    - "Emumet の Follow 制御のみを実適用しており、投稿操作の実制御・AP Block・復元機能を含まない。openapi.json の注記が実際の mount 状態と一致する"
+    - "openapi.json は最新 main から再生成し openapi_spec_matches_committed_file が通る。既存 Rust CI (E2E を含む) が通る"
+intent_placement:
+  primary_intent: intents/emumet/features/personal-domain-controls/overview.md
+  supporting_intents:
+    - "intents/emumet/features/profile-federation/overview.md"
+    - "intents/emumet/features/ap-federation/overview.md"
+    - "intents/emumet/features/block-mute/overview.md"
+    - "intents/shuttlepub/packets/candidates.md"
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json"
+    - "intents/emumet/decisions/0002-account-address-on-emumet-domain.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md"
+    - "intents/emumet/decisions/0007-organization-accounts.md"
+    - "intents/emumet/decisions/profile-actor-identity.md"
+  new_intent_needed: false
+  placement_rationale: "block 設定時の関係解除は DC の D8R。PF は supporting。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/emumet/features/personal-domain-controls/packets.md"
+      - "intents/emumet/features/profile-federation/packets.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に D8R の範囲だけ「queue 登録済み・issue 番号」を記録する。完了時は D08 の Emumet 部分 (Follow 制御) だけを実適用済みとし、残る投稿制御 (ShuttlePub) を明記する。D08 全体を ready/完了にしない (host-only)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/emumet/features/personal-domain-controls/acceptance.md"
+    summary: "block 設定の原子的実行の確定形、関係の作者に応じた後始末 activity、送信済み・結果不明 job の扱い、解除後非復元、D08 の Emumet 部分だけが実適用済みであること (残る投稿制御は ShuttlePub) を DC acceptance.md に記録する"
+closeout_learning:
+  expected: "block の原子的実行の確定形、後始末 activity の対応表 (自分/相手作成の Follow)、結果不明 job の扱い、domain-controls mount の確定形、残る D08 実装 (ShuttlePub 側投稿制御) の明記"
+  write_back_required: true
+  write_back_targets:
+    - "intents/emumet/features/personal-domain-controls/packets.md"
+    - "intents/emumet/features/personal-domain-controls/acceptance.md"
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "domain-controls の公開 API (本番 root router、P4 マージ後) と block 設定の内部 use case (ShuttlePub/Emumet)"

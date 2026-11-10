@@ -9,7 +9,7 @@
 
 ## Execution units
 
-状態は 2026-11 時点。「queue 登録済み」以外（P4）は未 packet 化（後続便で packet 化）。D08 全体は ready／完了ではない。
+状態は 2026-11 時点。全 unit が queue 登録済み（P4 は第4便）。D08 全体は ready／完了ではない。
 
 | # | unit | 概要 | 依存 | ADR | 状態 |
 |---|---|---|---|---|---|
@@ -19,7 +19,7 @@
 | P3o | `profile-relationship-outbound` | Profile 単位 Follow/unfollow・個別 block/mute の送信側 use case、関係変更＋job 予約、内部署名、永続配送 worker（本番未接続） | P1, P2 | — | queue 登録済み・issue 公開済み（[Emumet#74](https://github.com/ShuttlePub/Emumet/issues/74)、2026-11-10。packet: `.intent-cli/issues/profile-relationship-outbound/`）。P1・P2 のマージ後に実装マージ。P3i とは P2 の enqueue interface 固定で並行可 |
 | P3i | `profile-relationship-inbound` | Profile 用 inbox の Follow/Accept/Reject/Undo、followers/following 読取（本番未 mount）。P3o とは enqueue interface 固定で並行可 | P1, P2 | — | queue 登録済み・issue 公開済み（[Emumet#75](https://github.com/ShuttlePub/Emumet/issues/75)、2026-11-10。packet: `.intent-cli/issues/profile-relationship-inbound/`）。P1・P2 のマージ後に実装マージ |
 | FN | `profile-identity-web-adaptation` | emumet-web の Account 作成に別入力の Profile username・変更不可説明・既存 Profile への一回限り設定。**target `ShuttlePub/shuttlepub-frontends`** | E8, P1（P4 に依存しない） | — | queue 登録済み・issue 公開済み（[shuttlepub-frontends#34](https://github.com/ShuttlePub/shuttlepub-frontends/issues/34)、2026-11-10。packet: `.intent-cli/issues/profile-identity-web-adaptation/`）。画面実装はモック合意まで保留（BFF・GraphQL・モック・生成型は先行可）。`bff/schema.graphql`・生成型は F15（[registration-gate-admin-ui](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）と直列に統合。参照: [ratcap settings-hub links](../../ratcap/features/settings-hub/links.md) |
-| P4 | `profile-federation-in-place-cutover` | 破壊的 SQL の本番 migration 化、旧連合データ初期化、新 Profile 鍵の一回限り生成、root router／worker 切替、username 必須化、旧 `/ap/accounts/...`・`/internal/v1/accounts/{id}/sign`・`.../public-key` 廃止、E2E 更新 | P1, P2, P3o, P3i, **FN** | `decisions/profile-federation-in-place-reset.md` を新設 | 未 packet 化 |
+| P4 | `profile-federation-in-place-cutover` | 破壊的 SQL の本番 migration 化、旧連合データ初期化、新 Profile 鍵の一回限り生成、root router／worker 切替、username 必須化、旧 `/ap/accounts/...`・`/internal/v1/accounts/{id}/sign`・`.../public-key` 廃止、E2E 更新 | P1, P2, P3o, P3i, **FN** | [`decisions/profile-federation-in-place-reset.md`](../../decisions/profile-federation-in-place-reset.md) 新設済み | queue 登録済み・issue 公開済み（[Emumet#82](https://github.com/ShuttlePub/Emumet/issues/82)、2026-11-10。packet: `.intent-cli/issues/profile-federation-in-place-cutover/`）。P1・P3o・P3i・FN の全マージ後に着手・マージ（P2 はマージ済み）。**マージと本番切替の前に必ずユーザー確認を得る（ユーザー確認ゲート。lane root がリードへ質問）**。domain-controls route は block 書込を D8R が有効化するまで本番で受け付けない（mute のみ先行公開か全体未 mount かは未決、既定は未 mount のまま） |
 
 ## 依存図
 
@@ -41,6 +41,7 @@ E8 ─┬→ P1 ─┬→ P3o ─┐
 - 親が Emumet 統合担当を一人固定し、共有ファイルの最終更新を担当させる。
 - 初動の merge 順は **E15a（D15 `registration-gate-control-plane`）→ E8**。E8 は E15a 取り込み後に OpenAPI を再生成してから merge。
 - P2 は本番 migration を追加しない。P4 が最終 migration 番号を採番する。
+- **migration の分担（親判断、2026-11-10）**: P1・D8P の非破壊の追加 migration（列・テーブル・index）は通常の `migrations/` に置き本番適用してよい。P4 が所有するのは旧連合データ初期化などの破壊的 migration と P2 の新関係・配送テーブルの本番採番。P1 packet（Emumet#71）の「本番採番は P4」記述はこの分担に是正済み（packet の revision_history 参照）。
 - P3o は outbound／dispatcher、P3i は inbound を所有。共通 enqueue 型は P2 で固定。
 - P4 が Profile route の本番 mount、旧 route 撤去、worker 起動を一括所有。
 - 後続 unit も共有ファイルは一件ずつ統合し、その時点の main から OpenAPI を再生成する。

@@ -12,9 +12,9 @@
 |---|---|---|---|---|
 | E8 | `profile-domain-policy-api-contract` | Profile identity・Follow・個別 block/mute・domain-controls の認可・revision・エラーの OpenAPI 契約。username 段階移行を OpenAPI へ明記。実装は含まない | なし（共有ファイルの merge 順は E15a の後） | **マージ済み**（[Emumet#66](https://github.com/ShuttlePub/Emumet/issues/66) / [PR #70](https://github.com/ShuttlePub/Emumet/pull/70)、squash `0bfa437`、2026-11-10。queue completed。packet: `.intent-cli/issues/profile-domain-policy-api-contract/`） |
 | D8P | `profile-domain-policy-storage` | Profile × 正規化 domain の mute/block 実保存・取得・更新・削除、revision、現在の所有者による認可。block 書込 route は D8R まで本番未 mount（packet では mute/block とも本番未 mount で統一。mute のみ先行公開するかは未決） | E8 | **queue 登録済み・issue 公開済み**（[Emumet#73](https://github.com/ShuttlePub/Emumet/issues/73)、2026-11-10。packet: `.intent-cli/issues/profile-domain-policy-storage/`）。E8（Emumet#66 / PR #70）のマージ後に実装マージ |
-| D8G | `profile-domain-follow-guards` | inbound/outbound 新規 Follow 拒否、古い Accept 反映防止、未送信 Follow/Accept の配送前判定。既存関係の一括解除・投稿操作拒否は含まない | P3o, P3i, D8P（P4 前でも隔離 fixture で検証可） | 未 packet 化 |
-| D8R | `profile-domain-block-detach` | block 設定、following/follower 両方向解除、不要 job 取消、最小通知予約の原子的実行と公開 API 接続。復元・AP Block・投稿操作制御は含まない | D8G, P4 | 未 packet 化 |
-| F8 | `personal-domain-controls-web-ui` | domain mute/block 設定、解除時非復元の説明、実 Emumet 接続、投稿表示面の S8 準拠 mock。**domain `shuttlepub` / target `ShuttlePub/shuttlepub-frontends`** | F0, FA, E8, S8, D8R（mock 部分は E8/S8 確定後に先行可） | 未 packet 化（shuttlepub 側 unit） |
+| D8G | `profile-domain-follow-guards` | inbound/outbound 新規 Follow 拒否、古い Accept 反映防止、未送信 Follow/Accept の配送前判定。既存関係の一括解除・投稿操作拒否は含まない | P3o, P3i, D8P（P4 前でも隔離 fixture で検証可） | **queue 登録済み・issue 公開済み**（[Emumet#83](https://github.com/ShuttlePub/Emumet/issues/83)、2026-11-10。packet: `.intent-cli/issues/profile-domain-follow-guards/`）。P3o・P3i のマージ後にマージ。Follow だけが実適用対象（投稿操作の後続 owner は ShuttlePub） |
+| D8R | `profile-domain-block-detach` | block 設定、following/follower 両方向解除、不要 job 取消、最小通知予約の原子的実行と公開 API 接続。復元・AP Block・投稿操作制御は含まない | D8G, P4 | **queue 登録済み・issue 公開済み**（[Emumet#84](https://github.com/ShuttlePub/Emumet/issues/84)、2026-11-10。packet: `.intent-cli/issues/profile-domain-block-detach/`）。D8G と P4 のマージ後。**P4 マージ後に D8R が domain-controls の block 書込を有効化する**（P4 は root router を一括所有し、block 書込は有効化しない）。D08 の Emumet 部分（Follow 制御）のみ実適用 |
+| F8 | `personal-domain-controls-web-ui` | domain mute/block 設定、解除時非復元の説明、実 Emumet 接続、投稿表示面の S8 準拠 mock。**domain `shuttlepub` / target `ShuttlePub/shuttlepub-frontends`** | F0, FA, E8, S8, D8R（mock 部分は E8/S8 確定後に先行可） | **queue 登録済み・issue 公開済み**（domain `shuttlepub`、[shuttlepub-frontends#35](https://github.com/ShuttlePub/shuttlepub-frontends/issues/35)、2026-11-10。packet: `.intent-cli/issues/personal-domain-controls-web-ui/`）。【先行可】BFF 変換・型生成・stateful mock・S8 準拠 fixture のデータ層／【モック合意後】画面構成／【D8R マージ後】実 Emumet 接続の最終受け入れ。S8 は shuttlepub domain で別レーンの登録待ち（queue 登録後に dependencies へ追加） |
 
 PF 側 unit（P1〜P4、FN）は [profile-federation/packets.md](../profile-federation/packets.md)。
 ShuttlePub 側 S8（`personal-domain-content-api-contract`、E8 に依存）は shuttlepub domain の unit。
@@ -38,9 +38,9 @@ E8 ─┬→ P1 ─┬→ P3o ─┐
 
 | 範囲 | 状態 |
 |---|---|
-| Emumet の Follow 制御（D8P/D8G/D8R） | 未実装。queue 登録済みは E8（契約）と D8P（domain 方針の保存）のみ。D8G/D8R は未 packet 化 |
+| Emumet の Follow 制御（D8P/D8G/D8R） | 未実装。D8P（domain 方針の保存）はマージ済み。D8G（[Emumet#83](https://github.com/ShuttlePub/Emumet/issues/83)）・D8R（[Emumet#84](https://github.com/ShuttlePub/Emumet/issues/84)）は queue 登録済み・実装前（D8R は P4 マージ後に block 書込を有効化） |
 | ShuttlePub の投稿・通知・検索 filter、新規反応・返信・引用・リポスト受理／送信拒否 | 未実装・後続 unit（S8 は契約のみ） |
-| frontends UI（F8） | 未 packet 化 |
+| frontends UI（F8） | queue 登録済み・実装前（[shuttlepub-frontends#35](https://github.com/ShuttlePub/shuttlepub-frontends/issues/35)）。画面構成はモック合意まで保留。投稿部分は S8 準拠 mock／未接続と明示 |
 
 D08 全体は ready／完了ではない。queue 登録対象は E8 と D8P（および PF 側 P1・P2）の範囲だけで、実処理は後続 unit で段階的に進める。
 
@@ -50,7 +50,7 @@ D08 全体は ready／完了ではない。queue 登録対象は E8 と D8P（�
 - E8: 2026-11-10 に [Emumet PR #70](https://github.com/ShuttlePub/Emumet/pull/70) を squash マージ（`0bfa437`、E15a #67・#69 取り込み後の main 上で openapi.json 再生成）。確定した契約は [acceptance.md](acceptance.md) の「E8 確定契約」を参照。引き継ぎ: 共有 router 構成による未 mount 不在テストの強化（現状は `main.rs` の文字列検査）は P1/P4 で対応。
 - D8P `profile-domain-policy-storage`: 2026-11-10 に queue 登録・issue 公開（[ShuttlePub/Emumet#73](https://github.com/ShuttlePub/Emumet/issues/73)、`intent-target` 適用）。依存 E8。範囲は domain 方針の実保存・revision・所有者認可で、Follow への適用・投稿 filter は含まない。domain-controls route は本番 root へ mount しない（計画上は block 書込のみ D8R まで未 mount だが、packet では判断に迷うため mute/block とも未 mount で統一。mute のみの先行公開は別途判断）。PF 側 P1 `profile-actor-identity-foundation`（[Emumet#71](https://github.com/ShuttlePub/Emumet/issues/71)）・P2 `profile-social-graph-storage`（[Emumet#72](https://github.com/ShuttlePub/Emumet/issues/72)）も同日 queue 登録・issue 公開済み（[PF packets](../profile-federation/packets.md)）。
 - D8P: 2026-11-10 に [Emumet PR #76](https://github.com/ShuttlePub/Emumet/pull/76) を squash マージ（`b3e87f2`、P2 #77 取り込み後の main 上。queue completed、issue #73 closed）。独立レビューで Profile 移管との競合（所有者確認と CRUD の非直列化）の指摘を受け、同一 transaction ＋ Profile 行 `FOR SHARE` に修正して承認。確定した正規化規則・tombstone revision・所有者直列化・照合関数・未 mount 範囲は [acceptance.md](acceptance.md) の「D8P 確定契約」。migration `20260920000001_profile_domain_controls.sql` は本番 `migrations/` に含まれ P4 初期化の対象外。D8G・D8R は未着手。
-- D8G・D8R・F8 と PF 側 P3o・P3i・P4・FN は未 packet 化。D08 全体は ready／完了ではない。
+- D8G・D8R・F8 と PF 側 P4: 2026-11-10 に queue 登録・issue 公開（第4便、unit 範囲のみ。D8G [Emumet#83](https://github.com/ShuttlePub/Emumet/issues/83)、D8R [Emumet#84](https://github.com/ShuttlePub/Emumet/issues/84)、F8 [shuttlepub-frontends#35](https://github.com/ShuttlePub/shuttlepub-frontends/issues/35)、P4 [Emumet#82](https://github.com/ShuttlePub/Emumet/issues/82)。いずれも `intent-target` 適用）。D8G は P3o・P3i の後、D8R は D8G と P4 の後（P4 マージ後に D8R が domain-controls の block 書込を有効化）、F8 は F0・FA・E8・D8R（S8 は別レーンの登録待ち）に依存。P4 のマージ・本番切替の前にはユーザー確認が必須（[PF packets](../profile-federation/packets.md)）。D08 全体は ready／完了ではない。
 
 ## UI 実装の前提（ユーザー指示）
 

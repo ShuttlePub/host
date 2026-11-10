@@ -1173,6 +1173,112 @@
       "review_role": "review",
       "priority": "high",
       "priority_revision": 0
+    },
+    {
+      "execution_unit": "profile-federation-in-place-cutover",
+      "title": "profile-federation-in-place-cutover: \u65E7\u9023\u5408\u30C7\u30FC\u30BF\u306E\u521D\u671F\u5316\u3068 Profile \u9023\u5408\u3078\u306E\u672C\u756A\u5207\u66FF (\u7834\u58CA\u7684 migration\u30FBProfile \u9375\u306E\u4E00\u56DE\u9650\u308A\u751F\u6210\u30FBroot router/worker \u5207\u66FF\u30FB\u65E7 route/\u7F72\u540D API \u5EC3\u6B62\u30FBusername \u5FC5\u9808\u5316\u30FBE2E \u66F4\u65B0\u3002\u30DE\u30FC\u30B8\u30FB\u5207\u66FF\u524D\u306B\u30E6\u30FC\u30B6\u30FC\u78BA\u8A8D\u5FC5\u9808)",
+      "state": "queued",
+      "dependencies": [
+        "profile-actor-identity-foundation",
+        "profile-social-graph-storage",
+        "profile-relationship-outbound",
+        "profile-relationship-inbound",
+        "profile-identity-web-adaptation"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/profile-federation-in-place-cutover/implementation.md",
+        "review_context": ".intent-cli/issues/profile-federation-in-place-cutover/review-context.md",
+        "yaml": ".intent-cli/issues/profile-federation-in-place-cutover/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 82,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/82"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "profile-domain-follow-guards",
+      "title": "profile-domain-follow-guards: Profile \u306E domain block \u306B\u3088\u308B\u65B0\u898F Follow \u62D2\u5426\u30FB\u53E4\u3044 Accept \u306E\u53CD\u6620\u9632\u6B62\u30FB\u672A\u9001\u4FE1 Follow/Accept \u306E\u914D\u9001\u524D\u5224\u5B9A (\u5171\u901A\u30ED\u30C3\u30AF\u898F\u7D04\u3002\u95A2\u4FC2\u306E\u4E00\u62EC\u89E3\u9664\u30FB\u6295\u7A3F\u64CD\u4F5C\u62D2\u5426\u306F\u542B\u307E\u306A\u3044)",
+      "state": "queued",
+      "dependencies": [
+        "profile-relationship-outbound",
+        "profile-relationship-inbound",
+        "profile-domain-policy-storage"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/profile-domain-follow-guards/implementation.md",
+        "review_context": ".intent-cli/issues/profile-domain-follow-guards/review-context.md",
+        "yaml": ".intent-cli/issues/profile-domain-follow-guards/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 83,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/83"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "profile-domain-block-detach",
+      "title": "profile-domain-block-detach: Profile \u306E domain block \u8A2D\u5B9A\u3068\u4E21\u65B9\u5411\u306E\u95A2\u4FC2\u89E3\u9664\u30FBjob \u53D6\u6D88\u30FB\u6700\u5C0F\u901A\u77E5\u4E88\u7D04\u306E\u539F\u5B50\u7684\u5B9F\u884C\u3068\u516C\u958B API \u63A5\u7D9A (P4 \u30DE\u30FC\u30B8\u5F8C\u306B\u6709\u52B9\u5316\u3002\u5FA9\u5143\u30FBAP Block\u30FB\u6295\u7A3F\u5236\u5FA1\u306F\u542B\u307E\u306A\u3044)",
+      "state": "queued",
+      "dependencies": [
+        "profile-domain-follow-guards",
+        "profile-federation-in-place-cutover"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/profile-domain-block-detach/implementation.md",
+        "review_context": ".intent-cli/issues/profile-domain-block-detach/review-context.md",
+        "yaml": ".intent-cli/issues/profile-domain-block-detach/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 84,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/84"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "personal-domain-controls-web-ui",
+      "title": "personal-domain-controls-web-ui: shuttlepub-web \u306E\u500B\u4EBA domain mute/block \u8A2D\u5B9A UI (\u5B9F Emumet \u63A5\u7D9A\u30FB\u89E3\u9664\u6642\u975E\u5FA9\u5143\u306E\u8AAC\u660E\u30FB\u6295\u7A3F\u8868\u793A\u9762\u306E S8 \u6E96\u62E0 mock\u3002\u753B\u9762\u69CB\u6210\u306F\u30E2\u30C3\u30AF\u5408\u610F\u5F8C)",
+      "state": "queued",
+      "dependencies": [
+        "shuttlepub-web-foundation",
+        "shuttlepub-web-emumet-auth",
+        "profile-domain-policy-api-contract",
+        "profile-domain-block-detach"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/personal-domain-controls-web-ui/implementation.md",
+        "review_context": ".intent-cli/issues/personal-domain-controls-web-ui/review-context.md",
+        "yaml": ".intent-cli/issues/personal-domain-controls-web-ui/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/shuttlepub-frontends",
+        "number": 35,
+        "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/35"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
     }
   ]
 }

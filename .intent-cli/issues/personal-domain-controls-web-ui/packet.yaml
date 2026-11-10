@@ -1,0 +1,94 @@
+implementation_issue_packet:
+  issue_title: "personal-domain-controls-web-ui: shuttlepub-web の個人 domain mute/block 設定 UI (実 Emumet 接続・解除時非復元の説明・投稿表示面の S8 準拠 mock。画面構成はモック合意後)"
+  issue_kind: feature
+  source_execution_unit: personal-domain-controls-web-ui
+  domain: shuttlepub
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/shuttlepub-web (BFF・GraphQL・画面・e2e), packages/ui (必要な場合のみ)"
+  target_part: "shuttlepub-web の domain mute/block 設定 UI、解除時に関係が復元されない旨の説明、FA 経由の実 Emumet 接続 (domain-controls と Follow 解除の確認)、投稿表示面 (引用・boost 全体非表示、単一投稿 reveal) の S8 準拠 mock"
+  dependencies:
+    - "shuttlepub-web-foundation"
+    - "shuttlepub-web-emumet-auth"
+    - "profile-domain-policy-api-contract"
+    - "profile-domain-block-detach"
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。frontends 側に親状態を作成しない。"
+    - "F0 (shuttlepub-web-foundation) の apps/shuttlepub-web・OpenAPI 取込基盤・BFF と、FA (shuttlepub-web-emumet-auth、PR #32 マージ済み) の Hydra OIDC 認証・HttpOnly session・Emumet Bearer 転送 (audience=account)・認証済み Profile 選択の上に実装する。新しい認証方式は作らない"
+    - "Emumet の契約: E8 (Emumet#66 / PR #70) の domain-controls (GET /api/v1/profiles/{profile_nanoid}/domain-controls、GET/PUT/DELETE .../{domain})。revision は 1 始まり、PUT は expected_revision 省略で新規 (既存なら 409)・指定時は一致のみ置換 (不一致・同時削除は 409)、DELETE は expected_revision 必須、不正 domain は 422 (D8P で 400 から変更)、所有者のみ (401/403/404)。domain は完全一致で、応答の domain は常に正規化形 (IDNA 等)。詳細は host の DC acceptance.md の『E8 確定契約』『D8P 確定契約』"
+    - "Emumet の実処理: D8P は保存を実装済みだが domain-controls route は本番未 mount。block の関係解除は D8R、Follow の拒否は D8G、本番 mount は P4 マージ後の D8R。したがって実 Emumet 接続の最終受け入れは D8R のマージ後。それ以前は E8/D8P 契約準拠の stateful mock で先行する"
+    - "D08 の区分: Follow 制御 (新規 Follow 拒否・既存関係の両方向解除) だけが Emumet で実適用される。投稿の抑制 (timeline・検索・通知の表示抑制、引用・boost 全体非表示、単一投稿 reveal) と新規反応・返信・引用・リポストの受理/送信拒否は ShuttlePub の後続責務で未実装。UI は投稿側が実施済みであるかのように表示してはならない (mock/未接続と明示する)"
+    - "S8 (personal-domain-content-api-contract、shuttlepub domain、ShuttlePub/ShuttlePub、E8 に依存する契約のみの unit) が投稿・検索・通知の抑制契約、引用・純粋 boost 全体非表示、直接閲覧時の単一投稿 reveal、hidden 応答に本文等を漏らさないこと、reveal で block/CW/閲覧権を解除しないことを契約化する。投稿表示面の mock は S8 の生成 schema に準拠させる。host の queue では S8 は本 packet 作成時点で未登録で、別レーンで登録される (queue 登録後に dependencies へ追加する)。S8 が確定するまで、この投稿表示面 mock の実装は進めない"
+    - "mock 合意前の区分: 【先行可 (画面構成に依存しない)】domain-controls の BFF REST→GraphQL 変換、型生成、stateful mock (revision 競合・完全一致・Profile 分離・解除後非復元を再現)、S8 準拠の投稿 hidden/reveal fixture のデータ層と検証、Emumet 実接続の BFF 部分 (mock/real 切替)。【モック合意後】domain mute/block 設定画面、解除時非復元の説明の配置、投稿表示面 (引用・boost 全体非表示・単一投稿 reveal) の画面構成"
+    - "【モック合意ゲート】画面構成 (レイアウト・画面遷移・デザイン) を決める UI 実装は、ユーザーとのモック合意が成立するまで実装 PR を出さない。モック合意は host の intent (ShuttlePub/host の intents/shuttlepub/ 配下) に記録される。画面実装を始める前にその合意記録を参照し (場所はこの issue 上のコメントで示される)、合意内容に従う。合意前に画面構成を独自に決めて実装しない。D08 のモック案は lead thread thread-xxs52dcx の artifact (artifact-05443f92d47738ca697b17e04b6febf8 等) にあるが、ユーザー合意は未成立 (合意記録ができるまで仕様として扱わない)。画面構成に依存しない部分は合意を待たずに先行してよい"
+    - "UI の意味 (D08 決定): mute は表示を抑制するが関係を切らない。block は表示抑制に加え対象 domain との既存 Follow/Follower を両方向に解除し、解除しても関係は復元されず復元用一覧も保持されない (再フォローは利用者の操作)。AP Block は送らない。完全一致のみ (example.com の設定は sub.example.com に適用されない)。設定は投稿用 Profile ごとで、同じ Account 内の別 Profile や他 Account に波及せず、全体 HostModeration にもならない"
+    - "外部 ID は nanoid。Profile 選択は FA の Profile context を使う。access token は BFF が保持しブラウザに渡さない (FA の方式)"
+    - "schema 取込は F0 の方式 (producer commit SHA + checksum で固定した生成 OpenAPI → TS 型 → アプリ所有 GraphQL SDL → PureScript 型、fixture は OpenAPI に照合)。bff/schema.graphql・生成型は他 unit (FN・F15・F3 等) と直列に統合する"
+    - "実 Emumet 接続の E2E は FA の実 Kratos/Hydra/Emumet 構成を流用する。mock と real の切替は明確にし、501 を成功扱いしない"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I08)"
+    - "intents/shuttlepub/packets/candidates.md (D08 節、共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q01〜q15)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+    - "intents/emumet/features/personal-domain-controls/overview.md"
+    - "intents/emumet/features/personal-domain-controls/packets.md"
+    - "intents/emumet/features/personal-domain-controls/acceptance.md"
+    - "intents/emumet/features/profile-federation/overview.md"
+    - ".intent-cli/issues/shuttlepub-web-foundation/ (F0 packet)"
+    - ".intent-cli/issues/shuttlepub-web-emumet-auth/ (FA packet)"
+    - ".intent-cli/issues/profile-domain-policy-api-contract/ (E8 packet)"
+    - ".intent-cli/issues/profile-domain-block-detach/ (D8R packet)"
+  acceptance_criteria:
+    - "【実接続・D8R マージ後】FA 経由の実ログイン (Kratos/Hydra) から、選択した Profile で domain mute/block を実保存・再取得でき、block 設定で対象 domain との Follow/Follower 関係が実際に解除されることまで、実 Emumet に対する E2E で確認する"
+    - "設定は Profile ごとに分離され、Profile 切替で別 Profile の設定を混ぜない。同一 Account の別 Profile・他 Account の Profile に波及しない"
+    - "revision 競合 (409)・不在 (404)・不正 domain (422)・未認証/権限不足 (401/403) を、黙って成功扱いにせず利用者に分かる形で扱う (再取得・再試行の導線を含む)。二重送信で状態が壊れない"
+    - "domain は完全一致で扱い、sub.example.com に example.com の設定が適用されると誤認させない表示にする。サーバーが返す正規化形の domain を表示する"
+    - "block 解除後に関係が復元されないこと (再フォローは利用者操作) の説明が UI にあり、解除後に Follow/Follower が実際に戻らないことを (実接続後は) 確認する"
+    - "Follow 制御 (新規 Follow 拒否・既存関係解除) は実適用として扱い、投稿表示の抑制・反応拒否は mock/未接続と UI 上で明示する。投稿側が実施済みであるかのような表示をしない"
+    - "投稿表示面の mock が S8 準拠で、引用 (コメント付き引用の全体)・純粋 boost の全体非表示、単一投稿の明示 reveal、reveal しても CW・閲覧権が維持されること、hidden 応答に本文等が含まれないことを fixture で検証する"
+    - "mock と実接続の切替が明確で、501 や未接続を成功として表示しない。dev API や契約外 API を呼ばない"
+    - "画面構成 (レイアウト・画面遷移・デザイン) を決める UI 部分は、host intent に記録されたユーザーとのモック合意に従って実装され、その合意記録を参照して作られている (合意前の独自画面構成を含まない)"
+    - "キーボード操作でも設定・解除の導線が使え、SSR/hydration・mobile/desktop の visual baseline が通る。既存 CI が通る"
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D08 節)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q01〜q15)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+    - "intents/emumet/features/personal-domain-controls/overview.md"
+    - "intents/emumet/features/profile-federation/overview.md"
+  new_intent_needed: false
+  placement_rationale: "SNS 体験の UI は SP の I08。D08 の Emumet 実処理 (DC) への参照と、D08 全体の残実装 (投稿制御) を記録する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+      - "intents/emumet/features/personal-domain-controls/packets.md"
+    summary: "queue 登録後に F8 の範囲 (domain 方針 UI、画面構成はモック合意ゲート、投稿部分は S8 準拠 mock) だけを「queue 登録済み・issue 番号」と記録する。D08 全体を ready/完了にしない (host-only)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "製品意図は grill 記録 (d08-q01〜q15) で決定済みで、UI 実装に固有の新しい hard-to-reverse 決定はないため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/emumet/features/personal-domain-controls/acceptance.md"
+    summary: "UI の到達範囲 (Follow 制御は実適用、投稿部分は mock/未接続)、検証境界 (実 Emumet E2E・stateful mock・S8 fixture・visual) を I08 と DC に記録する"
+closeout_learning:
+  expected: "UI の判断点 (mute/block の説明、解除後非復元の表示、mock と実接続の差)、実 Emumet E2E の落とし穴、投稿部分が mock であることの表示方法、残る D08 実装 (ShuttlePub 側投稿制御)"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/shuttlepub-web)"
