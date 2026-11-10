@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T07:07:18.2466027+00:00",
+  "updated_at": "2026-11-10T07:19:55.383218+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1117,6 +1117,47 @@
         "repo": "ShuttlePub/shuttlepub-frontends",
         "number": 34,
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/34"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "registration-protection-readiness",
+      "title": "registration-protection-readiness: \u767B\u9332\u524D\u30E1\u30FC\u30EB proof (SMTP)\u30FBTurnstile Siteverify adapter\u30FB\u5B9F\u691C\u8A3C API\u30FB\u8A2D\u5B9A\u4E16\u4EE3\u30FBreadiness \u9BAE\u5EA6\u671F\u9650\u30FB\u5931\u6557\u5206\u985E\u30FBE15a \u89B3\u6E2C\u5165\u529B",
+      "state": "queued",
+      "dependencies": [
+        "registration-gate-control-plane",
+        "registration-kratos-guard-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/registration-protection-readiness/implementation.md",
+        "review_context": ".intent-cli/issues/registration-protection-readiness/review-context.md",
+        "yaml": ".intent-cli/issues/registration-protection-readiness/packet.yaml"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "registration-gate-enforcement",
+      "title": "registration-gate-enforcement: \u5B9F Kratos registration hook \u914D\u7DDA\u30FB\u4FDD\u8B77\u5B9F\u884C\u30FB\u7D99\u7D9A probe\u30FB\u901A\u77E5\u7D71\u5408\u30FB\u8A2D\u5B9A\u55AA\u5931\u691C\u51FA\u3068 D15 \u5168\u72B6\u614B\u306E\u5B9F registration \u691C\u8A3C",
+      "state": "queued",
+      "dependencies": [
+        "registration-gate-control-plane",
+        "registration-kratos-guard-contract",
+        "registration-protection-readiness"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/registration-gate-enforcement/implementation.md",
+        "review_context": ".intent-cli/issues/registration-gate-enforcement/review-context.md",
+        "yaml": ".intent-cli/issues/registration-gate-enforcement/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",

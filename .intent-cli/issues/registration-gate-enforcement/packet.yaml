@@ -1,0 +1,84 @@
+implementation_issue_packet:
+  issue_title: "registration-gate-enforcement: 実 Kratos registration hook 配線・保護実行・継続 probe・通知統合・設定喪失検出と D15 全状態の実 registration 検証"
+  issue_kind: feature
+  source_execution_unit: registration-gate-enforcement
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "application/src/service, kernel/src, driver/src, server/src/route, server/src/api, server/src/main.rs, server/src/route.rs, server/src/openapi.rs, migrations, openapi.json, ory/kratos, compose.yml, e2e/registration-guard, .github/workflows, docs"
+  target_part: "実 Kratos registration hook 配線 (method-specific pre-persist・認証・allowlist・deadline・204/403)・保護実行・継続 probe 周期実行・通知イベント/Webhook 統合・本番 Kratos 設定変更・config attestation と設定喪失 (enforcement 喪失) 検出・D15 全状態の実 Kratos 統合テスト (CI)・運用手順"
+  dependencies: [registration-gate-control-plane, registration-kratos-guard-contract, registration-protection-readiness]
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない"
+    - "保護の所在は host ADR intents/emumet/decisions/registration-protection-placement.md (2026-11-10 Accepted) で確定: メール所有確認は Emumet 登録前 email proof + SMTP (password 登録維持、ユーザー決定 question-88b36432ff84f589f1388699c8f40fa3 の A)、BOT は Emumet webhook + Turnstile Siteverify、ゲートも同 hook。所在を変える必要が出たら実装せず親に質問する"
+    - "hook 配線 (E15b 実証、Kratos v1.3.1 / build 36e624c716e45ab405599c71b42c384dd45bdfbb): selfservice.flows.registration.after.<method>.hooks の web_hook に response: {parse: true, ignore: false} が pre-persist で identity 作成前に拒否できる唯一の形。204 空本文 = 許可、403 + Kratos validation messages = 拒否。200 allowed:false は無視され identity が作成される / parse:false は post-persist で拒否でも identity が残る / global registration.after.hooks は pre-persist ではない / 201 不正 JSON は parse されず作成 / 429・503・切断・不達は retry (最大 3 呼出) 後に拒否 / timeout は約 30 秒 x 3 + backoff = 約 93 秒で public は EOF / candidate identity ID は zero UUID になり得る。有効な全 registration method に同じ配線と拒否 matrix を適用し hook の無い有効 method を公開しない"
+    - "hook は private/authenticated/TLS 経路。E15b fixture の unauthenticated control endpoint を本番へ持ち込まない。context は email・flow ID/type・transient_payload (email_proof/bot_token) の allowlist で credential/cookie/session を送らない。provider deadline は 30 秒より十分短く (初期値案 provider 3 秒・hook 全体 5 秒)、timeout/内部エラーは fail-closed の 403 (Kratos retry を誘発する 5xx にしない)。内部失敗分類をそのまま hook HTTP に流さない"
+    - "最新の E15a 状態を最終 submit ごとに評価する。gate の許可 verdict は cache しない (proof の冪等は E15c の検証済み事実のみ)。client の fake override・古い flow・UI 迂回は許可根拠にならない。override 中も effective な保護は課す (override は準備未完了/障害でも開放するだけで hook 不達を fail-open にしない)。評価後〜persist 間の閉鎖を二つの DB 跨ぎで原子化することは未検証で、取り消せるとは主張しない"
+    - "login/settings/recovery と認証済み POST /api/v1/accounts には hook を接続しない (q08)。新しい招待システム・login 遮断・追加 Account へのゲートは作らない。既存の対象限定招待が存在する場合のみ識別して除外 (q04)"
+    - "hook 自体の削除は呼ばれない hook では拒否できず (E15b で hook 削除後に identity 作成を実証、health は 200 のまま)、監視/poll だけでは bypass window を消せない。必須: immutable config、起動時+継続の config attestation (Kratos admin GET /health/config の merged 実効 config SHA256 と binary/image digest を全 replica について trusted deployment manifest と照合。参照 template/schema は内容 digest も別途照合)、未照合/不明 replica を公開しない ingress/admission (Kratos public 直接 API を含む全到達経路)、同じ artifact/config での隔離 positive/negative canary。provider 設定だけの喪失 (hook は存在) とは別の enforcement 喪失として E15a へ反映する (最小限の拡張可。既存の状態表・テスト・意味を維持。再開は attestation 成功が条件)"
+    - "E15a (Emumet#65)・E15w (Emumet#68) は main 済み。E15c (registration-protection-readiness) の adapter・readiness・1 回 probe use case・観測反映に依存し、E15c merge 後に main へ rebase する。継続 probe の周期実行・hook 時評価・hook 認証・attestation・Kratos 設定変更は本 unit が所有する。観測は RecordRegistrationObservationUseCase 経由、Webhook 不達でもゲートは不変、個々の hook 拒否は通知を生まない"
+    - "実 Kratos 経路の統合テストを CI で実行する (実 Kratos v1.3.1 + PostgreSQL + 実 Emumet + ローカル SMTP 模擬 + Turnstile 公式公開テストキー/fake provider)。identity 有無は Kratos admin API と DB の両方で突合し、拒否後は遅延 persist を再観測する。skip のみの成功は不可。ローカルで compose を使う場合は E15b の先例 (専用 project 名・tmpfs・自動 teardown しない・既存データ非削除) に従い、許可が無ければ親に質問か CI で検証する"
+    - "実 credential・有料契約・本番クラスタの資格情報が必要になったら取得・使用せず親 (host 側 Worker) に質問する。本番クラスタを直接操作しない。リポジトリ外の運用が必要な ingress/admission は参照構成・検証手順・canary・運用手順をリポジトリ内に残す"
+    - "共有ファイル (server/src/openapi.rs, server/src/route.rs, server/src/main.rs, DI wiring, migrations/, openapi.json) は別レーン E8 等と共有する。一件ずつ統合し、その時点の main から openapi.json を再生成する。別レーン E8 等と同時に同じ共有ファイルを変更する PR を出さない。hook 経路は公開 openapi.json に載せない。migration 番号は統合時点の最新の次を採番する"
+  intent_references:
+    - intents/emumet/features/registration-readiness-gate/overview.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/decisions/registration-protection-placement.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+  acceptance_criteria:
+    - "D15 q01〜q11 の全状態を実 registration (実 Kratos・実 Emumet・実 DB) で確認する: メールのみ/BOT のみ/両方/どちらもなし (q01)、一方障害で動作中の対策のみ課して継続 + 防御低下通知 (q07)、両方一時障害で一時拒否 -> 復旧で手動再開なしに自動再開 + 通知 (q06)、設定喪失で停止 latch -> 復旧しても自動再開せず手動再開のみ・再開時に最低条件未達なら不可・手動閉鎖を自動解除しない (q02/q03)、設定済みだが未検証は effective でない (q05)、override は明示解除まで有効で effective な保護は override 中も課される・解除で通常判定に戻る・開始/解除が通知される (q09/q10)、通知一覧/未読/Webhook 配送記録 (q11)"
+    - "有効な全 registration method に method-specific pre-persist hook (parse:true/ignore:false) があり、hook 無しの有効 method が無いことが静的検査 (有効 method 集合 ⊆ hook 付き method 集合) と実拒否試験 (browser JSON/form・API・閉鎖前に作成済みの flow・UI を経由しない直接 API・設定変更後の flow) で確認される。拒否した registration で identity が作成されない (admin API と DB の両方で確認、遅延 persist も再観測)"
+    - "hook は認証必須・私的経路・allowlist context・deadline (provider 3 秒/hook 全体 5 秒を目安) で、timeout・内部エラー・判定不能は 403 の fail-closed (identity 作成なし・Kratos retry を誘発しない)。204/403 以外を返さず allowed:false 200 等を使わない。client の fake override・不正 proof/token は許可根拠にならない。override 中も effective な保護を課す"
+    - "継続 probe worker が周期実行され、複数プロセスでも重複・通知増殖がなく、停止・再起動・遅延で古い ready が残らない (鮮度期限で unverified)。Webhook 不達でもゲートは不変。観測は RecordRegistrationObservationUseCase 経由"
+    - "状態遷移・通知イベント・E15w の Webhook 配送記録・管理者別未読が実 registration を伴う統合で一貫し、個々の hook 拒否が通知を増殖させない"
+    - "config attestation が全 replica の実効 config hash・binary/image digest・参照ファイル digest を trusted manifest と照合し、hook 削除・hash 不一致・未照合/不明 replica・canary 失敗を enforcement 喪失として検出して E15a に反映する (停止/手動再開、再開は attestation 成功が条件)。health 200・設定ファイル存在・hash の存在だけでは ready にならない。参照 ingress 構成で未照合 replica へ到達できないことが CI で実証される"
+    - "login (既存 identity) と認証済み POST /api/v1/accounts (追加 Account) はゲート閉鎖/障害でも影響を受けず hook 呼出増分 0。新招待システム・login 遮断・追加 Account へのゲートを追加していない"
+    - "統合テストが CI で実行され skip のみの成功ではない。実行したテスト名・件数・結果を PR に記載。既存テスト全緑 (login・POST /api/v1/accounts・E15a/E15w/E15c の回帰)・OpenAPI 差分検査。運用手順 (hook 構成・認証・attestation/canary・設定喪失時の対応・手動再開・評価後〜persist 間の閉鎖の制約) が docs に記録される"
+  revision_history:
+    - "2026-11-10: 第3便として packet 化 (draft)。E15b ADR 確定後・E15c と同時 draft。E15b PR #79 は packet 化時点で未 merge。D15 全体受け入れは E15w・F15 (画面実装) が揃うまで保留"
+intent_placement:
+  primary_intent: intents/emumet/features/registration-readiness-gate/overview.md
+  supporting_intents:
+    - intents/emumet/decisions/registration-protection-placement.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+  new_intent_needed: false
+  placement_rationale: "RG feature (registration-readiness-gate) は host 側で overview.md / packets.md / acceptance.md を新設済み。E15d は packets.md の第3便 unit で、D15 の実遮断を担う最終配線。運用手順は RG 配下に記録する。candidates.md D15 節と grill 記録 d15-q01〜q11 がユーザー決定の正本"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/overview.md
+      - intents/emumet/features/registration-readiness-gate/packets.md
+      - intents/shuttlepub/packets/candidates.md
+    summary: "RG packets.md の E15d に issue/PR リンクを追記。candidates.md D15 節へ E15d の queue 登録・完了範囲だけを追記 (D15 全体は ready/完了にしない。E15w・F15 画面実装が揃うまで保留)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/acceptance.md
+      - intents/emumet/features/registration-readiness-gate/operations.md
+    summary: "D15 の実遮断証跡 (CI 実行結果)・hook 構成と認証・deadline・attestation/canary・設定喪失時の対応と手動再開の運用手順・既知の制約 (評価後〜persist 間の閉鎖) を RG 配下 (acceptance.md と運用手順 operations.md) に記録 (host 側 closeout writeback)。運用文書は Emumet 側成果物"
+closeout_learning:
+  expected: "実際に配線した hook 構成 (method 一覧・認証方式・deadline)、D15 全状態の実 registration 検証結果と CI 実行名・件数、probe 周期と根拠、enforcement 喪失の E15a への反映方法 (拡張した場合はその内容)、attestation/canary と参照 ingress 構成、運用手順、既知の制約"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/features/registration-readiness-gate/operations.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "Kratos 設定 (ory/kratos)・registration hook endpoint (内部)・継続 probe/attestation の運用手順・サーバー設定・運用文書"

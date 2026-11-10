@@ -1,0 +1,83 @@
+implementation_issue_packet:
+  issue_title: "registration-protection-readiness: 登録前メール proof (SMTP)・Turnstile Siteverify adapter・実検証 API・設定世代・readiness 鮮度期限・失敗分類・E15a 観測入力"
+  issue_kind: feature
+  source_execution_unit: registration-protection-readiness
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/entity, kernel/src/repository, application/src/service, driver/src, server/src/route, server/src/api, server/src/schema, server/src/openapi.rs, server/src/route.rs, server/src/main.rs, migrations, openapi.json, docs, e2e/registration-guard, .github/workflows"
+  target_part: "登録保護の adapter と readiness 観測: SMTP による登録前 email challenge/proof (flow/email/config generation 束縛・有限 TTL・原子的消費・retry 冪等)、Turnstile Siteverify adapter、管理者の実検証 API、設定世代、鮮度期限付き readiness、設定喪失/一時障害/当該試行拒否の分類、E15a 観測入力への反映、運用文書"
+  dependencies: [registration-gate-control-plane, registration-kratos-guard-contract]
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない"
+    - "保護の所在は host ADR intents/emumet/decisions/registration-protection-placement.md (2026-11-10 Accepted) で確定: メール所有確認は Emumet が登録前 email proof を発行・検証し password 登録を維持 (ユーザー決定 question-88b36432ff84f589f1388699c8f40fa3 の A)、BOT は Emumet webhook + Cloudflare Turnstile Siteverify、ゲートも同 hook。Kratos native code 登録 (B) は採用しない。この所在は変更しない"
+    - "E15a (registration-gate-control-plane, Emumet#65) は main 済み。観測入力は RegistrationObservation{email, bot} の ProtectionObservation{configured, probe: Healthy|Unhealthy|Unknown}、effective = configured && Healthy。RecordRegistrationObservationUseCase (application/src/service/registration_gate.rs) は内部 use case で、制御状態が変わらない反復では revision・監査・通知を増やさない。E15a の状態機械・通知の意味は変更しない (入力型の拡張が必要なら最小限)"
+    - "E15b の実証 (Emumet PR #79、head bbf07136e9937520d828cce9a5027723ba2a82f5、main 未反映の可能性あり): transient_payload.email_proof / bot_token は hook へ届く (未信頼入力)。Kratos hook の candidate identity ID は zero UUID になり得て冪等キーにできない。hook は Kratos retry で最大 3 呼出される。公式 Turnstile 公開テストキーの実 API 6 条件 (evidence/provider.json) が fixture 元。契約は e2e/registration-guard/CONTRACT.md"
+    - "q05: 設定が有効なだけでは準備済みとせず、検証 API の実応答 (business 結果) を確認して初めて準備済み。health・ファイル存在・HTTP200・SMTP 接続/250 だけで ready にしない。実 secret の確認に dummy token/空 response の失敗だけを使わない (有効な当該 sitekey の token による business success を当該 generation に束縛)。不正な利用者 token で provider 全体を障害扱いしない。canary の成功は他の登録者の所有証明ではない"
+    - "古い成功の無期限 cache は禁止。generation 不一致・valid_until 超過・probe 停止で旧成功を破棄 (unverified)。時刻は注入可能にして試験する"
+    - "失敗分類 (ADR): configuration_invalid (未設定/空/無効・invalid/missing secret・SMTP 認証/設定不正)、attempt_rejected (token/proof 不一致・期限切れ・duplicate・hostname/action 不一致・宛先拒否 550 等。観測を変えない)、temporarily_unavailable (429/5xx/timeout/DNS/connect/TLS・不正な provider 応答・SMTP 接続失敗/timeout/4xx)、operational (business success + binding/freshness)、unverified。HTTP 429/5xx と SMTP 全 5xx を機械的に同一視しない"
+    - "E15a 観測入力への対応づけ (固定): operational -> configured=true/Healthy、temporarily_unavailable -> configured=true/Unhealthy、unverified -> configured=true/Unknown、configuration_invalid・未設定・明示無効 -> configured=false、attempt_rejected -> 観測を変えない。一方の故障で他方の観測を巻き込まない"
+    - "継続 probe の周期実行 (scheduler/worker)・hook 時評価・本番 registration hook への配線・hook 認証・config attestation・Kratos 設定変更は E15d の所有。本 unit は 1 回の probe 実行 use case と、時刻/generation を引数に readiness から観測入力を導く純粋な評価、公開の email challenge API、内部の proof 検証/消費 use case、管理者の実検証 API を提供する"
+    - "実 credential・有料契約・実メール配送が必要なら取得せず親 (host 側 Worker) に質問する。テストは公式 Turnstile 公開テストキーとローカル SMTP 模擬。公式テストキー成功は本番 credential の ready 証明ではない。secret・token・proof 本文・登録者メールを readiness API・通常ログ・外部通知・DB に出さない"
+    - "共有ファイル (server/src/openapi.rs, server/src/route.rs, server/src/main.rs, DI wiring, migrations/, openapi.json) は別レーン E8 等と共有する。一件ずつ統合し、その時点の main から openapi.json を再生成する。別レーン E8 等と同時に同じ共有ファイルを変更する PR を出さない。migration 番号は統合時点の最新の次を採番する"
+  intent_references:
+    - intents/emumet/features/registration-readiness-gate/overview.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/decisions/registration-protection-placement.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+  acceptance_criteria:
+    - "email challenge は正規化 email・実 registration flow ID・config generation に束縛され、code/link の確認後にのみ opaque proof が発行される (SMTP 送信成功だけでは発行しない)。code/token/proof は hash のみ DB に保存し、平文・SMTP secret がログ/応答/エラーに出ない。比較は定数時間"
+    - "challenge/proof は有限 TTL (flow 期限以内。初期値案: challenge 10 分・確認試行 5 回・proof 15 分・送信 rate limit は同一 email 60 秒に 1 通/1 時間 5 通・同一 flow 1 時間 3 通・送信元単位の上限。変更は根拠を PR/docs に記録) を持ち、期限境界・再送・並行確認が実 DB で試験される"
+    - "proof の消費は原子的な一回性。同一 flow・email・proof hash・generation の Kratos transport retry (初期値案 60 秒の再利用窓) にだけ同じ検証済み事実を返し、別 flow・別 email・旧 generation・期限切れ・改変・既消費の replay は拒否する。gate 許可 verdict 自体は cache しない。hook 側の検証は内部 use case で公開 HTTP の書込口ではない。公開 challenge API は rate limit・応答差で宛先状態を漏らさない・閉鎖/停止中の任意宛先送信禁止などでメール爆弾/踏み台/user enumeration にならない"
+    - "Turnstile Siteverify adapter: HTTPS 固定・redirect なし・短い timeout (初期値案 3 秒。hook 全体 5 秒以内)・応答サイズ上限。success:true + expected hostname/action + 期限・一回性 (duplicate)・当該 generation を照合し、HTTP200 の success:false を失敗とする。error-codes と HTTP/ネットワーク失敗が分類表どおりに写像される。テスト用 base URL 差し替えは test-mode 限定で本番設定から有効化できない。利用者の不正 token で provider 全体が障害扱いにならない"
+    - "config generation は設定変更で変わり、旧 generation の readiness/proof/challenge が無効になる。readiness 記録 (provider/type・enabled・generation・非 secret fingerprint・status・reason・checked_at・valid_until) は永続化され、valid_until 超過・generation 不一致・probe 停止で unverified となり、古い成功を無期限に使わない (時刻注入で試験)"
+    - "空設定・無効資格情報 (invalid/missing secret・SMTP 認証失敗)・timeout・429/5xx・SMTP 宛先拒否 (550)・SMTP 接続失敗が区別され、E15a 観測入力への対応づけが契約どおり。一方が故障しても他方の健全な対策が effective のまま残る"
+    - "operational は実 verification の business success を generation に束縛して初めて成立し、health・ファイル存在・HTTP200・SMTP 250 だけでは ready にならない。未検証状態からの bootstrap (一般登録を通らない管理者起動の検証経路を含む) と継続検証の設計が docs に記録される。実 credential/canary mailbox が無い場合はその保護を unverified のまま残し親へ質問する"
+    - "分類結果は RecordRegistrationObservationUseCase 経由で E15a に反映され、実 DB 統合テストで operational -> 一時障害 -> 復旧、両方の設定喪失 -> 停止 latch、設定変更 -> unverified、反復 probe で revision/通知が増えないことが確認される"
+    - "管理者の実検証 API (/api/v1/admin/registration-gate/protections* 仮) は管理者のみ (非管理者 401/403)。応答に secret・token・proof・登録者メールが含まれない。OpenAPI (openapi.json) が再生成され差分検査に通る。既存 API (login・POST /api/v1/accounts・E15a/E15w の管理 API) の挙動は不変。本番 registration hook・Kratos 設定には接続しない (E15d)"
+  revision_history:
+    - "2026-11-10: 第3便として packet 化 (draft)。E15b ADR (registration-protection-placement.md、メール方式は question-88b36432ff84f589f1388699c8f40fa3 の A) の確定後。TTL/rate limit は初期値案で child が根拠つきで調整可。E15b PR #79 は packet 化時点で未 merge"
+intent_placement:
+  primary_intent: intents/emumet/features/registration-readiness-gate/overview.md
+  supporting_intents:
+    - intents/emumet/decisions/registration-protection-placement.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+  new_intent_needed: false
+  placement_rationale: "RG feature (registration-readiness-gate) は host 側で overview.md / packets.md / acceptance.md を新設済み。E15c は packets.md の第3便 unit で、保護の所在は E15b ADR で確定済み。candidates.md D15 節と grill 記録 d15-q05/q06/q07 がユーザー決定の正本"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/overview.md
+      - intents/emumet/features/registration-readiness-gate/packets.md
+      - intents/shuttlepub/packets/candidates.md
+    summary: "RG packets.md の E15c に issue/PR リンクを追記。candidates.md D15 節へ E15c の queue 登録・完了範囲だけを追記 (D15 全体は ready/完了にしない。E15d・F15 画面実装が未完了)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/acceptance.md
+    summary: "観測契約 (設定世代・鮮度期限・失敗分類・E15a 観測入力への対応づけ・TTL/rate limit の確定値・bootstrap と継続検証の設計)・設定項目・secret 取り扱い・監視条件を acceptance.md に記録 (host 側 closeout writeback)。運用文書は Emumet 側成果物"
+closeout_learning:
+  expected: "確定した TTL/rate limit/再利用窓の値と根拠、config generation の導出方法、readiness 記録の形と鮮度規則、失敗分類の写像表、E15a 観測入力への対応づけ、bootstrap と継続検証の設計、設定項目名、実 DB テストの実行結果"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "管理者向け REST API (/api/v1/admin/registration-gate/protections*)、登録前 email challenge 公開 API、サーバー設定 (SMTP・Turnstile)、運用文書、OpenAPI (openapi.json)"

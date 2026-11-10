@@ -173,3 +173,5 @@
 {"ts":"2026-11-10T04:05:22.5220846+00:00","execution_unit":"profile-identity-web-adaptation","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#34","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/34"}
 {"ts":"2026-11-10T07:07:18.2259246+00:00","execution_unit":"profile-social-graph-storage","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":77}
 {"ts":"2026-11-10T07:07:18.2259246+00:00","execution_unit":"profile-social-graph-storage","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":77}
+{"ts":"2026-11-10T07:19:54.2393797+00:00","execution_unit":"registration-protection-readiness","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/registration-protection-readiness/"}
+{"ts":"2026-11-10T07:19:55.4050614+00:00","execution_unit":"registration-gate-enforcement","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/registration-gate-enforcement/"}
