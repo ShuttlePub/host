@@ -534,7 +534,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **Account単位の既存連合identityの扱いとして採用済み**: `d08-q14-reset-existing-federation-identity`。本番利用者・remote followerがまだいないため、Account単位のactor URI／acct／署名鍵／フォロー関係等の既存identityは引き継がず、新しいProfile actorから開始する。Move・リダイレクト・互換維持は不要。DB全消去ではなく、旧連合identityに属するデータのみ初期化対象とする。
 - **Profile actorのusernameと移管時のidentityとして採用済み**: `d08-q15-profile-username-identity`。Profileごとに一意なusername（acctの名前部分）を新設し、Account名とは分け、一度決めたら変更しない。Profile移管時もusername・actor URI・鍵・関係を維持する。
 - **候補の状態**: 主要な利用意図は整理済み。Profile／domain判定・表示／通知・操作認可／連合・保存／同期等の設計・検証待ちで実装readyではない。
-  D08全体はcandidateのまま実装packetへ自動昇格しない（queue登録済みなのは下記「queue 登録状況」のE8の1 unitだけ。それ以外は未登録・issue未公開）。
+  D08全体はcandidateのまま実装packetへ自動昇格しない（queue登録済みなのは下記「queue 登録状況」のE8・P1・P2・D8Pの4 unitだけ。それ以外は未登録・issue未公開）。
 - **unit 分割・依存・到達範囲（2026-11、feature 化）**: 機能正本は host の
   [personal-domain-controls（DC）](../../emumet/features/personal-domain-controls/overview.md) と
   [profile-federation（PF）](../../emumet/features/profile-federation/overview.md)。unit 一覧・依存図は各 `packets.md`、契約・検証境界は各 `acceptance.md`。
@@ -546,8 +546,9 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
     F8 `personal-domain-controls-web-ui`（domain `shuttlepub`、target `ShuttlePub/shuttlepub-frontends`、依存 F0・FA・E8・S8・D8R）。
   - ShuttlePub: S8 `personal-domain-content-api-contract`（E8 に依存。表示抑制・引用／boost 全体非表示・reveal・双方向新規操作拒否の**契約のみ**）。
   - 責務: 新規 Follow の受理・送信拒否は Emumet。返信・引用・リポスト・いいね／絵文字の新規受理・送信拒否と表示 filter の実処理は **ShuttlePub の後続 unit（未実装）**。
-  - 到達範囲: queue 登録するのは E8 のみ（API 契約。実保存・実処理は含まない）。他 unit は未 packet 化。**D08 全体は ready／完了ではない。**
-  - queue 登録状況（2026-11-10、unit 範囲のみ）: E8 `profile-domain-policy-api-contract`（[Emumet#66](https://github.com/ShuttlePub/Emumet/issues/66)）を queue 登録済み・issue 公開済み（intent-target 適用）。packet は `.intent-cli/issues/profile-domain-policy-api-contract/`、primary intent は [DC](../../emumet/features/personal-domain-controls/overview.md)。登録したのは API 契約のみで、他 unit（P1〜P4・D8P・D8G・D8R・FN・F8・S8）は未 packet 化。D08 全体は candidate のまま ready／完了ではない。
+  - 到達範囲: queue 登録するのは E8（API 契約）・P1・P2・D8P（いずれも実保存・基盤。E8 のマージ後に実装マージ）のみ。他 unit は未 packet 化。**D08 全体は ready／完了ではない。**
+  - queue 登録状況（2026-11-10、unit 範囲のみ）: E8 `profile-domain-policy-api-contract`（[Emumet#66](https://github.com/ShuttlePub/Emumet/issues/66)）を queue 登録済み・issue 公開済み（intent-target 適用）。packet は `.intent-cli/issues/profile-domain-policy-api-contract/`、primary intent は [DC](../../emumet/features/personal-domain-controls/overview.md)。登録したのは API 契約のみ。
+  - queue 登録状況（2026-11-10、第2便、unit 範囲のみ）: P1 `profile-actor-identity-foundation`（[Emumet#71](https://github.com/ShuttlePub/Emumet/issues/71)、primary [PF](../../emumet/features/profile-federation/overview.md)、ADR [profile-actor-identity](../../emumet/decisions/profile-actor-identity.md) 新設）、P2 `profile-social-graph-storage`（[Emumet#72](https://github.com/ShuttlePub/Emumet/issues/72)、primary PF）、D8P `profile-domain-policy-storage`（[Emumet#73](https://github.com/ShuttlePub/Emumet/issues/73)、primary DC）を queue 登録済み・issue 公開済み（intent-target 適用）。いずれも依存 E8、本番 root router へ未 mount。他 unit（P3o・P3i・P4・D8G・D8R・FN・F8・S8）は未 packet 化。D08 全体は candidate のまま ready／完了ではない。
 - **仮 slug**: `personal-domain-controls`。
 - **target repo 別分割**: Emumet のAccount単位からProfile単位へのfollow graph／AP identity移行（旧連合identityに属するデータのみ初期化し、新しいProfile actorから開始）、Profileごとの一意・不変usernameとAccount名の分離、Profile移管時のactor identity／鍵／関係維持、Profile単位domain方針の実保存・取得、既存フォロー関係の実解除、新規Follow受理・送信判定候補、ShuttlePub の投稿／通知filter・新規反応受理／操作判定候補、
   frontends の設定・適用状態表示候補。Profileを主体とするAPI・認可とAP identity対応の具体契約を決める。
