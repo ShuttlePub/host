@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T14:21:46.8294881+00:00",
+  "updated_at": "2026-11-10T15:38:34.782939+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1052,7 +1052,7 @@
     {
       "execution_unit": "profile-relationship-outbound",
       "title": "profile-relationship-outbound: Profile \u5358\u4F4D Follow/unfollow\u30FB\u500B\u5225 block/mute \u306E\u9001\u4FE1\u5074 use case\u30FB\u95A2\u4FC2\u5909\u66F4\u3068\u914D\u9001 job \u4E88\u7D04\u30FB\u5185\u90E8\u7F72\u540D\u30FB\u6C38\u7D9A\u914D\u9001 worker (\u672C\u756A\u672A\u63A5\u7D9A)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "profile-actor-identity-foundation",
         "profile-social-graph-storage"
