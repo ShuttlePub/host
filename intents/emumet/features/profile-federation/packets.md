@@ -9,16 +9,16 @@
 
 ## Execution units
 
-状態は 2026-11 時点。「queue 登録済み」以外は未 packet 化（後続便で packet 化）。D08 全体は ready／完了ではない。
+状態は 2026-11 時点。「queue 登録済み」以外（P4）は未 packet 化（後続便で packet 化）。D08 全体は ready／完了ではない。
 
 | # | unit | 概要 | 依存 | ADR | 状態 |
 |---|---|---|---|---|---|
 | E8 | `profile-domain-policy-api-contract` | Profile identity／Follow／個別 block/mute／domain-controls の OpenAPI 契約と username 段階移行の明記（DC 側 packet、実装は含まない） | なし | — | マージ済み（[Emumet#66](https://github.com/ShuttlePub/Emumet/issues/66) / [PR #70](https://github.com/ShuttlePub/Emumet/pull/70)、squash `0bfa437`、2026-11-10）。[DC packets.md](../personal-domain-controls/packets.md) 参照 |
 | P1 | `profile-actor-identity-foundation` | username 実保存・一回限り設定、Profile actor 情報・鍵の型と repository、WebFinger／actor 文書生成。本番 `/ap/profiles/...` は未 mount | E8 | [`decisions/profile-actor-identity.md`](../../decisions/profile-actor-identity.md) 新設済み | queue 登録済み・issue 公開済み（[Emumet#71](https://github.com/ShuttlePub/Emumet/issues/71)、2026-11-10。packet: `.intent-cli/issues/profile-actor-identity-foundation/`）。E8（Emumet#66 / PR #70）のマージ後に実装マージ |
 | P2 | `profile-social-graph-storage` | Profile 版 Follow・個別 block/mute・元 Follow activity ID・重複受信記録・配送 job の保存モデルと、in-place reset の隔離 DB 用 fixture。本番 migration は追加しない | E8 | — | queue 登録済み・issue 公開済み（[Emumet#72](https://github.com/ShuttlePub/Emumet/issues/72)、2026-11-10。packet: `.intent-cli/issues/profile-social-graph-storage/`）。E8（Emumet#66 / PR #70）のマージ後に実装マージ。P1 とは独立に並行可 |
-| P3o | `profile-relationship-outbound` | Profile 単位 Follow/unfollow・個別 block/mute の送信側 use case、関係変更＋job 予約、内部署名、永続配送 worker（本番未接続） | P1, P2 | — | 未 packet 化 |
-| P3i | `profile-relationship-inbound` | Profile 用 inbox の Follow/Accept/Reject/Undo、followers/following 読取（本番未 mount）。P3o とは enqueue interface 固定で並行可 | P1, P2 | — | 未 packet 化 |
-| FN | `profile-identity-web-adaptation` | emumet-web の Account 作成に別入力の Profile username・変更不可説明・既存 Profile への一回限り設定。**target `ShuttlePub/shuttlepub-frontends`** | E8, P1（P4 に依存しない） | — | 未 packet 化 |
+| P3o | `profile-relationship-outbound` | Profile 単位 Follow/unfollow・個別 block/mute の送信側 use case、関係変更＋job 予約、内部署名、永続配送 worker（本番未接続） | P1, P2 | — | queue 登録済み・issue 公開済み（[Emumet#74](https://github.com/ShuttlePub/Emumet/issues/74)、2026-11-10。packet: `.intent-cli/issues/profile-relationship-outbound/`）。P1・P2 のマージ後に実装マージ。P3i とは P2 の enqueue interface 固定で並行可 |
+| P3i | `profile-relationship-inbound` | Profile 用 inbox の Follow/Accept/Reject/Undo、followers/following 読取（本番未 mount）。P3o とは enqueue interface 固定で並行可 | P1, P2 | — | queue 登録済み・issue 公開済み（[Emumet#75](https://github.com/ShuttlePub/Emumet/issues/75)、2026-11-10。packet: `.intent-cli/issues/profile-relationship-inbound/`）。P1・P2 のマージ後に実装マージ |
+| FN | `profile-identity-web-adaptation` | emumet-web の Account 作成に別入力の Profile username・変更不可説明・既存 Profile への一回限り設定。**target `ShuttlePub/shuttlepub-frontends`** | E8, P1（P4 に依存しない） | — | queue 登録済み・issue 公開済み（[shuttlepub-frontends#34](https://github.com/ShuttlePub/shuttlepub-frontends/issues/34)、2026-11-10。packet: `.intent-cli/issues/profile-identity-web-adaptation/`）。画面実装はモック合意まで保留（BFF・GraphQL・モック・生成型は先行可）。`bff/schema.graphql`・生成型は F15（[registration-gate-admin-ui](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）と直列に統合。参照: [ratcap settings-hub links](../../ratcap/features/settings-hub/links.md) |
 | P4 | `profile-federation-in-place-cutover` | 破壊的 SQL の本番 migration 化、旧連合データ初期化、新 Profile 鍵の一回限り生成、root router／worker 切替、username 必須化、旧 `/ap/accounts/...`・`/internal/v1/accounts/{id}/sign`・`.../public-key` 廃止、E2E 更新 | P1, P2, P3o, P3i, **FN** | `decisions/profile-federation-in-place-reset.md` を新設 | 未 packet 化 |
 
 ## 依存図

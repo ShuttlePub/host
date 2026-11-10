@@ -1,0 +1,90 @@
+implementation_issue_packet:
+  issue_title: "profile-identity-web-adaptation: emumet-web の Profile username (Account 作成時の別入力・変更不可の説明・既存 Profile への一回限り設定) — BFF・GraphQL・モック・identity 表示 (shuttlepub-frontends apps/emumet-web)"
+  issue_kind: feature
+  source_execution_unit: profile-identity-web-adaptation
+  domain: emumet
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/emumet-web/bff, apps/emumet-web/src, apps/emumet-web/test"
+  target_part: "emumet-web の Profile username 対応: BFF (Emumet REST 変換・GraphQL スキーマ・mock/real クライアント) + 生成型 + fixture を先行し、画面構成 (作成フォームの username 入力・変更不可の説明・既存 Profile への一回限り設定・identity 表示) はモック合意の記録後に実装"
+  dependencies:
+    - "profile-actor-identity-foundation"
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。shuttlepub-frontends 側の旧 design-host 記述や child 側の文書を根拠に、child (shuttlepub-frontends) へ親状態 (packet・intent・queue・ラベル) を作成・変更しない。"
+    - "【画面実装ゲート】画面構成 (Account 作成フォーム内の username 入力の配置・変更不可の説明・既存 Profile への一回限り設定画面の配置・文言・見た目) は、リード側モック (lead thread thread-xxs52dcx の artifact-62a146ec3345a2f3f6e2f4537b728c72) へのユーザー合意が host intent (intents/emumet/features/profile-federation/ 配下) に記録されるまで確定していない。**この合意が host intent に記録されるまで画面実装 PR (PureScript の View/画面・ルート・CSS・visual baseline を追加・変更する PR) を出さない**。合意の記録は host 側 issue コメント/依頼で child に伝達される。BFF・GraphQL・REST 変換・モック・生成型・fixture など画面構成に依存しない部分は先行して PR を出してよい (その PR に画面実装を混ぜない)"
+    - "機能の正本は Emumet 側 (domain emumet、feature PF = intents/emumet/features/profile-federation/)。target が frontends でも ratcap domain の unit ではない。ratcap の settings-hub / intent map (intents/ratcap/intent-tree/00-map.md) は参照リンクのみ (host 側で追加済み/追加予定)。過去の ratcap packet は書き換えない"
+    - "依存 API: E8 (Emumet#66 / PR #70、マージ済み・squash 0bfa437) の契約と、P1 profile-actor-identity-foundation (Emumet#71) の実装。E8 確定契約: POST /api/v1/accounts の profile_username と POST /api/v1/profiles の username は optional (null は省略扱い)、形式・予約語違反は 400 (作成副作用前)、P1 実装前の有効値は 501、ProfileResponse.username は nullable (未設定を表現可能)。username 更新 API は存在せず、通常の編集機能として設けない。既存 Profile の一回限り設定の endpoint・競合 (重複) 時のエラー・未設定時の読取形は P1 が確定する。契約の正本は Emumet#71 の issue/PR と生成 openapi.json。P1 未 merge の間は issue/PR の契約に合わせた stateful mock で進め、契約が曖昧・不整合なら実装を進めず issue で質問する (勝手に拡張しない)"
+    - "username 仕様 (E8 で確定): 形式 ^[a-z0-9][a-z0-9._-]{0,63}$ (ASCII 小文字 1〜64 文字)、暗黙の trim・小文字化なし。予約語 admin, administrator, root, system, support, security, moderator, api, ap, auth, oauth, oauth2, login, logout, register, settings, well-known。DB 一意・削除済み再利用なし・Account 名から自動導出しない。段階: E8/P1〜P3 optional → FN で UI 必須送信 → P4 で required"
+    - "username の段階 (E8/P1〜P3 optional → FN → P4 required): 本 unit は『新 UI は作成時に username を必ず送る』段階で、API が optional の間も新 UI は必須入力として扱う。username を省略する旧経路 (既存の Account 作成導線) は本 unit で置き換える。P4 の前提は本 unit の merge (モック合意後の画面実装を含む) と P1 との実接続確認。P4 の required 化に依存しない"
+    - "username は Account 名から自動導出しない。Account 名とは別入力で、一度設定したら変更できない (変更 UI・変更 mutation を作らない)。Profile を組織へ移管 (Emumet 側で実装済みの Profile 移管) しても username は変わらず、emumet-web の identity 表示は username を Profile の属性として表示し、Account 名や移管先 Account から導出しない"
+    - "既存の BFF 構造 (apps/emumet-web/AGENTS.md): bff/schema.graphql が data API の SDL の正本、bff/emumet/{client.ts,real.ts,mock.ts} が Emumet クライアント契約 (snake_case ↔ camelCase 変換は real.ts)、bff/resolvers.ts、bff/loaders.ts、bff/context.ts。PureScript 型は scripts/sync-graphql.ts で bff/schema.graphql から生成 (src/Generated/ は手編集禁止)。現状の GraphQL は CreateAccountInput {name, isBot} と Profile {nanoid, accountId, displayName, summary, iconUrl, bannerUrl} で username を持たない"
+    - "【統合の直列化】bff/schema.graphql と生成型 (src/Generated/**) の変更は別レーン F15 (registration-gate-admin-ui、shuttlepub-frontends#31) と直列に統合する (同時に別ブランチで更新して衝突させない。main の最新から生成し直す)。F15 の BFF 部分 (PR #33) は merge 済みで、画面部分はモック合意待ち。workspace・CI・visual 共通基盤は別レーン F0 が所有し、本 unit はそれらを変更しない (既存の visual 登録経路へ画面/fixture を追加するのみ)。生成物 (src/Generated/**、OpenAPI 由来型) の手編集は禁止"
+    - "username の重複・予約語・形式違反・未設定・変更禁止はそれぞれ別の状態/エラーとして扱い (409 重複、400 形式・予約語、未設定は null、変更禁止は設定済み Profile への再設定拒否)、BFF/UI で混同しない。サーバー応答の 400/409/401/403 を握りつぶさず、認可の正本は Emumet API とする"
+  intent_references:
+    - "intents/emumet/features/profile-federation/overview.md"
+    - "intents/emumet/features/profile-federation/packets.md"
+    - "intents/emumet/features/profile-federation/acceptance.md"
+    - "intents/emumet/features/personal-domain-controls/acceptance.md (E8 確定契約)"
+    - "intents/emumet/decisions/profile-actor-identity.md"
+    - "intents/emumet/decisions/0007-organization-accounts.md"
+    - "intents/ratcap/features/settings-hub/overview.md"
+    - "intents/ratcap/features/settings-hub/links.md"
+    - "intents/ratcap/intent-tree/00-map.md"
+    - "intents/shuttlepub/packets/candidates.md (D08 節)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q15)"
+    - ".intent-cli/issues/profile-domain-policy-api-contract/ (E8 packet)"
+    - ".intent-cli/issues/profile-actor-identity-foundation/ (P1 packet)"
+    - ".intent-cli/issues/registration-gate-admin-ui/ (F15 packet。schema.graphql 統合の直列化)"
+  acceptance_criteria:
+    - "【先行可】BFF: GraphQL (bff/schema.graphql) の CreateAccountInput と EmumetClient (client.ts / real.ts REST 変換 / mock.ts stateful mock) が username を扱い、作成時に profile_username として必ず Emumet へ送る。Profile の username (nullable) を読み取り、既存 Profile への一回限り設定の mutation が揃う。生成型が sync-graphql で再現可能に更新され、再生成差分が空である。省略 (username なし) の作成 mutation は新 UI から呼ばれない"
+    - "【先行可】エラーの区別: 重複 (409)・予約語/形式違反 (400)・未設定 (null)・変更禁止 (設定済みへの再設定拒否)・未認証/権限なし (401/403) が BFF で別の型/エラーコードになり混同されない。real.ts の REST 変換テスト、mock の stateful 挙動 (重複・予約語・一回限り) が E8/P1 契約に照合される"
+    - "【先行可】P1 の実 API との実接続: 実 Emumet (P1 マージ後) に対し Account 作成時の username 保存、既存 Profile への一回限り設定、重複・予約語・変更禁止の応答を BFF 経由で確認する (P1 未 merge の間は mock で先行し、実接続確認は P1 マージ後に必須)"
+    - "【先行可】移管しても username が変わらない: Profile を移管した後も BFF が返す username が不変で、identity 表示が Account 名・移管先から導出されないことを BFF テスト (実接続または契約 fixture) で確認する"
+    - "【モック合意後】新 UI は Account 作成時に username を別入力で必ず送る (未入力は送信不可)。『変更不可』の説明が表示され、画面構成・文言はモック合意に従う (説明を増やしすぎない)。合意前は画面実装 PR を出さない"
+    - "【モック合意後】既存 Profile (username 未設定) に一回限りの設定ができ、設定後は変更できない状態として表示される。重複・予約語・形式違反・未設定・変更禁止が区別して表示される。identity 表示が username を使う"
+    - "【モック合意後】SSR/hydration (全状態 fixture で DOM 破損・不一致がない)、visual (mobile/desktop、作成・未設定・設定済み・各エラー) が既存の visual 経路で通る。生成物は手編集されず、sync-graphql の再生成差分が空である"
+    - "既存の emumet-web 画面・BFF の挙動 (ログイン、アカウント一覧/詳細、moderation、登録ゲート管理 BFF) は変更されない。username の変更機能・新しい組織管理画面一式は作らない"
+intent_placement:
+  primary_intent: intents/emumet/features/profile-federation/overview.md
+  supporting_intents:
+    - "intents/emumet/features/personal-domain-controls/overview.md"
+    - "intents/ratcap/features/settings-hub/overview.md"
+    - "intents/shuttlepub/packets/candidates.md"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json"
+    - "intents/emumet/decisions/profile-actor-identity.md"
+    - "intents/emumet/decisions/0007-organization-accounts.md"
+  new_intent_needed: false
+  placement_rationale: "Profile username の web 対応は PF の FN (target は frontends だが機能の正本は emumet domain の PF)。ratcap domain の新 unit は作らず、ratcap settings-hub / intent map からは参照リンクのみを追加する。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/emumet/features/profile-federation/packets.md"
+      - "intents/ratcap/features/settings-hub/links.md"
+      - "intents/ratcap/intent-tree/00-map.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "PF packets.md の FN に issue リンクを追記し、candidates.md D08 節へ FN の queue 登録範囲だけを追記 (D08 全体は ready/完了にしない)。ratcap の settings-hub links.md と intent map (00-map.md) に PF への参照リンクを追加 (過去 packet は書き換えない)。画面構成・文言・見た目のモック合意は PF 配下の host intent に記録される (記録されるまで画面実装 PR は出さない)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/emumet/features/profile-federation/acceptance.md"
+    summary: "FN の BFF/GraphQL の確定形、username 関連のエラー区別、画面実装ゲートとモック合意の記録、検証境界を PF acceptance.md に記録する (host 側 closeout writeback)"
+closeout_learning:
+  expected: "確定した BFF/GraphQL の形、username 関連エラーの区別、fixture の一覧、画面構成のモック合意内容 (host intent 側)、P1 との実接続結果、visual の登録内容"
+  write_back_required: true
+  write_back_targets:
+    - "intents/emumet/features/profile-federation/acceptance.md"
+    - "intents/emumet/features/profile-federation/packets.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "emumet-web Account 作成・Profile username 設定 (BFF GraphQL: bff/schema.graphql。画面は合意後)"

@@ -50,6 +50,13 @@ Ratcap は Emumet の Web フロントエンド。PureScript + Flame (Elm アー
 | ui-catalog-foundation | カタログアプリ新設 + ショーケース + テーマ切替 + JSON manifest | done (2026-09-05, #11 / PR #12) |
 | ui-catalog-visual-diff-ci | Playwright スクショ + reg-suit/R2 + PR コメント画像埋め込み | backlog (depends on foundation) |
 
+## Emumet domain 側 feature への参照 (2026-11-10)
+
+機能の正本が emumet domain にあり、target が本 app (`apps/emumet-web`) の unit。ratcap domain の unit は新設せず、参照のみ置く (過去 packet は変更しない)。
+
+- [registration-readiness-gate](../../emumet/features/registration-readiness-gate/overview.md) — 登録ゲート管理 UI (F15 `registration-gate-admin-ui`、shuttlepub-frontends#31)。BFF 部分は merge 済み、画面部分はモック合意待ち
+- [profile-federation](../../emumet/features/profile-federation/overview.md) — Profile username 対応 (FN `profile-identity-web-adaptation`、shuttlepub-frontends#34)。BFF・GraphQL・モックは先行可、画面構成はモック合意待ち。`bff/schema.graphql`・生成型は F15 と直列に統合する
+
 ## SNS UIの将来候補への導線 (2026-10-15)
 
 [Discord由来のpacket候補](../../shuttlepub/packets/candidates.md)のUIは

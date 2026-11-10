@@ -1,0 +1,7 @@
+execution_unit: profile-relationship-outbound
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/profile-relationship-outbound"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/profile-relationship-outbound/github-body.md"
+created_issue_number: 74
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/74"
+published_label_name: null

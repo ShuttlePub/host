@@ -26,3 +26,4 @@
 - `intents/ratcap/features/account-deactivation/` — 設定ハブから削除 danger-zone へ導線を貼る場合に参照
 - `intents/ratcap/features/follow/` — 設定ハブからフォロー/フォロワー管理を行う場合に参照
 - `intents/emumet/features/registration-readiness-gate/` — 管理者向け登録ゲート管理画面（F15）の配置を決める際に参照する（正本は emumet domain 側。画面構成はモック合意待ちで、本 feature の設定ハブ構成を変更するものではない）
+- `intents/emumet/features/profile-federation/` — Profile username（Account 作成時の別入力・変更不可の説明・既存 Profile への一回限り設定。FN `profile-identity-web-adaptation`、shuttlepub-frontends#34）の正本。設定ハブ／Account 作成導線の配置を決める際に参照する（正本は emumet domain 側。画面構成はモック合意待ちで、本 feature の設定ハブ構成を変更するものではない。過去の ratcap packet は変更しない）
