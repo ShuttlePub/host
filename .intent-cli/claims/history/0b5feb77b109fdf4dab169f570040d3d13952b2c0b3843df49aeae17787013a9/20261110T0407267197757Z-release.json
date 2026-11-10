@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-identity-web-adaptation",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T04:07:26.7197757+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T04:00:01.6735356+00:00",
+  "base_commit": "0d4090ddf5db9e4b3384c048baff9f8b016894f4"
+}
