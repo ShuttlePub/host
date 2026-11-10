@@ -142,7 +142,7 @@ configured=falseのときのE15aの停止latch（復旧しても自動再開し�
   障害前に送ったメールの確認（過去のメール所有）は現在のSMTPの復旧の証拠ではない。
 - probeは宛先を提示せずMAIL FROMまで検証する（MAIL FROM→RSET→QUIT）。成功の証拠はmail_from段階で、接続範囲の障害
   （MAIL FROMを含む）を解除できるが、RCPT・DATAの障害は覆えない。
-- RCPT・DATAの障害は、canaryの新規送信の成功（DATA受理。証拠時刻はDATA受理時刻）でのみ解除される。
+- RCPT・DATAの障害は、canaryの新規送信の成功（DATA受理。証拠時刻は成功したSMTP対話の開始時刻を保守的な下限とする）でのみ解除される。
 **E15dへの引き継ぎ**: RCPT・DATAの障害はcanary配送の再検証成功でしか解除されないため、canary配送再検証の周期実行
 （probe_max_ageより短い周期）が、配送障害・設定喪失からの自動復旧（自動再開）の前提になる。周期実行が無い間は
 管理者がcanaryを手動で検証する。
@@ -209,3 +209,15 @@ E15d の技術選択は、各 generation の初回 bootstrap（メールは管�
 照合状態の復旧を通知しても停止 latch は自動解除しない。再開は、最新の enforcement 照合が有効な状態で管理者が明示的に行う。最低保護条件を満たす場合は通常の手動再開、保護の無い状態で継続中の override により再開する場合は警告確認を再度要求する。override の開始者・開始時刻はこの再開で書き換えない。基盤喪失と照合復旧の両イベントを通知一覧・E15w Webhook の配送対象とする。
 
 これは実装に必要な状態契約の精緻化であり、実 Kratos・全到達経路の照合と fail-closed 試験が完了するまで D15/E15d を完了扱いしない。
+
+## E15d part 2: 配備接続と black-box attestation の保証範囲（2026-11-11）
+
+親の確定判断（Worker 引継ぎ）に従い、Docker inspector・独自 ingress は実装しない。リポジトリの本番 Kratos config に password method-specific pre-persist hook（response.parse:true / ignore:false / Authorization Bearer）を配線する。登録可能 method は password のみに固定し、追加 method は同等の hook カバレッジを確認するまで有効化しない。renderer の静的契約検査と実 Kratos CI の両方で固定する。
+
+配備中の black-box attestation は negative canary のみ。API/browser の実 flow と独立したランダム password、予約 canary 宛先、DB に事前登録した nonce+flow を用いる。想定した否定応答だけで ready とせず、認証済み hook 受信 receipt の照合と Kratos admin API の identity 非作成も必要とする。通常30秒周期・60秒TTL。provider 観測から enforcement を正常化しない。想定外作成を検出した場合は、停止ラッチと E15w 対象通知を先に永続化し、予約 canary email の再照合後にのみ削除する。timeout の未確定 canary は10分間再観測する。positive 登録は同じ本番 hook/body を使う実 Kratos CI で検証し、周期 positive canary を追加しない。
+
+**重要な限界**: hook が外れた状態では、Emumet 側の停止だけでその Kratos の登録を物理的に止められない。検査が当たる経路については次の周期検査で喪失を検出し、停止・通知を直ちに永続化するが、単一 LB URL に対する有限回 canary では未応答・非選択 replica や広告されない追加 method を決定的には網羅できない。不明 replica を公開しないこと、immutable artifact の配備、壊れた経路の切離しと物理的な登録停止は運用者の配備層責務である。アプリケーションに ingress/admission 保証が実装されたとは扱わない。
+
+SMTP非列挙の時間差は、試行された公開送信の応答を4秒floor（SMTP総timeout3秒）に揃えて軽減するが、DB/ネットワーク停滞・scheduler jitter は残る。非同期化は必要時の追加検討であり、この unit の必須条件とはしない。
+
+本記録は設計・運用契約の精緻化であり、PR/CI/独立レビューの証跡を伴う unit closeout までは E15d/D15 の完了記録ではない。D15 全体は F15 を含むため、この配備接続だけでも完了しない。

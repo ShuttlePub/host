@@ -123,3 +123,11 @@ E15d の技術選択は、各 generation の初回 bootstrap（メールは管�
 照合状態の復旧を通知しても停止 latch は自動解除しない。再開は、最新の enforcement 照合が有効な状態で管理者が明示的に行う。最低保護条件を満たす場合は通常の手動再開、保護の無い状態で継続中の override により再開する場合は警告確認を再度要求する。override の開始者・開始時刻はこの再開で書き換えない。基盤喪失と照合復旧の両イベントを通知一覧・E15w Webhook の配送対象とする。
 
 これは実装に必要な状態契約の精緻化であり、実 Kratos・全到達経路の照合と fail-closed 試験が完了するまで D15/E15d を完了扱いしない。
+
+### E15d part 2 の受け入れ境界（2026-11-11）
+
+- 本番 password pre-persist hook、認証、追加method無効固定、negative canary の nonce+flow+receipt と admin非作成照合を対象とする。positive は実 Kratos CI が担う。
+- enforcement 喪失は override より先に停止し、override_info は保持する。復旧通知後も手動再開が必要で、保護なしの継続override再開では警告再確認を要求する。provider成功ではenforcement停止を解除しない。
+- CI は実 Kratos + Emumet 本番ルーター + PostgreSQL で D15 q01〜q11 を検証する。q04 は招待機能の新設を要求せず、公開 registration に自称招待/override の迂回を認めない。SMTP/Turnstileのみ模擬し、DB/identity実作成と通知/Webhookを確認する。skipだけの成功は不可。
+- 保証の限界: hook自体が外れたKratosに対してEmumetの停止は物理遮断にならない。次の周期検査で検査の当たった経路を検出し即時通知するが、有限回のLB URL canaryで非選択/未応答replicaや未広告methodを完全に網羅しない。不明replica排除・経路切離し・物理停止は運用者の配備層責務（[ADR](../../decisions/registration-protection-placement.md)）。独自ingressやDocker inspectorが実装されたとする受け入れは行わない。
+- F15の画面表示・操作・常時警告は引き続き別unit。E15d part2 のPR/CI/レビュー証跡は完了報告時に追記する。
