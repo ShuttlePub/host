@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-09T23:29:26.4802812+00:00",
+  "updated_at": "2026-11-10T00:17:26.0021835+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -747,7 +747,7 @@
     {
       "execution_unit": "shuttlepub-openapi-foundation",
       "title": "shuttlepub-openapi-foundation: ShuttlePub server \u5C64\u3078\u306E utoipa \u5C0E\u5165\u3068 /api/v1 OpenAPI \u5951\u7D04\u57FA\u76E4",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
