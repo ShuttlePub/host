@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-domain-follow-guards",
+  "actor": "d8g-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T18:07:12.0192815+00:00",
+  "reason": "PR #89 merged (squash 931a686) and closeout recorded",
+  "displaced_holder": "d8g-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T15:45:23.1305394+00:00",
+  "base_commit": "5f786935efa69872d256ce8c4466472a5d6447a7"
+}

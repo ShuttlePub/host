@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:profile-domain-follow-guards",
-  "actor": "d8g-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-10T15:45:23.1305394+00:00",
-  "base_commit": "fd4cedd044c4f65e1d70629b173990d74b2bba70"
-}
