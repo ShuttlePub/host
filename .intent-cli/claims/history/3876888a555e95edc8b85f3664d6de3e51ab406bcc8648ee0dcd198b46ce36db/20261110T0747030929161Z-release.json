@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-domain-follow-guards",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T07:47:03.0929161+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T07:39:51.0141697+00:00",
+  "base_commit": "278fe64571e86bafc0a5872b6acb952022d083a7"
+}
