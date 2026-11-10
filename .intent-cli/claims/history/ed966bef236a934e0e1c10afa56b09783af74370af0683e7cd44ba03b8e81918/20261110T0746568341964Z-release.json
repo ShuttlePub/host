@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-federation-in-place-cutover",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T07:46:56.8341964+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T07:36:07.2746394+00:00",
+  "base_commit": "c7f14fdef18e5d4f7821ed535456d32fde987ccd"
+}
