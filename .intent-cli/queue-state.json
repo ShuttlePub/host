@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T07:45:29.9354572+00:00",
+  "updated_at": "2026-11-10T11:14:13.1326216+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -980,7 +980,7 @@
     {
       "execution_unit": "profile-actor-identity-foundation",
       "title": "profile-actor-identity-foundation: Profile username \u306E\u5B9F\u4FDD\u5B58\u30FB\u4E00\u56DE\u9650\u308A\u8A2D\u5B9A\u3068 Profile actor \u60C5\u5831\u30FB\u9375\u30FBWebFinger/actor \u6587\u66F8\u751F\u6210\u306E\u57FA\u76E4",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "profile-domain-policy-api-contract"
       ],
