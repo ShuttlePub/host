@@ -32,7 +32,7 @@
 ### 3. P1 の境界
 
 - 含む: username の実保存・一回限り設定、Profile actor 情報・鍵の型と repository、WebFinger／actor 文書の生成ロジック、実 DB 検証。
-- 含まない: 本番 Profile actor 公開（`/ap/profiles/...` は本番 root router 未 mount、新配送 worker はルートで起動しない）、新しい汎用署名 API、旧 identity 変換。mount・旧 route（`/ap/accounts/...`、`/internal/v1/accounts/{id}/sign`、`.../public-key`）撤去・worker 起動・本番 migration 採番は P4。
+- 含まない: 本番 Profile actor 公開（`/ap/profiles/...` は本番 root router 未 mount、新配送 worker はルートで起動しない）、新しい汎用署名 API、旧 identity 変換。mount・旧 route（`/ap/accounts/...`、`/internal/v1/accounts/{id}/sign`、`.../public-key`）撤去・worker 起動は P4。migration は、P1 の非破壊の追加 migration（username 列・Profile 鍵テーブル・index）は通常の `migrations/` に置き本番適用してよく、P4 が所有するのは旧連合データ初期化などの破壊的 migration と P2 の新関係・配送テーブルの本番採番（親判断 2026-11-10。[profile-federation-in-place-reset](profile-federation-in-place-reset.md) 参照）。
 
 ## Consequences
 
