@@ -223,6 +223,79 @@ Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 
 - **コメントの不一致（D8G）**: `profile_inbound/mod.rs` の `handle_follow` の「P3i accepts every well-formed Follow」というコメントは個別 block による拒否の実装と合っていない。D8G で domain 方針の判定を block 判定付近に移す際に直す。
 - **purge と UndoFollow（P4）**: `InboundActivityRepository::purge_received_before` は `UndoFollow` 記録も削除する。purge を接続する際は、保持期間より遅れて届く Follow が（記録の消えた）Undo 済みの Follow として受理されないか注意する（保持期間の設計）。
 
+## P3o 確定契約（Emumet PR #86、2026-11-10 マージ済み、squash `fc11471`）
+
+> 実装は `ShuttlePub/Emumet` の kernel（`entity::profile_graph::delivery_policy`、`repository::profile_delivery_sender`・`profile_delivery`）、driver（`profile_delivery`＝送信 adapter・actor / WebFinger resolver）、application（`service::profile_relationship`＝use case・配送 worker・activity 組み立て）、server（`route::profile_relationship`・`api::profile_delivery_worker`）。
+> route・worker とも **本番 root router・`main` へ未接続**（テスト専用の `ProfileRelationshipRouter` と `spawn_profile_delivery_worker`）。`openapi.json`・`root_router.rs`・`main.rs` は変更なし（OpenAPI は E8 の 501 skeleton のまま）。**AP Block の送信可否はユーザー確認中（下記）。**
+
+### use case（`ProfileRelationshipUseCase`）
+
+| 操作 | route（テスト router のみ） | 効果 |
+|---|---|---|
+| `follow_profile` | `POST /profiles/{id}/follows` | remote 宛て: pending 世代 + `Follow` job を同一 transaction で予約。**ローカル Profile 宛て: HTTP を経由せず**、同じ transaction で承認済み世代を `Local(ProfileId)` 同士で確定（配送 job なし。下記） |
+| `unfollow_profile` | `DELETE /profiles/{id}/follows/{follow_id}` | 世代を ended(undone) にし、未送信 Follow は取消、試行済みなら `Undo(Follow)` を予約 |
+| `block_actor` / `unblock_actor` | `POST …/blocks`・`DELETE …/blocks/{id}` | block 保存 + 双方向の有効世代を ended(blocked) + 相手へ `Undo(Follow)`（自分→相手）/ `Reject(Follow)`（相手→自分）を予約。**AP `Block` は送らない**。解除は関係を復元せず配送もしない |
+| `mute_actor` / `unmute_actor` | `POST …/mutes`・`DELETE …/mutes/{id}` | 表示抑制の設定のみ。関係・配送は変えない |
+| following 一覧 | `GET …/following` | **P3i の `ProfileFollowListUseCase`・`route_profile_follow_lists` に一本化**（P3o は一覧を持たない） |
+
+- 認可は現在の所有者のみ（`require_profile_owner`、個人は Account、組織は `X-Organization-Id`）。エラー: 400（不正 target・自己・解決不能）/ 403 / 404 / 409（重複）/ 422（個別 block による Follow 拒否）。関係の主体は常に `Local(ProfileId)`。同じ Account の別 Profile・他 Account の Profile には波及しない。
+- **関係状態と配送状態は別物**: 関係変更と job 予約は同一 DB transaction（予約失敗で関係変更も残らず、関係変更失敗で job も残らない）。外部配送が失敗・timeout しても unfollow・block は巻き戻らない。
+- **domain 方針は読まない**（D8G/D8R が所有）。domain block が保存されていても個別 Follow は拒否されず、個別 block は domain 方針に書かない。
+- target の書式: actor URL、`acct:name@domain`（`acct:` と先頭 `@` は省略可）、ローカル Profile の nanoid。`acct:` は **transaction の外・所有者認可の後**に WebFinger（`/.well-known/webfinger?resource=acct:name@domain`。`subject` の一致必須・ActivityPub の self link 必須。宛先検査は送信 adapter と同じ）で canonical actor URL に解決し、解決不能は 400。認可されない呼び出しは外向き request を出さない。
+
+### 関係ロック規約（`ProfileRelationshipLock`、P3i の確定契約と共通）
+
+- 判断・変更に関わる**ローカル Profile を transaction の先頭（所有者認可の直後、関係の読み書きの前）で一度だけ**、ID 昇順に `lock_profiles`（`pg_advisory_xact_lock(hashtextextended('emumet.profile_relationship:{id}', 0))`、transaction 終了で解放）で取る。`FOR SHARE` の所有者ロックだけでは block 判定と Follow 保存・block 保存と既存 Follow の終了が interleave するため。
+- P3o は follow / block で {自分, ローカル相手} を取る。unfollow / unblock / mute は CAS（`end`）や単一行操作で足りるため自分のみ／取らない。**D8G の domain block 適用・P3i の受信は同じ規約**を使う。
+- 実 DB 競合テスト 3 件（Follow の保存中に block・同一 Profile の Follow と block・block の保存中の逆方向 Follow）は、ロックを無効化すると失敗することを確認済み。
+
+### Local→Local の確定経路
+
+自インスタンス actor からの HTTP 受信は P3i が 422 で拒否するため、ローカル Profile 宛て Follow は HTTP を経由しない。両 Profile の関係ロック下の同一 transaction で、相手（と自分）の個別 block を検査し（block 済みは 422 で確定しない）、P3i の受信 Follow と同じ意味論（承認不要）で **accepted 世代を `Local` / `Local` で保存**する。activity ID は通常の Follow と同形式で採番。配送 job は作らない。unfollow は ended(undone) のみ（Undo 配送なし）、block は双方向を ended(blocked) にするのみ（Undo/Reject 配送なし）。ローカル発の未送信 Follow job が残っている場合（block 受信側）は `cancel_undelivered_for_follow` で取り消す。
+
+### activity ID と本文
+
+- Follow: `{actor}/activities/{Follow 世代 ID}`、Undo: `{元 Follow の ID}/undo`、Reject: `{actor}/activities/{Follow 世代 ID}/reject`（actor = `{PUBLIC_BASE_URL}/ap/profiles/{nanoid}`）。**決定的**なので、同じ関係の再処理は冪等キー `(sender, activity_id, target_inbox)` で重複 job にならない。
+- `Undo(Follow)` の `object` には**元 Follow の保存済み本文をそのまま埋め込む**（`@context` のみ除去）。宛先は元 Follow job の `target_inbox`。`Reject(Follow)` の `object` は相手の Follow（相手の activity ID・actor・object）、宛先はその Follow への Accept job（P3i が `follow_id` 付きで予約）の inbox。**Accept job が無い（承認前など）と宛先不明のため Reject は送らない**。
+- 未送信（pending・試行 0）の Follow は取り消すだけで Undo を送らない。試行済みなら Undo を送り、送信中だった Follow があれば Undo は 120 秒後（その Follow が届き得る時間の後）に回す。`find_by_id` で取消後の試行回数を再読して判定（claim との競合に強い）。
+
+### 署名と送信 adapter
+
+- 署名は P1 の `SignProfileRequestUseCase`（Profile 鍵、key id `{actor}#main-key`）。**新しい汎用署名 API は作らない**。旧 `/internal/v1/accounts/{id}/sign` 等は変更なし。request: `POST`、本文は job に保存されたバイト列そのもの、`Digest: SHA-256=…`・`Date`・`Host`・`Content-Type: application/activity+json`・cavage `Signature`。鍵が未作成なら署名失敗として**送信せず再試行**（鍵作成後に配送される）。
+- 送信 adapter（`HttpProfileDeliverySender`）と actor / WebFinger resolver（`HttpRemoteActorResolver`）は同じ宛先検査: https のみ、userinfo 不可、localhost・内部 IP 拒否、**DNS 解決後の再検査と接続先アドレスの固定**、redirect 拒否、timeout（解決 5s / 接続 10s / 全体 30s）、応答本文の上限。**末尾ドット付き host は名前解決の前に拒否**（検査名と接続名のずれによる DNS 固定の迂回を防ぐ）。http・loopback を許可する構築は `cfg(test)` / `test-mode` ビルドにだけ存在。actor 文書は署名なし GET で、`id` が要求 URL と完全一致することを要求（authorized fetch を要求する peer は未対応）。
+
+### 永続配送 worker（`DeliverProfileActivitiesUseCase`）
+
+- **lease は送信の直前に 1 件ずつ**取得（`claim_due(limit=1)`、`FOR UPDATE SKIP LOCKED`）。送信中は DB 接続を保持しない。結果は `lease_token` で fencing（`Recorded` / `Cancelled` / `LeaseLost`）。二重 worker は同じ job を二重に配送しない。
+- **署名後・送信直前に `renew_lease`** で token・試行番号・InFlight・未期限切れ・未取消を再確認して延長し、失敗なら送信しない（`lease_lost` / `cancelled`）。`renew_lease` の期限判定・延長は `GREATEST(渡された now, DB の clock_timestamp())` 基準。worker は更新に使った時刻から**絶対期限**（`renewed_at + lease − 10s`）を持ち、更新が戻った後の残存時間を送信 budget にする（消費済みなら送信しない）。送信が budget を超えたら timeout として再試行。
+- 再起動回収: lease が切れた in_flight は次のサイクルが `lease_expired` として履歴に残し回収・再試行。**バックオフ**: 60s から 2 倍（上限 6h）、`[50%,100%]` の jitter、429/503 の `Retry-After` は 6h を上限に尊重。**再試行上限 12 回**（lease 切れの回収も数える。初回から最後の再試行まで約 1 日）。lease 120s、1 サイクル 10 件。
+- 分類: 2xx = 配送済み、408/429/5xx/timeout/接続失敗/DNS 失敗/署名失敗 = 再試行、3xx・その他 4xx・不正な宛先 = `failed(permanent_error)`、上限到達 = `failed(retries_exhausted)`。取消された job は取得されず、送信中の取消は履歴だけ残り cancelled のまま（送信済みは取り戻せない）。
+- 常駐ループ `spawn_profile_delivery_worker`（`server::api::profile_delivery_worker`）は部品として置いただけで、`main` からは起動しない（`main_starts_no_profile_delivery_worker` を維持）。
+
+### 非公開制御 job と公開 outbox
+
+配送 job は `profile_delivery_jobs` だけに保存され、公開 outbox の生成元（`outbox_activities`）と共有しない。block 由来の Undo / Reject を含む操作の後も `outbox_activities` は増えず、`GetOutboxUseCase` の出力に現れない（実 DB テスト）。
+
+### P2 の port への追加（読み取り・更新系のみ。保存・予約の契約は不変）
+
+- `ProfileDeliveryJobRepository::find_by_follow(follow_id, activity_type)`（関係終了時に既存の Follow / Accept job の宛先 inbox・状態を引く）、`renew_lease(claim, now, extension)`（上記）。`ProfileDeliveryEnqueuer` / `NewProfileDeliveryJob` は変更なし。
+- `kernel::impl_database_delegation!` に `DependOnProfileMuteRepository` と `DependOnProfileDeliveryJobRepository` の委譲を追加（他は P3i が追加済み）。
+
+### AP Block 送信は保留中（ユーザー確認中）
+
+旧 Account 版は `Block` を送っていたが、D08「AP Block は送らない」と P2 の job 種別（Follow / Accept / Reject / Undo ＋ DB CHECK）に従い、**現状は個別 actor block でも Block を送らず Undo / Reject だけを配送する**。個別 block でも Block を送るかの確認は未回答（ユーザー確認中）。「送る」となった場合の差分は小さい（P2 fixture の job 種別 CHECK に `Block` を追加し、`block_actor` に配送予約、`unblock_actor` に `Undo(Block)`）ので後続の小 PR で対応する。
+
+### 検証
+
+実 DB（隔離 DB + P2 fixture）と fake peer（HTTP mock）で、原子性（trigger による予約失敗・関係変更失敗）、Undo が元 Follow ID を参照、配送失敗でも unfollow が戻らない、署名（Signature / Digest の検証・本文改ざん検出）・宛先 inbox・activity 内容、5xx / timeout / 429+Retry-After / 410 / 再試行上限、lease 切れ回収・繰り返し lease 切れ、**署名中に lease を失った worker の非送信・更新の停止で期限を越えた worker の非送信**、取消（事前・署名中・送信中）、二重 worker（8 job を 2 worker で配送し peer への到達は各 1 回）、署名鍵なし、重複予約の冪等、個別 block と domain 方針の非混同、Profile 間分離、**ローカル Profile 宛て Follow の確定・unfollow・block**、acct 解決（成功・subject 不一致・self link なし・404・未認可）、末尾ドット host の拒否、公開 outbox 非露出、P3o/P3i の route を同じ router に組み合わせて重複登録しないこと、実 root 構成で全 route 404。
+
+### P4 / 後続への申し送り
+
+- 本番 mount（route・worker 起動）と本番 migration の採番は P4。P3o の route を mount した unit は `route/tests.rs` の不在テストの対象から外し、存在テストへ置換する。worker 起動時は `main_starts_no_profile_delivery_worker` を意図的に更新する。
+- **実 HTTP の結合（P4 の E2E）**: 配送・actor 解決・WebFinger の実 peer（Mastodon / Iceshrimp / mock peer）との結合は未検証（テストは loopback の fake peer）。署名なし GET を拒否する peer の扱いを含める。
+- D8G: 送信側 Follow への **domain 方針**は未適用（個別 block 判定の隣に、同じ関係ロック規約の下で挿入する）。承認前の incoming Follow への Reject が宛先不明の件は、P3i が承認前の Follow の inbox を保存するようになれば拡張できる。
+- 重複: server テスト用の独立 DB ヘルパが `driver::database::isolated_db`（P3o）と `server/src/route/profile_graph_test_support.rs`（P3i）の二系統ある。統合は P4 以降の掃除項目。
+
 ## UI 前提（ユーザー指示）
 
 FN の画面構成を決める実装はモック合意まで保留する。画面構成に依存しない BFF・GraphQL・変換の検証は先行できるが、
