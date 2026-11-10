@@ -126,6 +126,9 @@ HTTP providerの429/5xxとSMTPの全5xxを機械的に同一分類しない。
 公開要求経路からreadinessを更新できるのは、宛先提示前の段階（接続/STARTTLS/認証/MAIL FROM）の失敗だけ
 （`temporarily_unavailable`/`configuration_invalid`）。provider全体の一時障害・設定不正は、宛先を伴わない独立probeと
 管理者canary（固定canary宛先）で判定する。公開要求の連続失敗はreadinessに積み上げない。
+**分類は送信の目的で分ける**: 上記の「宛先提示後は常にattempt」は公開要求の送信だけに適用する。管理者canaryは固定の承認済み宛先で
+攻撃者が選べないため、RCPT/DATA/timeout/切断を含むすべての段階の配送失敗をprovider障害として記録する
+（4xx/timeout/切断は`temporarily_unavailable`、認証失敗・5xx・canary宛先の550系は`configuration_invalid`）。
 理由: 公開発行APIは宛先の状態を応答から区別させてはならない（user enumeration防止）。宛先提示後の失敗は、
 コードや段階だけでは宛先非依存と保証できず、readinessを変えると、宛先Aへの発行後に別宛先Bへ発行した応答（202/503）から
 Aの受理/RCPT拒否/DATA失敗/timeoutが判別できてしまう。MAIL FROMの550（送信者不許可）等は宛先拒否ではなく
