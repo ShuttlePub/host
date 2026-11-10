@@ -129,6 +129,10 @@ HTTP providerの429/5xxとSMTPの全5xxを機械的に同一分類しない。
 **分類は送信の目的で分ける**: 上記の「宛先提示後は常にattempt」は公開要求の送信だけに適用する。管理者canaryは固定の承認済み宛先で
 攻撃者が選べないため、RCPT/DATA/timeout/切断を含むすべての段階の配送失敗をprovider障害として記録する
 （4xx/timeout/切断は`temporarily_unavailable`、認証失敗・5xx・canary宛先の550系は`configuration_invalid`）。
+**回復の範囲**: canaryで記録した配送範囲の障害は、接続・認証だけを確認する接続probeの成功では解除しない。
+解除は配送範囲の再検証（canaryの配送受理、またはcanary/登録者のcode確認の成功）でのみ。接続段階の障害（接続probe自体の失敗）は
+従来どおり次の接続probeの成功で回復する。これにより、配送障害が続く間にメールがoperationalへ戻って
+BOTのみへの縮退が解除されることを防ぐ。
 理由: 公開発行APIは宛先の状態を応答から区別させてはならない（user enumeration防止）。宛先提示後の失敗は、
 コードや段階だけでは宛先非依存と保証できず、readinessを変えると、宛先Aへの発行後に別宛先Bへ発行した応答（202/503）から
 Aの受理/RCPT拒否/DATA失敗/timeoutが判別できてしまう。MAIL FROMの550（送信者不許可）等は宛先拒否ではなく
