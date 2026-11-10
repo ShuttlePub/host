@@ -15,6 +15,45 @@
 | unit | 検証 | 境界・非目標 |
 |---|---|---|
 | E8 | OpenAPI 再生成、旧作成 payload・新 payload・未実装エラーの contract test、既存 Rust CI | 契約のみ。新関係処理・方針保存・username 保存は実装しない |
+| P1 | 実 DB、イベント再適用、移管、鍵署名、実 root 構成の route 不在テスト（確定形は下記「P1 確定契約」） | 本番 `/ap/profiles/...` は未 mount。root で新配送 worker を起動しない |
+| P2 | 独立 DB/schema での migration・repository・競合テスト（確定形は下記「P2 確定契約」） | 本番 migration・dual-write・変換ツールなし。旧 schema のテストと同じ DB を同時変更しない |
+| P3o | DB transaction、fake peer、timeout・再起動・二重 worker | 外部配送失敗でローカル unfollow を巻き戻さない。本番 route・worker は未接続 |
+| P3i | 署名付き HTTP fixture、実 DB、重複・順序逆転・不正参照 | 投稿 Activity の認可・実受理は対象外。本番 route は未 mount |
+| FN | BFF REST 変換、GraphQL 生成、SSR/hydration、visual、P1 との実接続 | username 変更は対象外。P4 に依存しない |
+| P4 | 移行前 fixture→移行後 DB、再実行、署名、WebFinger、Follow・個別 block/mute、移管後 identity 維持、許可 username 文字種、E2E | 旧 identity 保存・互換 Follow API・Move・無停止移行・DB 全消去は対象外 |
+
+## 共通の契約
+
+- 認可は現在の所有者（Account／組織 membership）による。外部 ID は nanoid。
+- username 更新 API を通常の編集機能として設けない。
+- P1〜P3 の Profile actor・関係 route は本番未 mount であることを OpenAPI schema 説明にも記載する（E8）。
+- E8 はマージ済み（Emumet PR #70、squash `0bfa437`）。username 段階 E8 の確定形（形式・予約語違反 400／有効値 501／副作用前拒否／読取は null 可）、followers 応答型の分離、Profile actor URL は P1 で確定、未 mount 不在テストの強化（共有 router 構成）は P1/P4 へ引き継ぎ。詳細は [DC acceptance](../personal-domain-controls/acceptance.md) の「E8 確定契約」。
+- ShuttlePub 側の投稿操作の受理・送信拒否は本 feature の対象外（[DC acceptance](../personal-domain-controls/acceptance.md) 参照）。
+
+## P1 確定契約（Emumet PR #78、2026-11-10 マージ済み、squash `e2e3b46`）
+
+> 実装は `ShuttlePub/Emumet` の kernel（`entity::profile`、`entity::profile_signing_key`、`activitypub::ActorUrlBuilder::for_profile`）、driver（`postgres/profile*`）、
+> application（`service::profile_username`、`profile_signing_key`、`service::activitypub::profile_actor`）、server（`root_router.rs`、`route/activitypub/profile_actor.rs`）。
+> 検証は `DATABASE_URL` を設定した実 DB（skip なし）で、CI（Rust / E2E）全 green。D08 全体は ready／完了ではない。
+
+### username
+- 形式 `^[a-z0-9][a-z0-9._-]{0,63}# profile-federation — acceptance
+
+> 契約・検証境界。個別 unit の受け入れ詳細は各 packet が正本。overview は [overview.md](overview.md)。
+
+## 全体の完了条件（P4 完了時）
+
+- [ ] Profile が actor・follow graph・個別 block/mute の主体になり、旧 Account 単位の連合経路が廃止されている
+- [ ] 全 Profile に一意・不変の username があり、Account 名とは独立している。Profile 移管後も username・actor URI・鍵・関係が維持される
+- [ ] 旧連合データのみ初期化され、AuthAccount・Account・Profile・組織 membership・イベント履歴・全体モデレーションは保持される
+- [ ] 再実行しても再消去・鍵再生成が起きない
+- [ ] Mastodon / Iceshrimp / mock peer E2E が新 Profile モデルで成功する
+
+## unit ごとの検証境界
+
+| unit | 検証 | 境界・非目標 |
+|---|---|---|
+| E8 | OpenAPI 再生成、旧作成 payload・新 payload・未実装エラーの contract test、既存 Rust CI | 契約のみ。新関係処理・方針保存・username 保存は実装しない |
 | P1 | 実 DB、イベント再適用、移管、鍵署名、実 root 構成の route 不在テスト | 本番 `/ap/profiles/...` は未 mount。root で新配送 worker を起動しない |
 | P2 | 独立 DB/schema での migration・repository・競合テスト（確定形は下記「P2 確定契約」） | 本番 migration・dual-write・変換ツールなし。旧 schema のテストと同じ DB を同時変更しない |
 | P3o | DB transaction、fake peer、timeout・再起動・二重 worker | 外部配送失敗でローカル unfollow を巻き戻さない。本番 route・worker は未接続 |
@@ -29,6 +68,29 @@
 - P1〜P3 の Profile actor・関係 route は本番未 mount であることを OpenAPI schema 説明にも記載する（E8）。
 - E8 はマージ済み（Emumet PR #70、squash `0bfa437`）。username 段階 E8 の確定形（形式・予約語違反 400／有効値 501／副作用前拒否／読取は null 可）、followers 応答型の分離、Profile actor URL は P1 で確定、未 mount 不在テストの強化（共有 router 構成）は P1/P4 へ引き継ぎ。詳細は [DC acceptance](../personal-domain-controls/acceptance.md) の「E8 確定契約」。
 - ShuttlePub 側の投稿操作の受理・送信拒否は本 feature の対象外（[DC acceptance](../personal-domain-controls/acceptance.md) 参照）。
+
+・予約語は E8 の値を `kernel::ProfileUsername` に移して流用（暗黙の trim・小文字化なし）。Account 名から導出しない。
+- 保存: `ProfileEvent::Created.username`（任意。`skip_serializing_if none` なので旧イベントは無変更）と一回限りの `ProfileEvent::UsernameSet`。`profiles.username` に射影し、イベント再適用（projector の全再構築）で復元される。
+- **一意・削除済み再利用不可・一回限りは DB で保証**: 追記専用で Account/Profile 削除後も残る `profile_events` の部分 unique index 2 本（`profile_events_username_unique` = `data->>'username'`、`profile_events_username_once_per_profile` = `id`）。違反は `KernelError::Concurrency` → HTTP **409**。競合する同時設定は片方のみ成功。`profiles.username` にも部分 unique（二重防御）。
+- **一回限り設定 API**: `POST /api/v1/profiles/{profile_nanoid}/username` body `{"username"}` → 200 `ProfileResponse`。現在の所有者のみ（個人は Keto `account_edit`、組織は `X-Organization-Id` の組織 context）。400（形式・予約語）/ 403 / 404 / 409（設定済み・重複・認可後に所有者が変わった）/ 422（Account 停止中。認可後に unfiltered で取得するので 404 にならない）。PUT/PATCH/DELETE は作らない（OpenAPI テストで固定）。
+- 作成 API: `POST /api/v1/accounts` `profile_username`・`POST /api/v1/profiles` `username` は optional のまま 501 から保存へ。形式不正は副作用前に 400、重複は 409 で何も作らない。省略した旧 payload は 201。`ProfileResponse.username` は値 or null。
+
+### 移管・通常編集との競合（並行性）
+- 設定 use case は認可後、write transaction の**先頭で Profile 行を `FOR NO KEY UPDATE`**（`ProfileReadModel::lock_by_id_for_update`）し、認可した所有者・username 未設定を再確認してから保存する。移管の projection UPDATE と同じ行をロックするため、旧所有者向けに認可された要求が移管後の Profile に（変更不能な）username を設定することはできない（409）。D8P の `FOR SHARE`（所有者判定）ともこのロックで競合する（読取側と書込側の関係）。
+- projection 書込は username を **NULL→値のみの単調更新**: read model `update` と projector `upsert` は `COALESCE(既存, 新)`、設定専用の `ProfileReadModel::set_username` は version を後退させない。username を観測できなかった通常編集（旧イベント列から再構築した projection）が保存済み username を消さない。
+- 実 DB の競合テスト: `username_request_authorized_for_the_old_owner_is_refused_after_a_concurrent_transfer` / `transfer_waiting_behind_a_username_write_keeps_the_username` / `stored_username_survives_a_concurrent_profile_edit_and_the_projector` ほか。
+
+### Profile actor URL・鍵・WebFinger（本番未 mount）
+- actor id / `url` / `publicKey.owner`: `{PUBLIC_BASE_URL}/ap/profiles/{profile_nanoid}`。inbox / outbox / followers / following は末尾 `/inbox` `/outbox` `/followers` `/following`。**key id は `{actor id}#main-key`**。path は username ではなく nanoid（不変の Profile identity 由来なので移管で変わらない）。acct は `username@{PUBLIC_BASE_URL の host[:port]}`（`/.well-known/webfinger`、domain は本 instance と大文字小文字無視で一致が必要）。
+- Profile は **username と有効な鍵の両方**を持って初めて actor／WebFinger が解決する（欠けると 404）。
+- 鍵: 新テーブル `profile_signing_keys`（`profile_id` 所有、Profile 行削除で cascade。アルゴリズム・暗号化形式は `signing_keys` と同一の JSONB）。非失効鍵は Profile あたり 1 つ（部分 unique index。二重生成は `Concurrency`）。所有主体は Profile で、移管で変わらない。use case は `CreateProfileSigningKeyUseCase` / `GetProfilePublicKeyUseCase` / `SignProfileRequestUseCase`（route には出さず、新しい汎用署名 API は作らない）。**本番コードは鍵を生成しない**（P4 が一回限り生成を所有）。
+- 本番 router 構築は `server/src/root_router.rs::build_root_router`（`main.rs` は呼ぶだけ）。テスト router（`build_test_router_with_auth`）も同関数に委譲し、本番と同じ構成で route 不在テスト（`profile_actor_and_contract_routes_are_absent_from_the_root_router`）と main の worker 起動検査（`main_starts_no_profile_delivery_worker`）を行う。E8 の `GET /ap/profiles/{nanoid}` 501 skeleton は実 handler（tag `ProfileActor`、未 mount）に置換、WebFinger の Profile 版は `ProfileActorRouter`（テストのみ）。
+- migration `migrations/20261105000001_profile_username_and_actor_keys.sql` は非破壊の追加（nullable 列・index・新テーブル）で**通常の `migrations/` として本番適用される**。P4 は再採番しない（P4 は破壊的 migration と P2 テーブルの本番採番のみ所有）。
+
+### 引き継ぎ
+- **version 後退（should）**: `ProfileReadModel::update`（`driver/.../profile.rs`）の通常更新は `version = $7` を無条件に書くため、逆順競合で projection version が後退しうる（projector が再適用して収束する）。`GREATEST(version, $7)` と逆順テストを後続 unit で検討する。
+- **未 mount テストの寄せ替え（should）**: E8（`profile_policy_tests.rs`）・D8P（`profile_domain_control`）の「未 mount」文字列検査は main.rs/root_router.rs のソース検査が中心。実 root 構成の検査（`route/tests.rs`）へ寄せるのは P3o／P3i／P4 での mount 時に行う（mount した unit は不在テストの対象から外し、存在テストへ置換）。
+- P3o/P3i: 新配送 worker を `main` から起動する場合は `main_starts_no_profile_delivery_worker` を意図的に更新する。actor URL の構築は `ActorUrlBuilder::for_profile` を使う。
 
 ## P2 確定契約（Emumet PR #77、2026-11-10 マージ済み、squash `f523b86`）
 
