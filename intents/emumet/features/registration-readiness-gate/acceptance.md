@@ -113,3 +113,13 @@ E15d の技術選択は、各 generation の初回 bootstrap（メールは管�
 段階×時刻の証拠モデルは維持する。成功の evidence_at は、成功した対話の開始時刻を保守的な下限とする（対話中に観測された新しい障害を、遅れて完了した古い対話が解除しない）。障害の時刻は実際の失敗観測時刻。code 確認それ自体は新しい SMTP 障害を解除しない。設定喪失 latch は provider が復旧しても解除されず、手動再開が必要である。
 
 これは E15d の設計精緻化であり、準備 PR や E15c 単体をもって実 Kratos enforcement／D15 全体の受け入れを完了とはしない。
+
+## E15d refinement: enforcement 基盤の喪失は override と独立した停止（2026-11-10）
+
+出典: 親判断 question-3eac94babf10decd062298d0f74a5c2a。hook の削除・未照合 replica・attestation の期限切れ等、登録判定そのものを迂回し得る構成喪失は、provider の準備未完了・一時障害とは別の設定喪失として扱う。enforcement が未確認の間、またはその停止 latch が残る間は、override より先に Stopped とする。provider 成功や通常の観測更新がこの状態を正常化してはならない。
+
+既存の provider 起因の状態表は変更しない。override_info は基盤停止で暗黙に解除せず、明示解除まで保持する。API は override 有効と enforcement 停止を同時に表現できなければならず、F15 は override バナーだけをもって受付中と表示しない。
+
+照合状態の復旧を通知しても停止 latch は自動解除しない。再開は、最新の enforcement 照合が有効な状態で管理者が明示的に行う。最低保護条件を満たす場合は通常の手動再開、保護の無い状態で継続中の override により再開する場合は警告確認を再度要求する。override の開始者・開始時刻はこの再開で書き換えない。基盤喪失と照合復旧の両イベントを通知一覧・E15w Webhook の配送対象とする。
+
+これは実装に必要な状態契約の精緻化であり、実 Kratos・全到達経路の照合と fail-closed 試験が完了するまで D15/E15d を完了扱いしない。
