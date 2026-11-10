@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:profile-relationship-inbound",
+  "actor": "design",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-10T03:59:56.7044263+00:00",
+  "base_commit": "a4b2a0723b57c9c53ae149041916edf68d094170"
+}
