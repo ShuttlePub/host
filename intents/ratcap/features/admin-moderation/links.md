@@ -40,3 +40,4 @@
 - `intents/ratcap/features/account-deactivation/` — BFF mutation 追加パターンの参考実装。
 - `intents/ratcap/features/settings-hub/` — 管理 UI を設定画面に配置する場合の配置パターン参考。
 - `intents/ratcap/features/block-mute/` — 同様の「アカウントに対する操作」UI パターン参考。
+- `intents/emumet/features/registration-readiness-gate/` — D15 登録ゲート管理 UI（F15 `registration-gate-admin-ui`、shuttlepub-frontends#31）の正本。機能・契約・画面実装ゲートは emumet domain 側で管理し、本 feature からは参照のみ（本 feature の過去 packet は変更しない）。管理者向け画面の BFF 認可・`GET /api/v1/me` の `instance_roles` 利用は本 feature の実装を先例にする。

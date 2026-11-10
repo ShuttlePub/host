@@ -35,12 +35,40 @@
 - [ ] 本番 Kratos 設定への hook 接続は行わない（E15d 所有）
 - draft ゲート: 所在・provider・観測契約を親が確認するまで E15c/E15d を draft しない。成立しない条件が見つかった場合は影響と代案を親へ戻す
 
-## E15c / E15d / E15w / F15（後続。packet 化時に確定）
+## E15w — registration-admin-notification-webhook（Emumet#68。外部 Webhook 配送のみ）
+
+- [ ] E15a の永続通知イベント（全種別。override 開始・解除を含む）が、サーバー設定の単一 endpoint へ配送される。event ID は再試行・再起動・再送でも同一。未設定なら配送せず「未設定」が観測でき、ゲート動作に影響しない
+- [ ] at-least-once・受信側 event ID 重複排除・順序非保証が受信側向け文書に明記される
+- [ ] HMAC-SHA256 署名（timestamp + 本文）。secret はサーバー設定のみで DB・API 応答・ログ・エラー・payload に出ない。署名のテストベクタと検証手順の文書がある
+- [ ] SSRF 対策: HTTPS のみ、リダイレクト禁止、接続時の宛先検査と接続固定、全アドレス検査、timeout・本文サイズ上限。SSRF fixture で拒否され恒久失敗として記録される。test 用の例外は本番設定から有効化できない
+- [ ] payload・ログに secret・登録者メール等を含めない（allowlist シリアライザ、宛先は host のみ表示）
+- [ ] 再試行（408/429/5xx/timeout/接続失敗。Retry-After 尊重）と恒久エラー（その他 4xx・3xx・SSRF 拒否・設定不備）の分類、上限超過/恒久エラーで failed、管理者の再試行まで再送されない
+- [ ] 配送記録の永続化、再起動後の回収、二重 worker でも同一 event を同時に二重送信しない（lease）
+- [ ] 管理者 API（状態・テスト送信・再試行）。テスト送信はゲート状態・通知一覧・未読件数に影響しない。非管理者は 401/403。secret は応答に出ない
+- [ ] Webhook 不達・failed・設定不備・worker 停止でゲート状態は変わらず、配送失敗が新しい Webhook 配送対象の通知イベントを生まない（無限再帰しない）
+- 検証: 純粋ロジック（署名・分類・バックオフ・allowlist）、SSRF fixture、`DATABASE_URL` 実 DB + fake receiver（再起動・二重 worker・429/5xx/timeout・恒久エラー・管理者再試行。skip のみの成功は不可）、管理者認可、OpenAPI 再生成。E15a merge 後に rebase し共有ファイルは一件ずつ統合
+
+## F15 — registration-gate-admin-ui（shuttlepub-frontends#31。BFF/API 接続は先行可、画面はモック合意待ち）
+
+- [ ] 【画面実装ゲート】モックへのユーザー合意が host intent に記録されるまで画面実装 PR を出さない。BFF・API 接続・生成型・全状態 fixture は先行可（画面とは別 PR）
+- [ ] 【先行可】BFF（状態・開閉・再開・override・通知一覧/未読/既読・Webhook 状態/テスト/再試行）が GraphQL・REST 変換・stateful mock・生成型に揃う。非管理者・未認証は fail closed。secret は応答に含まれない
+- [ ] 【先行可】全状態 fixture（Accept 防御低下あり/なし・TemporaryReject・Stopped・AdminClosed・override On・409 競合・一時障害・通知・Webhook 各状態）が API 契約に照合される
+- [ ] 管理者のみ操作可。revision 競合・一時障害・手動再開必要・閉鎖を混同しない
+- [ ] 【モック合意後】override 警告が管理画面内の全ページに常時表示され、画面遷移・再読込・SSR/hydration で消えず、一般画面には出ない
+- [ ] 【モック合意後】管理操作（override は警告 ack 必須）・通知一覧/未読/既読・Webhook 状態/テスト/再試行、SSR/hydration、visual（全状態）
+- 統合: `bff/schema.graphql`・生成型は FN と直列、共通基盤は F0 所有、生成物の手編集禁止。実ゲートとの組合せは D15 統合受け入れ
+
+## override の細部（技術設計詳細。overview.md 参照。E15a/E15w/F15 に反映）
+
+- [ ] override 中も準備済み（effective）の保護は登録時に課される。override は準備未完了・障害でも開放するだけ（E15a）
+- [ ] 解除で通常判定に戻る（解除時点の観測で再評価。管理者状態は閉鎖にしない）（E15a）
+- [ ] override の開始・解除が通知一覧と Webhook の両方に含まれる（E15a 生成・E15w 配送・F15 表示）
+- [ ] 警告バナーは管理画面内の全ページに常時表示し一般画面には出さない（F15。文言・見た目はモック合意待ち）
+
+## E15c / E15d（後続。packet 化時に確定）
 
 - E15c: 空設定・無効資格情報・timeout・429/5xx 等を区別し、古い成功結果を無期限に使わない。片方故障時は健全な対策のみ必須にできる
 - E15d: D15 全状態を実 registration で確認。設定喪失は手動再開、障害復旧は自動再開、override は明示解除まで有効。login・追加 Account の回帰
-- E15w: 単一 endpoint、HTTPS・リダイレクト禁止・宛先検査（SSRF 対策）、secret/登録者メールの非漏洩、at-least-once と event ID 重複排除、Webhook 不達でゲート状態を変えない
-- F15: 管理者のみ操作可、revision 競合・一時障害・手動再開必要を混同しない、override 警告を画面遷移で消さない
 
 ## Writeback 記録
 

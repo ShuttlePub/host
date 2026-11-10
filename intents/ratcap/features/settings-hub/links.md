@@ -25,3 +25,4 @@
 ### 関連 intent ドキュメント
 - `intents/ratcap/features/account-deactivation/` — 設定ハブから削除 danger-zone へ導線を貼る場合に参照
 - `intents/ratcap/features/follow/` — 設定ハブからフォロー/フォロワー管理を行う場合に参照
+- `intents/emumet/features/registration-readiness-gate/` — 管理者向け登録ゲート管理画面（F15）の配置を決める際に参照する（正本は emumet domain 側。画面構成はモック合意待ちで、本 feature の設定ハブ構成を変更するものではない）
