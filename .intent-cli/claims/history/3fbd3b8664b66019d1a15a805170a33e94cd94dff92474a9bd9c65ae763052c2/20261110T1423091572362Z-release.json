@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-protection-readiness",
+  "actor": "e15c-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T14:23:09.1572362+00:00",
+  "reason": "E15c PR #85 merged as d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7; closeout complete",
+  "displaced_holder": "e15c-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T07:56:02.6817074+00:00",
+  "base_commit": "0d35697bf957dff16927a8f00254ef0148fcde42"
+}
