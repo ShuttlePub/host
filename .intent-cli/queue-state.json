@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T03:20:10.3061949+00:00",
+  "updated_at": "2026-11-10T03:52:50.4712628+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -910,7 +910,7 @@
     {
       "execution_unit": "profile-domain-policy-api-contract",
       "title": "profile-domain-policy-api-contract: Profile identity\u30FBFollow\u30FB\u500B\u5225 block/mute\u30FBdomain-controls \u306E OpenAPI \u5951\u7D04\u3068 username \u6BB5\u968E\u79FB\u884C",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
