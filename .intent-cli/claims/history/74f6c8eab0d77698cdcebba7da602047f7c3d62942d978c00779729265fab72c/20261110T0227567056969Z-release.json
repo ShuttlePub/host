@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-gate-admin-ui",
+  "actor": "f15-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T02:27:56.7056969+00:00",
+  "reason": "BFF/API part merged (PR #33); screen part pending mock agreement",
+  "displaced_holder": "f15-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T01:21:22.2032768+00:00",
+  "base_commit": "9e8d2ad75b70dfb49044773424fb65f957b6afdc"
+}
