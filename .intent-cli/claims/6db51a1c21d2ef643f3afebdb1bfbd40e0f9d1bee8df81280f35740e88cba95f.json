@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:profile-social-graph-storage",
-  "actor": "p2-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-10T04:02:34.8337173+00:00",
-  "base_commit": "52c1bd3515b87fcf3640791195e3941dedb91f10"
-}

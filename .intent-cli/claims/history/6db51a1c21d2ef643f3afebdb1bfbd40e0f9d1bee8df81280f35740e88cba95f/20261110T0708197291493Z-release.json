@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-social-graph-storage",
+  "actor": "p2-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T07:08:19.7291493+00:00",
+  "reason": "P2 merged (Emumet PR #77, squash f523b86); closeout recorded",
+  "displaced_holder": "p2-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T04:02:34.8337173+00:00",
+  "base_commit": "1173c4af7df14f5aa43aedc0a46eb01e6daf1b60"
+}
