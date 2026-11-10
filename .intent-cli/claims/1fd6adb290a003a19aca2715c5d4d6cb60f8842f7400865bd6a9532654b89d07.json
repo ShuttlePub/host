@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:registration-gate-enforcement",
+  "actor": "e15d-worker",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-10T14:30:20.6556243+00:00",
+  "base_commit": "a93d156cac30d893aef2b0c5e81827db9823ab9b"
+}
