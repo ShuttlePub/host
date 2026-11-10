@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-gate-control-plane",
+  "actor": "e15a-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T01:14:19.3772204+00:00",
+  "reason": "E15a closeout: Emumet PR #67 squash-merged as 0ac9e9c087f61447c9a2c5e4a4cbf04a1075f2ca",
+  "displaced_holder": "e15a-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-09T23:33:11.7195446+00:00",
+  "base_commit": "0e41741f4d4d252f5887576ef0146aa74afc99ba"
+}

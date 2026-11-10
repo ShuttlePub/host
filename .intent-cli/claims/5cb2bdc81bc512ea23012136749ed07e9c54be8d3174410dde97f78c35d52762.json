@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:registration-gate-control-plane",
-  "actor": "e15a-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-09T23:33:11.7195446+00:00",
-  "base_commit": "28dfa3e4a09f8a62923f7b8e2f840aead7aa3db2"
-}
