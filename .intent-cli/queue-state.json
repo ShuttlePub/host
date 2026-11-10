@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T07:21:20.4493916+00:00",
+  "updated_at": "2026-11-10T07:27:33.427874+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1028,7 +1028,7 @@
     {
       "execution_unit": "profile-domain-policy-storage",
       "title": "profile-domain-policy-storage: Profile \u00D7 \u6B63\u898F\u5316 domain \u306E mute/block \u5B9F\u4FDD\u5B58\u30FB\u53D6\u5F97\u30FB\u66F4\u65B0\u30FB\u524A\u9664\u3068 revision\u30FB\u6240\u6709\u8005\u8A8D\u53EF (E8 domain-controls \u5951\u7D04\u306E\u5B9F\u88C5)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "profile-domain-policy-api-contract"
       ],
