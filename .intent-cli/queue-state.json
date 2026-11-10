@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T02:59:28.720061+00:00",
+  "updated_at": "2026-11-10T03:20:10.3061949+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -971,6 +971,78 @@
         "repo": "ShuttlePub/shuttlepub-frontends",
         "number": 31,
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/31"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "profile-actor-identity-foundation",
+      "title": "profile-actor-identity-foundation: Profile username \u306E\u5B9F\u4FDD\u5B58\u30FB\u4E00\u56DE\u9650\u308A\u8A2D\u5B9A\u3068 Profile actor \u60C5\u5831\u30FB\u9375\u30FBWebFinger/actor \u6587\u66F8\u751F\u6210\u306E\u57FA\u76E4",
+      "state": "queued",
+      "dependencies": [
+        "profile-domain-policy-api-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/profile-actor-identity-foundation/implementation.md",
+        "review_context": ".intent-cli/issues/profile-actor-identity-foundation/review-context.md",
+        "yaml": ".intent-cli/issues/profile-actor-identity-foundation/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 71,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/71"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "profile-social-graph-storage",
+      "title": "profile-social-graph-storage: Profile \u7248 Follow\u30FB\u500B\u5225 block/mute\u30FB\u5143 Follow activity ID\u30FB\u91CD\u8907\u53D7\u4FE1\u30FB\u914D\u9001 job \u306E\u4FDD\u5B58\u30E2\u30C7\u30EB\u3068\u65E7\u9023\u5408\u30C7\u30FC\u30BF\u521D\u671F\u5316 fixture",
+      "state": "queued",
+      "dependencies": [
+        "profile-domain-policy-api-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/profile-social-graph-storage/implementation.md",
+        "review_context": ".intent-cli/issues/profile-social-graph-storage/review-context.md",
+        "yaml": ".intent-cli/issues/profile-social-graph-storage/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 72,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/72"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "profile-domain-policy-storage",
+      "title": "profile-domain-policy-storage: Profile \u00D7 \u6B63\u898F\u5316 domain \u306E mute/block \u5B9F\u4FDD\u5B58\u30FB\u53D6\u5F97\u30FB\u66F4\u65B0\u30FB\u524A\u9664\u3068 revision\u30FB\u6240\u6709\u8005\u8A8D\u53EF (E8 domain-controls \u5951\u7D04\u306E\u5B9F\u88C5)",
+      "state": "queued",
+      "dependencies": [
+        "profile-domain-policy-api-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/profile-domain-policy-storage/implementation.md",
+        "review_context": ".intent-cli/issues/profile-domain-policy-storage/review-context.md",
+        "yaml": ".intent-cli/issues/profile-domain-policy-storage/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 73,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/73"
       },
       "worker_role": "implementation",
       "review_role": "review",
