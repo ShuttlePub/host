@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="ja" data-color="catppuccin-mocha" data-shape="rounded">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D08 ドメインのミュート・ブロック — UI モック v5 (shuttlepub-web)</title>
+<style>
+/* === packages/design-tokens/tokens.css (values) === */
+:root, [data-color="catppuccin-mocha"] {
+  --theme-bg-primary: #1e1e2e; --theme-bg-secondary: #181825; --theme-bg-surface: #313244;
+  --theme-bg-nav: rgba(30, 30, 46, 0.9); --theme-text-primary: #cdd6f4; --theme-text-secondary: #bac2de;
+  --theme-text-muted: #6c7086; --theme-text-heading: #cdd6f4; --theme-accent: #cba6f7;
+  --theme-accent-hover: #b4befe; --theme-border: #45475a; --theme-temp-high: #f38ba8;
+  --theme-temp-low: #89b4fa; --theme-error: #f38ba8;
+}
+[data-color="tokyo-night"] {
+  --theme-bg-primary: #1a1b26; --theme-bg-secondary: #16161e; --theme-bg-surface: #24283b;
+  --theme-bg-nav: rgba(26, 27, 38, 0.9); --theme-text-primary: #a9b1d6; --theme-text-secondary: #787c99;
+  --theme-text-muted: #565f89; --theme-text-heading: #c0caf5; --theme-accent: #7aa2f7;
+  --theme-accent-hover: #89ddff; --theme-border: #3b4261; --theme-temp-high: #f7768e;
+  --theme-temp-low: #7dcfff; --theme-error: #f7768e;
+}
+:root, [data-shape="rounded"] { --theme-radius: 0.75rem; --theme-radius-lg: 1rem; --theme-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+[data-shape="sharp"] { --theme-radius: 0px; --theme-radius-lg: 0px; --theme-shadow: none; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  background: var(--theme-bg-primary); color: var(--theme-text-primary); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+:focus-visible { outline: 2px solid var(--theme-accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* --- mock chrome --- */
+.mockbar { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 10px 20px;
+  background: var(--theme-bg-secondary); border-bottom: 1px dashed var(--theme-border); font-size: 12px; }
+.mockbar .tag { font-weight: 700; letter-spacing: .12em; font-size: 10px; color: var(--theme-text-muted); }
+.mock-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.mock-group > span { color: var(--theme-text-muted); }
+.seg { display: inline-flex; flex-wrap: wrap; padding: 2px; gap: 2px; border: 1px solid var(--theme-border); border-radius: 8px; }
+.seg button { padding: 4px 10px; border-radius: 6px; font-size: 12px; color: var(--theme-text-secondary); }
+.seg button[aria-pressed="true"] { background: color-mix(in srgb, var(--theme-accent) 18%, transparent); color: var(--theme-accent); font-weight: 600; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; padding: 20px; align-items: start; }
+@media (max-width: 1240px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+.device-wrap { display: flex; justify-content: center; min-width: 0; }
+.device { position: relative; container-type: inline-size; width: 100%; max-width: 1180px; height: clamp(600px, calc(100vh - 130px), 860px);
+  border: 1px solid var(--theme-border); border-radius: 12px; overflow: hidden; background: var(--theme-bg-secondary); scroll-margin-top: 100px; }
+.device.mobile { width: 406px; height: clamp(640px, calc(100vh - 130px), 860px); border: 8px solid #0b0b12; border-radius: 34px; box-shadow: 0 0 0 1px var(--theme-border); }
+.device-scroll { height: 100%; overflow: auto; overscroll-behavior: contain; }
+.device-label { text-align: center; font-size: 11px; color: var(--theme-text-muted); margin-top: 8px; }
+.side { position: sticky; top: 64px; max-height: calc(100vh - 84px); overflow: auto; padding: 18px; background: var(--theme-bg-secondary);
+  border: 1px dashed var(--theme-border); border-radius: 12px; font-size: 13px; }
+@media (max-width: 1240px) { .side { position: static; max-height: none; } }
+.side h2 { font-size: 15px; margin: 0 0 6px; color: var(--theme-text-heading); }
+.side h3 { font-size: 11px; letter-spacing: .1em; color: var(--theme-text-muted); margin: 16px 0 8px; font-weight: 700; }
+.side p { margin: 0 0 8px; color: var(--theme-text-secondary); }
+.scen { display: grid; gap: 8px; }
+.scen-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.scen-row > span { color: var(--theme-text-secondary); font-size: 12px; }
+.spec { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.spec li { display: flex; gap: 8px; padding: 8px 10px; border: 1px solid var(--theme-border); border-radius: 8px; color: var(--theme-text-secondary);
+  background: color-mix(in srgb, var(--theme-bg-surface) 35%, transparent); }
+.spec-no { flex: none; font-size: 11px; font-weight: 700; color: var(--theme-accent); min-width: 26px; padding-top: 1px; }
+.mock-note { font-size: 12px; color: var(--theme-text-muted); }
+
+/* --- app (mirrors ShuttlePub.UI.Theme / Layout) --- */
+.app { display: flex; flex-direction: column; min-height: 100%; background: var(--theme-bg-secondary); color: var(--theme-text-primary); font-size: 14px; }
+.nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); background: var(--theme-bg-nav); border-bottom: 1px solid var(--theme-border); }
+.nav-inner { max-width: 56rem; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: var(--theme-text-heading); }
+.nav-links { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+.navlink { display: inline-flex; padding: 8px 12px; font-size: 14px; font-weight: 500; color: var(--theme-text-secondary); border-radius: var(--theme-radius); text-decoration: none; }
+.navlink:hover { color: var(--theme-accent); background: var(--theme-bg-surface); }
+.navlink[aria-current="page"] { color: var(--theme-accent); }
+.profile-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--theme-border); border-radius: 999px; font-size: 13px; color: var(--theme-text-secondary); }
+.tabbar { display: none; }
+.content { flex: 1; width: 100%; max-width: 56rem; margin: 0 auto; padding: 40px 24px; }
+.relative { position: relative; }
+
+.av { flex: none; display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: var(--theme-radius); font-weight: 700; color: var(--theme-bg-primary); background: var(--theme-accent); font-size: 15px; }
+.av.xs { width: 22px; height: 22px; font-size: 10px; border-radius: calc(var(--theme-radius) * .6); }
+.av.sm { width: 28px; height: 28px; font-size: 12px; }
+.av.lg { width: 80px; height: 80px; font-size: 28px; border: 4px solid var(--theme-bg-secondary); border-radius: var(--theme-radius-lg); }
+.av.c2 { background: #89b4fa; } .av.c3 { background: #a6e3a1; } .av.c4 { background: #fab387; } .av.c5 { background: #f9e2af; } .av.c6 { background: #94e2d5; }
+
+.surface { border-radius: var(--theme-radius-lg); border: 1px solid var(--theme-border); background: var(--theme-bg-surface); box-shadow: var(--theme-shadow); }
+.h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--theme-text-heading); margin: 0; line-height: 1.25; }
+.h2 { font-size: 17px; font-weight: 600; color: var(--theme-text-heading); margin: 0; overflow-wrap: anywhere; }
+.muted { color: var(--theme-text-muted); } .sec { color: var(--theme-text-secondary); }
+.xs { font-size: 12px; } .small { font-size: 13px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.row { display: flex; align-items: center; gap: 12px; } .wrap { flex-wrap: wrap; } .between { justify-content: space-between; }
+.grow { flex: 1; min-width: 0; }
+.stack > * + * { margin-top: 20px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 12px; font-size: 12px; font-weight: 500; min-height: 30px;
+  color: var(--theme-accent); border: 1px solid var(--theme-border); border-radius: var(--theme-radius); white-space: nowrap; text-decoration: none; }
+.btn:hover { opacity: .85; }
+.btn.md { padding: 8px 16px; font-size: 14px; min-height: 40px; }
+.btn.muted { color: var(--theme-text-secondary); }
+.btn.primary { background: var(--theme-accent); color: var(--theme-bg-primary); border-color: transparent; font-weight: 600; }
+.btn.danger { background: var(--theme-error); color: var(--theme-bg-primary); border-color: transparent; font-weight: 600; }
+.btn.text { border-color: transparent; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.locked { color: var(--theme-text-muted); }
+.icon-btn { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: var(--theme-radius); color: var(--theme-text-secondary); }
+.icon-btn:hover { background: color-mix(in srgb, var(--theme-text-muted) 18%, transparent); color: var(--theme-accent); }
+.icon-btn.outlined { border: 1px solid var(--theme-border); width: 40px; height: 40px; }
+.input { width: 100%; padding: 8px 12px; font-size: 14px; min-height: 40px; border: 1px solid var(--theme-border); background: var(--theme-bg-surface); color: var(--theme-text-primary); border-radius: var(--theme-radius); }
+.input:focus { outline: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-accent) 50%, transparent); }
+.input[aria-invalid="true"] { border-color: var(--theme-error); }
+.err { color: var(--theme-error); font-size: 12px; margin-top: 6px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--theme-radius); white-space: nowrap; }
+.badge.mute { color: var(--theme-temp-low); background: color-mix(in srgb, var(--theme-temp-low) 14%, transparent); }
+.badge.block { color: var(--theme-error); background: color-mix(in srgb, var(--theme-error) 14%, transparent); }
+.badge.neutral { color: var(--theme-text-secondary); background: color-mix(in srgb, var(--theme-text-muted) 22%, transparent); }
+.ico { width: 18px; height: 18px; display: inline-block; vertical-align: middle; flex: none; }
+.ico.sm { width: 15px; height: 15px; } .ico.lg { width: 32px; height: 32px; }
+
+/* settings */
+.settings { display: grid; grid-template-columns: 196px minmax(0, 1fr); gap: 32px; }
+.subnav { font-size: 13px; }
+.subnav .grp { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--theme-text-muted); margin: 18px 0 6px 12px; }
+.subnav .grp:first-child { margin-top: 0; }
+.subnav a { display: block; padding: 7px 12px; border-radius: var(--theme-radius); color: var(--theme-text-secondary); text-decoration: none; }
+.subnav a:hover { background: var(--theme-bg-surface); color: var(--theme-accent); }
+.subnav a[aria-current="page"] { background: color-mix(in srgb, var(--theme-accent) 12%, transparent); color: var(--theme-accent); font-weight: 600; }
+.mobile-back { display: none; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--theme-border); }
+.tabs button { padding: 10px 14px; font-size: 14px; color: var(--theme-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--theme-accent); border-bottom-color: var(--theme-accent); font-weight: 600; }
+.chip { padding: 4px 12px; font-size: 12px; border-radius: 999px; border: 1px solid var(--theme-border); color: var(--theme-text-secondary); }
+.chip[aria-pressed="true"] { background: color-mix(in srgb, var(--theme-accent) 15%, transparent); color: var(--theme-accent); border-color: transparent; font-weight: 600; }
+.list { list-style: none; margin: 0; padding: 0; }
+.entry { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--theme-border); }
+.entry:first-child { border-top: 0; }
+.entry-domain { font-weight: 600; color: var(--theme-text-heading); overflow-wrap: anywhere; }
+.empty { padding: 32px 16px; text-align: center; color: var(--theme-text-muted); font-size: 13px; }
+.hl { animation: hl 1.8s ease-out; }
+@keyframes hl { from { background: color-mix(in srgb, var(--theme-accent) 22%, transparent); } to { background: transparent; } }
+
+/* posts */
+.feed { overflow: hidden; }
+.post { position: relative; padding: 14px 16px 10px; border-top: 1px solid var(--theme-border); display: flex; gap: 12px; }
+.feed > .post:first-child, .feed > :first-child .post { border-top: 0; }
+.post-head { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; font-size: 13px; padding-right: 36px; }
+.post-name { font-weight: 650; color: var(--theme-text-heading); }
+.post-body { margin: 2px 0 6px; font-size: 14px; overflow-wrap: anywhere; }
+.post-more { position: absolute; top: 8px; right: 8px; }
+.boosted-by { font-size: 12px; color: var(--theme-text-muted); display: flex; gap: 6px; align-items: center; margin-bottom: 2px; }
+.quote { border: 1px solid var(--theme-border); border-radius: var(--theme-radius); padding: 8px 12px; margin: 4px 0 8px; font-size: 13px; }
+.actions { display: flex; gap: 14px; flex-wrap: wrap; margin-left: -8px; }
+.act { display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: var(--theme-radius); color: var(--theme-text-secondary); font-size: 12px; min-height: 32px; }
+.act:hover { background: color-mix(in srgb, var(--theme-text-muted) 18%, transparent); color: var(--theme-accent); }
+.act.locked { color: var(--theme-text-muted); }
+.act .lock { position: absolute; left: 17px; top: calc(50% - 13px); width: 11px; height: 11px; padding: 1px; border-radius: 50%; background: var(--theme-bg-surface); }
+.act.locked { padding-left: 10px; }
+.act { position: relative; }
+.act .lbl { display: none; }
+.cw { border: 1px dashed var(--theme-border); border-radius: var(--theme-radius); padding: 8px 12px; margin: 4px 0 8px; }
+.cw-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; }
+.hidden-card { text-align: center; padding: 36px 20px; }
+.hidden-card > .ico { color: var(--theme-text-muted); }
+.hidden-card .h2 { margin: 10px 0 2px; }
+.reveal-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 6px 16px; font-size: 12px; color: var(--theme-text-muted); border-bottom: 1px solid var(--theme-border); }
+.collapsed { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 16px; font-size: 13px; color: var(--theme-text-muted); border-top: 1px solid var(--theme-border); text-align: left; }
+.collapsed:hover { color: var(--theme-accent); }
+.mini-hidden { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px 8px 28px; font-size: 12px; color: var(--theme-text-muted); border-top: 1px dashed var(--theme-border); }
+.urlbar { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 6px 12px; border: 1px dashed var(--theme-border); border-radius: 999px; color: var(--theme-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 16px; }
+.profile-banner { height: 140px; border-radius: var(--theme-radius-lg); background: linear-gradient(90deg, color-mix(in srgb, var(--theme-accent) 30%, transparent), color-mix(in srgb, var(--theme-accent) 10%, transparent)); }
+.profile-head { display: flex; align-items: flex-end; gap: 16px; margin-top: -40px; padding: 0 16px; flex-wrap: wrap; }
+.debug-hidden { opacity: .55; border-top: 1px solid var(--theme-border); background: repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, var(--theme-error) 8%, transparent) 10px 20px); }
+.debug-hidden .post { border-top: 0; padding-top: 2px; }
+.debug-tag { display: block; padding: 6px 16px 0; font-size: 11px; font-weight: 700; color: var(--theme-error); }
+.debug-ok { font-size: 11px; color: var(--theme-temp-low); }
+
+/* overlays */
+.overlay { position: absolute; inset: 0; z-index: 30; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.dialog { width: 100%; max-width: 440px; max-height: calc(100% - 24px); overflow: auto; background: var(--theme-bg-primary); border: 1px solid var(--theme-border); border-radius: var(--theme-radius-lg); box-shadow: 0 16px 56px rgba(0,0,0,.45); }
+.dialog-head { display: flex; align-items: flex-start; gap: 8px; padding: 20px 20px 0; }
+.dialog-body { padding: 10px 20px 4px; font-size: 14px; color: var(--theme-text-secondary); }
+.dialog-body p { margin: 0 0 8px; }
+.dialog-foot { position: sticky; bottom: 0; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; padding: 16px 20px 20px; background: var(--theme-bg-primary); }
+.scope { font-size: 12px; color: var(--theme-text-muted); margin-top: 4px; }
+.impact { padding: 10px 12px; border-radius: var(--theme-radius); background: color-mix(in srgb, var(--theme-error) 8%, transparent); border: 1px solid color-mix(in srgb, var(--theme-error) 30%, transparent); color: var(--theme-text-primary); font-size: 13px; }
+.impact summary { cursor: pointer; color: var(--theme-accent); font-size: 12px; margin-top: 4px; }
+.people { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.people li { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.check { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; font-size: 13px; color: var(--theme-text-primary); cursor: pointer; }
+.check input { margin-top: 3px; accent-color: var(--theme-error); width: 16px; height: 16px; flex: none; }
+.toast { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 40; display: flex; gap: 12px; align-items: center; width: max-content; max-width: calc(100% - 32px);
+  padding: 10px 14px; font-size: 13px; background: var(--theme-bg-surface); border: 1px solid var(--theme-border); border-radius: var(--theme-radius); box-shadow: 0 8px 28px rgba(0,0,0,.4); }
+.menu-layer { position: absolute; inset: 0; z-index: 25; }
+.pmenu { position: absolute; min-width: 240px; padding: 6px; background: var(--theme-bg-primary); border: 1px solid var(--theme-border); border-radius: var(--theme-radius); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.pmenu button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border-radius: calc(var(--theme-radius) * .6); text-align: left; font-size: 14px; }
+.pmenu button:hover, .pmenu button:focus-visible { background: var(--theme-bg-surface); }
+.pmenu button.danger { color: var(--theme-error); }
+.pmenu hr { border: 0; border-top: 1px solid var(--theme-border); margin: 4px 0; }
+.chip-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; min-width: 240px; padding: 6px; background: var(--theme-bg-primary); border: 1px solid var(--theme-border); border-radius: var(--theme-radius); box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.chip-menu button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 8px; text-align: left; font-size: 13px; }
+.chip-menu button:hover { background: var(--theme-bg-surface); }
+
+@container (max-width: 640px) {
+  .nav-inner { padding: 0 16px; height: 56px; }
+  .nav-links { display: none; }
+  .profile-chip .handle { display: none; }
+  .tabbar { display: flex; position: sticky; bottom: 0; z-index: 10; justify-content: space-around; border-top: 1px solid var(--theme-border); background: var(--theme-bg-nav); backdrop-filter: blur(12px); padding: 6px 0 10px; }
+  .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: var(--theme-text-secondary); padding: 4px 10px; min-width: 56px; text-decoration: none; }
+  .tabbar a[aria-current="page"] { color: var(--theme-accent); }
+  .content { padding: 16px 12px 32px; }
+  .h1 { font-size: 22px; }
+  .settings { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .subnav { display: none; }
+  .mobile-back { display: inline-flex; margin: 0 0 4px -8px; }
+  .overlay { align-items: flex-end; padding: 0; }
+  .dialog { max-width: none; border-radius: var(--theme-radius-lg) var(--theme-radius-lg) 0 0; max-height: 92%; border-bottom: 0; }
+  .dialog-foot { flex-direction: column-reverse; }
+  .dialog-foot .btn { width: 100%; min-height: 44px; font-size: 14px; }
+  .menu-layer { background: rgba(0,0,0,.55); }
+  .pmenu { top: auto !important; right: 0 !important; left: 0; bottom: 0; border-radius: var(--theme-radius-lg) var(--theme-radius-lg) 0 0; padding: 10px 8px 18px; }
+  .pmenu button { min-height: 48px; font-size: 15px; }
+  .profile-head > .grow { order: 3; flex-basis: 100%; }
+  .profile-head > .row { order: 2; margin-left: auto; }
+  .profile-banner { height: 110px; }
+  .act { padding: 8px 6px; min-height: 40px; }
+  .actions { justify-content: space-between; flex-wrap: nowrap; margin-left: -6px; }
+  .toast { bottom: 84px; }
+}
+
+
+.doc { max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; }
+.doc h1 { font-size: 24px; color: var(--theme-text-heading); margin: 0 0 6px; }
+.doc h2 { font-size: 18px; color: var(--theme-text-heading); margin: 32px 0 10px; padding-top: 14px; border-top: 1px solid var(--theme-border); }
+.doc p { color: var(--theme-text-secondary); font-size: 14px; }
+.doc .spec li { font-size: 14px; }
+/* === v4 density: Misskey (MkNote ≤480px: 14px 16px / MI-margin 10px) と X の投稿セル密度に寄せる（Tailwind spacing の 4px 刻み） === */
+body { line-height: 1.4; }
+.content { padding: 24px 24px 32px; }
+.stack > * + * { margin-top: 16px; }
+.h1 { font-size: 22px; }
+.page-title { margin-bottom: 8px; }
+.filter-row { margin: 12px 0 8px; min-height: 36px; }
+.chip { padding: 4px 10px; }
+.tabs button { padding: 8px 12px; }
+.entry { padding: 10px 16px; gap: 10px; }
+.row-action { min-width: 96px; flex: none; }
+.row-action.mute { color: var(--theme-temp-low); }
+.row-action.block { color: var(--theme-error); }
+.empty { padding: 24px 16px; }
+.post { padding: 12px 16px; gap: 12px; }
+.post-head { line-height: 1.35; padding-right: 32px; }
+.post-body { margin: 2px 0 4px; line-height: 1.45; }
+.post-more { top: 6px; right: 6px; }
+.icon-btn { width: 32px; height: 32px; }
+.icon-btn.outlined { width: 36px; height: 36px; }
+.actions { gap: 0; justify-content: space-between; flex-wrap: nowrap; max-width: 420px; margin: 0 0 -6px -8px; }
+.act { padding: 4px 8px; min-height: 32px; }
+.btn.md { padding: 6px 14px; min-height: 36px; }
+.input { min-height: 36px; padding: 6px 12px; }
+.quote, .cw { margin: 4px 0 6px; padding: 8px 10px; }
+.hidden-card { padding: 28px 20px; }
+.hidden-card > .ico.lg { width: 28px; height: 28px; }
+.hidden-card .h2 { margin: 8px 0 2px; }
+.urlbar { margin-bottom: 12px; padding: 4px 12px; }
+.profile-banner { height: 120px; }
+.profile-head { margin-top: -36px; }
+.settings { gap: 24px; }
+.bio { padding: 8px 16px 0; margin: 0; }
+.dialog-head { padding: 16px 20px 0; }
+.dialog-body { padding: 8px 20px 0; }
+.dialog-foot { padding: 16px 20px; }
+.pmenu { padding: 4px; }
+.pmenu button { padding: 8px 12px; }
+@container (max-width: 640px) {
+  .nav-inner { height: 48px; padding: 0 12px; }
+  .content { padding: 8px 12px 16px; }
+  .stack > * + * { margin-top: 12px; }
+  .h1 { font-size: 20px; }
+  .page-title { margin-bottom: 4px; }
+  .mobile-back { margin: 0 0 0 -8px; min-height: 28px; }
+  .filter-row { margin: 8px 0; }
+  .feed { margin-left: -12px; margin-right: -12px; border-radius: 0; border-left: 0; border-right: 0; box-shadow: none; }
+  .post { padding: 10px 12px; gap: 10px; }
+  .actions { max-width: none; margin: 0 0 -6px -6px; }
+  .act { padding: 6px; min-height: 36px; }
+  .entry { padding: 10px 12px; }
+  .tabs button { padding: 8px 12px; }
+  .tabbar { padding: 2px 0 6px; }
+  .tabbar a { padding: 4px 8px; gap: 0; }
+  .profile-banner { height: 96px; }
+  .profile-head { margin-top: -32px; padding: 0 4px; gap: 12px; }
+  .av.lg { width: 64px; height: 64px; font-size: 22px; border-width: 3px; }
+  .hidden-card { padding: 20px 16px; }
+  .urlbar { margin-bottom: 8px; }
+  .dialog-head { padding: 16px 16px 0; }
+  .dialog-body { padding: 8px 16px 0; }
+  .dialog-foot { padding: 12px 16px 16px; gap: 8px; }
+  .dialog-foot .btn { min-height: 40px; }
+  .pmenu { padding: 6px 0 12px; }
+  .pmenu button { min-height: 44px; padding: 10px 16px; border-radius: 0; }
+  .toast { bottom: 64px; }
+  .bio { padding: 6px 4px 0; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-ban" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.9 17.9A10 10 0 0 1 12 20c-7 0-10-8-10-8a18 18 0 0 1 4.1-5.1M9.9 4.2A9 9 0 0 1 12 4c7 0 10 8 10 8a18 18 0 0 1-2.2 3.2"/><path d="M2 2l20 20"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
+    <symbol id="i-reply" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v5"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5.5 5.5 0 0 0-7.8 0L12 6.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 22l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+    <symbol id="i-smile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9.5h.01M15 9.5h.01"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+  </defs>
+</svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-dots" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4h12l-2 4 2 4H4"/></symbol>
+  <symbol id="i-user-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M17 8l5 5M22 8l-5 5"/></symbol>
+</defs></svg>
+
+<div class="mockbar" role="region" aria-label="モック操作">
+  <span class="tag">MOCK v5 · D08</span>
+  <div class="mock-group"><span>画面</span><div class="seg" role="group" aria-label="画面" id="screenSeg"></div></div>
+  <div class="mock-group"><span>幅</span><div class="seg" role="group" aria-label="表示幅" id="deviceSeg"></div></div>
+  <div class="mock-group"><span>テーマ</span><div class="seg" role="group" aria-label="配色" id="colorSeg"></div><div class="seg" role="group" aria-label="形状" id="shapeSeg"></div></div>
+</div>
+<div id="root"></div>
+
+<script>
+const MODE = 'proto';            // 'proto' | 'doc'
+const INITIAL_DEVICE = 'desktop';
+
+const SERVER = 'shuttle.example';
+const PROFILES = {
+  main: { id: 'main', name: 'Turtton', handle: 'turtton', initial: 'T', cls: '' },
+  art:  { id: 'art',  name: 'Turtton 作品用', handle: 'turtton_art', initial: 'A', cls: 'c4' },
+};
+const SCREENS = [
+  { id: 'menu', label: '① 投稿メニュー（主導線）' },
+  { id: 'settings', label: '② 設定の一覧・追加' },
+  { id: 'confirm', label: '③ 確認ダイアログ' },
+  { id: 'direct', label: '④ 直接URL' },
+  { id: 'profile', label: '⑤ ブロック中の相手' },
+  { id: 'surfaces', label: '⑥ TL・通知・検索' },
+];
+
+/* ---------- 採用仕様 (host intent 記録用) ---------- */
+const SPEC = {
+  '1-1': '一覧はミュートとブロックを 1 つにまとめ、「すべて／ミュート／ブロック」で絞り込む。この絞り込みは「ドメイン」「アカウント」の両タブに置く。行に種別の切替ボタンは置かない。直接追加はドメイン一覧右上の「+」→ モーダル（ドメイン入力欄と［ミュート］［ブロック］ボタンのみ）。主導線は投稿・プロフィールの「…」メニューの「〈ドメイン〉をミュート／〈ドメイン〉をブロック」で、ミュートは確認なしで即時実行し「元に戻す」付きトースト、ブロックは 2-1〜2-3 の確認を出す。ミュート・ブロックの違いや仕組みの説明は画面に置かずヘルプへ。',
+  '1-2': '設定「ミュート・ブロック」の中を「アカウント」「ドメイン」のタブ（サブページ）に分ける。',
+  '1-3': '画面内に対象 Profile の表示は置かず、ナビの Profile 切替に任せる（設定は現在の Profile にだけ適用）。',
+  '1-4': '入力は URL・@user@・パス・ポート・大文字・末尾ドット・国際化ドメインを機械的に正規化する。www. の除去などの推測補正はしない。ワイルドカード・IP アドレス・自サーバーは短いエラー。',
+  '1-5': '直接入力（「+」のモーダル）では入力中のプレビューは出さない。［ミュート］［ブロック］を押した時点で確認モーダルを出し、正規化後のドメインと「このドメインのみが対象」を示す。対象外の例は出さない。',
+  '1-6': '一覧の行は、ドメインタブではドメインと追加日、アカウントタブではアイコン・名前・acct と、行末の［ミュート解除］または［ブロック解除］ボタンだけ。種別のラベル（バッジ）は置かず、ボタンの文言と文字色で種別を兼ねる（［ミュート解除］は青系 theme-temp-low、［ブロック解除］は赤系 theme-error。塗りではなく文字色のみ、枠は通常の border）。状態の説明文は出さない。［ミュート解除］は即時（元に戻す付きトースト）、［ブロック解除］は 2-5 の確認を出す。ドメイン・アカウント両タブで同じ形。',
+  '2-1': 'ブロック確認では、解除されるフォロー中・フォロワーの人数を出し、折りたたみで対象アカウント一覧を見せる。関係が 0 件なら出さない。',
+  '2-2': '解除される関係が 1 件以上のときだけ「元に戻らない」ことの確認チェックを必須にする。',
+  '2-3': 'ブロック確認に［代わりにミュート］を置く。押した後のトーストは「〈ドメイン〉をミュートしました」だけ。',
+  '2-4': 'ダイアログにはそれ以外の説明（相手への通知、残るもの、範囲、効果の列挙など）を置かない。ヘルプへ。',
+  '2-5': 'ブロック解除の確認は、タイトルと「できるようになること」1 文だけ。ボタンは［キャンセル］［ミュートに変更］［ブロック解除］。',
+  '3-1': '対象ドメインの投稿を URL で直接開くと、最初は隠し、種別（ブロック中／ミュート中）とドメインだけを示す。投稿者名・本文は出さない。',
+  '3-2': '［この投稿だけ表示］はそのページを開いている間だけ有効。再読込・再訪で再び隠す。表示中は［隠す］で戻せる。設定が変わらない旨などの説明文は置かない。',
+  '3-3': '表示後もブロック中は操作ボタンを鍵付きにし、押すと 4-1 のシートを出す。ミュート中は通常どおり操作できる。',
+  '3-4': '第三者が対象ドメインの投稿を引用した投稿も全体を同じ方式で隠し、引用元ドメインを示す。引用者への操作は制限しない。',
+  '3-5': 'スレッド内の対象ドメインの返信は「非表示の返信 n 件」に折りたたみ、展開後も 1 件ずつ［表示］する。',
+  '3-6': 'ミュート中・ブロック中のドメインの人のプロフィールを開くと、名前・自己紹介と「ブロック中のドメイン／ミュート中のドメイン」バッジは表示し、投稿一覧は最初は隠す。隠し方は 3-1 と同じ（種別とドメインだけ）で、［投稿を表示］で表示する。表示はそのページを開いている間だけで、［隠す］で戻せる。表示後もブロック中は操作ボタンを鍵付きにする（3-3）。説明文は置かない。',
+  '4-1': '操作ボタン（フォロー・返信・リポスト・引用・いいね・リアクション）は鍵付きで押せる。押すと「〜できません」シート（「〈ドメイン〉をブロック中です」1 行＋［閉じる］［ブロックを解除…］）。プロフィールは「ブロック中のドメイン」バッジだけで、説明文やブロック解除ボタンは置かない。',
+  '4-2': '解除はその場の解除ダイアログ（設定画面と同じもの）。プロフィールの「…」メニューからも解除できる。',
+  '4-3': '「解除してフォロー」のような複合操作は提供しない。解除後に改めて操作する。',
+  '4-4': '解除ダイアログに［ミュートに変更］を並べる。',
+  '4-5': '他の Profile では制限がないことは示さない。',
+  '5-1': 'タイムラインには隠した痕跡を出さない（件数・プレースホルダとも出さない）。',
+  '5-2': '通知にも痕跡を出さず、未読数にも数えない。',
+  '5-3': '検索結果にも注記を出さない。',
+  '5-4': '受理済みのいいね・リアクション件数はそのまま表示し、注記しない。',
+};
+const SCREEN_SPEC = {
+  menu: { title: '① 投稿メニューからドメインをミュート／ブロック（主導線）', desc: '投稿の「…」から。ミュートは即時（元に戻す付きトースト）、ブロックは確認ダイアログ。実行すると対象ドメイン由来の投稿（引用・ブースト含む）が TL から消える。', nos: ['1-1', '2-1', '2-2', '2-3', '5-1'] },
+  settings: { title: '② 設定：一覧と直接追加', desc: '設定 › ミュート・ブロック › ドメイン。右上の「+」で追加モーダル。押下後に確認モーダル。', nos: ['1-1', '1-2', '1-3', '1-4', '1-5', '1-6'] },
+  confirm: { title: '③ 確認ダイアログ', desc: 'ブロック確認（関係あり／0 件）、直接入力時の確認、ブロック解除の確認。', nos: ['1-5', '2-1', '2-2', '2-3', '2-4', '2-5', '4-4'] },
+  direct: { title: '④ 対象ドメインの投稿を直接 URL で開いたとき', desc: '最初は隠し、［この投稿だけ表示］で表示。', nos: ['3-1', '3-2', '3-3', '3-4', '3-5'] },
+  profile: { title: '⑤ ブロック中の相手のプロフィール', desc: '投稿一覧は最初は隠し、［投稿を表示］で表示。鍵付きのボタン（フォロー・各操作）を押すとシート。', nos: ['3-6', '4-1', '4-2', '4-3', '4-4', '4-5', '3-3'] },
+  surfaces: { title: '⑥ タイムライン・通知・検索', desc: '「説明用」を ON にすると、実際には出ない項目を斜線で示す（OFF が実際の見え方）。', nos: ['5-1', '5-2', '5-3', '5-4'] },
+};
+const LESSONS = [
+  'メニュー項目は「対象＋動詞」だけ（例: 「example.social をブロック」）。仕組みの説明はメニューにもボタン周りにも書かない。',
+  '軽くて戻せる操作（ミュート、ミュート解除）は確認なしで即時実行し、「元に戻す」付きトーストで済ませる。',
+  '確認ダイアログは「〜しますか？」のタイトルと 2〜3 個のボタンが基本。本文は判断に必要な事実（失うものの数など）に限り、1〜2 行まで。Misskey は「ブロックしますか？」の 1 行だけ。',
+  '状態は文章ではなくボタン・バッジの見た目で示す（「ブロック中」のバッジ、鍵付きのボタン）。',
+  'ボタンの文言で伝わることを本文で繰り返さない（「この投稿だけ表示」があれば「表示しても設定は変わりません」は不要）。',
+  '「変わらないこと」「起きないこと」「残るもの」は書かない。例外的な挙動の説明はヘルプへ。',
+  '設定画面は一覧と最小の操作だけ。追加は「+」→ 小さなモーダル、空状態は 1 語。前置きの説明やバナーは置かない。',
+  '入力の補助は確定時に 1 回だけ（入力中のプレビューや例示は出さない）。エラーは短く、入力欄の直下に出す。',
+];
+
+/* ---------- state ---------- */
+const S = {
+  screen: 'menu', device: INITIAL_DEVICE, profile: 'main',
+  entries: {
+    main: [
+      { domain: 'bot-farm.example', kind: 'block', added: '2026/10/12' },
+      { domain: 'media.example.net', kind: 'mute', added: '2026/10/08' },
+      { domain: 'noisy.social', kind: 'mute', added: '2026/09/30' },
+      { domain: 'spam-relay.example', kind: 'block', added: '2026/09/14' },
+    ],
+    art: [{ domain: 'scrape-bot.example', kind: 'block', added: '2026/10/01' }],
+  },
+  filter: 'all', accFilter: 'all', setTab: 'domain', profReveal: false,
+  direct: { revealed: false, cw: true, cwOpen: false, src: 'own', repliesOpen: false, shownReplies: {} },
+  surf: { tab: 'home', debug: true },
+  dialog: null, pmenu: null, chipMenu: false, toast: null, hl: null,
+};
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ic = (id, cls = '') => `<svg class="ico ${cls}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
+const prof = () => PROFILES[S.profile];
+const acct = p => `@${p.handle}@${SERVER}`;
+const entries = () => S.entries[S.profile];
+const findEntry = d => entries().find(e => e.domain === d);
+const stateOf = d => (findEntry(d) || {}).kind || null;
+const kindLabel = k => k === 'block' ? 'ブロック' : 'ミュート';
+const av = (ch, cls = '', size = '') => `<span class="av ${size} ${cls}" aria-hidden="true">${esc(ch)}</span>`;
+const D0 = 'example.social';
+
+function normalize(raw) {
+  let s = raw.trim();
+  if (!s) return { error: 'ドメインを入力してください' };
+  if (s.includes('*')) return { error: 'ワイルドカードは使えません' };
+  s = s.replace(/^acct:/i, '');
+  const accM = s.match(/^@?[^@\s\/]+@([^@\s\/]+)$/);
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) { try { s = new URL(s).host; } catch (e) { return { error: 'ドメインの形式が正しくありません' }; } }
+  else if (accM) s = accM[1];
+  else if (s.includes('/')) s = s.split('/')[0];
+  s = s.replace(/:\d+$/, '').replace(/\.+$/, '').toLowerCase();
+  let ascii; try { ascii = new URL('http://' + s).hostname; } catch (e) { return { error: 'ドメインの形式が正しくありません' }; }
+  if (/^\d+(\.\d+){3}$/.test(ascii) || ascii.includes('[')) return { error: 'IP アドレスは指定できません' };
+  if (!ascii.includes('.') || !/^[a-z0-9.-]+$/.test(ascii) || ascii.split('.').some(l => !l || l.startsWith('-') || l.endsWith('-'))) return { error: 'ドメインの形式が正しくありません' };
+  if (ascii === SERVER) return { error: '自分のサーバーは指定できません' };
+  return { domain: ascii, display: s };
+}
+function impactOf(domain) {
+  if (domain === D0) return {
+    following: [['alice', 'Alice', 'c2'], ['bob_dev', 'Bob', 'c3'], ['kumo', 'くも', 'c5']],
+    followers: [['alice', 'Alice', 'c2'], ['hana', 'はな', 'c4'], ['ryo', 'Ryo', 'c6'], ['mint', 'みんと', 'c3'], ['sora', 'Sora', 'c2']],
+  };
+  if (domain === 'noisy.social') return { following: [['nana', 'Nana', 'c4']], followers: [] };
+  return { following: [], followers: [] };
+}
+
+/* ---------- timeline data ---------- */
+const POSTS = [
+  { id: 'p1', a: 'M', name: 'Mio', handle: 'mio', domain: SERVER, text: '今日は晴れたので散歩してきた', cls: 'c3' },
+  { id: 'p2', a: 'A', name: 'Alice', handle: 'alice', domain: D0, text: '最新話、作画がとにかく良かった', cls: 'c2' },
+  { id: 'p3', a: 'H', name: 'Hiro', handle: 'hiro', domain: 'other.example', text: '新しいカメラ買った', cls: 'c4' },
+  { id: 'p4', a: 'K', name: 'Ken', handle: 'ken', domain: 'other.example', text: 'これめちゃくちゃ分かる', cls: 'c6', quote: { name: 'Alice', handle: 'alice', domain: D0, text: '最新話、作画がとにかく良かった' } },
+  { id: 'p5', a: 'A', name: 'Alice', handle: 'alice', domain: D0, text: '週末の写真散歩まとめ', cls: 'c2', boostBy: 'Ken' },
+  { id: 'p6', a: 'R', name: 'Ren', handle: 'ren', domain: 'sub.example.social', text: 'サブドメインのサーバーから', cls: 'c5' },
+  { id: 'p7', a: 'N', name: 'Nana', handle: 'nana', domain: 'noisy.social', text: '（noisy.social はミュート中なので通常は出ない）', cls: 'c4' },
+];
+const ACCOUNTS = [
+  ['spam_bot', 'spam.example', 'block', 'Spam Bot', 'c5'],
+  ['loud', SERVER, 'mute', 'Loud', 'c4'],
+  ['ad_bot', 'ads.example', 'block', 'Ad Bot', 'c6'],
+  ['spoiler', 'anime.example', 'mute', 'ネタバレ太郎', 'c3'],
+];
+const originsOf = p => [p.domain, p.quote && p.quote.domain].filter(Boolean);
+const hiddenBy = p => originsOf(p).map(stateOf).find(Boolean) || null;
+
+/* ---------- shell ---------- */
+function navHTML(active) {
+  const p = prof();
+  const link = (id, label) => `<li><a href="#" class="navlink" data-act="go" data-to="${id}" ${active === id ? 'aria-current="page"' : ''}>${label}</a></li>`;
+  return `<nav class="nav" aria-label="メイン"><div class="nav-inner">
+    <span class="brand">ShuttlePub</span>
+    <ul class="nav-links">${link('home', 'ホーム')}${link('notif', '通知')}${link('search', '検索')}${link('settings', '設定')}</ul>
+    <div class="relative">
+      <button class="profile-chip" id="profileChip" data-act="chip" aria-haspopup="menu" aria-expanded="${S.chipMenu}" aria-label="Profile を切り替え（現在: ${esc(acct(p))}）">${av(p.initial, p.cls, 'xs')}<span class="handle">@${p.handle}</span>${ic('down', 'sm')}</button>
+      ${S.chipMenu ? `<div class="chip-menu" role="menu">${Object.values(PROFILES).map(q => `<button role="menuitemradio" aria-checked="${q.id === p.id}" data-act="profile" data-id="${q.id}">${av(q.initial, q.cls, 'xs')}<span class="grow"><b>${esc(q.name)}</b><br><span class="xs muted">${esc(acct(q))}</span></span>${q.id === p.id ? ic('check', 'sm') : ''}</button>`).join('')}</div>` : ''}
+    </div>
+  </div></nav>`;
+}
+function tabbarHTML(active) {
+  const t = (id, label, icon) => `<a href="#" data-act="go" data-to="${id}" ${active === id ? 'aria-current="page"' : ''}>${ic(icon)}<span>${label}</span></a>`;
+  return `<nav class="tabbar" aria-label="メイン（モバイル）">${t('home', 'ホーム', 'home')}${t('notif', '通知', 'bell')}${t('search', '検索', 'search')}${t('settings', '設定', 'gear')}</nav>`;
+}
+
+/* ---------- posts ---------- */
+const OPS = [['reply', '返信'], ['repeat', 'リポスト'], ['quote', '引用'], ['heart', 'いいね'], ['smile', 'リアクション']];
+function actionsHTML(locked, counts) {
+  return `<div class="actions" role="group" aria-label="操作">${OPS.map(([i, l], n) => {
+    const c = counts && counts[n] != null ? `<span>${counts[n]}</span>` : '';
+    return locked
+      ? `<button class="act locked" data-act="opBlocked" data-op="${l}" aria-label="${l}（ブロック中）">${ic(i, 'sm')}<span class="lbl">${l}</span>${c}<svg class="ico lock" aria-hidden="true"><use href="#i-lock"/></svg></button>`
+      : `<button class="act" data-act="opOk" data-op="${l}" aria-label="${l}">${ic(i, 'sm')}<span class="lbl">${l}</span>${c}</button>`;
+  }).join('')}</div>`;
+}
+function postHTML(p, opts = {}) {
+  const more = p.domain === SERVER && p.handle === prof().handle ? '' : `<button class="icon-btn post-more" data-act="pmenu" data-post="${p.id}" aria-label="その他" aria-haspopup="menu">${ic('dots')}</button>`;
+  return `<article class="post" data-post-id="${p.id}">
+    ${av(p.a, p.cls)}
+    <div class="grow">
+      ${p.boostBy ? `<div class="boosted-by">${ic('repeat', 'sm')} ${esc(p.boostBy)} がリポスト</div>` : ''}
+      <div class="post-head"><span class="post-name">${esc(p.name)}</span><span class="muted mono">@${esc(p.handle)}@${esc(p.domain)}</span><span class="muted">· 1時間</span></div>
+      ${opts.body || `<p class="post-body">${esc(p.text)}</p>`}
+      ${p.quote ? `<div class="quote"><div class="post-head" style="padding-right:0"><span class="post-name">${esc(p.quote.name)}</span><span class="muted mono">@${esc(p.quote.handle)}@${esc(p.quote.domain)}</span></div>${esc(p.quote.text)}</div>` : ''}
+      ${opts.extra || ''}
+      ${actionsHTML(!!opts.locked, opts.counts)}
+    </div>
+    ${opts.noMenu ? '' : more}
+  </article>`;
+}
+
+/* ---------- ① menu / home ---------- */
+function homeHTML() {
+  const visible = POSTS.filter(p => !hiddenBy(p));
+  return `<section class="surface feed" aria-label="ホームタイムライン">${visible.map(p => postHTML(p)).join('') || '<div class="empty">ありません</div>'}</section>`;
+}
+function pmenuHTML() {
+  const m = S.pmenu; if (!m) return '';
+  let user, domain;
+  if (m.post) { const p = POSTS.find(x => x.id === m.post); user = '@' + p.handle; domain = p.domain; }
+  else { user = '@alice'; domain = D0; }
+  const st = stateOf(domain);
+  const domainItems = domain === SERVER ? '' : `<hr>
+    ${st === 'mute' ? `<button role="menuitem" data-act="unmuteDomain" data-domain="${domain}">${ic('mute')}<span class="mono">${esc(domain)}</span> のミュートを解除</button>` : st === 'block' ? '' : `<button role="menuitem" data-act="muteDomain" data-domain="${domain}">${ic('mute')}<span><span class="mono">${esc(domain)}</span> をミュート</span></button>`}
+    ${st === 'block' ? `<button role="menuitem" data-act="openUnblock" data-domain="${domain}">${ic('ban')}<span><span class="mono">${esc(domain)}</span> のブロックを解除</span></button>` : `<button role="menuitem" class="danger" data-act="openBlock" data-domain="${domain}">${ic('ban')}<span><span class="mono">${esc(domain)}</span> をブロック</span></button>`}`;
+  return `<div class="menu-layer" data-act="closeMenu"><div class="pmenu" role="menu" aria-label="その他" style="top:${m.top}px;right:${m.right}px">
+    <button role="menuitem" data-act="opOk" data-op="${user} をミュート">${ic('mute')}${user} をミュート</button>
+    <button role="menuitem" data-act="opOk" data-op="${user} をブロック">${ic('user-x')}${user} をブロック</button>
+    ${domainItems}
+    <hr><button role="menuitem" data-act="opOk" data-op="通報">${ic('flag')}通報</button>
+  </div></div>`;
+}
+
+/* ---------- ② settings ---------- */
+function settingsHTML() {
+  const list = entries();
+  const shown = list.filter(e => S.filter === 'all' || e.kind === S.filter);
+  const chip = (f, label) => `<button class="chip" aria-pressed="${S.filter === f}" data-act="filter" data-f="${f}">${label}</button>`;
+  const tab = (id, l) => `<button role="tab" aria-selected="${S.setTab === id}" data-act="setTab" data-tab="${id}">${l}</button>`;
+  const domainPanel = `<div class="row between wrap filter-row">
+      <div class="row wrap" style="gap:6px" role="group" aria-label="絞り込み">${chip('all', 'すべて')}${chip('mute', 'ミュート')}${chip('block', 'ブロック')}</div>
+      <button class="icon-btn outlined" data-act="openAdd" aria-label="ドメインを追加">${ic('plus')}</button>
+    </div>
+    <section class="surface">${shown.length ? `<ul class="list">${shown.map(e => `<li class="entry ${S.hl === e.domain ? 'hl' : ''}">
+        <div class="grow"><div class="entry-domain mono">${esc(e.domain)}</div><div class="xs muted">${e.added}</div></div>
+        <button class="btn row-action ${e.kind}" data-act="${e.kind === 'block' ? 'openUnblock' : 'unmuteDomain'}" data-domain="${esc(e.domain)}" aria-label="${kindLabel(e.kind)}解除（${esc(e.domain)}）">${kindLabel(e.kind)}解除</button>
+      </li>`).join('')}</ul>` : '<div class="empty">ありません</div>'}</section>`;
+  const accChip = (f, label) => `<button class="chip" aria-pressed="${S.accFilter === f}" data-act="accFilter" data-f="${f}">${label}</button>`;
+  const accShown = ACCOUNTS.filter(([, , k]) => S.accFilter === 'all' || k === S.accFilter);
+  const accountPanel = `<div class="row wrap filter-row" style="gap:6px" role="group" aria-label="絞り込み">${accChip('all', 'すべて')}${accChip('mute', 'ミュート')}${accChip('block', 'ブロック')}</div>
+    <section class="surface">${accShown.length ? `<ul class="list">${accShown.map(([h, d, k, n, c]) => `<li class="entry">${av(n[0], c, 'sm')}<div class="grow"><div class="entry-domain">${esc(n)}</div><div class="xs muted mono">@${h}@${d}</div></div><button class="btn row-action ${k}" data-act="opOk" data-op="@${h} の${kindLabel(k)}を解除" aria-label="${kindLabel(k)}解除（@${h}@${d}）">${kindLabel(k)}解除</button></li>`).join('')}</ul>` : '<div class="empty">ありません</div>'}</section>`;
+  return `<div class="settings">
+    <aside class="subnav" aria-label="設定メニュー">
+      <div class="grp">設定</div>
+      <a href="#">プロフィール</a><a href="#">プライバシー</a><a href="#">通知</a><a href="#" aria-current="page">ミュート・ブロック</a><a href="#">表示</a>
+    </aside>
+    <div>
+      <a href="#" class="btn text muted mobile-back">${ic('left', 'sm')}設定</a>
+      <h1 class="h1 page-title">ミュート・ブロック</h1>
+      <div class="tabs" role="tablist" aria-label="対象">${tab('account', 'アカウント')}${tab('domain', 'ドメイン')}</div>
+      <div role="tabpanel">${S.setTab === 'domain' ? domainPanel : accountPanel}</div>
+    </div>
+  </div>`;
+}
+
+/* ---------- dialogs ---------- */
+function dialogHTML() {
+  const d = S.dialog; if (!d) return '';
+  const head = (title, close) => `<div class="dialog-head"><div class="grow"><h2 class="h2" id="dlgTitle">${title}</h2>${d.fromInput ? `<div class="scope">このドメインのみが対象です</div>` : ''}</div>${close ? `<button class="icon-btn" data-act="close" aria-label="閉じる">${ic('x')}</button>` : ''}</div>`;
+  const wrap = inner => `<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">${inner}</div>`;
+  const md = s => `<span class="mono">${esc(s)}</span>`;
+  if (d.type === 'add') {
+    return wrap(`${head('ドメインを追加', true)}
+      <div class="dialog-body">
+        <input id="addInput" class="input mono" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="example.social" aria-label="ドメイン" value="${esc(d.value || '')}" ${d.error ? 'aria-invalid="true" aria-describedby="addErr"' : ''}>
+        ${d.error ? `<div class="err" id="addErr" role="alert">${esc(d.error)}</div>` : ''}
+      </div>
+      <div class="dialog-foot"><button class="btn md" data-act="addSubmit" data-kind="mute">ミュート</button><button class="btn md danger" data-act="addSubmit" data-kind="block">ブロック</button></div>`);
+  }
+  if (d.type === 'mute') {
+    return wrap(`${head(`${md(d.domain)} を${d.from === 'block' ? 'ミュートに変更' : 'ミュート'}しますか？`)}
+      <div class="dialog-foot"><button class="btn md muted" data-act="close">キャンセル</button><button class="btn md primary" data-act="doMute">${d.from === 'block' ? 'ミュートに変更' : 'ミュート'}</button></div>`);
+  }
+  if (d.type === 'block') {
+    const im = impactOf(d.domain); const fo = im.following.length, fr = im.followers.length, total = fo + fr;
+    const map = new Map();
+    im.following.forEach(a => map.set(a[0], { a, t: 'フォロー中' }));
+    im.followers.forEach(a => map.has(a[0]) ? (map.get(a[0]).t = '相互') : map.set(a[0], { a, t: 'フォロワー' }));
+    const ready = total === 0 || d.checked;
+    return wrap(`${head(`${md(d.domain)} をブロックしますか？`)}
+      <div class="dialog-body">${total ? `<div class="impact">
+          <div>フォロー中 <b>${fo}</b> 人・フォロワー <b>${fr}</b> 人の関係が解除されます</div>
+          <details ${d.open ? 'open' : ''}><summary>対象を表示（${map.size} 人）</summary><ul class="people">${[...map.values()].map(({ a, t }) => `<li>${av(a[1][0], a[2], 'xs')}<span class="grow"><b>${esc(a[1])}</b> <span class="muted mono">@${a[0]}</span></span><span class="badge neutral">${t}</span></li>`).join('')}</ul></details>
+        </div>
+        <label class="check"><input type="checkbox" id="ackChk" data-act="chk" ${d.checked ? 'checked' : ''}><span>解除した関係は元に戻らないことを確認しました</span></label>` : ''}
+      </div>
+      <div class="dialog-foot"><button class="btn md muted" data-act="close">キャンセル</button>${d.from === 'mute' ? '' : `<button class="btn md" data-act="muteInstead">代わりにミュート</button>`}<button class="btn md danger" id="confirmBlock" data-act="doBlock" ${ready ? '' : 'disabled'}>ブロック</button></div>`);
+  }
+  if (d.type === 'unblock') {
+    return wrap(`${head(`${md(d.domain)} のブロックを解除しますか？`)}
+      <div class="dialog-body"><p>${md(d.domain)} の人とフォローやリアクションなどができるようになります。</p></div>
+      <div class="dialog-foot"><button class="btn md muted" data-act="close">キャンセル</button><button class="btn md" data-act="blockToMute">ミュートに変更</button><button class="btn md primary" data-act="doUnblock">ブロック解除</button></div>`);
+  }
+  if (d.type === 'opBlocked') {
+    return wrap(`<div class="dialog-head"><div class="grow"><h2 class="h2" id="dlgTitle">${esc(d.op)}できません</h2></div></div>
+      <div class="dialog-body"><p>${md(D0)} をブロック中です。</p></div>
+      <div class="dialog-foot"><button class="btn md muted" data-act="close">閉じる</button><button class="btn md" data-act="openUnblock" data-domain="${D0}">ブロックを解除…</button></div>`);
+  }
+  return '';
+}
+
+/* ---------- ④ direct ---------- */
+function directHTML() {
+  const D = S.direct; const k = stateOf(D0); const isQuote = D.src === 'quote';
+  const body = `<p class="post-body">最新話、作画がとにかく良かった。特に後半の雨のシーンの光の表現が…</p>`;
+  const cwBody = D.cw ? `<div class="cw"><div class="cw-head"><span>ネタバレ注意（最新話の感想）</span><button class="btn" data-act="cwToggle" aria-expanded="${!!D.cwOpen}">${D.cwOpen ? '隠す' : 'もっと見る'}</button></div>${D.cwOpen ? body : ''}</div>` : body;
+  const alice = POSTS[1], ken = POSTS[3];
+  const postCard = isQuote ? postHTML(ken, { noMenu: true }) : postHTML(alice, { body: cwBody, locked: k === 'block', counts: [3, 5, 1, 24, 8], noMenu: true });
+  const head = `<div class="row page-title" style="gap:4px"><a href="#" class="icon-btn" aria-label="戻る">${ic('left')}</a><h1 class="h2">投稿</h1></div>
+    <div class="urlbar mono" title="（モック）開いた URL">${ic('globe', 'sm')}https://${SERVER}/@${isQuote ? 'ken@other.example/posts/7xq2' : 'alice@example.social/posts/9f3k2'}</div>`;
+  let card;
+  if (!k) card = `<section class="surface feed">${postCard}</section>`;
+  else if (!D.revealed) card = `<section class="surface hidden-card" aria-labelledby="hidTitle">
+      ${ic(k === 'block' ? 'ban' : 'mute', 'lg')}
+      <h2 class="h2" id="hidTitle">${kindLabel(k)}中のドメインの${isQuote ? '投稿を引用しています' : '投稿です'}</h2>
+      <div class="muted mono small">${isQuote ? '引用元: ' : ''}${D0}</div>
+      <button class="btn md" style="margin-top:16px" data-act="reveal">この投稿だけ表示</button>
+    </section>`;
+  else card = `<section class="surface feed" aria-label="投稿">
+      <div class="reveal-bar"><span class="row" style="gap:6px">${ic(k === 'block' ? 'ban' : 'mute', 'sm')}<span class="mono">${D0}</span> · ${kindLabel(k)}中</span><button class="btn text" data-act="hideAgain">隠す</button></div>
+      ${postCard}
+    </section>`;
+  const reply = (id) => postHTML({ id, a: 'S', name: 'Sora', handle: 'sora', domain: D0, text: id === 'r1' ? 'わかる、あそこ最高でした' : '光の表現すごかったですね', cls: 'c2' }, { locked: k === 'block', noMenu: true });
+  const hiddenReplies = ['r1', 'r2'];
+  const replies = (D.revealed || !k) && !isQuote ? `<section class="surface feed" aria-label="返信" style="margin-top:16px">
+      ${postHTML({ id: 'r0', a: 'M', name: 'Mio', handle: 'mio', domain: SERVER, text: '雨のシーン本当に良かったですよね', cls: 'c3' }, { noMenu: true })}
+      ${k ? `<button class="collapsed" data-act="toggleReplies" aria-expanded="${D.repliesOpen}">${ic(D.repliesOpen ? 'down' : 'right', 'sm')}非表示の返信 ${hiddenReplies.length} 件</button>
+        ${D.repliesOpen ? hiddenReplies.map(id => D.shownReplies[id] ? reply(id) : `<div class="mini-hidden"><span>${kindLabel(k)}中のドメインの返信</span><button class="btn text" data-act="showReply" data-id="${id}">表示</button></div>`).join('') : ''}`
+        : hiddenReplies.map(reply).join('')}
+    </section>` : '';
+  return head + card + replies;
+}
+
+/* ---------- ⑤ profile ---------- */
+function profileHTML() {
+  const k = stateOf(D0); const isBlock = k === 'block';
+  const follow = isBlock ? `<button class="btn md locked" data-act="opBlocked" data-op="フォロー" aria-label="フォロー（ブロック中）">${ic('lock', 'sm')}フォロー</button>` : `<button class="btn md primary" data-act="opOk" data-op="フォロー">フォロー</button>`;
+  const body = `<p class="post-body">最新話、作画がとにかく良かった。特に後半の雨のシーンの光の表現が…</p>`;
+  const posts = [
+    postHTML(POSTS[1], { body, locked: isBlock, counts: [3, 5, 1, 24, 8], noMenu: true }),
+    postHTML({ id: 'pp2', a: 'A', name: 'Alice', handle: 'alice', domain: D0, text: '週末の写真散歩まとめ', cls: 'c2' }, { locked: isBlock, counts: [1, 2, 0, 15, 3], noMenu: true }),
+    postHTML({ id: 'pp3', a: 'A', name: 'Alice', handle: 'alice', domain: D0, text: 'レンズ沼に片足入ってる気がする', cls: 'c2' }, { locked: isBlock, counts: [4, 0, 0, 9, 2], noMenu: true }),
+  ].join('');
+  const list = !k ? `<section class="surface feed" aria-label="投稿">${posts}</section>`
+    : !S.profReveal ? `<section class="surface hidden-card" aria-labelledby="profHid">
+        ${ic(isBlock ? 'ban' : 'mute', 'lg')}
+        <h2 class="h2" id="profHid">${kindLabel(k)}中のドメインの投稿です</h2>
+        <div class="muted mono small">${D0}</div>
+        <button class="btn md" style="margin-top:16px" data-act="profReveal">投稿を表示</button>
+      </section>`
+    : `<section class="surface feed" aria-label="投稿">
+        <div class="reveal-bar"><span class="row" style="gap:6px">${ic(isBlock ? 'ban' : 'mute', 'sm')}<span class="mono">${D0}</span> · ${kindLabel(k)}中</span><button class="btn text" data-act="profHide">隠す</button></div>
+        ${posts}
+      </section>`;
+  return `<div class="stack">
+    <div>
+      <div class="profile-banner" aria-hidden="true"></div>
+      <div class="profile-head">
+        ${av('A', 'c2', 'lg')}
+        <div class="grow" style="padding-bottom:4px">
+          <h1 class="h1" style="font-size:22px">Alice</h1>
+          <div class="row wrap" style="gap:8px"><span class="muted mono small">@alice@${D0}</span>${k ? `<span class="badge ${k}">${ic(k === 'block' ? 'ban' : 'mute', 'sm')}${kindLabel(k)}中のドメイン</span>` : ''}</div>
+        </div>
+        <div class="row" style="padding-bottom:6px;gap:8px">
+          <button class="icon-btn outlined" data-act="pmenu" data-profile="1" aria-label="その他" aria-haspopup="menu">${ic('dots')}</button>
+          ${follow}
+        </div>
+      </div>
+      <p class="sec small bio">アニメとカメラが好き。週末は写真散歩。</p>
+    </div>
+    ${list}
+  </div>`;
+}
+
+/* ---------- ⑥ surfaces ---------- */
+function surfacesHTML() {
+  const t = S.surf.tab, dbg = S.surf.debug;
+  const wrapHidden = (reason, inner) => dbg ? `<div class="debug-hidden"><span class="debug-tag">説明用・実際には非表示: ${reason}</span>${inner}</div>` : '';
+  let html = '';
+  if (t === 'home') {
+    POSTS.forEach(p => {
+      const h = hiddenBy(p);
+      if (h) { const why = p.quote ? '第三者の引用（全体）' : p.boostBy ? 'リポスト（全体）' : `${kindLabel(h)}中のドメイン`; html += wrapHidden(why, postHTML(p, { noMenu: true })); }
+      else html += postHTML(p, { noMenu: true, extra: dbg && p.domain === 'sub.example.social' ? '<div class="debug-ok">説明用: サブドメインは対象外</div>' : '' });
+    });
+    html += postHTML({ id: 'me', a: prof().initial, name: prof().name, handle: prof().handle, domain: SERVER, text: '散歩のついでに写真を撮った', cls: prof().cls }, { noMenu: true, counts: [2, 1, 0, 12, 4], extra: dbg ? '<div class="debug-ok">説明用: いいね 12 はブロック前の example.social からの 3 件を含み、減らない</div>' : '' });
+  } else if (t === 'notif') {
+    const n = (icn, text, ch, cls) => `<article class="post"><span class="av sm ${cls}" aria-hidden="true">${ch}</span><div class="grow small row" style="gap:8px">${ic(icn, 'sm')}<span>${text}</span></div></article>`;
+    html += n('heart', 'Mio さんがいいねしました', 'M', 'c3');
+    html += wrapHidden('対象ドメインからのフォロー', n('bell', 'Sora さん（@sora@example.social）にフォローされました', 'S', 'c2'));
+    html += wrapHidden('対象ドメインからのリアクション', n('smile', 'Alice さん（@alice@example.social）がリアクションしました', 'A', 'c2'));
+    html += n('reply', 'Hiro さんが返信しました', 'H', 'c4');
+  } else {
+    html += `<div style="padding:12px 16px"><input class="input" value="写真散歩" aria-label="検索"></div>`;
+    html += wrapHidden('対象ドメインの投稿', postHTML(POSTS[4], { noMenu: true }));
+    html += postHTML({ id: 's1', a: 'H', name: 'Hiro', handle: 'hiro', domain: 'other.example', text: '写真散歩で使うレンズの話', cls: 'c4' }, { noMenu: true });
+  }
+  const tab = (id, l) => `<button role="tab" aria-selected="${t === id}" data-act="surfTab" data-tab="${id}">${l}</button>`;
+  return `<section class="surface feed"><div class="tabs" role="tablist" aria-label="表示面" style="padding:0 8px">${tab('home', 'ホーム')}${tab('notif', '通知')}${tab('search', '検索')}</div><div role="tabpanel">${html}</div></section>`;
+}
+
+/* ---------- side panel ---------- */
+function scenRow(label, key, cur, opts) {
+  return `<div class="scen-row"><span>${label}</span><div class="seg" role="group" aria-label="${label}">${opts.map(([v, l]) => `<button aria-pressed="${cur === v}" data-act="scen" data-key="${key}" data-val="${v}">${l}</button>`).join('')}</div></div>`;
+}
+function sideHTML() {
+  const sp = SCREEN_SPEC[S.screen];
+  const st = stateOf(D0) || '';
+  let scen = '';
+  if (S.screen === 'menu') scen = `<p class="mock-note">投稿右上の「…」から操作。<span class="mono">example.social</span> の投稿（Alice、Ken の引用、リポスト）が消えるのを確認できる。設定②にも反映される。</p>` + scenRow('example.social', 'domain', st, [['', 'なし'], ['mute', 'ミュート'], ['block', 'ブロック']]);
+  if (S.screen === 'settings') scen = `<p class="mock-note">「+」→ 例: <span class="mono">https://Example.social/@alice</span> → 確認で <span class="mono">example.social</span> に正規化。Profile はナビのチップで切替。</p>`;
+  if (S.screen === 'confirm') scen = `<div class="row wrap" style="gap:6px">
+      <button class="btn" data-act="openBlock" data-domain="${D0}">ブロック（関係 8 件）</button>
+      <button class="btn" data-act="openBlock" data-domain="quiet.example">ブロック（関係 0 件）</button>
+      <button class="btn" data-act="demoInput">直接入力 → ミュート</button>
+      <button class="btn" data-act="openUnblock" data-domain="bot-farm.example">ブロック解除</button></div>`;
+  if (S.screen === 'direct') scen = scenRow('example.social', 'domain', st, [['block', 'ブロック'], ['mute', 'ミュート'], ['', 'なし']]) + scenRow('開いた投稿', 'src', S.direct.src, [['own', '対象ドメインの投稿'], ['quote', '第三者の引用']]) + scenRow('CW', 'cw', S.direct.cw ? '1' : '0', [['1', 'あり'], ['0', 'なし']]);
+  if (S.screen === 'profile') scen = scenRow('example.social', 'domain', st, [['block', 'ブロック'], ['mute', 'ミュート'], ['', 'なし']]) + `<p class="mock-note">プロフィール情報は表示し、投稿一覧だけを隠す。［投稿を表示］後の鍵付きボタンや、フォロー・「…」メニューからの解除も試せる。</p>`;
+  if (S.screen === 'surfaces') scen = scenRow('説明用表示', 'debug', S.surf.debug ? '1' : '0', [['1', 'ON'], ['0', 'OFF（実際）']]) + scenRow('example.social', 'domain', st, [['block', 'ブロック'], ['mute', 'ミュート'], ['', 'なし']]);
+  return `<h2>${esc(sp.title)}</h2><p>${esc(sp.desc)}</p>
+    ${scen ? `<h3>シナリオ</h3><div class="scen">${scen}</div>` : ''}
+    <h3>採用した仕様</h3><ul class="spec">${sp.nos.map(n => `<li><span class="spec-no">${n}</span><span>${esc(SPEC[n])}</span></li>`).join('')}</ul>`;
+}
+
+/* ---------- render ---------- */
+function appActive() {
+  if (S.screen === 'settings' || S.screen === 'confirm') return 'settings';
+  if (S.screen === 'surfaces') return S.surf.tab;
+  if (S.screen === 'menu') return 'home';
+  return '';
+}
+function screenHTML() {
+  switch (S.screen) {
+    case 'menu': return homeHTML();
+    case 'settings': case 'confirm': return settingsHTML();
+    case 'direct': return directHTML();
+    case 'profile': return profileHTML();
+    case 'surfaces': return surfacesHTML();
+  }
+  return '';
+}
+function renderBar() {
+  document.getElementById('screenSeg').innerHTML = SCREENS.map(s => `<button aria-pressed="${S.screen === s.id}" data-act="screen" data-id="${s.id}">${s.label}</button>`).join('');
+  document.getElementById('deviceSeg').innerHTML = [['desktop', 'デスクトップ'], ['mobile', 'モバイル 390px']].map(([v, l]) => `<button aria-pressed="${S.device === v}" data-act="device" data-v="${v}">${l}</button>`).join('');
+  const c = document.documentElement.dataset.color, sh = document.documentElement.dataset.shape;
+  document.getElementById('colorSeg').innerHTML = [['catppuccin-mocha', 'Catppuccin'], ['tokyo-night', 'Tokyo Night']].map(([v, l]) => `<button aria-pressed="${c === v}" data-act="color" data-v="${v}">${l}</button>`).join('');
+  document.getElementById('shapeSeg').innerHTML = [['rounded', 'Rounded'], ['sharp', 'Sharp']].map(([v, l]) => `<button aria-pressed="${sh === v}" data-act="shape" data-v="${v}">${l}</button>`).join('');
+}
+function render(opts = {}) {
+  renderBar();
+  const sc = document.getElementById('scroller'); const prevScroll = sc ? sc.scrollTop : 0;
+  const side = document.querySelector('.side'); const prevSide = side ? side.scrollTop : 0;
+  const dl = document.querySelector('.dialog'); const prevDlg = dl ? dl.scrollTop : 0;
+  const activeId = document.activeElement && document.activeElement.id;
+  document.getElementById('root').innerHTML = `<div class="stage">
+    <div>
+      <div class="device-wrap"><div class="device ${S.device === 'mobile' ? 'mobile' : ''}" id="device">
+        <div class="device-scroll" id="scroller"><div class="app" ${S.dialog || S.pmenu ? 'aria-hidden="true" inert' : ''}>
+          ${navHTML(appActive())}<main class="content">${screenHTML()}</main>${tabbarHTML(appActive())}
+        </div></div>
+        ${pmenuHTML()}
+        ${S.dialog ? `<div class="overlay" data-act="overlay">${dialogHTML()}</div>` : ''}
+        <div aria-live="polite">${S.toast ? `<div class="toast" role="status">${S.toast}</div>` : ''}</div>
+      </div></div>
+      <div class="device-label">${S.device === 'mobile' ? 'モバイル幅 390px' : 'デスクトップ（ShuttlePub.UI.Layout の navBar / max-w-4xl 準拠）'}</div>
+    </div>
+    <aside class="side" aria-label="モック注記">${sideHTML()}</aside>
+  </div>`;
+  if (!opts.resetScroll) document.getElementById('scroller').scrollTop = prevScroll;
+  document.querySelector('.side').scrollTop = opts.resetScroll ? 0 : prevSide;
+  const ndl = document.querySelector('.dialog'); if (ndl && dl && !opts.focusDialog) ndl.scrollTop = prevDlg;
+  let target = null;
+  if (opts.focus) target = document.querySelector(opts.focus);
+  else if (opts.focusDialog && ndl) target = ndl.querySelector('input, .dialog-foot button');
+  else if (S.pmenu) target = document.querySelector('.pmenu button');
+  else if (activeId) target = document.getElementById(activeId);
+  if (target) target.focus({ preventScroll: true });
+}
+let toastTimer = null, undoInfo = null;
+function toast(html, ms = 5000) { S.toast = html; clearTimeout(toastTimer); toastTimer = setTimeout(() => { S.toast = null; render(); }, ms); }
+function setEntry(domain, kind) {
+  const list = entries(); const e = list.find(x => x.domain === domain);
+  if (!kind) { S.entries[S.profile] = list.filter(x => x.domain !== domain); return; }
+  if (e) e.kind = kind; else list.unshift({ domain, kind, added: '2026/10/20' });
+  S.hl = domain;
+}
+const md = s => `<span class="mono">${esc(s)}</span>`;
+
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-act]');
+  if (!el) { if (S.chipMenu) { S.chipMenu = false; render(); } return; }
+  const a = el.dataset.act;
+  if (a === 'overlay') { if (ev.target === el) { S.dialog = null; render(); } return; }
+  if (a === 'closeMenu') { if (ev.target === el) { S.pmenu = null; render(); } return; }
+  if (el.tagName === 'A') ev.preventDefault();
+  if (a !== 'chip') S.chipMenu = false;
+  const ro = {};
+  switch (a) {
+    case 'screen': S.screen = el.dataset.id; S.dialog = null; S.pmenu = null; S.toast = null;
+      if (['direct', 'profile'].includes(S.screen) && !stateOf(D0)) setEntry(D0, 'block');
+      if (S.screen === 'direct') Object.assign(S.direct, { revealed: false, cwOpen: false, repliesOpen: false, shownReplies: {} });
+      if (S.screen === 'profile') S.profReveal = false;
+      if (S.screen === 'confirm') S.dialog = { type: 'block', domain: D0, from: stateOf(D0) === 'mute' ? 'mute' : 'new' };
+      render({ resetScroll: true }); window.scrollTo(0, 0); return;
+    case 'device': S.device = el.dataset.v; break;
+    case 'color': document.documentElement.dataset.color = el.dataset.v; break;
+    case 'shape': document.documentElement.dataset.shape = el.dataset.v; break;
+    case 'chip': S.chipMenu = !S.chipMenu; ro.focus = S.chipMenu ? '.chip-menu button' : '#profileChip'; break;
+    case 'profile': S.profile = el.dataset.id; ro.focus = '#profileChip'; break;
+    case 'go': { const to = el.dataset.to; if (to === 'settings') S.screen = 'settings'; else if (to === 'home' && S.screen !== 'surfaces') S.screen = 'menu'; else { S.screen = 'surfaces'; S.surf.tab = to; } render({ resetScroll: true }); return; }
+    case 'pmenu': {
+      const dev = document.getElementById('device').getBoundingClientRect(); const r = el.getBoundingClientRect();
+      const bw = parseFloat(getComputedStyle(document.getElementById('device')).borderLeftWidth) || 0;
+      S.pmenu = { post: el.dataset.post || null, top: Math.round(r.bottom - dev.top - bw + 4), right: Math.round(dev.right - r.right - bw) }; break;
+    }
+    case 'muteDomain': { const d = el.dataset.domain; S.pmenu = null; setEntry(d, 'mute'); undoInfo = { d, prev: null };
+      toast(`<span>${md(d)} をミュートしました</span><button class="btn text" data-act="undo">元に戻す</button>`); break; }
+    case 'unmuteDomain': { const d = el.dataset.domain; S.pmenu = null; setEntry(d, null); undoInfo = { d, prev: 'mute' };
+      toast(`<span>${md(d)} のミュートを解除しました</span><button class="btn text" data-act="undo">元に戻す</button>`); break; }
+    case 'undo': if (undoInfo) { setEntry(undoInfo.d, undoInfo.prev); undoInfo = null; S.toast = null; } break;
+    case 'openBlock': { S.pmenu = null; const d = el.dataset.domain; S.dialog = { type: 'block', domain: d, from: stateOf(d) === 'mute' ? 'mute' : 'new' }; ro.focusDialog = true; break; }
+    case 'openUnblock': S.pmenu = null; S.dialog = { type: 'unblock', domain: el.dataset.domain }; ro.focusDialog = true; break;
+    case 'openAdd': S.dialog = { type: 'add', value: '' }; ro.focusDialog = true; break;
+    case 'demoInput': S.dialog = { type: 'mute', domain: D0, fromInput: true }; ro.focusDialog = true; break;
+    case 'addSubmit': {
+      const kind = el.dataset.kind; const r = normalize(S.dialog.value || '');
+      if (r.error) { S.dialog.error = r.error; ro.focus = '#addInput'; break; }
+      const cur = stateOf(r.domain);
+      if (cur === kind) { S.dialog.error = `すでに${kindLabel(kind)}しています`; ro.focus = '#addInput'; break; }
+      S.dialog = kind === 'mute' ? { type: 'mute', domain: r.domain, fromInput: true, from: cur } : { type: 'block', domain: r.domain, fromInput: true, from: cur === 'mute' ? 'mute' : 'new' };
+      ro.focusDialog = true; break;
+    }
+    case 'doMute': { const d = S.dialog.domain; setEntry(d, 'mute'); S.dialog = null; S.filter = 'all'; toast(`<span>${md(d)} をミュートしました</span>`); break; }
+    case 'close': S.dialog = null; break;
+    case 'chk': { S.dialog.checked = el.checked; const b = document.getElementById('confirmBlock'); if (b) b.disabled = !el.checked; return; }
+    case 'muteInstead': { const d = S.dialog.domain; setEntry(d, 'mute'); S.dialog = null; toast(`<span>${md(d)} をミュートしました</span>`); break; }
+    case 'doBlock': { const d = S.dialog.domain; setEntry(d, 'block'); S.dialog = null; S.filter = 'all'; toast(`<span>${md(d)} をブロックしました</span>`); break; }
+    case 'doUnblock': { const d = S.dialog.domain; setEntry(d, null); S.dialog = null; toast(`<span>${md(d)} のブロックを解除しました</span>`); break; }
+    case 'blockToMute': { const d = S.dialog.domain; setEntry(d, 'mute'); S.dialog = null; toast(`<span>${md(d)} をミュートに変更しました</span>`); break; }
+    case 'filter': S.filter = el.dataset.f; ro.focus = `[data-act="filter"][data-f="${S.filter}"]`; break;
+    case 'accFilter': S.accFilter = el.dataset.f; ro.focus = `[data-act="accFilter"][data-f="${S.accFilter}"]`; break;
+    case 'profReveal': S.profReveal = true; ro.focus = '[data-act="profHide"]'; break;
+    case 'profHide': S.profReveal = false; ro.focus = '[data-act="profReveal"]'; break;
+    case 'setTab': S.setTab = el.dataset.tab; ro.focus = `[data-tab="${S.setTab}"]`; break;
+    case 'reveal': S.direct.revealed = true; ro.focus = '[data-act="hideAgain"]'; break;
+    case 'hideAgain': S.direct.revealed = false; S.direct.cwOpen = false; ro.focus = '[data-act="reveal"]'; break;
+    case 'cwToggle': S.direct.cwOpen = !S.direct.cwOpen; ro.focus = '[data-act="cwToggle"]'; break;
+    case 'toggleReplies': S.direct.repliesOpen = !S.direct.repliesOpen; ro.focus = '[data-act="toggleReplies"]'; break;
+    case 'showReply': S.direct.shownReplies[el.dataset.id] = true; break;
+    case 'opBlocked': S.dialog = { type: 'opBlocked', op: el.dataset.op }; ro.focusDialog = true; break;
+    case 'opOk': S.pmenu = null; toast(`（モック）${esc(el.dataset.op)}`); break;
+    case 'surfTab': S.surf.tab = el.dataset.tab; ro.focus = `[data-tab="${S.surf.tab}"]`; break;
+    case 'scen': {
+      const k = el.dataset.key, v = el.dataset.val;
+      if (k === 'domain') { setEntry(D0, v || null); S.hl = null; S.direct.revealed = false; S.profReveal = false; }
+      if (k === 'src') { S.direct.src = v; S.direct.revealed = false; }
+      if (k === 'cw') { S.direct.cw = v === '1'; S.direct.cwOpen = false; }
+      if (k === 'debug') S.surf.debug = v === '1';
+      break;
+    }
+  }
+  render(ro);
+});
+document.addEventListener('toggle', ev => { if (ev.target.matches && ev.target.matches('.impact details') && S.dialog) S.dialog.open = ev.target.open; }, true);
+document.addEventListener('input', ev => { if (ev.target.id === 'addInput') S.dialog.value = ev.target.value; });
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape') {
+    if (S.dialog) { S.dialog = null; render(); return; }
+    if (S.pmenu) { S.pmenu = null; render(); return; }
+    if (S.chipMenu) { S.chipMenu = false; render({ focus: '#profileChip' }); return; }
+  }
+  if (ev.key === 'Enter' && ev.target.id === 'addInput') { ev.preventDefault(); document.querySelector('[data-act="addSubmit"][data-kind="mute"]').click(); }
+  const trapIn = S.dialog ? '.dialog' : S.pmenu ? '.pmenu' : null;
+  if (ev.key === 'Tab' && trapIn) {
+    const box = document.querySelector(trapIn);
+    const f = [...box.querySelectorAll('summary, input, button:not([disabled])')];
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (!box.contains(document.activeElement)) { ev.preventDefault(); first.focus(); return; }
+    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  }
+  if (S.pmenu && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp')) {
+    const items = [...document.querySelectorAll('.pmenu button')]; const i = items.indexOf(document.activeElement);
+    const n = (i + (ev.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length; items[n].focus(); ev.preventDefault();
+  }
+});
+
+function renderDoc() {
+  document.querySelector('.mockbar').remove();
+  const groups = [['1', '① 設定の一覧・追加と主導線'], ['2', '② ブロック／解除の確認'], ['3', '③ 直接 URL・プロフィールで開いたとき'], ['4', '④ ブロック中の相手への操作'], ['5', '⑤ タイムライン・通知・検索']];
+  document.getElementById('root').innerHTML = `<div class="doc">
+    <h1>D08 ドメインのミュート・ブロック — 採用した UI 仕様</h1>
+    <p>ユーザーフィードバックで決まった内容。番号は旧モックの論点番号と対応する。</p>
+    ${groups.map(([g, t]) => `<h2>${t}</h2><ul class="spec">${Object.entries(SPEC).filter(([n]) => n.startsWith(g + '-')).map(([n, s]) => `<li><span class="spec-no">${n}</span><span>${esc(s)}</span></li>`).join('')}</ul>`).join('')}
+    <h2>Misskey / X から学んだ「引き算」</h2>
+    <ul class="spec">${LESSONS.map((s, i) => `<li><span class="spec-no">${i + 1}</span><span>${esc(s)}</span></li>`).join('')}</ul>
+  </div>`;
+}
+if (MODE === 'doc') renderDoc(); else render();
+</script>
+</body>
+</html>

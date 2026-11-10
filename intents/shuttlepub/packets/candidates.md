@@ -539,6 +539,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **Profile単位への移行・実処理の対象範囲として採用済み**: `d08-q13-profile-migration-persistence-and-unfollow`。既存Account単位のfollow実装からProfile単位への移行、設定の実際の保存、対象フォロー関係の実際の解除まで今回のD08に含める。API契約とスタブだけで済ませ、移行・適用を後続へ送る案は採用しない。移行・保存・連合処理の具体方式は設計・検証に残す。
 - **Account単位の既存連合identityの扱いとして採用済み**: `d08-q14-reset-existing-federation-identity`。本番利用者・remote followerがまだいないため、Account単位のactor URI／acct／署名鍵／フォロー関係等の既存identityは引き継がず、新しいProfile actorから開始する。Move・リダイレクト・互換維持は不要。DB全消去ではなく、旧連合identityに属するデータのみ初期化対象とする。
 - **Profile actorのusernameと移管時のidentityとして採用済み**: `d08-q15-profile-username-identity`。Profileごとに一意なusername（acctの名前部分）を新設し、Account名とは分け、一度決めたら変更しない。Profile移管時もusername・actor URI・鍵・関係を維持する。
+- **ShuttlePub 側 UI モック合意済み**: `d08-q16-ui-mock-v5-agreement`。F8 の画面構成・文言・挙動は [personal-domain-controls-ui の ui-spec.md](../features/personal-domain-controls-ui/ui-spec.md) の26項目を実装基準とする。合意 artifact は desktop `artifact-59e9d815eac401547547f279342aff72`、mobile `artifact-d17402088130c2c0fba3acca09a389ff`、仕様版 `artifact-678299c89cedc83dcb7288b3d9e7cd4d`。HTML モックは同 feature の `mocks/` に保存する。
 - **候補の状態**: 主要な利用意図は整理済み。Profile／domain判定・表示／通知・操作認可／連合・保存／同期等の設計・検証待ちで実装readyではない。
   D08全体はcandidateのまま実装packetへ自動昇格しない（queue登録済みなのは下記「queue 登録状況」のE8・P1・P2・D8P・P3o・P3i・FNの7 unitだけ。それ以外は未登録・issue未公開）。
 - **unit 分割・依存・到達範囲（2026-11、feature 化）**: 機能正本は host の
@@ -549,7 +550,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
     P3i `profile-relationship-inbound`（P1, P2）、P4 `profile-federation-in-place-cutover`（P1, P2, P3o, P3i, FN）、
     D8P `profile-domain-policy-storage`（E8）、D8G `profile-domain-follow-guards`（P3o, P3i, D8P）、D8R `profile-domain-block-detach`（D8G, P4）。
   - frontends: FN `profile-identity-web-adaptation`（domain `emumet`、target `ShuttlePub/shuttlepub-frontends`、依存 E8・P1、P4 には依存しない）、
-    F8 `personal-domain-controls-web-ui`（domain `shuttlepub`、target `ShuttlePub/shuttlepub-frontends`、依存 F0・FA・E8・S8・D8R）。
+    F8 `personal-domain-controls-web-ui`（domain `shuttlepub`、target `ShuttlePub/shuttlepub-frontends`、依存 F0・FA・E8・S8・D8R）。画面実装は [合意済み UI 仕様](../features/personal-domain-controls-ui/ui-spec.md) を基準とする。
   - ShuttlePub: S8 `personal-domain-content-api-contract`（E8 に依存。表示抑制・引用／boost 全体非表示・reveal・双方向新規操作拒否の**契約のみ**）。
   - 責務: 新規 Follow の受理・送信拒否は Emumet。返信・引用・リポスト・いいね／絵文字の新規受理・送信拒否と表示 filter の実処理は **ShuttlePub の後続 unit（未実装）**。
   - 到達範囲: queue 登録するのは E8（API 契約）・P1・P2・D8P（いずれも実保存・基盤。E8 のマージ後に実装マージ）のみ。他 unit は未 packet 化。**D08 全体は ready／完了ではない。**

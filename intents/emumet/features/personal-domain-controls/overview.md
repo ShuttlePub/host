@@ -46,6 +46,10 @@ facets: [vocabulary, invariant]
 - Emumet inbox に投稿内容の最終認可を重複実装しない。後続 ShuttlePub 実装で、転送された活動も受理前に検証する。
 - したがって D08 全体の本番適用完了とは扱わない。Emumet 側の Follow 制御完了（D8R）後も、投稿制御は未実装として残す。
 
+## ShuttlePub 側 UI
+
+F8 の UI モック v5 は `d08-q16-ui-mock-v5-agreement` で合意済み。画面実装の基準は [personal-domain-controls-ui の ui-spec.md](../../../shuttlepub/features/personal-domain-controls-ui/ui-spec.md) の26項目とする。
+
 ## 技術方針（Emumet 側）
 
 - 照合は**検証済み canonical actor ID の host**で行う。inbox／CDN host は使わない。IDNA 等の正規化は D8P で確定する。
@@ -60,6 +64,7 @@ facets: [vocabulary, invariant]
 
 ## Related
 
+- ShuttlePub 側 UI（F8）: [personal-domain-controls-ui](../../../shuttlepub/features/personal-domain-controls-ui/overview.md)
 - [profile-federation](../profile-federation/overview.md)（PF）
 - [block-mute](../block-mute/overview.md)（既存の個別 block/mute。完了済み packet・acceptance は変更しない）
 - frontends 側の参照: [ratcap block-mute](../../../ratcap/features/block-mute/overview.md) /
