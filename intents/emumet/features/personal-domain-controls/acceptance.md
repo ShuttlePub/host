@@ -63,7 +63,12 @@
 | D8R | 実 DB・署名付き mock peer・配送競合・wire-level activity 検査（自分の Follow は元 Follow を参照する Undo、相手の Follow は Reject 等。AP Block なし） |
 | F8 | FA 経由の実 Emumet E2E、BFF 変換、UI・visual。投稿部分は mock／未接続と明示 |
 
-## D8G 実装メモ（Emumet PR #89。マージ後の確定は親の closeout）
+### D8G 確定契約（Emumet PR #89、squash `931a686`、2026-11-10 マージ済み、queue completed、issue #83 closed）
+
+- **到達範囲**: domain `block` の Follow への実適用のみ（受信・送信・Accept 反映・配送前判定）。mute は Follow を拒否しない。既存関係の一括解除（D8R）・投稿操作の拒否（ShuttlePub）・本番 mount / worker 起動（P4）・domain-controls の block 書込の本番有効化（D8R）は未実装。route・worker は本番未 mount のまま。openapi.json 変更なし。
+- **ガード挿入点**: inbound `Follow`（`profile_inbound::handle_follow`、個別 block 判定の隣。P3i の「全て受理」コメントは置換済み）／inbound `Accept`（`handle_response`）／outbound `follow_profile`（follower の block × 相手 host、local 宛ては相手 Profile の block × follower host も）／配送 worker（`cancel_if_recipient_domain_blocked`、署名後・`renew_lease` の直前）／domain control 書込（`put_domain_control` / `delete_domain_control`）。照合は D8P の `ControlDomain::from_actor_id` / `applies_to_actor_id`（検証済み canonical actor ID の host 完全一致、mode=block のみ、inbox / sharedInbox / CDN の host は見ない）。
+- **helper（D8R が使う）**: `application::service::domain_follow_guard::{domain_blocks_actor, lock_profile_for_domain_control_write}`、`ProfileRelationshipLock::lock_profile_row_shared`（kernel）。D8R の block 適用 transaction は `lock_profile_for_domain_control_write` を一度だけ関係の読み書きの前に呼ぶ。local 相手の関係も解除する場合は、相手 Profile を事前に特定して昇順の単一 `lock_profiles` にまとめる。未送信 Follow / Accept job の取消は `cancel_undelivered_for_follow`（in_flight も取消でき、worker は `renew_lease` で検出）。
+- **ロック順**: Profile 行 `FOR SHARE` → advisory（`lock_profiles`、ID 昇順・transaction 先頭で一度だけ）→ job → Follow 行。以下、各項目の詳細。
 
 - **拒否時の応答**: inbound Follow が domain block に該当したら、P3i の個別 block と同じ形 — `ended(blocked)` 世代（tombstone）を保存し `Reject(Follow)` job を同一 transaction で予約。Accept は作らず AP Block は送らない。packet の「拒否時は関係・Follow 世代・配送 job を作らない」は「**有効な関係は作らない（終了済み tombstone 世代と Reject job は作る）**」の意味に是正（ユーザー回答 question-d86e0448c6f71c124e501176f0b037b1）。outbound の拒否は何も作らない（422）。
 - **遅延 Accept**: block 中の Accept は pending 世代を accepted にしない（世代は変更せず、受信は記録）。unblock 後の同一 Accept 再送も重複で無効。
