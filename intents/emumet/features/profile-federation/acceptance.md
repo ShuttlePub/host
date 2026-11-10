@@ -167,7 +167,7 @@ trait ProfileDeliveryEnqueuer {
 - remote actor の取り込み（inbox・公開鍵キャッシュ）用のテーブルは P2 に無い。必要なら P3i が追加する。
 - `impl_database_delegation!`（kernel/src/lib.rs）には未追加。P3o/P3i が AppModule へ接続する際に `DependOnProfile*` 等を追加する（driver の `PostgresDatabase` には実装済み）。
 
-## P3i 確定契約（Emumet PR #87、レビュー対応済み・未マージ。マージ後に squash SHA を追記）
+## P3i 確定契約（Emumet PR #87、2026-11-10 マージ済み、squash `13a1cf8`）
 
 > 実装は `ShuttlePub/Emumet` の `application::service::activitypub::profile_inbound`（`ProfileInboxUseCase`）、`application::service::profile_follow_list`、server の `route::activitypub::profile_inbox` / `route::profile_follow_list`。
 > route は **本番 root router へ未 mount**（テスト専用の `ProfileInboxRouter` / `ProfileFollowListRouter`）。worker も起動しない。P2 の interface は変更していない。
@@ -219,6 +219,9 @@ Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 
 - D8G: 受信 Follow への **domain 方針**（domain block / mute）の適用は未実装。`handle_follow` の個別 block 判定の隣に挿入する（同じロック規約の下）。
 - 受信側の `UndoFollow` 重複受信記録は P2 の `profile_inbound_activities` を流用している（保持期間の purge 対象）。
 - Undo 時に未配送の Accept job を取り消す処理（`cancel_undelivered_for_follow`）は P3o の関係終了処理が行う。P3i の Undo は job に触れない。
+- **実 HTTP 取得を通す結合テスト（P4）**: P3i のテストは鍵・actor 文書をテスト用キャッシュ（test-mode）で注入するため、署名鍵・actor 文書の実取得、redirect、SSRF 検査と inbox の結合は通っていない。fake peer（実 HTTP）による Profile inbox の結合テストを P4 の E2E に含める。
+- **コメントの不一致（D8G）**: `profile_inbound/mod.rs` の `handle_follow` の「P3i accepts every well-formed Follow」というコメントは個別 block による拒否の実装と合っていない。D8G で domain 方針の判定を block 判定付近に移す際に直す。
+- **purge と UndoFollow（P4）**: `InboundActivityRepository::purge_received_before` は `UndoFollow` 記録も削除する。purge を接続する際は、保持期間より遅れて届く Follow が（記録の消えた）Undo 済みの Follow として受理されないか注意する（保持期間の設計）。
 
 ## UI 前提（ユーザー指示）
 
