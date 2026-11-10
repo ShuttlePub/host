@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:profile-domain-block-detach",
+  "actor": "design",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-10T07:40:01.6474227+00:00",
+  "base_commit": "874c1574376f3e420d78873d7150795ccb52402d"
+}
