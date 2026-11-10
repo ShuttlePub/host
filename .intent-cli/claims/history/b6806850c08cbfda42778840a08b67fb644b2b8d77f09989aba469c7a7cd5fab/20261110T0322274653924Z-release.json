@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-actor-identity-foundation",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T03:22:27.4653924+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T03:15:49.324899+00:00",
+  "base_commit": "afe16965711926e289398736b0663c7e32e8f2ab"
+}

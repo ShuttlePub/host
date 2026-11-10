@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:profile-actor-identity-foundation",
-  "actor": "design",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-10T03:15:49.324899+00:00",
-  "base_commit": "31ebf404debf3864648a1b73aaba00e9cf52c6d1"
-}
