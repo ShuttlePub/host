@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T04:05:22.5220846+00:00",
+  "updated_at": "2026-11-10T07:07:18.2466027+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1004,7 +1004,7 @@
     {
       "execution_unit": "profile-social-graph-storage",
       "title": "profile-social-graph-storage: Profile \u7248 Follow\u30FB\u500B\u5225 block/mute\u30FB\u5143 Follow activity ID\u30FB\u91CD\u8907\u53D7\u4FE1\u30FB\u914D\u9001 job \u306E\u4FDD\u5B58\u30E2\u30C7\u30EB\u3068\u65E7\u9023\u5408\u30C7\u30FC\u30BF\u521D\u671F\u5316 fixture",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "profile-domain-policy-api-contract"
       ],
