@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-gate-enforcement",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T07:22:23.6721823+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T07:13:23.0438885+00:00",
+  "base_commit": "9896e26ffa187ca1bef65be2d47d38f8a1b36873"
+}

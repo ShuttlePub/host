@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:registration-gate-enforcement",
-  "actor": "design",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-10T07:13:23.0438885+00:00",
-  "base_commit": "813c2837dcb1a1e5bc4a4c83fe8da416e9c290ed"
-}
