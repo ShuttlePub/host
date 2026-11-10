@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:personal-domain-controls-web-ui",
+  "actor": "design",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-10T07:47:16.4247698+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-10T07:40:12.3815578+00:00",
+  "base_commit": "6b9f25bcbf2853675193f7f86a0d0cc85c35a0f1"
+}
