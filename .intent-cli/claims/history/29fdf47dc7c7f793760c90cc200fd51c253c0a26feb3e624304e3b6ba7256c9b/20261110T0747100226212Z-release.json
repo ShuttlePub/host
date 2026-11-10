@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-domain-block-detach",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T07:47:10.0226212+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T07:40:01.6474227+00:00",
+  "base_commit": "db85e42d4d7077f4deae1ff15ade04e7833b6664"
+}
