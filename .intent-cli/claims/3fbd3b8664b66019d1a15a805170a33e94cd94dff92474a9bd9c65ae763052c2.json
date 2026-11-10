@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:registration-protection-readiness",
+  "actor": "design",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-10T07:13:17.3367682+00:00",
+  "base_commit": "0a7a2c142b134db4f53ca21471c4e46a7bd149a4"
+}
