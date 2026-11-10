@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-actor-identity-foundation",
+  "actor": "p1-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T11:16:22.0857278+00:00",
+  "reason": "PR ShuttlePub/Emumet#78 merged and closeout recorded",
+  "displaced_holder": "p1-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T03:58:19.5732442+00:00",
+  "base_commit": "660d40b20f0616f2d94d4efc61c0c95bfa771b83"
+}
