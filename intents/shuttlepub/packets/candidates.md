@@ -175,14 +175,17 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **設定済みカスタム絵文字が利用不能になった場合として採用済み**: `d03-q05-unavailable-favorite-custom-emoji`。従来の「該当ボタンだけをグレーアウト」というUI解釈は`d03-q06`でピッカー最上段の常用欄に置き換えられた。該当絵文字をグレーアウトして選択不可にし、設定画面では「利用不可」と表示して入れ替えを促す。別絵文字で代替送信せず、設定も自動削除しない。
 - **q01〜q05のUI訂正記録**: `d03-q06-favorites-in-picker-top-row-correction`。過去の質問・回答記録は変更せず、q01〜q05を踏まえた従来のUI前提解釈をこの訂正で置き換える。q01の同一Profile内の端末間共有とq02の上限5個は維持する。未反応投稿ではリアクションボタンから開くピッカーの最上段に常用絵文字を表示し、選択に2操作を要する。反応済み投稿は選択中の絵文字をボタンの代わりに表示し、押すと解除してピッカーを再表示する。変更は解除後にピッカーで選び、ピッカーから直接置換しない。現行の1人1投稿1反応（ShuttlePub `POST /api/notes/{id}/reactions`）を維持する。常用未設定なら最上段欄なしで通常ピッカーのみ、利用不能絵文字は最上段で無効化し、設定画面で「利用不可」と表示して入れ替えを促す。代替送信・設定の自動削除はしない。
 - **常用絵文字設定の保存先として採用済み**: `d03-q07-shuttlepub-profile-settings-api`。ShuttlePub backend（`ShuttlePub/ShuttlePub`）にProfile単位の設定APIと保存を作る。Emumet側や端末ローカルには置かない。D05の履歴ON/OFFやD13の従来設定も同じ基盤に置く案はあり得るが、ここでは決定しない。
-- **候補の状態**: 主要な利用意図と設定保存の担当repoは整理済み。S3のAPI契約はマージ済み。実保存・端末間同期の実処理、保存形式・UX契約は引き続き設計／検証待ちで、候補全体として実装readyではない。
+- **SNS本体UI・D03モック合意として採用済み**: `d03-q08-sns-ui-mock-v2-agreement`。SNS本体UIとD03モックv2（artifact `artifact-3e671306814eab3b15da4d1bbf180969`）に合意し、v3で余白を調整予定。C1はC案（自分の反応済み状態を集計チップに統合）とし、自分の反応チップは必ず左端。L1 Profile切替はヘッダー右、モバイルはアバターからボトムシート。L2投稿欄はアバターのみ、L3モバイルは下部タブ。C2解除後は「元に戻す」トースト、C3他人の集計チップから同じ絵文字で反応できるのは未反応時のみ、C4上位8種類＋「+N」。P1常用欄は見出しなし・区切り線のみ、P2利用不可を押すと「利用できません／入れ替える」トースト、P3未設定時は設定リンクなし、P4検索中は常用欄を隠し、P5デスクトップはポップオーバー／モバイルはボトムシート、P6設定入口は歯車。D1 TLはツールチップ・詳細はタブ付き反応者一覧、D2詳細もTLと同じ部品、D3自分の反応は先頭に「あなた」。S1設定はshuttlepub-webの「設定 > Profile」、S2即時保存・保存中表示なし・削除は元に戻すトースト、S3ドラッグ＋メニューの左へ／右へ、S4グレーのチップ＋「利用不可」バッジ・メニュー先頭に入れ替え、S5見出しで分けるだけ、S6チップ横並び＋末尾「＋」。元に戻すトーストはマウスオーバー中（モバイルはタッチ中）消さない。
+- **解除を取り消せる期間のAPI動作として採用済み**: `d03-q09-delay-unreaction-api-for-undo`。解除操作時は画面上だけ先に解除し、トーストが消えた時点で解除APIを呼ぶ。元に戻す場合はAPIを一度も呼ばず、連合へのUndo送信・投稿者への再通知も発生させない。画面遷移・タブを閉じる時点で解除を確定する。他端末への反映が数秒遅れることは許容する。
+- **短時間の再リアクション時の通知抑制として採用済み**: `d03-q10-suppress-repeat-reaction-notifications`。同じ人が同じ投稿へ短時間で再リアクションした場合、投稿者への通知を出し直さない。抑制時間などの詳細は技術設計に残す。
+- **候補の状態**: 主要な利用意図と設定保存の担当repoは整理済み。SNS本体UI・D03モックv2はq08で合意済み（v3は余白調整予定）。S3のAPI契約はマージ済みだが、q09・q10の決定がAPI契約の追補を要する可能性があり、確認・設計待ち。実保存・端末間同期の実処理、保存形式・UX契約も引き続き設計／検証待ちで、候補全体として実装readyではない。
   candidate・queue未登録・issue未公開を維持し、実装packetへ自動昇格しない。
 - **queue登録済みの実行unit（2026-11-09、D03の範囲のみ）**: 親candidate D03全体をreadyや完了にはしない。S3はAPI契約マージ済み（PR #17, squash `5945e41a8c02650c1ddd29647a7c8c819740e81c`）。実保存・端末間同期は未実装（後続）。mock受け入れのUIまでが登録範囲。
   - S0 `shuttlepub-openapi-foundation`（ShuttlePub/ShuttlePub#14、依存なし）: server層へutoipaを導入しAPI契約基盤（`/api/v1`のDTO・エラー形式、生成`openapi/shuttlepub.json`、`/openapi.json`配信、再生成差分CI）を作る。契約routeは明示的な501。実装完了、マージ済み（PR #16、squash `4a30cafd691a415c8a651151085d1747e5326cca`）。決定の記録は [generated-openapi-contract ADR](../decisions/generated-openapi-contract.md)。
   - S3 `quick-reaction-api-contract`（ShuttlePub/ShuttlePub#15、依存S0）: **API契約マージ済み（PR #17, squash `5945e41a8c02650c1ddd29647a7c8c819740e81c`）。実保存・端末間同期は未実装（後続）**。Profile設定GET/PUT（順序付き最大5件・一意・revision）とProfile×投稿のreaction GET/PUT/DELETE、Unicode/custom emoji識別・利用可否・認可/競合/利用不可エラーを型・schema・fixture・501 routeで定義する。既存dev API `POST /api/notes/{id}/reactions`はlegacy development APIとして契約対象外で、生成schemaに載せない（UI向け正本は`/api/v1/...`のみ）。
-  - F0 `shuttlepub-web-foundation`（ShuttlePub/shuttlepub-frontends#27、依存S0）: `apps/shuttlepub-web`の土台とOpenAPI取込基盤。画面構成に依存しない基盤（ビルド・CI・schema取込/codegen・BFF・SSR/hydration）は先行可、画面レイアウトはモック合意後（モック合意ゲート）。2026-11-10に基盤部分をマージ済み（PR #30、squash `05f679d9a329bd8c9de2782ad422cddf8e82d149`、OpenAPI producer pin `4a30cafd691a415c8a651151085d1747e5326cca`）。画面レイアウトはモック合意後の後続PRに残る。
+  - F0 `shuttlepub-web-foundation`（ShuttlePub/shuttlepub-frontends#27、依存S0）: `apps/shuttlepub-web`の土台とOpenAPI取込基盤。画面構成に依存しない基盤（ビルド・CI・schema取込/codegen・BFF・SSR/hydration）は先行可。基盤部分は2026-11-10にマージ済み（PR #30、squash `05f679d9a329bd8c9de2782ad422cddf8e82d149`、OpenAPI producer pin `4a30cafd691a415c8a651151085d1747e5326cca`）。SNS本体UIの画面構成はq08のモック合意を参照し、v3で予定する余白調整を反映する。
   - FA `shuttlepub-web-emumet-auth`（ShuttlePub/shuttlepub-frontends#28、依存F0）: Hydra OIDC認証・session・Emumet Bearer転送・Profile選択。認証フロー/BFFはマージ済み（PR #32, squash `a0758e413747fe83b0391be9497c6a2b6aca0678`。PKCE/state/nonce、JWT検証、`__Host-` HttpOnly cookie、`prompt=login`、Emumet audience=accountへのBearer転送。実Kratos/Hydra/Emumet E2E 5 passed）。ログイン画面UIはモック合意後。
-  - F3 `quick-reaction-web-ui`（ShuttlePub/shuttlepub-frontends#29、依存F0・S3）: ピッカー最上段の常用絵文字・反応済み表示/解除・Profile設定UI。S3準拠のステートフルmockで受け入れ、実保存backend未実装を完成と表示しない。UIの実装PRはモック合意まで出さず、画面実装前にhost intentの合意記録を参照する。FAは不要。
+  - F3 `quick-reaction-web-ui`（ShuttlePub/shuttlepub-frontends#29、依存F0・S3）: ピッカー最上段の常用絵文字・反応済み表示/解除・Profile設定UI。q08の合意済みモック（artifact `artifact-3e671306814eab3b15da4d1bbf180969`、v3で余白調整予定）に従って画面実装へ進める。S3準拠のステートフルmockで受け入れ、実保存backend未実装を完成と表示しない。画面実装前にhost intentの合意記録を参照する。FAは不要。
   - 未登録のまま: S8 `personal-domain-content-api-contract`（別レーンのE8待ち）、F8。
 - **仮 slug**: `quick-reaction`。
 - **target repo 別分割**: ShuttlePub backend（`ShuttlePub/ShuttlePub`）にProfile単位の設定API・保存、frontends に設定画面・リアクションピッカーUIを置く。
@@ -192,8 +195,11 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   常用絵文字未設定時はピッカー最上段の常用欄がなく通常ピッカーだけが表示され、サーバー管理の初期値絵文字を導入しないことを確認する。
   設定済みカスタム絵文字が削除・無効化されたら最上段の該当絵文字が無効になり、設定画面に「利用不可」と表示して入れ替えを促すこと、設定を自動削除せず別絵文字で代替送信しないことを確認する。
   キーボード操作でも同じ導線を確認する。
+  q08合意モックどおり、反応済み状態を集計チップに統合しながら自分の反応チップを左端に置くこと、他人の集計チップからの反応は未反応時に限ること、画面構成・TL／詳細・常用欄・Profile設定の各表示を確認する。元に戻すトーストはマウスオーバー中／モバイルのタッチ中に消えないことを確認する。
+  q09に従い、解除は画面上ですぐ反映しつつAPI呼び出しをトースト消滅まで遅らせ、元に戻すとAPI・連合Undo・投稿者通知をいずれも発生させないことを確認する。画面遷移・タブを閉じる場合は解除を確定し、他端末反映の数秒の遅延を許容する。
+  q10に従い、同じ人・同じ投稿への短時間の再リアクションで投稿者へ通知を出し直さないことを確認する。具体的な抑制時間は技術設計で定める。
 - **依存**: 既存 reaction API、SNS UI の投稿表示。
-- **未決事項**: 設定APIの具体的な契約・保存形式・認可／同期、異なるProfile間／Account全体の共有、失敗時の表示、
+- **未決事項**: S3 API契約へのq09・q10の追補要否と詳細、設定APIの具体的な契約・保存形式・認可／同期、異なるProfile間／Account全体の共有、失敗時の表示、
   再送／キーボード操作。
 - **既存との関係**: Note reaction の操作短縮。D09 のリモート絵文字対応を必須依存にしない。
 - **限定した実装確認（2026-10-19）**: `ShuttlePub/shuttlepub-frontends`の`4be1b633726a2f109c86e2756e2464ea674c4e93`で、
