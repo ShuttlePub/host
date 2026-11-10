@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-admin-notification-webhook",
+  "actor": "e15w-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T03:02:24.5123805+00:00",
+  "reason": "Emumet PR #69 squash-merged as ae9bdddef26c21b2d70e08a5a8f74ac5e6153d05; closeout recorded.",
+  "displaced_holder": "e15w-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T01:20:52.1528613+00:00",
+  "base_commit": "f319f923161be82d1acde52b8543fc060ba28179"
+}
