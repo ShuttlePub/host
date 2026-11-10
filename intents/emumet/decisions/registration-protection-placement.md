@@ -119,6 +119,14 @@ provider設定だけの喪失（hookは存在）とは別のenforcement喪失と
 
 SMTPの認証不正/空URL/TLS設定不正、接続/timeout/4xx、宛先拒否（例550）は分離する。
 HTTP providerの429/5xxとSMTPの全5xxを機械的に同一分類しない。
+
+**E15c独立レビューによる精緻化（2026-11-10）**: SMTPは失敗した段階を保持して分類する。
+宛先依存の失敗（RCPT段階の550-554、およびRCPT段階の421以外の4xx＝greylisting/mailbox busy等）は`attempt_rejected`とし、
+readinessを変えずchallengeの内部失効だけにする。`temporarily_unavailable`は宛先に依存しない信号
+（接続/STARTTLS/認証/MAIL FROM/DATAの失敗、421、timeout、canary/接続probe）に限る。
+理由: 公開発行APIは宛先の状態を応答から区別させてはならない（user enumeration防止）。宛先依存の4xxでreadinessを
+変えると、宛先Aへの発行後に別宛先Bへ発行した応答（202/503）から、Aの受理/RCPT 550/RCPT 450が判別できてしまう。
+MAIL FROMの550（送信者不許可）等は宛先拒否ではなく`configuration_invalid`とする。
 実providerの429/5xx/timeoutは誘発していない。これらはhook故障注入とE15c adapterの必須分類試験として区別する。
 
 ## Evidence / 反例
