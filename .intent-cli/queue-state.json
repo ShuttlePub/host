@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T01:11:47.8679863+00:00",
+  "updated_at": "2026-11-10T01:25:04.7040631+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -769,7 +769,7 @@
     {
       "execution_unit": "quick-reaction-api-contract",
       "title": "quick-reaction-api-contract: \u30AF\u30A4\u30C3\u30AF\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3(\u5E38\u7528\u7D75\u6587\u5B57\u8A2D\u5B9A\u30FBProfile \u5225\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3)\u306E /api/v1 API \u5951\u7D04",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "shuttlepub-openapi-foundation"
       ],

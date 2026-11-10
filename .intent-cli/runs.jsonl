@@ -153,3 +153,5 @@
 {"ts":"2026-11-10T00:24:56.3293871+00:00","execution_unit":"registration-gate-admin-ui","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#31","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/31"}
 {"ts":"2026-11-10T01:11:47.8523056+00:00","execution_unit":"registration-gate-control-plane","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":67}
 {"ts":"2026-11-10T01:11:47.8523056+00:00","execution_unit":"registration-gate-control-plane","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":67}
+{"ts":"2026-11-10T01:25:04.6923899+00:00","execution_unit":"quick-reaction-api-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":17}
+{"ts":"2026-11-10T01:25:04.6923899+00:00","execution_unit":"quick-reaction-api-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":17}
