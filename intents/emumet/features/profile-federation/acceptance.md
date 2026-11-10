@@ -167,6 +167,59 @@ trait ProfileDeliveryEnqueuer {
 - remote actor の取り込み（inbox・公開鍵キャッシュ）用のテーブルは P2 に無い。必要なら P3i が追加する。
 - `impl_database_delegation!`（kernel/src/lib.rs）には未追加。P3o/P3i が AppModule へ接続する際に `DependOnProfile*` 等を追加する（driver の `PostgresDatabase` には実装済み）。
 
+## P3i 確定契約（Emumet PR #87、レビュー対応済み・未マージ。マージ後に squash SHA を追記）
+
+> 実装は `ShuttlePub/Emumet` の `application::service::activitypub::profile_inbound`（`ProfileInboxUseCase`）、`application::service::profile_follow_list`、server の `route::activitypub::profile_inbox` / `route::profile_follow_list`。
+> route は **本番 root router へ未 mount**（テスト専用の `ProfileInboxRouter` / `ProfileFollowListRouter`）。worker も起動しない。P2 の interface は変更していない。
+
+### 受信 Activity 対応表（`POST /ap/profiles/{profile_nanoid}/inbox`）
+
+| 受信 Activity | 条件 | 効果 | HTTP |
+|---|---|---|---|
+| `Follow` | `object` = この Profile の actor URL | 署名 actor を follower とする **accepted 世代**を保存し、**Accept 配送 job を同一 transaction で予約**（自動 Accept。宛先は follower の actor 文書の inbox） | 202 |
+| `Follow`（この Profile が署名 actor を個別 block 済み） | 同上 | accepted にせず、**ended(blocked) 世代**を元 Follow ID で保存し、**`Reject(Follow)` job を同一 transaction で予約**。AP Block は送らない。block 解除後に同じ Follow が再送されても世代は復活せず、新しい Follow だけが accepted になる | 202 |
+| `Accept` | `object` = この Profile が送った Follow（埋め込み or ID 文字列） | pending 世代 → accepted（CAS） | 202 |
+| `Reject` | 同上 | 有効世代（pending / accepted）→ ended(rejected) | 202 |
+| `Undo` | `object` = 署名 actor の Follow | 有効世代 → ended(undone)。block 中も許可（後始末） | 202 |
+| 上記以外 | 投稿 Activity（Create / Like / EmojiReact / Announce / Delete …）、`Block` / `Undo(Block)`、Follow 以外への Undo / Accept / Reject | **非対応**。関係・重複記録・job を一切変えず無害に受理のみ（投稿の認可・実受理は ShuttlePub の後続責務、domain 方針は D8G） | 202 |
+
+### 署名検証・照合
+
+1. route: HTTP Signature 検証（不正・欠落・本文改ざんは 401）→ 鍵 owner = `activity.actor`（不一致は 401）。use case に渡す署名 actor は鍵 owner で、use case でも `activity.actor` と再照合する。
+2. use case: inbox の Profile が存在し actor（username + 有効鍵）であること（無ければ 404）。署名者が自インスタンス（`{PUBLIC_BASE_URL}/ap/…`）の actor URL なら 422。
+3. `Follow` の `object` が inbox の Profile でなければ 422。埋め込み Follow を持つ `Undo` は、埋め込み Follow の actor が Undo の actor、object が inbox の Profile でなければ 422。
+4. `Accept` / `Reject` / `Undo` は **元 Follow activity ID**（P2 の世代識別子）で世代を引き、両当事者（Accept/Reject: follower=この Profile・followee=署名 actor、Undo: follower=署名 actor・followee=この Profile）を照合する。合わなければ関係を変更せず 202（Accept/Reject の埋め込み Follow が合わない場合も同様）。
+5. remote follower の inbox は書き込み前に既存の `resolve_remote_actor`（SSRF 対策済み）で解決する。解決できなければ何も保存せず 408（再送可能）。**remote actor テーブルは追加しない**（Accept/Reject の宛先は job の `target_inbox` に保存）。
+
+### 無害化規則
+
+- **重複受信**: P2 の重複受信記録を関係変更と**同一 transaction**で記録（再受信は `receive_count` だけ増える。失敗して rollback すれば記録も戻り、再送で再処理される）。非対応 Activity は記録しない。
+- **古い Accept / Reject**（ended の世代を指す）: 何もしない。新世代の pending は変わらない。別 Profile / 別 actor の世代への操作も何もしない。
+- **有効世代の置換**: 同じ actor が別 activity ID の Follow を再送した場合、その actor 自身の旧世代のみ ended(undone) にして新世代を accepted にし、新しい Accept を予約する。
+- **順序逆転**: Undo が Follow より先に届く場合、埋め込み Follow が inbox の Profile 宛てなら ended(undone) 世代を保存して後着の Follow を無効化する（後着の Follow は P2 の `ReplayedActivity`）。**ID 文字列だけの Undo は宛先 Profile を確認できない**ため世代を作らず（世代の一意キーは follower + Follow ID で受信 Profile を含まず、別 Profile 宛ての本物の Follow を巻き込むため）、受信 Profile に限定した重複受信記録（`activity_type = UndoFollow`、キーは元 Follow ID）だけを残す。同じ Follow が別 Profile に届いても影響せず、同じ Profile に後着した場合は重複として無視される。Accept / Reject が Follow 登録より先に届く（未知の元 Follow ID）場合は何も作らない。
+- **並行性**: 受信の全 transaction（Follow / Accept / Reject / Undo）は先頭で **Profile 関係ロック**（`kernel::interfaces::repository::ProfileRelationshipLock::lock_profiles`、`pg_advisory_xact_lock`。P3o と共通の規約: transaction の先頭で一度だけ関与するローカル Profile を ID 昇順に取得）を取る。個別 block の判定・Follow 保存・Undo の世代照合がこのロックで直列化されるため、block 書込と Follow の競合、Follow と Undo の競合で関係が残ったり取りこぼされたりしない。念のため Undo の tombstone 作成が既存世代（`ReplayedActivity`）を返した場合も両当事者を再照合して対象世代を終了する。
+
+### Accept / Reject 予約と関係変更の同一 transaction
+
+Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 判定 →（置換時は旧世代終了）→ 世代保存 → Accept（block 時は Reject）job 予約」を行う。予約が失敗すれば世代も重複記録も残らず、commit 時の関係変更失敗でも予約済み job は残らない（実 DB テストで確認）。Accept / Reject / Undo の受信では job を予約しない。Accept の署名配送は P3o の worker。
+
+### followers / following 読取（E8 確定契約どおり）
+
+- `GET /api/v1/profiles/{profile_nanoid}/followers` → `ProfileFollowerListResponse`（`follower` = `ProfileActorRef{kind: local|remote, actor_url 必須, profile_id は local のみ}`）、`.../following` → `ProfileFollowListResponse`（`target` = canonical actor URL。local 対象は `{PUBLIC_BASE_URL}/ap/profiles/{nanoid}`）。`state` は pending / accepted（ended は出ない）。
+- 認可は **現在の所有者のみ**（D8P の `require_profile_owner`: Profile 行 `FOR SHARE` ロック + 所有者確認 + 読取を 1 transaction）。401 / 403 / 404。別 Profile・他 Account の関係は返さない。
+- 古い順。`cursor` は不透明な `next_cursor`（不正は 400）、`limit` は既定 20・1..=100 に clamp。
+
+### 検証
+
+署名付き HTTP fixture（有効署名・別鍵・署名なし・本文改ざん・署名者と actor の不一致）、隔離 DB（本番 migrations + P2 fixture）、重複・同時重複・順序逆転・古い Accept/Reject・別 Profile / 別 actor・不正参照・非対応 Activity、個別 block 時の受信 Follow（Reject・解除後も復活しない・Profile / actor 単位）、block 書込中の Follow の待機、Follow と Undo の競合（ロック待機と、tombstone 作成時に既存世代が返る経路）、裸 ID Undo の誤配送、Accept 予約失敗時の rollback、followers/following（local/remote・pagination・所有者以外 403）。実 root 構成（`build_root_router`）で E8 / D8P / P1 / P3i の全 route が 404 であること（実在 Profile + 所有者でも）と、`main` が root router 以外の route を足さないことを検査。
+
+### P4 / 後続への申し送り
+
+- 本番 mount と旧 `/ap/accounts/{id}/inbox` の撤去は P4。P3i の route を mount した unit は `route/tests.rs` の不在テストの対象から外し、存在テストへ置換する。
+- D8G: 受信 Follow への **domain 方針**（domain block / mute）の適用は未実装。`handle_follow` の個別 block 判定の隣に挿入する（同じロック規約の下）。
+- 受信側の `UndoFollow` 重複受信記録は P2 の `profile_inbound_activities` を流用している（保持期間の purge 対象）。
+- Undo 時に未配送の Accept job を取り消す処理（`cancel_undelivered_for_follow`）は P3o の関係終了処理が行う。P3i の Undo は job に触れない。
+
 ## UI 前提（ユーザー指示）
 
 FN の画面構成を決める実装はモック合意まで保留する。画面構成に依存しない BFF・GraphQL・変換の検証は先行できるが、
