@@ -175,7 +175,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **設定済みカスタム絵文字が利用不能になった場合として採用済み**: `d03-q05-unavailable-favorite-custom-emoji`。従来の「該当ボタンだけをグレーアウト」というUI解釈は`d03-q06`でピッカー最上段の常用欄に置き換えられた。該当絵文字をグレーアウトして選択不可にし、設定画面では「利用不可」と表示して入れ替えを促す。別絵文字で代替送信せず、設定も自動削除しない。
 - **q01〜q05のUI訂正記録**: `d03-q06-favorites-in-picker-top-row-correction`。過去の質問・回答記録は変更せず、q01〜q05を踏まえた従来のUI前提解釈をこの訂正で置き換える。q01の同一Profile内の端末間共有とq02の上限5個は維持する。未反応投稿ではリアクションボタンから開くピッカーの最上段に常用絵文字を表示し、選択に2操作を要する。反応済み投稿は選択中の絵文字をボタンの代わりに表示し、押すと解除してピッカーを再表示する。変更は解除後にピッカーで選び、ピッカーから直接置換しない。現行の1人1投稿1反応（ShuttlePub `POST /api/notes/{id}/reactions`）を維持する。常用未設定なら最上段欄なしで通常ピッカーのみ、利用不能絵文字は最上段で無効化し、設定画面で「利用不可」と表示して入れ替えを促す。代替送信・設定の自動削除はしない。
 - **常用絵文字設定の保存先として採用済み**: `d03-q07-shuttlepub-profile-settings-api`。ShuttlePub backend（`ShuttlePub/ShuttlePub`）にProfile単位の設定APIと保存を作る。Emumet側や端末ローカルには置かない。D05の履歴ON/OFFやD13の従来設定も同じ基盤に置く案はあり得るが、ここでは決定しない。
-- **候補の状態**: 主要な利用意図と設定保存の担当repoは整理済み。設定APIの具体契約／保存形式など技術・UX契約は設計／検証待ちで実装readyではない。
+- **候補の状態**: 主要な利用意図と設定保存の担当repoは整理済み。S3のAPI契約はマージ済み。実保存・端末間同期の実処理、保存形式・UX契約は引き続き設計／検証待ちで、候補全体として実装readyではない。
   candidate・queue未登録・issue未公開を維持し、実装packetへ自動昇格しない。
 - **queue登録済みの実行unit（2026-11-09、D03の範囲のみ）**: 親candidate D03全体をreadyや完了にはしない。S3はAPI契約マージ済み（PR #17, squash `5945e41a8c02650c1ddd29647a7c8c819740e81c`）。実保存・端末間同期は未実装（後続）。mock受け入れのUIまでが登録範囲。
   - S0 `shuttlepub-openapi-foundation`（ShuttlePub/ShuttlePub#14、依存なし）: server層へutoipaを導入しAPI契約基盤（`/api/v1`のDTO・エラー形式、生成`openapi/shuttlepub.json`、`/openapi.json`配信、再生成差分CI）を作る。契約routeは明示的な501。実装完了、マージ済み（PR #16、squash `4a30cafd691a415c8a651151085d1747e5326cca`）。決定の記録は [generated-openapi-contract ADR](../decisions/generated-openapi-contract.md)。
