@@ -120,13 +120,16 @@ provider設定だけの喪失（hookは存在）とは別のenforcement喪失と
 SMTPの認証不正/空URL/TLS設定不正、接続/timeout/4xx、宛先拒否（例550）は分離する。
 HTTP providerの429/5xxとSMTPの全5xxを機械的に同一分類しない。
 
-**E15c独立レビューによる精緻化（2026-11-10）**: SMTPは失敗した段階を保持して分類する。
-宛先依存の失敗（RCPT段階の550-554、およびRCPT段階の421以外の4xx＝greylisting/mailbox busy等）は`attempt_rejected`とし、
-readinessを変えずchallengeの内部失効だけにする。`temporarily_unavailable`は宛先に依存しない信号
-（接続/STARTTLS/認証/MAIL FROM/DATAの失敗、421、timeout、canary/接続probe）に限る。
-理由: 公開発行APIは宛先の状態を応答から区別させてはならない（user enumeration防止）。宛先依存の4xxでreadinessを
-変えると、宛先Aへの発行後に別宛先Bへ発行した応答（202/503）から、Aの受理/RCPT 550/RCPT 450が判別できてしまう。
-MAIL FROMの550（送信者不許可）等は宛先拒否ではなく`configuration_invalid`とする。
+**E15c独立レビューによる精緻化（2026-11-10、再改訂）**: SMTPは失敗した段階を保持して分類する。
+公開発行要求で宛先を提示した後（RCPTコマンド送信以降）の失敗は、応答コード・段階・timeout・切断を問わず
+すべて`attempt_rejected`とし、readiness・観測を更新しない（challengeの内部失効のみ）。
+公開要求経路からreadinessを更新できるのは、宛先提示前の段階（接続/STARTTLS/認証/MAIL FROM）の失敗だけ
+（`temporarily_unavailable`/`configuration_invalid`）。provider全体の一時障害・設定不正は、宛先を伴わない独立probeと
+管理者canary（固定canary宛先）で判定する。公開要求の連続失敗はreadinessに積み上げない。
+理由: 公開発行APIは宛先の状態を応答から区別させてはならない（user enumeration防止）。宛先提示後の失敗は、
+コードや段階だけでは宛先非依存と保証できず、readinessを変えると、宛先Aへの発行後に別宛先Bへ発行した応答（202/503）から
+Aの受理/RCPT拒否/DATA失敗/timeoutが判別できてしまう。MAIL FROMの550（送信者不許可）等は宛先拒否ではなく
+`configuration_invalid`とする。ADR本文の「4xx → temporarily_unavailable」は宛先提示前の段階にのみ適用される。
 実providerの429/5xx/timeoutは誘発していない。これらはhook故障注入とE15c adapterの必須分類試験として区別する。
 
 ## Evidence / 反例
