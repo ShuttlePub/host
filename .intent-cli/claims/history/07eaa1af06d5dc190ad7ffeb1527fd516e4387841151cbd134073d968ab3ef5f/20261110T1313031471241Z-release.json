@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-relationship-inbound",
+  "actor": "p3i-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T13:13:03.1471241+00:00",
+  "reason": "PR #87 merged (squash 13a1cf8) and closeout recorded; unit completed",
+  "displaced_holder": "p3i-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T11:21:32.771537+00:00",
+  "base_commit": "82315efa0a0b9535a3c9ae20c374a0b1292a4c0b"
+}
