@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:registration-admin-notification-webhook",
+  "actor": "e15w-worker",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-10T01:20:52.1528613+00:00",
+  "base_commit": "990b61b5133b3412324180e8124e07dd15b7ae7d"
+}
