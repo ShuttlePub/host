@@ -48,6 +48,13 @@
 - [ ] Webhook 不達・failed・設定不備・worker 停止でゲート状態は変わらず、配送失敗が新しい Webhook 配送対象の通知イベントを生まない（無限再帰しない）
 - 検証: 純粋ロジック（署名・分類・バックオフ・allowlist）、SSRF fixture、`DATABASE_URL` 実 DB + fake receiver（再起動・二重 worker・429/5xx/timeout・恒久エラー・管理者再試行。skip のみの成功は不可）、管理者認可、OpenAPI 再生成。E15a merge 後に rebase し共有ファイルは一件ずつ統合
 
+### E15w の技術判断・closeout（2026-11-10、unit 範囲のみ）
+
+- 最大期間（24h）は再試行（retrying）にのみ適用し、一度も試行していない pending の初回送信は期間超過後も行う。at-least-once と再起動後回収を優先する判断（親判断 `question-94564a5a413cf52b45d9d7bddb7003ca`）。テスト `a_never_attempted_delivery_is_still_sent_after_a_long_outage` で固定。
+- Emumet PR #69 は squash merge 済み（`ae9bdddef26c21b2d70e08a5a8f74ac5e6153d05`）、Emumet#68 は close 済み。
+- 独立 Reviewer approve（run `run-01m71kqtt6n5htgs0g8zsyqdfz`、must 0）、CI run `42745129343` 全 pass。`check-driver` は実 DB テストを実行し、0 ignored（前 run で確認済み）。
+- E15w の範囲のみ完了。E15b/E15c/E15d と F15 の画面実装は未完了であり、D15 全体の受け入れは未達のままとする。
+
 ## F15 — registration-gate-admin-ui（shuttlepub-frontends#31。BFF/API 接続は先行可、画面はモック合意待ち）
 
 - **部分進捗（2026-11-10）**: PR #33（head `3e07fec5d96c1e8c715f7bb6b0195bdcbcf60be2`、Refs #31）の BFF/API・生成型・fixture 部分を squash merge 済み（`7516562db15952144dd406070ffe3d3f95de02c3`）。独立 Reviewer approve（run `run-01m71j8qsyj87h460v46bhqyqn`、must 0）、CI 全 pass。画面実装はモック合意待ちで未着手。issue #31 は OPEN、F15 は未完了（queue 状態は変更しない）。

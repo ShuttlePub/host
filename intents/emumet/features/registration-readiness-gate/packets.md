@@ -15,7 +15,7 @@ domain `emumet`。E15a〜E15w の target は `ShuttlePub/Emumet`、F15 のみ `S
 | E15b | `registration-kratos-guard-contract` | Kratos v1.3.1 の pre-persist guard 実証と保護の実装所在の決定（ADR）。本番 Kratos 設定への hook 接続は含まない | なし | queue 登録・issue 公開済み（[Emumet#64](https://github.com/ShuttlePub/Emumet/issues/64)） |
 | E15c | `registration-protection-readiness` | E15b で決めた保護 adapter・実検証 API・設定世代・readiness 鮮度期限・設定喪失と一時障害の分類 | E15a, E15b | 後続（予定）。**E15b の所在・provider・観測契約を親が確認するまで draft しない** |
 | E15d | `registration-gate-enforcement` | 実 Kratos hook 配線・保護実行・継続 probe・ゲートと通知イベントの統合。本番 Kratos 設定変更は E15d が所有 | E15a, E15b, E15c | 後続（予定）。E15c と同じ draft ゲート |
-| E15w | `registration-admin-notification-webhook` | 永続イベントの外部 Webhook 配送（stable event ID・署名・timeout/再試行・失敗状態・管理者テスト/再試行） | E15a | queue 登録・issue 公開済み（[Emumet#68](https://github.com/ShuttlePub/Emumet/issues/68)） |
+| E15w | `registration-admin-notification-webhook` | 永続イベントの外部 Webhook 配送（stable event ID・署名・timeout/再試行・失敗状態・管理者テスト/再試行） | E15a | PR #69 squash merge 済み（[Emumet#68](https://github.com/ShuttlePub/Emumet/issues/68) close 済み） |
 | F15 | `registration-gate-admin-ui` | emumet-web 管理画面（状態・理由・開閉・再開・override・常時警告・通知一覧/既読・Webhook 状態）。target `ShuttlePub/shuttlepub-frontends` | E15a の契約（モック UI は E15c/E15d/E15w と並行可） | queue 登録・issue 公開済み（[shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）。BFF/API 部分 PR #33 は squash merge 済み。**画面実装 PR はモック合意が host intent に記録されるまで出さない**（BFF・API 接続・生成型・fixture は先行可）。F15 は未完了 |
 
 queue 登録済みの unit（登録成功後に追記する）:
@@ -31,6 +31,12 @@ queue 登録済みの unit（登録成功後に追記する）:
 - 独立 Reviewer approve（run `run-01m71eeqq2r2c2qhkj6b0yb6zx`、must 0）、CI 全緑。
 - 実 DB テスト証跡: Rust run `42731914696` の `check-driver` は 171 passed / 0 ignored。
 - E15a は管理 control plane のみ。E15a 単体では実登録を保護しない。E15d の実 enforcement、E15w、F15 は未完了で、D15 全体は完了扱いにしない。
+
+### E15w closeout（2026-11-10、unit 範囲のみ）
+
+- Emumet PR #69 は squash merge 済み（`ae9bdddef26c21b2d70e08a5a8f74ac5e6153d05`）、Emumet#68 は close 済み。
+- 独立 Reviewer approve（run `run-01m71kqtt6n5htgs0g8zsyqdfz`、must 0）、CI run `42745129343` 全 pass。`check-driver` は実 DB テストを実行し、0 ignored（前 run で確認済み）。
+- E15w の範囲のみ完了。E15b/E15c/E15d と F15 の画面実装は未完了で、D15 全体は未完了のままとする。
 
 ## 依存図
 
