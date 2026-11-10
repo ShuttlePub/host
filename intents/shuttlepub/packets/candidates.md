@@ -920,6 +920,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **queue 登録状況（2026-11-10 第2便、unit 範囲のみ）**: E15w `registration-admin-notification-webhook`（[Emumet#68](https://github.com/ShuttlePub/Emumet/issues/68)）と F15 `registration-gate-admin-ui`（[shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）を queue 登録済み・issue 公開済み（intent-target 適用）。packet は `.intent-cli/issues/registration-admin-notification-webhook/` と `.intent-cli/issues/registration-gate-admin-ui/`。
   E15w は永続通知イベント（override 開始・解除を含む）の外部 Webhook 配送（at-least-once・署名・SSRF 対策・再試行・失敗状態・管理者テスト/再試行）のみで、E15a の merge 後に rebase する。F15 は emumet-web の管理画面で、**画面構成・文言・見た目はリード側モックへのユーザー合意が RG の host intent に記録されるまで画面実装 PR を出さない**（BFF・API 接続・生成型・fixture は先行可）。
   override の細部（準備済み保護は登録時に課す・解除で通常判定へ復帰・開始/解除も通知対象・警告バナーは管理画面内全ページ常時表示で一般画面には出さない）は d15-q09/q10 と整合する技術設計詳細として [RG overview](../../emumet/features/registration-readiness-gate/overview.md) に記録した。E15c/E15d は未 draft のまま。D15 全体の ready／完了ではない。
+- **E15a closeout（2026-11-10、unit 範囲のみ）**: Emumet PR #67 は squash merge 済み（`0ac9e9c087f61447c9a2c5e4a4cbf04a1075f2ca`）、Emumet#65 は close 済み。独立 Reviewer approve（run `run-01m71eeqq2r2c2qhkj6b0yb6zx`、must 0）、CI 全緑。実 DB テスト証跡: Rust run `42731914696` の `check-driver` は 171 passed / 0 ignored。E15a は管理 control plane のみで、単体では実登録を保護しない。E15d の実 enforcement、E15w、F15 は未完了で、D15 全体は未完了のままとする。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   Ory self-service identity 登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。

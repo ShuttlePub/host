@@ -73,3 +73,9 @@
 ## Writeback 記録
 
 - queue 登録・publish・完了のリンクは [packets.md](packets.md) と candidates.md D15 節へ unit 範囲だけ追記する。
+
+### E15a closeout（2026-11-10、unit 範囲のみ）
+
+- Emumet PR #67 は squash merge 済み（`0ac9e9c087f61447c9a2c5e4a4cbf04a1075f2ca`）、Emumet#65 は close 済み。独立 Reviewer approve（run `run-01m71eeqq2r2c2qhkj6b0yb6zx`、must 0）、CI 全緑。
+- 実 DB テスト証跡: Rust run `42731914696` の `check-driver` は 171 passed / 0 ignored。
+- E15a は管理 control plane のみで、実登録を保護しない。E15d の実 enforcement、E15w、F15 が未完了のため、D15 全体の受け入れは未達のまま。

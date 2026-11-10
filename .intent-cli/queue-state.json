@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T00:24:56.3293871+00:00",
+  "updated_at": "2026-11-10T01:11:47.8679863+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -839,7 +839,7 @@
     {
       "execution_unit": "registration-gate-control-plane",
       "title": "registration-gate-control-plane: \u767B\u9332\u30B2\u30FC\u30C8\u306E\u7BA1\u7406 control plane (\u958B\u9589\u30FB\u624B\u52D5\u518D\u958B\u30FBoverride\u30FB\u72B6\u614B\u9077\u79FB\u30FB\u901A\u77E5\u30A4\u30D9\u30F3\u30C8\u30FB\u7BA1\u7406\u8005\u5225\u65E2\u8AAD)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
