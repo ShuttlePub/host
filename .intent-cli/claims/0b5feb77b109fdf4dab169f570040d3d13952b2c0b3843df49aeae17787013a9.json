@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:profile-identity-web-adaptation",
+  "actor": "design",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-10T04:00:01.6735356+00:00",
+  "base_commit": "cbdc10fd41c1b8ee178eae7e7fa22d06aa1b8d17"
+}
