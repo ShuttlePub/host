@@ -50,6 +50,7 @@
 
 ## F15 — registration-gate-admin-ui（shuttlepub-frontends#31。BFF/API 接続は先行可、画面はモック合意待ち）
 
+- **部分進捗（2026-11-10）**: PR #33（head `3e07fec5d96c1e8c715f7bb6b0195bdcbcf60be2`、Refs #31）の BFF/API・生成型・fixture 部分を squash merge 済み（`7516562db15952144dd406070ffe3d3f95de02c3`）。独立 Reviewer approve（run `run-01m71j8qsyj87h460v46bhqyqn`、must 0）、CI 全 pass。画面実装はモック合意待ちで未着手。issue #31 は OPEN、F15 は未完了（queue 状態は変更しない）。
 - [ ] 【画面実装ゲート】モックへのユーザー合意が host intent に記録されるまで画面実装 PR を出さない。BFF・API 接続・生成型・全状態 fixture は先行可（画面とは別 PR）
 - [ ] 【先行可】BFF（状態・開閉・再開・override・通知一覧/未読/既読・Webhook 状態/テスト/再試行）が GraphQL・REST 変換・stateful mock・生成型に揃う。非管理者・未認証は fail closed。secret は応答に含まれない
 - [ ] 【先行可】全状態 fixture（Accept 防御低下あり/なし・TemporaryReject・Stopped・AdminClosed・override On・409 競合・一時障害・通知・Webhook 各状態）が API 契約に照合される

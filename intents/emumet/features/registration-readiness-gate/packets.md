@@ -16,7 +16,7 @@ domain `emumet`。E15a〜E15w の target は `ShuttlePub/Emumet`、F15 のみ `S
 | E15c | `registration-protection-readiness` | E15b で決めた保護 adapter・実検証 API・設定世代・readiness 鮮度期限・設定喪失と一時障害の分類 | E15a, E15b | 後続（予定）。**E15b の所在・provider・観測契約を親が確認するまで draft しない** |
 | E15d | `registration-gate-enforcement` | 実 Kratos hook 配線・保護実行・継続 probe・ゲートと通知イベントの統合。本番 Kratos 設定変更は E15d が所有 | E15a, E15b, E15c | 後続（予定）。E15c と同じ draft ゲート |
 | E15w | `registration-admin-notification-webhook` | 永続イベントの外部 Webhook 配送（stable event ID・署名・timeout/再試行・失敗状態・管理者テスト/再試行） | E15a | queue 登録・issue 公開済み（[Emumet#68](https://github.com/ShuttlePub/Emumet/issues/68)） |
-| F15 | `registration-gate-admin-ui` | emumet-web 管理画面（状態・理由・開閉・再開・override・常時警告・通知一覧/既読・Webhook 状態）。target `ShuttlePub/shuttlepub-frontends` | E15a の契約（モック UI は E15c/E15d/E15w と並行可） | queue 登録・issue 公開済み（[shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）。**画面実装 PR はモック合意が host intent に記録されるまで出さない**（BFF・API 接続・生成型・fixture は先行可） |
+| F15 | `registration-gate-admin-ui` | emumet-web 管理画面（状態・理由・開閉・再開・override・常時警告・通知一覧/既読・Webhook 状態）。target `ShuttlePub/shuttlepub-frontends` | E15a の契約（モック UI は E15c/E15d/E15w と並行可） | queue 登録・issue 公開済み（[shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）。BFF/API 部分 PR #33 は squash merge 済み。**画面実装 PR はモック合意が host intent に記録されるまで出さない**（BFF・API 接続・生成型・fixture は先行可）。F15 は未完了 |
 
 queue 登録済みの unit（登録成功後に追記する）:
 
@@ -58,6 +58,11 @@ E15b ───→ E15c
 F15 の画面実装 PR（PureScript の View/画面・ルート・CSS・visual baseline）を出さない。** 合意の記録後に host から child（shuttlepub-frontends#31）へ伝達する。
 BFF・API 接続・生成型・全状態 fixture など画面構成に依存しない部分は先行可（画面実装とは別 PR）。
 `bff/schema.graphql`・生成型は別レーン FN（`profile-identity-web-adaptation`）と直列統合、workspace・CI・visual 共通基盤は別レーン F0 の所有、生成物の手編集は禁止。
+
+### F15 BFF/API 部分の進捗（2026-11-10）
+
+- shuttlepub-frontends PR #33（head `3e07fec5d96c1e8c715f7bb6b0195bdcbcf60be2`）は squash merge 済み（`7516562db15952144dd406070ffe3d3f95de02c3`）。Refs #31。独立 Reviewer approve（run `run-01m71j8qsyj87h460v46bhqyqn`、must 0）、CI 全 pass。
+- BFF/API・生成型・fixture の先行部分のみ。画面実装はモック合意待ちで未着手。issue #31 は OPEN のまま、F15 は未完了で queue 状態も変更しない。
 
 ## 編集競合と merge 順
 

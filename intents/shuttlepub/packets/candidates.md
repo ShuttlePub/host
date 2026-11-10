@@ -921,6 +921,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   E15w は永続通知イベント（override 開始・解除を含む）の外部 Webhook 配送（at-least-once・署名・SSRF 対策・再試行・失敗状態・管理者テスト/再試行）のみで、E15a の merge 後に rebase する。F15 は emumet-web の管理画面で、**画面構成・文言・見た目はリード側モックへのユーザー合意が RG の host intent に記録されるまで画面実装 PR を出さない**（BFF・API 接続・生成型・fixture は先行可）。
   override の細部（準備済み保護は登録時に課す・解除で通常判定へ復帰・開始/解除も通知対象・警告バナーは管理画面内全ページ常時表示で一般画面には出さない）は d15-q09/q10 と整合する技術設計詳細として [RG overview](../../emumet/features/registration-readiness-gate/overview.md) に記録した。E15c/E15d は未 draft のまま。D15 全体の ready／完了ではない。
 - **E15a closeout（2026-11-10、unit 範囲のみ）**: Emumet PR #67 は squash merge 済み（`0ac9e9c087f61447c9a2c5e4a4cbf04a1075f2ca`）、Emumet#65 は close 済み。独立 Reviewer approve（run `run-01m71eeqq2r2c2qhkj6b0yb6zx`、must 0）、CI 全緑。実 DB テスト証跡: Rust run `42731914696` の `check-driver` は 171 passed / 0 ignored。E15a は管理 control plane のみで、単体では実登録を保護しない。E15d の実 enforcement、E15w、F15 は未完了で、D15 全体は未完了のままとする。
+- **F15 部分進捗（2026-11-10、unit 範囲のみ）**: shuttlepub-frontends PR #33（head `3e07fec5d96c1e8c715f7bb6b0195bdcbcf60be2`、Refs #31）の BFF/API・生成型・fixture 部分は squash merge 済み（`7516562db15952144dd406070ffe3d3f95de02c3`）。独立 Reviewer approve（run `run-01m71j8qsyj87h460v46bhqyqn`、must 0）、CI 全 pass。画面実装はモック合意待ちで未着手。shuttlepub-frontends#31 は OPEN のまま、F15 および D15 全体は未完了（queue 状態は変更しない）。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   Ory self-service identity 登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。
