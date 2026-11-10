@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T11:14:13.1326216+00:00",
+  "updated_at": "2026-11-10T13:11:04.2677097+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1077,7 +1077,7 @@
     {
       "execution_unit": "profile-relationship-inbound",
       "title": "profile-relationship-inbound: Profile \u7528 inbox \u306E Follow/Accept/Reject/Undo \u53D7\u4FE1\u3068 followers/following \u8AAD\u53D6 (\u7F72\u540D\u30FB\u5BFE\u8C61 Profile\u30FB\u5143 Follow ID \u7167\u5408\u3001\u672C\u756A\u672A mount)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "profile-actor-identity-foundation",
         "profile-social-graph-storage"
