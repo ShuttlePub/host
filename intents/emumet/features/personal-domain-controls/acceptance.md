@@ -70,6 +70,8 @@
 - **配送前判定**: 署名後・`renew_lease` の直前に未送信 Follow / Accept を再判定し、block 中は取消 + 当該世代を `blocked` で終了。送信済みは取り戻せない。
 - **ロック規約**: `ProfileRelationshipLock::lock_profiles`（ID 昇順・transaction 先頭で一度だけ）を、block を判定する／Follow を変更する全 transaction（inbound 受信 Profile、outbound の送信 Profile（follow / block は local 相手も）と unfollow（Follow 世代 → job の順で更新するため配送前判定と循環しないよう共通ロックで直列化。unblock / mute / unmute は不要）、配送前判定の送信元、domain control 書込の所有 Profile）が取得。D8R は `application::service::domain_follow_guard::lock_profile_for_domain_control_write` を使う。
 - Follow だけが実適用対象（投稿操作は ShuttlePub、既存関係の一括解除は D8R）。
+- **Profile 削除 CASCADE とのロック順**: Profile 削除（Account 無効化 projection）は Profile → Follow → job の順に行をロックするため、job → Follow の順に更新する配送前ガードは Profile 行 `FOR SHARE`（`lock_profile_row_shared`）→ advisory lock の順で取得。Profile 行 → advisory → Follow/job 行の順を守ること（owner 確認経路は `FOR SHARE`、inbound は FK insert の `FOR KEY SHARE`）。
+- **気づき（既存挙動・対象外）**: `account_projector` は書込み失敗で rollback しても checkpoint を進めるため、Account 無効化の projection が再試行されず残留しうる。
 
 ## 責務の境界
 
