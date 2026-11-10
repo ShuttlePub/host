@@ -57,7 +57,7 @@ queue 登録済みの unit（登録成功後に追記する）:
 
 - Emumet PR #88（E15d part 1、Refs #81）は squash merge 済み（`ef063d67bc28b2a93fb6c09babc73d90216fa176`）。独立 Reviewer approve（run `run-01m730g3c48mb2252sn8qm0h5e`、must 0）、CI 全13 checks pass。
 - これは準備 PR のみ。part 2 の本番 Kratos hook 配線・attestation・実 Kratos D15 全状態 CI は未完了。E15d / D15 全体を完了扱いにせず、claim も release しない。
-- merge と同時に GitHub が PR 本文に `Closes #81` がないにもかかわらず Emumet#81 を自動 close した（2026-11-10 15:46:34Z）。reopen と説明コメントの親許可を得たが、GitHub 操作は権限不足として拒否され未実施。#81 は CLOSED のまま。ラベル・queue の変更や closeout は実行していない。
+- PR 本文の「CI / 続く slice」に、後続 part 2 で「そこで `Closes #81` とする」と明記されており、GitHub が PR #88 の merge 時に Emumet#81 を自動 close した（2026-11-10 15:46:34Z）。squash commit message に closing keyword はない。reopen と説明コメントの親許可は伝達されたが、GitHub 操作は権限不足として拒否され未実施。ユーザーに直接確認中で、#81 は CLOSED のまま。ラベル・queue の変更や closeout は実行していない。
 
 ## 依存図
 
