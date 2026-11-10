@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T07:19:55.383218+00:00",
+  "updated_at": "2026-11-10T07:21:20.4493916+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1138,6 +1138,11 @@
         "review_context": ".intent-cli/issues/registration-protection-readiness/review-context.md",
         "yaml": ".intent-cli/issues/registration-protection-readiness/packet.yaml"
       },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 80,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/80"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
@@ -1158,6 +1163,11 @@
         "implementation": ".intent-cli/issues/registration-gate-enforcement/implementation.md",
         "review_context": ".intent-cli/issues/registration-gate-enforcement/review-context.md",
         "yaml": ".intent-cli/issues/registration-gate-enforcement/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 81,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/81"
       },
       "worker_role": "implementation",
       "review_role": "review",
