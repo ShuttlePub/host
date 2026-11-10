@@ -129,15 +129,23 @@ HTTP providerの429/5xxとSMTPの全5xxを機械的に同一分類しない。
 **分類は送信の目的で分ける**: 上記の「宛先提示後は常にattempt」は公開要求の送信だけに適用する。管理者canaryは固定の承認済み宛先で
 攻撃者が選べないため、RCPT/DATA/timeout/切断を含むすべての段階の配送失敗をprovider障害として記録する
 （4xx/timeout/切断は`temporarily_unavailable`、認証失敗・5xx・canary宛先の550系は`configuration_invalid`）。
-**回復の範囲**: canaryで記録した配送範囲の障害は、接続・認証だけを確認する接続probeの成功では解除しない。
-解除は配送範囲の再検証（canaryの配送受理、またはcanary/登録者のcode確認の成功）でのみ。接続段階の障害（接続probe自体の失敗）は
-従来どおり次の接続probeの成功で回復する。これにより、配送障害が続く間にメールがoperationalへ戻って
-BOTのみへの縮退が解除されることを防ぐ。
-**単調性の原則**: より悪い既知状態は、それを解消する証拠（同じ範囲の成功）かgenerationの変更でしか改善しない。
-障害は範囲（接続・配送）ごとに保持し、後続のより軽い失敗（configuration_invalidの後のtimeout）、時間経過（鮮度切れ）、
-別範囲の成功では解除も軽減もしない（成功の解消範囲: 接続範囲の成功＝接続範囲のみ、canaryの配送成功＝接続・配送の両方。
-登録者のcode確認の成功は接続範囲）。これにより既知の設定喪失がtimeoutで観測上消えず、両保護がconfigured=falseのときの
-E15aの停止latch（復旧しても自動再開しない）が成立する。鮮度切れで`unverified`に戻るのは成功（operational）だけで、既知の障害は戻らない。
+**回復の範囲と単調性の原則**: より悪い既知状態は、それを解消する証拠かgenerationの変更でしか改善しない。
+後続のより軽い失敗（configuration_invalidの後のtimeout）、時間経過（鮮度切れ）、対話を伴わない成功（code確認）、
+検証していない段階の成功では、解除も軽減もしない。これにより既知の設定喪失がtimeoutで観測上消えず、両保護が
+configured=falseのときのE15aの停止latch（復旧しても自動再開しない）が成立する。鮮度切れで`unverified`に戻るのは
+成功（operational）だけで、既知の障害は戻らない。
+**証拠の規則**: 検証結果は、どの段階まで検証したか（connect < start_tls < auth < mail_from < rcpt < data）と、そのSMTP対話が
+実際に行われた時刻（evidence_at。記録時刻ではない）を持つ。障害は失敗した段階と観測時刻を保持し、同じ範囲
+（connect〜mail_from＝接続範囲、rcpt・data＝配送範囲）に複数の失敗が来たら最も悪い分類・最も遅い段階と時刻を保持する。
+**成功が既知の障害を解除できるのは、成功の段階が障害の段階を覆い、かつevidence_atが障害の観測時刻より後のときだけ。**
+- code確認（登録者・canaryとも）はSMTP対話ではないので、それ自体は障害を解除しない（business鮮度の更新と所有確認にだけ使う）。
+  障害前に送ったメールの確認（過去のメール所有）は現在のSMTPの復旧の証拠ではない。
+- probeは宛先を提示せずMAIL FROMまで検証する（MAIL FROM→RSET→QUIT）。成功の証拠はmail_from段階で、接続範囲の障害
+  （MAIL FROMを含む）を解除できるが、RCPT・DATAの障害は覆えない。
+- RCPT・DATAの障害は、canaryの新規送信の成功（DATA受理。証拠時刻はDATA受理時刻）でのみ解除される。
+**E15dへの引き継ぎ**: RCPT・DATAの障害はcanary配送の再検証成功でしか解除されないため、canary配送再検証の周期実行
+（probe_max_ageより短い周期）が、配送障害・設定喪失からの自動復旧（自動再開）の前提になる。周期実行が無い間は
+管理者がcanaryを手動で検証する。
 理由: 公開発行APIは宛先の状態を応答から区別させてはならない（user enumeration防止）。宛先提示後の失敗は、
 コードや段階だけでは宛先非依存と保証できず、readinessを変えると、宛先Aへの発行後に別宛先Bへ発行した応答（202/503）から
 Aの受理/RCPT拒否/DATA失敗/timeoutが判別できてしまう。MAIL FROMの550（送信者不許可）等は宛先拒否ではなく
