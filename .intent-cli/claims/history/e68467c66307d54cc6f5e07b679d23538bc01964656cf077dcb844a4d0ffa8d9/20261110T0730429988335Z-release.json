@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-domain-policy-storage",
+  "actor": "d8p-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T07:30:42.9988335+00:00",
+  "reason": "Emumet#76 merged (b3e87f2) and closeout recorded",
+  "displaced_holder": "d8p-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T03:58:27.3007227+00:00",
+  "base_commit": "2d1dd4e52f7120748053d634f24834ef0993606d"
+}

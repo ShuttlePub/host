@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:profile-domain-policy-storage",
-  "actor": "d8p-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-10T03:58:27.3007227+00:00",
-  "base_commit": "6bd698ba0ec9526a6281e9f76db4581532a17a58"
-}
