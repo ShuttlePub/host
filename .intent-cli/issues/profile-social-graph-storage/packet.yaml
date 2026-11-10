@@ -1,0 +1,92 @@
+implementation_issue_packet:
+  issue_title: "profile-social-graph-storage: Profile 版 Follow・個別 block/mute・元 Follow activity ID・重複受信・配送 job の保存モデルと旧連合データ初期化 fixture"
+  issue_kind: feature
+  source_execution_unit: profile-social-graph-storage
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/entity/ と kernel/src/repository/ (Profile 版 follow・block・mute・配送 job の型と port), driver/src/database/postgres/ (repository 実装), 隔離 DB 用の migration・初期化 SQL fixture (本番 migrations/ には配置しない), 関連テスト"
+  target_part: "Profile 単位の social graph 保存モデル (Follow・個別 block/mute・元 Follow activity ID・重複受信記録・配送 job) と、旧連合データだけを初期化する隔離 DB 用 fixture、P3o/P3i 共通の enqueue interface"
+  dependencies:
+    - "profile-domain-policy-api-contract"
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない。"
+    - "E8 確定契約 (Emumet#66 / PR #70、マージ前): /api/v1/profiles/{profile_nanoid} 系に follows (POST、DELETE /{follow_id})、following/followers (GET)、blocks/mutes (GET/POST、DELETE /{id})、domain-controls (GET 一覧、GET/PUT/DELETE /{domain}) を OpenAPI タグ ProfilePolicy の 501 スタブとして定義済み。全て現在の所有者のみ、エラーは 401/403/404/409/422/501。domain-controls の revision は 1 始まりで変更ごとに増加、PUT は expected_revision 省略で新規作成 (既存なら 409)・指定時は一致する場合のみ置換、DELETE は expected_revision 必須 (不一致 409)。将来 actor は GET /ap/profiles/{profile_nanoid} (URL 最終形は P1 で確定)。POST /api/v1/accounts の profile_username と POST /api/v1/profiles の username は optional で、形式不正は 400、有効値は副作用前に 501、ProfileResponse.username は nullable。schema は server/src/schema/profile_policy.rs と profile_username.rs"
+    - "P1〜P3 の新機構は本番 root router に mount せず、新配送 worker も root で起動しない。P4 (profile-federation-in-place-cutover) が一括で mount・旧 route 撤去・worker 起動・本番 migration 採番を所有する"
+    - "共有ファイル (server/src/openapi.rs, route.rs, main.rs, DI wiring, migrations/, openapi.json) は他レーンと競合する。共有ファイルの統合は一件ずつ行い、その時点の main から OpenAPI を再生成する (openapi_spec_matches_committed_file を通す)"
+    - "検証は DATABASE_URL を設定した実 DB テストで行う。DB テストを skip のみで通過させない (test_with::env による skip は検証として数えない)"
+    - "username 仕様 (E8 で確定): 形式 ^[a-z0-9][a-z0-9._-]{0,63}$ (ASCII 小文字 1〜64 文字)、暗黙の trim・小文字化なし。予約語 admin, administrator, root, system, support, security, moderator, api, ap, auth, oauth, oauth2, login, logout, register, settings, well-known。DB 一意・削除済み再利用なし・Account 名から自動導出しない。段階: E8/P1〜P3 optional → FN で UI 必須送信 → P4 で required"
+    - "D08 ユーザー決定 (grill d08-q01〜q15): Profile 単位、完全一致 domain のみ、mute は表示抑制のみ、block は双方向 Follow 解除＋新規操作拒否 (解除しても関係復元なし)、AP Block は送らない、旧連合 identity は引き継がず新 Profile actor から開始 (旧連合データのみ初期化、DB 全消去ではない)、username は Profile ごとに一意・一度決めたら不変・移管後も維持"
+    - "現状: follows/blocks/mutes は Account 単位 (migrations/20230707210300_init.sql の follows、20260722000001_add_blocks_and_mutes.sql)、outbox_activities (20260621000004) は Account 単位の配送。remote_accounts は旧連合 identity。Profile 単位の関係保存は存在しない"
+    - "本番 migration は追加しない。migration 番号の採番と本番配置は P4 が所有する。本 unit の SQL は独立 DB／schema の検証用 fixture として置き、本番 migrations/ ディレクトリに追加しない"
+    - "初期化 (in-place reset) は旧連合 identity に属するデータだけを対象にする。TRUNCATE ... CASCADE は禁止 (FK 経由で AuthAccount・Account・Profile 等を巻き込むため)。対象テーブルを明示列挙した DELETE/TRUNCATE (CASCADE なし) のみ使う"
+  intent_references:
+    - "intents/emumet/features/personal-domain-controls/overview.md"
+    - "intents/emumet/features/personal-domain-controls/packets.md"
+    - "intents/emumet/features/personal-domain-controls/acceptance.md"
+    - "intents/emumet/features/profile-federation/overview.md"
+    - "intents/emumet/features/profile-federation/packets.md"
+    - "intents/emumet/features/profile-federation/acceptance.md"
+    - "intents/shuttlepub/packets/candidates.md (D08 節)"
+    - "intents/shuttlepub/product/social-experience.md (I08)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q13〜q15)"
+    - "intents/emumet/decisions/0002-account-address-on-emumet-domain.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md"
+    - "intents/emumet/decisions/0007-organization-accounts.md"
+    - "intents/emumet/features/ap-federation/overview.md"
+    - ".intent-cli/issues/profile-domain-policy-api-contract/ (E8 packet)"
+  acceptance_criteria:
+    - "`Local(ProfileId)` を関係主体として Follow・個別 block/mute を保存し、同一 Account 内の別 Profile、他 Account の Profile の関係が分離される"
+    - "Follow の世代を元 Follow activity ID で区別でき、同じ相手への再 Follow が別世代として保存される"
+    - "配送 job の lease・取消・試行結果を保存でき、複数 worker の競合で二重取得されない"
+    - "重複受信を記録・検知できる"
+    - "旧連合データだけを初期化する fixture を独立 DB/schema で実行し、非対象データ (AuthAccount、Account、Profile、組織 membership、イベント履歴、全体モデレーション) が保持される。TRUNCATE ... CASCADE を使わない"
+    - "P3o・P3i が共通に使う enqueue interface (型・port) が固定され、PF に記録される"
+    - "本番 migrations/ にファイルを追加しない。本番 root router・worker に変更を加えない"
+    - "既存 Rust CI が通る (openapi.json に変更がなければ再生成不要)"
+intent_placement:
+  primary_intent: intents/emumet/features/profile-federation/overview.md
+  supporting_intents:
+    - "intents/emumet/features/personal-domain-controls/overview.md"
+    - "intents/emumet/features/ap-federation/overview.md"
+    - "intents/emumet/features/block-mute/overview.md"
+    - "intents/shuttlepub/packets/candidates.md"
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json"
+    - "intents/emumet/decisions/0002-account-address-on-emumet-domain.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md"
+    - "intents/emumet/decisions/0007-organization-accounts.md"
+  new_intent_needed: false
+  placement_rationale: "Profile social graph 保存は PF の P2。DC は supporting。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/emumet/features/profile-federation/packets.md"
+      - "intents/emumet/features/personal-domain-controls/packets.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に P2 の範囲だけ「queue 登録済み・issue 番号」を記録し、保存項目と P4 へ渡す初期化対象一覧を PF に記録する。D08 全体を ready/完了にしない (host-only)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/emumet/features/profile-federation/acceptance.md"
+    summary: "保存項目、enqueue interface、P4 へ渡す初期化対象一覧 (対象/非対象) を PF acceptance.md に記録する"
+closeout_learning:
+  expected: "保存項目、共通 enqueue interface の確定形、旧連合データ初期化の対象一覧 (P4 へ渡す)"
+  write_back_required: true
+  write_back_targets:
+    - "intents/emumet/features/profile-federation/packets.md"
+    - "intents/emumet/features/profile-federation/acceptance.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "内部 repository/port (kernel の repository trait と enqueue interface。P3o/P3i が参照)"
