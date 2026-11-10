@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-relationship-outbound",
+  "actor": "p3o-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T15:40:36.2271975+00:00",
+  "reason": "P3o profile-relationship-outbound merged (Emumet PR #86, squash fc11471) and closed out",
+  "displaced_holder": "p3o-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T11:21:51.2920963+00:00",
+  "base_commit": "9de32d7ad05c06c1aaf8c896d5d7e5e722ac62d8"
+}
