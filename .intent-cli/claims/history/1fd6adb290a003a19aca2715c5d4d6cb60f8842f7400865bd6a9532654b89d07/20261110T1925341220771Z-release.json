@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-gate-enforcement",
+  "actor": "e15d-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T19:25:34.1220771+00:00",
+  "reason": "E15d PR #92 merged and host closeout recorded",
+  "displaced_holder": "e15d-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T14:30:20.6556243+00:00",
+  "base_commit": "7db78020e304be157018ed8df4f4bd5733c14a47"
+}
