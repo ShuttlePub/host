@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-social-graph-storage",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T03:22:32.5790081+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T03:15:55.0602714+00:00",
+  "base_commit": "2ac0f25251346b5f95629fffd4255f7e7416031d"
+}
