@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-domain-policy-api-contract",
+  "actor": "e8-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T03:53:45.3520265+00:00",
+  "reason": "E8 merged (Emumet PR #70, squash 0bfa437) and closeout recorded",
+  "displaced_holder": "e8-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-09T23:38:24.1060319+00:00",
+  "base_commit": "290f18e2d9991d1559d43d305150fd79832b10cb"
+}
