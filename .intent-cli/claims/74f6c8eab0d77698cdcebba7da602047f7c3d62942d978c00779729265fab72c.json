@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:registration-gate-admin-ui",
-  "actor": "design",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-10T00:19:05.2523398+00:00",
-  "base_commit": "c12f47e68186bd2b64555c821ebb22241c567fbc"
-}

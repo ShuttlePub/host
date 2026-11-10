@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-gate-admin-ui",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T00:26:45.2864519+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T00:19:05.2523398+00:00",
+  "base_commit": "5077e5fcc21f7647f6637277a784a09d862740bd"
+}
