@@ -3,7 +3,7 @@
 - Status: Accepted（2026-11-10、**所在の設計判断**。E15c/E15d の実装・本番接続・D15 統合受け入れは未完了）
 - Deciders: operator。メール方式は `question-88b36432ff84f589f1388699c8f40fa3` の **A「Emumet 側で登録前メール確認（パスワード登録を維持）」**。親 Worker 指示 msg-866 で伝達。
 - 関連: E15b `registration-kratos-guard-contract` / [Emumet#64](https://github.com/ShuttlePub/Emumet/issues/64) / [PR #79](https://github.com/ShuttlePub/Emumet/pull/79)
-- 実証 head: `bbf07136e9937520d828cce9a5027723ba2a82f5`。PR は未マージ。本 ADR は本番で保護済みという宣言ではない。
+- 実証 head: `679364abf3f4625a3931acbf1e706e7f4b3766ab`。PR は未マージ。本 ADR は本番で保護済みという宣言ではない。
 
 ## Context / 前提
 
@@ -14,9 +14,9 @@
 
 E15b は本番設定を変えず、Kratos **v1.3.1 / build 36e624c716e45ab405599c71b42c384dd45bdfbb**、
 隔離 PostgreSQL、実 Emumet server を使い、admin API と DB identity UUID 集合を突き合わせた。
-再実行可能な [fixture/README](https://github.com/ShuttlePub/Emumet/blob/bbf07136e9937520d828cce9a5027723ba2a82f5/e2e/registration-guard/README.md)、
-[29ケースの結果表](https://github.com/ShuttlePub/Emumet/blob/bbf07136e9937520d828cce9a5027723ba2a82f5/e2e/registration-guard/RESULTS.md)、
-[証拠manifest](https://github.com/ShuttlePub/Emumet/blob/bbf07136e9937520d828cce9a5027723ba2a82f5/e2e/registration-guard/evidence/manifest.json) を正本とする。
+再実行可能な [fixture/README](https://github.com/ShuttlePub/Emumet/blob/679364abf3f4625a3931acbf1e706e7f4b3766ab/e2e/registration-guard/README.md)、
+[29ケースの結果表](https://github.com/ShuttlePub/Emumet/blob/679364abf3f4625a3931acbf1e706e7f4b3766ab/e2e/registration-guard/RESULTS.md)、
+[証拠manifest](https://github.com/ShuttlePub/Emumet/blob/679364abf3f4625a3931acbf1e706e7f4b3766ab/e2e/registration-guard/evidence/manifest.json) を正本とする。
 単なるhealth応答/ファイル存在はreadyの証拠にしない。
 
 ## Options considered
@@ -84,7 +84,7 @@ Emumetが実際に使うSMTP設定と実送信/確認結果を観測する。Kra
 | 200不正JSON / parse:true | 拒否 | エラーを200で返さない |
 | 201不正JSON | parseせず作成 | 使用不可 |
 | 429/503/TCP切断/不達 | retry後に拒否 | provider分類をそのままhook HTTPへ流さない |
-| timeout | 約30秒x3+backoff=93.174秒、identityなし、publicはEOF | provider deadlineを十分短くする（例3秒、hook全体5秒以内） |
+| timeout | 約30秒x3+backoff=93.18秒、identityなし、publicはEOF | provider deadlineを十分短くする（例3秒、hook全体5秒以内） |
 
 retryの3呼出を実観測した。proof検証は冪等化してもgate verdictは再利用しない。
 タイムアウト時のKratos内部HTTP504とpublic EOFを区別し、statusだけでidentity作成有無を推測しない。
@@ -128,14 +128,18 @@ HTTP providerの429/5xxとSMTPの全5xxを機械的に同一分類しない。
 | browser JSON/form・API、閉鎖前flow | 400、新identity0 | PR fixture `deny_* / old_flow_*` |
 | override相当/API・browser | 200、各identity1 | `override_*` |
 | hook503/429/切断/不達 | fail-closed、identity0 | `server_error_api / rate_limit_api / disconnect_api / unreachable_api` |
-| timeout | 93.174s、3呼出、public EOF、内部504、identity0 | `timeout_api / timeout_server` |
+| timeout | 93.18s、3呼出、public EOF、内部504、identity0 | `timeout_api / timeout_server` |
 | post-persist拒否 | 502でもidentity残存 | `post_persist_deny` |
 | global hook / hook削除 | hook未呼出、identity作成 | `global_hook_not_pre_persist / hook_removed_canary` |
 | password native verification | identity作成時verified:false | `override_api` |
 | native code正解 | hook verified:true、denyなら0、allowならverified:trueで作成 | `native_code / native_code_allowed` |
 | login・同一JWTでAccount追加 | 200 / 201+201、invalid JWT401、hook増分0 | `login / account` |
 | health/config | hook喪失でもhealth200、hash変化 | `config_endpoints / config_loss` |
+| native verification無効・guard維持 | hash変化、health200、verification API400、登録拒否/identity0 | `verification_loss / verification_removed_guard_remains` |
 | captcha / Turnstile | schema拒否 / 公開test-key API6条件pass | `unsupported_captcha / provider` |
+
+レビュー後、`ory_session_token` も証拠出力から除外するよう修正し、実バイナリ全29ケース・公式Turnstile6条件を再実行して成功した。
+保存済み全JSONのsession token除外とmanifest網羅性・verification喪失観測を含むoffline testは8件成功。
 
 ## Consequences / 後続
 
@@ -153,4 +157,4 @@ HTTP providerの429/5xxとSMTPの全5xxを機械的に同一分類しない。
 - [RG acceptance](../features/registration-readiness-gate/acceptance.md) / [packets](../features/registration-readiness-gate/packets.md)
 - packet: `.intent-cli/issues/registration-kratos-guard-contract/`
 - grill: `discord-feature-grill-2026-10-15.json` d15-q01〜q11、追加方式決定 `question-88b36432ff84f589f1388699c8f40fa3`
-- [E15c/E15d詳細契約](https://github.com/ShuttlePub/Emumet/blob/bbf07136e9937520d828cce9a5027723ba2a82f5/e2e/registration-guard/CONTRACT.md)
+- [E15c/E15d詳細契約](https://github.com/ShuttlePub/Emumet/blob/679364abf3f4625a3931acbf1e706e7f4b3766ab/e2e/registration-guard/CONTRACT.md)
