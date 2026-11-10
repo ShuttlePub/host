@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T00:17:26.0021835+00:00",
+  "updated_at": "2026-11-10T00:24:56.3293871+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -923,6 +923,54 @@
         "repo": "ShuttlePub/Emumet",
         "number": 66,
         "url": "https://github.com/ShuttlePub/Emumet/issues/66"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "registration-admin-notification-webhook",
+      "title": "registration-admin-notification-webhook: \u767B\u9332\u30B2\u30FC\u30C8\u901A\u77E5\u30A4\u30D9\u30F3\u30C8\u306E\u5916\u90E8 Webhook \u914D\u9001 (\u7F72\u540D\u30FBSSRF \u5BFE\u7B56\u30FB\u518D\u8A66\u884C\u30FB\u5931\u6557\u72B6\u614B\u30FB\u7BA1\u7406\u8005\u30C6\u30B9\u30C8/\u518D\u8A66\u884C)",
+      "state": "queued",
+      "dependencies": [
+        "registration-gate-control-plane"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/registration-admin-notification-webhook/implementation.md",
+        "review_context": ".intent-cli/issues/registration-admin-notification-webhook/review-context.md",
+        "yaml": ".intent-cli/issues/registration-admin-notification-webhook/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 68,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/68"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "registration-gate-admin-ui",
+      "title": "registration-gate-admin-ui: \u767B\u9332\u30B2\u30FC\u30C8\u7BA1\u7406 UI (\u72B6\u614B\u30FB\u958B\u9589\u30FB\u518D\u958B\u30FBoverride\u30FB\u5E38\u6642\u8B66\u544A\u30FB\u901A\u77E5\u4E00\u89A7/\u65E2\u8AAD\u30FBWebhook \u72B6\u614B) \u2014 shuttlepub-frontends apps/emumet-web",
+      "state": "queued",
+      "dependencies": [
+        "registration-gate-control-plane"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/registration-gate-admin-ui/implementation.md",
+        "review_context": ".intent-cli/issues/registration-gate-admin-ui/review-context.md",
+        "yaml": ".intent-cli/issues/registration-gate-admin-ui/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/shuttlepub-frontends",
+        "number": 31,
+        "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/31"
       },
       "worker_role": "implementation",
       "review_role": "review",

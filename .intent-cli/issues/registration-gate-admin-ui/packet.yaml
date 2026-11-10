@@ -1,0 +1,84 @@
+implementation_issue_packet:
+  issue_title: "registration-gate-admin-ui: 登録ゲート管理 UI (状態・開閉・再開・override・常時警告・通知一覧/既読・Webhook 状態) — shuttlepub-frontends apps/emumet-web"
+  issue_kind: feature
+  source_execution_unit: registration-gate-admin-ui
+  domain: emumet
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/emumet-web/bff, apps/emumet-web/src, apps/emumet-web/test"
+  target_part: "emumet-web 管理者向け登録ゲート管理: BFF (認可・REST 変換・GraphQL スキーマ・mock/real クライアント) + 生成型 + 全状態 fixture を先行し、画面構成・文言・見た目はモック合意の記録後に実装 (管理者のみ操作、override 常時警告、通知一覧・未読・既読、Webhook 状態/テスト/再試行、secret 非表示)"
+  dependencies: [registration-gate-control-plane]
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。child は host 側の packet / intent / queue / ラベルを調査・変更しない。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない"
+    - "【画面実装ゲート】画面構成・文言・見た目は、リード側モックへのユーザー合意が host intent (intents/emumet/features/registration-readiness-gate/ 配下) に記録されるまで確定していない。ユーザー方針は『説明が多すぎる、Misskey/X を見て引き算』(情報を絞り、説明文を増やさない)。**この合意が host intent に記録されるまで画面実装 PR (PureScript の View/画面・ルート・CSS・visual baseline を追加・変更する PR) を出さない**。合意の記録は host 側 issue コメント/依頼で child に伝達される。BFF・API 接続・生成型・fixture など画面構成に依存しない部分は先行して PR を出してよい (その PR に画面実装を混ぜない)"
+    - "機能の正本は Emumet 側 (domain emumet、feature RG = intents/emumet/features/registration-readiness-gate/)。target が frontends でも ratcap domain の unit ではない。ratcap の admin-moderation / settings-hub intent は参照リンクのみ (host 側で追加済み/追加予定)。過去の ratcap packet は書き換えない"
+    - "依存 API: E15a (registration-gate-control-plane, Emumet#65) の管理 REST API (パスは仮 /api/v1/admin/registration-gate*: 状態取得 (override 中・ラッチ・理由・revision を含む)、開閉、再開、override 有効化/解除 (警告 ack 必須)、通知一覧、未読件数、既読化) と、E15w (registration-admin-notification-webhook) の Webhook 状態/テスト送信/再試行 API (仮 /api/v1/admin/registration-gate/webhook*)。契約の正本は各 Emumet issue/PR と生成 openapi.json。未 merge の間は issue/PR の契約に合わせた stateful mock で進め、契約が曖昧・不整合なら実装を進めず issue で質問する (勝手に拡張しない)"
+    - "D15 の状態語彙 (kernel 側で固定): 判定 Accept / TemporaryReject (一時拒否・自動復旧) / Stopped (設定喪失ラッチ・手動再開が必要) / AdminClosed (管理者閉鎖)、override On/Off、防御低下 (片方のみ障害)。UI/BFF はこれらを混同しない (revision 競合 409・一時障害 5xx/503・手動再開必要・閉鎖を別の状態/表示として扱う)"
+    - "override の確定細部 (host 記録): (1) override 中も準備済みの保護は登録時に課される (override は準備未完了・障害でも開放するだけ) (2) 解除すると通常判定に戻る (3) override の開始・解除も通知 (一覧 + Webhook) に含まれる (4) 警告バナーは管理画面内の全ページに常時表示し、一般画面 (管理者以外が見る画面) には出さない。バナーの文言・見た目はモック合意待ち"
+    - "管理者のみ操作: 認可の正本は Emumet API (401/403)。BFF は GET /api/v1/me の instance_roles (admin/moderator) を UI 出し分けのヒントとして使い得るが、権限判断を BFF/UI だけに置かない。非管理者には管理 UI の導線も API 呼び出しも提供せず、サーバー応答の 401/403 を fail closed で扱う"
+    - "既存の BFF 構造 (apps/emumet-web/AGENTS.md): bff/schema.graphql が data API の SDL の正本、bff/emumet/{client.ts,real.ts,mock.ts} が Emumet クライアント契約 (snake_case ↔ camelCase 変換は real.ts)、bff/resolvers.ts、bff/context.ts (セッション)、PureScript 型は scripts/sync-graphql.ts で bff/schema.graphql から生成 (src/Generated/ は手編集禁止)。既存の ratcap admin-moderation の実装 (GET /api/v1/me、admin 系 mutation) を先例にする"
+    - "【統合の直列化】bff/schema.graphql と生成型 (src/Generated/**) の変更は別レーン FN (profile-identity-web-adaptation) と直列に統合する (同時に別ブランチで更新して衝突させない。main の最新から生成し直す)。workspace・CI・visual 共通基盤は別レーン F0 が所有し、本 unit はそれらを変更しない (既存の visual 登録経路へ画面/fixture を追加するのみ)。生成物 (src/Generated/**、OpenAPI 由来型) の手編集は禁止"
+    - "secret は一切ブラウザー/BFF 応答に出さない。Webhook は宛先 host の表示と状態/テスト/再試行の操作のみで、endpoint 全体 URL・secret・署名の表示や編集は行わない (サーバー設定の責務)"
+  intent_references:
+    - intents/emumet/features/registration-readiness-gate/overview.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/ratcap/features/admin-moderation/overview.md
+    - intents/ratcap/features/settings-hub/overview.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+  acceptance_criteria:
+    - "【先行可】BFF: 管理者向けの状態取得・開閉・再開・override 有効化/解除 (ack と revision を送る)・通知一覧・未読件数・既読化・Webhook 状態/テスト/再試行が GraphQL (bff/schema.graphql) と EmumetClient (client.ts / real.ts REST 変換 / mock.ts stateful mock) に揃い、生成型が sync-graphql で再現可能に更新される。非管理者・未認証は fail closed (401/403 を握りつぶさない)。secret は応答に含まれない"
+    - "【先行可】全状態 fixture: Accept (防御低下あり/なし)、TemporaryReject、Stopped (手動再開が必要)、AdminClosed、override On (準備済み保護あり/なし)、revision 競合 (409)、一時障害 (API 5xx/タイムアウト)、通知 (未読/既読/多数)、Webhook (未設定/設定不備/正常/再試行中/failed/テスト成功・失敗) を網羅する fixture と BFF テストがあり、API 契約 (OpenAPI/E15a・E15w の PR 契約) に照合される"
+    - "管理者のみ操作できる (BFF 認可・REST 変換のテスト)。revision 競合・一時障害・手動再開必要状態・閉鎖を混同しない (状態とエラーが別の型/表示になる)"
+    - "【モック合意後】override 中の警告は管理画面内の全ページに常時表示され、画面遷移・再読込・SSR/hydration で消えない。一般画面には出ない。文言・見た目はモック合意の記録に従う (合意前は画面実装 PR を出さない)"
+    - "【モック合意後】管理者が状態・理由・開閉・再開・override (警告 ack 必須)・通知一覧・未読・既読・Webhook 状態/テスト/再試行を操作でき、各操作の結果 (成功・競合・一時障害・権限なし) が区別できる。説明文を増やさず、画面構成はモック合意に従う"
+    - "【モック合意後】SSR/hydration (全状態 fixture で DOM 破損・不一致がない)、visual (mobile/desktop、全状態、override 警告) が既存の visual 経路で通る。生成物は手編集されず、sync-graphql の再生成差分が空である"
+    - "実ゲートとの組合せ (実 Emumet・実 Kratos 経路) は本 unit の受け入れに含めず、D15 統合受け入れで確認する。既存の emumet-web 画面・BFF の挙動 (ログイン、アカウント一覧/詳細、moderation) は変更されない"
+  revision_history:
+    - "2026-11-10: 第2便として packet 化 (draft)。画面構成未決のため『画面実装ゲート』を明記 (リード側モックのユーザーレビュー中。方針: 説明が多すぎる、Misskey/X を見て引き算)。D15 override 細部を反映"
+intent_placement:
+  primary_intent: intents/emumet/features/registration-readiness-gate/overview.md
+  supporting_intents:
+    - intents/ratcap/features/admin-moderation/overview.md
+    - intents/ratcap/features/settings-hub/overview.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+  new_intent_needed: false
+  placement_rationale: "機能の正本は emumet domain の RG feature (registration-readiness-gate)。F15 は packets.md の第2便 unit。target が frontends でも ratcap domain の新 unit は作らず、ratcap admin-moderation / settings-hub からは参照リンクのみを追加する"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/overview.md
+      - intents/emumet/features/registration-readiness-gate/packets.md
+      - intents/ratcap/features/admin-moderation/links.md
+      - intents/ratcap/features/settings-hub/links.md
+      - intents/shuttlepub/packets/candidates.md
+    summary: "RG packets.md の F15 に issue/PR リンクを追記。candidates.md D15 節へ F15 の queue 登録・完了範囲だけを追記 (D15 全体は ready/完了にしない)。ratcap の admin-moderation / settings-hub links.md に RG への参照リンクを追加。画面構成・文言・見た目のモック合意は RG 配下の host intent に記録される (記録されるまで画面実装 PR は出さない)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/acceptance.md
+    summary: "F15 の BFF 認可・状態語彙・警告の常時表示の範囲、画面実装ゲートとモック合意の記録、検証境界を acceptance.md に記録 (host 側 closeout writeback)"
+closeout_learning:
+  expected: "確定した BFF/GraphQL の形、状態とエラーの区別、全状態 fixture の一覧、画面構成・警告表示のモック合意内容 (host intent 側)、visual の登録内容"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "emumet-web 管理者向け登録ゲート管理 (BFF GraphQL: bff/schema.graphql、管理画面。画面は合意後)"

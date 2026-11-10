@@ -1,0 +1,7 @@
+execution_unit: registration-admin-notification-webhook
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/registration-admin-notification-webhook"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/registration-admin-notification-webhook/github-body.md"
+created_issue_number: 68
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/68"
+published_label_name: null

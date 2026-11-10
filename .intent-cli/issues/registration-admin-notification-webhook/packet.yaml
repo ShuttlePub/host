@@ -1,0 +1,80 @@
+implementation_issue_packet:
+  issue_title: "registration-admin-notification-webhook: 登録ゲート通知イベントの外部 Webhook 配送 (署名・SSRF 対策・再試行・失敗状態・管理者テスト/再試行)"
+  issue_kind: feature
+  source_execution_unit: registration-admin-notification-webhook
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/entity, kernel/src/repository, application/src/service, driver/src/http_signing, driver/src/database/postgres, server/src/route, server/src/api, server/src/openapi.rs, server/src/route.rs, server/src/main.rs, migrations, openapi.json, docs"
+  target_part: "登録ゲート通知イベントの外部 Webhook 配送: 配送記録と永続 worker (at-least-once・lease・再試行・失敗状態) + HMAC 署名 + SSRF 対策付き HTTPS クライアント + 管理者向け状態/テスト/再試行 REST API + OpenAPI 再生成 + 受信側向け文書"
+  dependencies: [registration-gate-control-plane]
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない"
+    - "D15 (registration-readiness-gate) のユーザー決定 d15-q11 が出典: 管理者通知は管理画面内の通知一覧 + 未読表示に加え、管理画面を開いていなくても届く外部 Webhook を初回から含める。メール通知は前提にしない。本 unit は Webhook 配送のみを所有する (通知イベントの生成・既読は E15a、管理 UI は F15)"
+    - "依存 E15a (registration-gate-control-plane, Emumet#65) が通知イベント (安定 event ID、種別 outage_started / outage_recovered / protection_degraded / protection_lost_stopped / override_started / override_revoked) を状態遷移と同一 transaction で永続化する。本 unit はその永続イベントを読み取り側として配送する。E15a が未 merge の間は E15a PR (Emumet#65) の契約に合わせて実装し、E15a が main に入った後にその時点の main へ rebase して OpenAPI/migration を再生成する。E15a のイベント契約を変更する必要が出たら issue で質問する (勝手に拡張しない)"
+    - "override の開始・解除も通知イベント (一覧 + Webhook) に含まれる (D15 override 細部の確定記録)。種別ごとに配送対象を限定せず、E15a が永続化した全種別を配送する"
+    - "配送保証は at-least-once。exactly-once や厳密な順序保証は提供しない。受信側は event ID で重複排除する前提で、この契約・署名検証手順・再試行の挙動を受信側向け文書として Emumet 側に残す"
+    - "Webhook 不達・失敗・設定不備は登録ゲート状態 (開閉・ラッチ・override・判定) を一切変えない。配送処理は状態遷移 transaction の外側 (別 worker) で動き、配送の失敗が再び Webhook 配送対象の通知イベントを生むこと (無限再帰) はない"
+    - "既存の SSRF 防御の先例: driver/src/http_signing/ssrf.rs (validate_fetch_url / validate_public_ip) と driver/src/http_signing/fetch.rs (解決済みアドレスへの接続固定 resolve_to_addrs、redirect 無効、timeout)。同等以上の防御を Webhook 用に満たす。再利用のため共通化する場合は既存挙動 (AP key fetch の振る舞い・テスト) を変えない最小の抽出に留める"
+    - "worker の先例: server/src/projection_worker.rs (poll 駆動・shutdown handle)。ES/CRUD 方針は ADR 0006 (transaction + projection)。管理者認可は E15a の管理 API と同じ既存 admin 判定 (Keto、ADR 0004) を再利用し、新しいロールモデルを作らない"
+    - "共有ファイル (server/src/openapi.rs, server/src/route.rs, server/src/main.rs, DI wiring, migrations/, openapi.json) は E15a/E8 など他 unit と共有する。E15a の後に一件ずつ統合し、その時点の main から openapi.json を再生成する。migration 番号は統合時点の最新の次を採番する。編集は最小限にし他 unit の差分を巻き込まない"
+  intent_references:
+    - intents/emumet/features/registration-readiness-gate/overview.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+  acceptance_criteria:
+    - "E15a が永続化した通知イベント (全種別) が、サーバー設定で指定された単一 endpoint へ配送される。配送ペイロードは安定した event ID (E15a の event ID と同一) を持ち、再試行・再起動・再送でも同じ event ID で届く。未設定なら配送せず、状態 API は『未設定』を返し、ゲート動作に影響しない"
+    - "配送は at-least-once。同一 event が複数回届き得ること、受信側が event ID で重複排除すること、順序は保証しないことが受信側向け文書に明記されている。サーバー側も同一 event を同時に二重送信しない努力 (lease) をするが、二重配送の可能性は残る前提で文書化されている"
+    - "署名: 各リクエストに timestamp と HMAC-SHA256 署名 (署名対象にタイムスタンプと本文を含む) が付く。secret はサーバー設定 (環境変数/secret ファイル) のみで管理し、DB・API 応答・ログ・エラー文面・payload へ出ない。受信側の検証手順 (許容時刻差・定数時間比較) が文書化され、署名生成/検証のテストベクタがある"
+    - "SSRF 対策: HTTPS のみ (平文 http は production 設定で不可。テスト用の例外は test-mode/cfg(test) 限定で本番ビルドの設定から有効化できない)、URL 内の認証情報禁止、リダイレクト (3xx) は追従せず恒久失敗、DNS 解決後の全アドレスを検査 (loopback / private / link-local / CGNAT / multicast / unspecified / IPv4-mapped IPv6 / ULA / クラウド metadata アドレス等を拒否) し、検査したアドレスへ接続を固定して接続時の再解決 (DNS rebinding) を防ぐ。証明書検証は元ホスト名で行う。接続・応答 timeout と応答本文サイズ上限を持つ。SSRF fixture (内部アドレスへ解決するホスト名、リダイレクト先が内部、IPv4-mapped IPv6、数値表記ゆれ等) で拒否が確認され、拒否は恒久失敗として記録される"
+    - "payload とログに secret・登録者のメールアドレスなど個人情報を含めない。payload は allowlist 方式のシリアライザ (event ID・種別・発生時刻・ゲート状態の要約フラグ等) で作り、エラー記録・tracing にも宛先 URL の userinfo/query/secret を出さない。配送先の状態表示は host 部分のみ"
+    - "再試行: 2xx は成功。408 / 429 (Retry-After を上限付きで尊重) / 5xx / timeout / 接続失敗は指数バックオフ + jitter で再試行し、上限回数または最大期間を超えたら失敗状態 (failed) になる。その他 4xx・3xx・SSRF 拒否・署名/設定不備などの恒久エラーは即 failed (再試行しない)。failed は配送記録に理由分類 (secret を含まない) と試行履歴が残り、管理者が再試行を指示するまで再送されない"
+    - "永続性と並行: 配送記録は DB に永続化され、プロセス再起動後に未完了の配送が回収される。複数 worker が同時に動いても同一 event を同時に二重送信しない (lease + 期限切れ回収)。配送中にプロセスが落ちた場合は lease 期限後に再試行される (at-least-once)"
+    - "管理者向け REST API (パスは仮 /api/v1/admin/registration-gate/webhook*): 配送状態の取得 (設定有無、宛先 host、直近成功/失敗、未配送/再試行中/failed 件数、直近の配送記録)、テスト送信、failed 配送の再試行。テスト送信は合成イベント (種別 webhook_test、event ID は test 用) を使い、ゲート状態・通知一覧・未読件数に影響しない。再試行は同じ event ID を再送する。非管理者は全 API で拒否 (401/403)。secret は応答に含まれない"
+    - "Webhook 不達・failed・設定不備・worker 停止があっても登録ゲートの状態 (開閉・ラッチ・override・判定) は変わらない。配送失敗は状態 API で観測できるが、それ自体が Webhook 配送対象の新しい通知イベントを生まない (無限再帰しない)。この性質がテストで固定されている"
+    - "OpenAPI (openapi.json) が再生成され差分検査に通る。既存 API の挙動 (login・POST /api/v1/accounts・E15a の管理 API) は変更されない"
+  revision_history:
+    - "2026-11-10: 第2便として packet 化 (draft)。E15a の契約に依存。D15 override 細部 (override 開始・解除も通知対象) を反映"
+intent_placement:
+  primary_intent: intents/emumet/features/registration-readiness-gate/overview.md
+  supporting_intents:
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+  new_intent_needed: false
+  placement_rationale: "RG feature (registration-readiness-gate) は host 側で overview.md / packets.md / acceptance.md を新設済み。E15w は packets.md の第2便 unit。candidates.md D15 節と grill 記録 d15-q11 がユーザー決定の正本"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/overview.md
+      - intents/emumet/features/registration-readiness-gate/packets.md
+      - intents/shuttlepub/packets/candidates.md
+    summary: "RG packets.md の E15w に issue/PR リンクを追記。candidates.md D15 節へ E15w の queue 登録・完了範囲だけを追記 (D15 全体は ready/完了にしない)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/acceptance.md
+    summary: "配送保証 (at-least-once・event ID 重複排除)・署名方式・設定項目・SSRF 方針・失敗状態の定義・運用手順 (テスト/再試行) を acceptance.md に記録 (host 側 closeout writeback)。受信側向けの利用文書は Emumet 側の成果物"
+closeout_learning:
+  expected: "確定した配送ペイロード/ヘッダー/署名方式、設定項目名、再試行・恒久エラー分類の表、failed からの再試行手順、SSRF 検査の範囲と test-mode 例外の境界"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "REST API (/api/v1/admin/registration-gate/webhook*: 配送状態・テスト送信・再試行)、サーバー設定 (Webhook endpoint/secret)、受信側向け Webhook 文書、OpenAPI (openapi.json)"
