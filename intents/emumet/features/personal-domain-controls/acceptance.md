@@ -23,6 +23,19 @@
 - 検証: OpenAPI 再生成、旧作成 payload・新 payload・未実装エラーの contract test、既存 Rust CI。
 - 非目標: 新関係処理・方針保存・username 保存の実装。
 
+### E8 確定契約（Emumet PR #70、squash `0bfa437`、2026-11-10 マージ済み）
+
+- 契約 route は本番 root router に未 mount（タグ `ProfilePolicy`）。ハンドラは明示的 501 で、架空の成功・`todo!` はない。OpenAPI の tag・各 operation・**component schema 16 型の説明**に「CONTRACT ONLY / NOT MOUNTED」を記載し、テストで固定。
+  - Profile identity `GET /api/v1/profiles/{profile_nanoid}`、Profile actor `GET /ap/profiles/{profile_nanoid}`（**actor URL の最終形・WebFinger は P1 で確定**）
+  - Follow: `POST|DELETE .../follows[/{follow_id}]`、`GET .../following`、`GET .../followers`
+  - 個別 block/mute: `GET|POST .../blocks`・`DELETE .../blocks/{block_id}`、`GET|POST .../mutes`・`DELETE .../mutes/{mute_id}`
+  - domain-controls: `GET .../domain-controls`、`GET|PUT|DELETE .../domain-controls/{domain}`
+- **followers の応答型は following と分離**。`ProfileFollowerResponse.follower` は `ProfileActorRef`（`kind`: local|remote、`actor_url`: canonical actor URL で常に必須、`profile_id`: local のみ）。remote／local 双方の応答 fixture あり。following は `ProfileFollowResponse.target`（canonical actor URL）。
+- **domain-controls の revision / 409**: revision は 1 始まりで変更ごとに単調増加。PUT は `expected_revision` 省略＝新規作成（既存なら 409）、指定＝現 revision 一致時のみ置換（不一致・同時削除済みは 409）。DELETE は `expected_revision` 必須（不一致 409）。認可は Profile の現在の所有者のみ（401/403/404）。domain は完全一致（正規化の詳細は D8P）。block 書込は D8R まで未 mount。
+- **username 段階（E8）**: `POST /api/v1/accounts` の `profile_username`・`POST /api/v1/profiles` の `username` は optional（`null` は省略扱い）。形式・予約語違反は **400**、有効値は保存未実装のため **501**。いずれも `resolve_auth_account_id` を含む作成副作用の前に拒否し、指定値を黙って捨てない。省略した旧 payload は従来どおり 201。`ProfileResponse.username` は nullable（未設定）。username 更新 API は設けない（テストで固定）。
+- 検証: OpenAPI 再生成、実 DB（PostgreSQL 16）で workspace テスト（旧 payload・新 payload・501/400・副作用なし）、CI 全 green。
+- **後続への引き継ぎ**: 未 mount の不在テストは `main.rs` の文字列検査＋テスト router のみ。**本番と共有する router 構成関数による「対象 route 不在」検査を P1（実 root 構成の route 不在テスト）／P4（mount 時）で実装**。
+
 ## 検証境界
 
 | unit | 検証 |
