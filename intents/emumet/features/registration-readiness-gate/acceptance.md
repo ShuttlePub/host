@@ -103,3 +103,13 @@
 - Emumet PR #67 は squash merge 済み（`0ac9e9c087f61447c9a2c5e4a4cbf04a1075f2ca`）、Emumet#65 は close 済み。独立 Reviewer approve（run `run-01m71eeqq2r2c2qhkj6b0yb6zx`、must 0）、CI 全緑。
 - 実 DB テスト証跡: Rust run `42731914696` の `check-driver` は 171 passed / 0 ignored。
 - E15a は管理 control plane のみで、実登録を保護しない。E15d の実 enforcement、E15w、F15 が未完了のため、D15 全体の受け入れは未達のまま。
+
+## E15d refinement: 周期検証 API 応答による readiness 維持・復旧（2026-11-10）
+
+出典: 親判断 question-273f21f1ce70800ab974ed89f9c8f6bd。d15-q05 の準備済み基準は、設定の存在ではなく検証 API の実応答である。受信ボックスでの roundtrip を継続的に要求する決定ではない。したがって、固定された承認済み canary 宛先への SMTP DATA 受理は、同一 generation の readiness の business TTL 更新と配送段階の障害解除に利用してよい。Turnstile も、公式 Siteverify の解釈可能な業務応答を維持・復旧の証拠とする。単なる TCP 接続・health・設定ファイル存在とは区別する。
+
+E15d の技術選択は、各 generation の初回 bootstrap（メールは管理者 canary code 確認、BOT は有効 token の検証成功）を保持し、以後は周期的な SMTP DATA 受理／Siteverify probe の業務応答で business TTL を更新する。過去の成功が TTL 超過していても同一 generation なら維持・復旧できる。generation 変更後に旧成功を持ち越さず、未 bootstrap の設定を周期 probe だけで operational にしない。MAIL FROM までの接続 probe はメール business TTL を更新しない。公開の任意宛先送信・不正 token は readiness の維持証拠にしない。
+
+段階×時刻の証拠モデルは維持する。成功の evidence_at は、成功した対話の開始時刻を保守的な下限とする（対話中に観測された新しい障害を、遅れて完了した古い対話が解除しない）。障害の時刻は実際の失敗観測時刻。code 確認それ自体は新しい SMTP 障害を解除しない。設定喪失 latch は provider が復旧しても解除されず、手動再開が必要である。
+
+これは E15d の設計精緻化であり、準備 PR や E15c 単体をもって実 Kratos enforcement／D15 全体の受け入れを完了とはしない。
