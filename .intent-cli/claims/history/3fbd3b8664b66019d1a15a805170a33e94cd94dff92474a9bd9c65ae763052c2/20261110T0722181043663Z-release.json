@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-protection-readiness",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T07:22:18.1043663+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T07:13:17.3367682+00:00",
+  "base_commit": "498b4d009773a3b8787d56beafbcd489586af2b8"
+}
