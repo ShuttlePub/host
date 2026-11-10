@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-relationship-outbound",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T04:07:14.5818688+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T03:59:51.4913721+00:00",
+  "base_commit": "6a27949f939f01ab55f6db82c63d44c58dc10aa5"
+}
