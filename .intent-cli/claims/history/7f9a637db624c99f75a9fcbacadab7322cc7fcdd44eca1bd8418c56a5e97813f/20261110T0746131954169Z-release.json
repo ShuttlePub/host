@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-kratos-guard-contract",
+  "actor": "e15b-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-10T07:46:13.1954169+00:00",
+  "reason": "E15b PR #79 squash-merged and closeout recorded",
+  "displaced_holder": "e15b-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-09T23:32:16.6305624+00:00",
+  "base_commit": "1c5a1a80006738763363a131e76f21998925c2c8"
+}
