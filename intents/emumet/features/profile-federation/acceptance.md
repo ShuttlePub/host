@@ -30,7 +30,7 @@
 - E8 はマージ済み（Emumet PR #70、squash `0bfa437`）。username 段階 E8 の確定形（形式・予約語違反 400／有効値 501／副作用前拒否／読取は null 可）、followers 応答型の分離、Profile actor URL は P1 で確定、未 mount 不在テストの強化（共有 router 構成）は P1/P4 へ引き継ぎ。詳細は [DC acceptance](../personal-domain-controls/acceptance.md) の「E8 確定契約」。
 - ShuttlePub 側の投稿操作の受理・送信拒否は本 feature の対象外（[DC acceptance](../personal-domain-controls/acceptance.md) 参照）。
 
-## P2 確定契約（Emumet PR #77、2026-11、マージ待ち。head `e2d080b`）
+## P2 確定契約（Emumet PR #77、2026-11-10 マージ済み、squash `f523b86`）
 
 > 実装は `ShuttlePub/Emumet` の kernel（`entity::profile_graph`、`repository::profile_*`）と driver（`postgres/profile_*`）。
 > schema と初期化 SQL は **隔離 DB 用 fixture** `driver/fixtures/profile_social_graph/` に置き、本番 `migrations/` には追加していない（P4 が採番・配置）。
