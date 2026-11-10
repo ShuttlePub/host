@@ -131,3 +131,15 @@ E15d の技術選択は、各 generation の初回 bootstrap（メールは管�
 - CI は実 Kratos + Emumet 本番ルーター + PostgreSQL で D15 q01〜q11 を検証する。q04 は招待機能の新設を要求せず、公開 registration に自称招待/override の迂回を認めない。SMTP/Turnstileのみ模擬し、DB/identity実作成と通知/Webhookを確認する。skipだけの成功は不可。
 - 保証の限界: hook自体が外れたKratosに対してEmumetの停止は物理遮断にならない。次の周期検査で検査の当たった経路を検出し即時通知するが、有限回のLB URL canaryで非選択/未応答replicaや未広告methodを完全に網羅しない。不明replica排除・経路切離し・物理停止は運用者の配備層責務（[ADR](../../decisions/registration-protection-placement.md)）。独自ingressやDocker inspectorが実装されたとする受け入れは行わない。
 - F15の画面表示・操作・常時警告は引き続き別unit。E15d part2 のPR/CI/レビュー証跡は完了報告時に追記する。
+
+### E15d part 2 closeout（2026-11-10、unit 範囲のみ）
+
+- Emumet PR #88（part 1、`ef063d67bc28b2a93fb6c09babc73d90216fa176`）と PR #92（part 2、`95e3f77c7517d3337380df95f74a90eabe6b4ee0`）は squash merge 済み。#92 head は `1d896bfef2d741552fdc003f393545d5e826a765`。独立 Reviewer approve（run `run-01m73ajh2zjhz9p4ysdrk0h760`、must 0）、CI 全14 checks success。
+- 実 Kratos D15 q01〜q11（`real_kratos_d15_q01_through_q11`、E2E run `42878493680`）は 1 pass / 0 ignored。Rust run `42878495066` は実 DB 37 passed / 0 ignored、driver 323 passed / 1 ignored（live Cloudflare のみ）。
+- E15d unit の範囲は完了。Emumet#81 は part 1 の PR #88 merge 時にすでに CLOSED であり、reopen せずそのまま CLOSED。D15 全体は F15 の画面実装（ユーザーのモック合意待ち）が残るため未完了。
+- 残余リスク:
+  - hook を除去した Kratos 自体への物理遮断は Emumet 単独では保証できず、配備層での経路切離し・不明 replica 排除・停止は運用者の責務。
+  - 有限回の LB URL sampling では、未選択／未応答の未知 replica や未広告 method を網羅できない。
+  - SMTP の対話・観測時刻の差による時間差は残る。
+  - gate 評価から identity persist までを単一原子操作にできない。
+  - 遅延 persist の再観測は 10 秒の有界検証であり、無期限の再観測ではない。

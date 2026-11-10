@@ -199,3 +199,5 @@
 {"ts":"2026-11-10T15:38:34.7715172+00:00","execution_unit":"profile-relationship-outbound","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":86}
 {"ts":"2026-11-10T18:06:12.5631878+00:00","execution_unit":"profile-domain-follow-guards","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":89}
 {"ts":"2026-11-10T18:06:12.5631878+00:00","execution_unit":"profile-domain-follow-guards","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":89}
+{"ts":"2026-11-10T19:25:02.076207+00:00","execution_unit":"registration-gate-enforcement","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":92}
+{"ts":"2026-11-10T19:25:02.076207+00:00","execution_unit":"registration-gate-enforcement","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":92}

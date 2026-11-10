@@ -14,7 +14,7 @@ domain `emumet`。E15a〜E15w の target は `ShuttlePub/Emumet`、F15 のみ `S
 | E15a | `registration-gate-control-plane` | 管理者の開閉・手動再開・override・revision・監査・状態遷移・通知イベント・管理者別既読。実 Kratos 遮断・実 provider 検証は含まない | なし | PR #67 squash merge 済み（[Emumet#65](https://github.com/ShuttlePub/Emumet/issues/65)） |
 | E15b | `registration-kratos-guard-contract` | Kratos v1.3.1 の pre-persist guard 実証と保護の実装所在の決定（ADR）。本番 Kratos 設定への hook 接続は含まない | なし | PR #79 squash merge 済み（`16b9e4301edde8bd4de222ab4d691dc7c32798b8`）、[Emumet#64](https://github.com/ShuttlePub/Emumet/issues/64) close 済み |
 | E15c | `registration-protection-readiness` | E15b で決めた保護 adapter・実検証 API・設定世代・readiness 鮮度期限・設定喪失と一時障害の分類 | E15a, E15b | PR #85 squash merge 済み（`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`）、[Emumet#80](https://github.com/ShuttlePub/Emumet/issues/80) close 済み |
-| E15d | `registration-gate-enforcement` | 実 Kratos hook 配線・保護実行・継続 probe・ゲートと通知イベントの統合。本番 Kratos 設定変更は E15d が所有 | E15a, E15b, E15c | queue 登録・issue 公開済み（[Emumet#81](https://github.com/ShuttlePub/Emumet/issues/81)）。E15c の merge 後に rebase。D15 全体受け入れは E15w・F15 も揃うまで保留 |
+| E15d | `registration-gate-enforcement` | 実 Kratos hook 配線・保護実行・継続 probe・ゲートと通知イベントの統合。本番 Kratos 設定変更は E15d が所有 | E15a, E15b, E15c | PR #88 (part 1)・#92 (part 2) squash merge 済み。E15d unit 完了。D15 全体受け入れは F15 画面（モック合意待ち）が残るため保留 |
 | E15w | `registration-admin-notification-webhook` | 永続イベントの外部 Webhook 配送（stable event ID・署名・timeout/再試行・失敗状態・管理者テスト/再試行） | E15a | PR #69 squash merge 済み（[Emumet#68](https://github.com/ShuttlePub/Emumet/issues/68) close 済み） |
 | F15 | `registration-gate-admin-ui` | emumet-web 管理画面（状態・理由・開閉・再開・override・常時警告・通知一覧/既読・Webhook 状態）。target `ShuttlePub/shuttlepub-frontends` | E15a の契約（モック UI は E15c/E15d/E15w と並行可） | queue 登録・issue 公開済み（[shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）。BFF/API 部分 PR #33 は squash merge 済み。**画面実装 PR はモック合意が host intent に記録されるまで出さない**（BFF・API 接続・生成型・fixture は先行可）。F15 は未完了 |
 
@@ -58,6 +58,13 @@ queue 登録済みの unit（登録成功後に追記する）:
 - Emumet PR #88（E15d part 1、Refs #81）は squash merge 済み（`ef063d67bc28b2a93fb6c09babc73d90216fa176`）。独立 Reviewer approve（run `run-01m730g3c48mb2252sn8qm0h5e`、must 0）、CI 全13 checks pass。
 - これは準備 PR のみ。part 2 の本番 Kratos hook 配線・attestation・実 Kratos D15 全状態 CI は未完了。E15d / D15 全体を完了扱いにせず、claim も release しない。
 - PR 本文の「CI / 続く slice」に、後続 part 2 で「そこで `Closes #81` とする」と明記されており、GitHub が PR #88 の merge 時に Emumet#81 を自動 close した（2026-11-10 15:46:34Z）。squash commit message に closing keyword はない。reopen と説明コメントの親許可は伝達されたが、GitHub 操作は権限不足として拒否され未実施。ユーザーに直接確認中で、#81 は CLOSED のまま。ラベル・queue の変更や closeout は実行していない。
+
+### E15d part 2 closeout（2026-11-10、unit 範囲のみ）
+
+- Emumet PR #92（E15d part 2、Closes #81、head `1d896bfef2d741552fdc003f393545d5e826a765`）は squash merge 済み（`95e3f77c7517d3337380df95f74a90eabe6b4ee0`）。part 1 の PR #88 は `ef063d67bc28b2a93fb6c09babc73d90216fa176` で squash merge 済み。
+- 独立 Reviewer approve（run `run-01m73ajh2zjhz9p4ysdrk0h760`、must 0）、CI 全14 checks success。実 Kratos の D15 q01〜q11（`real_kratos_d15_q01_through_q11`、E2E run `42878493680`）は 1 pass / 0 ignored。Rust run `42878495066` の実 DB は 37 passed / 0 ignored、driver は 323 passed / 1 ignored（live Cloudflare のみ）。
+- #81 は #88 merge 時にすでに CLOSED で、reopen せず CLOSED のまま。`automation pr-transition --transition approved --write` は CLOSED issue が理由で拒否されず適用済み。closeout で queue は completed、claim は release 済み。
+- E15d の範囲のみ完了。F15 の画面実装はユーザーのモック合意待ちであり、D15 全体は未完了のままとする。残余リスクは [acceptance.md](acceptance.md) に記録する。
 
 ## 依存図
 
