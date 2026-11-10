@@ -63,6 +63,14 @@
 | D8R | 実 DB・署名付き mock peer・配送競合・wire-level activity 検査（自分の Follow は元 Follow を参照する Undo、相手の Follow は Reject 等。AP Block なし） |
 | F8 | FA 経由の実 Emumet E2E、BFF 変換、UI・visual。投稿部分は mock／未接続と明示 |
 
+## D8G 実装メモ（Emumet PR #89。マージ後の確定は親の closeout）
+
+- **拒否時の応答**: inbound Follow が domain block に該当したら、P3i の個別 block と同じ形 — `ended(blocked)` 世代（tombstone）を保存し `Reject(Follow)` job を同一 transaction で予約。Accept は作らず AP Block は送らない。packet の「拒否時は関係・Follow 世代・配送 job を作らない」は「**有効な関係は作らない（終了済み tombstone 世代と Reject job は作る）**」の意味に是正（ユーザー回答 question-d86e0448c6f71c124e501176f0b037b1）。outbound の拒否は何も作らない（422）。
+- **遅延 Accept**: block 中の Accept は pending 世代を accepted にしない（世代は変更せず、受信は記録）。unblock 後の同一 Accept 再送も重複で無効。
+- **配送前判定**: 署名後・`renew_lease` の直前に未送信 Follow / Accept を再判定し、block 中は取消 + 当該世代を `blocked` で終了。送信済みは取り戻せない。
+- **ロック規約**: `ProfileRelationshipLock::lock_profiles`（ID 昇順・transaction 先頭で一度だけ）を、block を判定する／Follow を変更する全 transaction（inbound 受信 Profile、outbound の送信 Profile ＋ local 相手、配送前判定の送信元、domain control 書込の所有 Profile）が取得。D8R は `application::service::domain_follow_guard::lock_profile_for_domain_control_write` を使う。
+- Follow だけが実適用対象（投稿操作は ShuttlePub、既存関係の一括解除は D8R）。
+
 ## 責務の境界
 
 - Emumet は新規 Follow のみ実適用する。投稿操作の受理・送信拒否は ShuttlePub の後続責務で、Emumet に重複実装しない。
