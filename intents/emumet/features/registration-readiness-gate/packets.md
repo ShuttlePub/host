@@ -13,7 +13,7 @@ domain `emumet`。E15a〜E15w の target は `ShuttlePub/Emumet`、F15 のみ `S
 |---|---|---|---|---|
 | E15a | `registration-gate-control-plane` | 管理者の開閉・手動再開・override・revision・監査・状態遷移・通知イベント・管理者別既読。実 Kratos 遮断・実 provider 検証は含まない | なし | PR #67 squash merge 済み（[Emumet#65](https://github.com/ShuttlePub/Emumet/issues/65)） |
 | E15b | `registration-kratos-guard-contract` | Kratos v1.3.1 の pre-persist guard 実証と保護の実装所在の決定（ADR）。本番 Kratos 設定への hook 接続は含まない | なし | PR #79 squash merge 済み（`16b9e4301edde8bd4de222ab4d691dc7c32798b8`）、[Emumet#64](https://github.com/ShuttlePub/Emumet/issues/64) close 済み |
-| E15c | `registration-protection-readiness` | E15b で決めた保護 adapter・実検証 API・設定世代・readiness 鮮度期限・設定喪失と一時障害の分類 | E15a, E15b | queue 登録・issue 公開済み（[Emumet#80](https://github.com/ShuttlePub/Emumet/issues/80)）。E15b の ADR 確定を受けて draft。E15b PR #79 squash merge 済み |
+| E15c | `registration-protection-readiness` | E15b で決めた保護 adapter・実検証 API・設定世代・readiness 鮮度期限・設定喪失と一時障害の分類 | E15a, E15b | PR #85 squash merge 済み（`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`）、[Emumet#80](https://github.com/ShuttlePub/Emumet/issues/80) close 済み |
 | E15d | `registration-gate-enforcement` | 実 Kratos hook 配線・保護実行・継続 probe・ゲートと通知イベントの統合。本番 Kratos 設定変更は E15d が所有 | E15a, E15b, E15c | queue 登録・issue 公開済み（[Emumet#81](https://github.com/ShuttlePub/Emumet/issues/81)）。E15c の merge 後に rebase。D15 全体受け入れは E15w・F15 も揃うまで保留 |
 | E15w | `registration-admin-notification-webhook` | 永続イベントの外部 Webhook 配送（stable event ID・署名・timeout/再試行・失敗状態・管理者テスト/再試行） | E15a | PR #69 squash merge 済み（[Emumet#68](https://github.com/ShuttlePub/Emumet/issues/68) close 済み） |
 | F15 | `registration-gate-admin-ui` | emumet-web 管理画面（状態・理由・開閉・再開・override・常時警告・通知一覧/既読・Webhook 状態）。target `ShuttlePub/shuttlepub-frontends` | E15a の契約（モック UI は E15c/E15d/E15w と並行可） | queue 登録・issue 公開済み（[shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）。BFF/API 部分 PR #33 は squash merge 済み。**画面実装 PR はモック合意が host intent に記録されるまで出さない**（BFF・API 接続・生成型・fixture は先行可）。F15 は未完了 |
@@ -46,6 +46,12 @@ queue 登録済みの unit（登録成功後に追記する）:
 - 独立 Reviewer approve（run `run-01m7244qfjdrzbkbcjdhfdqszh`、must 0）、Rust run `42774934783` と e2e run `42774933166` の CI 全12 checks pass。
 - ADR [registration-protection-placement.md](../../decisions/registration-protection-placement.md) の決定 A（`question-88b36432ff84f589f1388699c8f40fa3`）に基づく。Kratos v1.3.1 の実証で pre-persist 拒否時に identity が作成されないことを確認した。
 - E15b の範囲のみ完了。E15c/E15d の実装と F15 の画面実装、D15 全体の統合受け入れは未完了のままとする。
+
+### E15c closeout（2026-11-10、unit 範囲のみ）
+
+- Emumet PR #85 は squash merge 済み（`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`）、Emumet#80 は close 済み。
+- 独立 Reviewer approve（run `run-01m72ahfsrhdcaknymyeq23c41`、head `f4ba87e` 時点で must 0）。head `665c7404b936bfee7ff7732ba3b6806bcf4b4265` の変更は Reviewer 任意指摘 (3) の RSET best-effort 化のみ。CI 全 pass、実 DB `check-driver` は 311 passed / 1 ignored（live Turnstile）。
+- E15c の範囲のみ完了。E15d の本番 Kratos hook 配線・継続 probe、E15w と F15 の画面実装は未完了で、D15 全体は未完了。
 
 ## 依存図
 

@@ -13,7 +13,7 @@ implementation_issue_packet:
     - "E15a (registration-gate-control-plane, Emumet#65) は main 済み。観測入力は RegistrationObservation{email, bot} の ProtectionObservation{configured, probe: Healthy|Unhealthy|Unknown}、effective = configured && Healthy。RecordRegistrationObservationUseCase (application/src/service/registration_gate.rs) は内部 use case で、制御状態が変わらない反復では revision・監査・通知を増やさない。E15a の状態機械・通知の意味は変更しない (入力型の拡張が必要なら最小限)"
     - "E15b の実証 (Emumet PR #79、head bbf07136e9937520d828cce9a5027723ba2a82f5、main 未反映の可能性あり): transient_payload.email_proof / bot_token は hook へ届く (未信頼入力)。Kratos hook の candidate identity ID は zero UUID になり得て冪等キーにできない。hook は Kratos retry で最大 3 呼出される。公式 Turnstile 公開テストキーの実 API 6 条件 (evidence/provider.json) が fixture 元。契約は e2e/registration-guard/CONTRACT.md"
     - "q05: 設定が有効なだけでは準備済みとせず、検証 API の実応答 (business 結果) を確認して初めて準備済み。health・ファイル存在・HTTP200・SMTP 接続/250 だけで ready にしない。実 secret の確認に dummy token/空 response の失敗だけを使わない (有効な当該 sitekey の token による business success を当該 generation に束縛)。不正な利用者 token で provider 全体を障害扱いしない。canary の成功は他の登録者の所有証明ではない"
-    - "古い成功の無期限 cache は禁止。generation 不一致・valid_until 超過・probe 停止で旧成功を破棄 (unverified)。時刻は注入可能にして試験する"
+    - "古い成功の無期限 cache は禁止。generation 不一致・valid_until 超過・probe 停止では旧成功を ready の根拠に使わず unverified とする。一方、既知の失敗は鮮度切れだけでは解除・軽減せず、同じ範囲で失敗段階を覆う、より後時刻の成功証拠か generation 変更まで保持する (ADR の回復の範囲と単調性の原則)。時刻は注入可能にして試験する"
     - "失敗分類 (ADR): configuration_invalid (未設定/空/無効・invalid/missing secret・SMTP 認証/設定不正)、attempt_rejected (token/proof 不一致・期限切れ・duplicate・hostname/action 不一致・宛先拒否 550 等。観測を変えない)、temporarily_unavailable (429/5xx/timeout/DNS/connect/TLS・不正な provider 応答・SMTP 接続失敗/timeout/4xx)、operational (business success + binding/freshness)、unverified。HTTP 429/5xx と SMTP 全 5xx を機械的に同一視しない"
     - "E15a 観測入力への対応づけ (固定): operational -> configured=true/Healthy、temporarily_unavailable -> configured=true/Unhealthy、unverified -> configured=true/Unknown、configuration_invalid・未設定・明示無効 -> configured=false、attempt_rejected -> 観測を変えない。一方の故障で他方の観測を巻き込まない"
     - "継続 probe の周期実行 (scheduler/worker)・hook 時評価・本番 registration hook への配線・hook 認証・config attestation・Kratos 設定変更は E15d の所有。本 unit は 1 回の probe 実行 use case と、時刻/generation を引数に readiness から観測入力を導く純粋な評価、公開の email challenge API、内部の proof 検証/消費 use case、管理者の実検証 API を提供する"
@@ -38,6 +38,7 @@ implementation_issue_packet:
     - "管理者の実検証 API (/api/v1/admin/registration-gate/protections* 仮) は管理者のみ (非管理者 401/403)。応答に secret・token・proof・登録者メールが含まれない。OpenAPI (openapi.json) が再生成され差分検査に通る。既存 API (login・POST /api/v1/accounts・E15a/E15w の管理 API) の挙動は不変。本番 registration hook・Kratos 設定には接続しない (E15d)"
   revision_history:
     - "2026-11-10: 第3便として packet 化 (draft)。E15b ADR (registration-protection-placement.md、メール方式は question-88b36432ff84f589f1388699c8f40fa3 の A) の確定後。TTL/rate limit は初期値案で child が根拠つきで調整可。E15b PR #79 は packet 化時点で未 merge"
+    - "2026-11-10: E15c closeout 後に鮮度の記述を明確化。鮮度規定は古い成功を ready に使わないためのもので、既知失敗は同範囲・後時刻の成功証拠または generation 変更まで保持する (ADR「回復の範囲と単調性の原則」)。Emumet PR #85 は d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7 で squash merge 済み"
 intent_placement:
   primary_intent: intents/emumet/features/registration-readiness-gate/overview.md
   supporting_intents:

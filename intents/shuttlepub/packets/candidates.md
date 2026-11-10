@@ -912,7 +912,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 
 - **意図**: [I15](../product/social-experience.md#i15)。メール認証・CAPTCHA 等の対策準備が整わないまま
   新規登録を一般開放し、スパム BOT の踏み台となることを防ぐ。
-- **候補の状態**: 主要な利用意図は整理済み。準備判定・登録経路との接続・一時障害等の契約は設計・検証待ちで、実装readyとはしない。D15全体はcandidateのまま（仮slug未予約）で、queue登録済みなのは下記「queue 登録状況」のE15a/E15bの2 unitだけ。
+- **候補の状態**: 主要な利用意図は整理済み。準備判定・登録経路との接続・一時障害等の契約は設計・検証待ちで、実装readyとはしない。D15全体はcandidateのまま（仮slug未予約）で、queue登録済みの unit は下記「queue 登録状況」を参照する。
 - **最低条件の組合せとして採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d15-q01-either-email-or-bot-protection`。
   メール認証またはCAPTCHA等のBOT対策のどちらか一方を用意すれば一般開放できるOR条件とする。両方の用意は可能だが必須ではなく、どちらもない状態は通常認めない（管理者が警告を確認する明示上書きは`d15-q09`を参照）。
   特定CAPTCHA提供者・すべてのBOT対策の同等扱い・OAuthによる代替までは決めていない。
@@ -942,6 +942,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **F15 部分進捗（2026-11-10、unit 範囲のみ）**: shuttlepub-frontends PR #33（head `3e07fec5d96c1e8c715f7bb6b0195bdcbcf60be2`、Refs #31）の BFF/API・生成型・fixture 部分は squash merge 済み（`7516562db15952144dd406070ffe3d3f95de02c3`）。独立 Reviewer approve（run `run-01m71j8qsyj87h460v46bhqyqn`、must 0）、CI 全 pass。画面実装はモック合意待ちで未着手。shuttlepub-frontends#31 は OPEN のまま、F15 および D15 全体は未完了（queue 状態は変更しない）。
 - **E15w closeout（2026-11-10、unit 範囲のみ）**: Emumet PR #69 は squash merge 済み（`ae9bdddef26c21b2d70e08a5a8f74ac5e6153d05`）、Emumet#68 は close 済み。独立 Reviewer approve（run `run-01m71kqtt6n5htgs0g8zsyqdfz`、must 0）、CI run `42745129343` 全 pass（`check-driver` 実 DB テスト実行、0 ignored は前 run で確認済み）。E15w の範囲のみ完了し、E15b/E15c/E15d と F15 の画面実装待ちのため D15 全体は未完了のままとする。
 - **E15b closeout（2026-11-10、unit 範囲のみ）**: Emumet PR #79 は squash merge 済み（`16b9e4301edde8bd4de222ab4d691dc7c32798b8`）、Emumet#64 は close 済み。独立 Reviewer approve（run `run-01m7244qfjdrzbkbcjdhfdqszh`、must 0）、Rust run `42774934783` と e2e run `42774933166` の CI 全12 checks pass。[ADR](../../emumet/decisions/registration-protection-placement.md) の決定 A（`question-88b36432ff84f589f1388699c8f40fa3`）に基づき、Kratos v1.3.1 の実証で pre-persist 拒否時に identity が作成されないことを確認した。E15b の範囲のみ完了し、E15c/E15d の実装、F15 の画面実装、D15 全体の統合受け入れは未完了。
+- **E15c closeout（2026-11-10、unit 範囲のみ）**: Emumet PR #85 は squash merge 済み（`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`）、Emumet#80 は close 済み。独立 Reviewer approve（run `run-01m72ahfsrhdcaknymyeq23c41`、head `f4ba87e` 時点で must 0。head `665c7404b936bfee7ff7732ba3b6806bcf4b4265` は任意指摘 (3) の RSET best-effort 化のみ）、CI 全 pass、実 DB `check-driver` は 311 passed / 1 ignored（live Turnstile）。鮮度は古い成功を ready に使わないための規定であり、既知失敗は同範囲・後時刻の成功証拠または generation 変更まで保持する（[ADR](../../emumet/decisions/registration-protection-placement.md)）。E15d と F15 画面実装が未完了で、D15 全体は未完了。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   Ory self-service identity 登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。

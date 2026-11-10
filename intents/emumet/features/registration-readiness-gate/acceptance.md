@@ -42,6 +42,15 @@
 - [registration-protection-placement.md](../../decisions/registration-protection-placement.md) の決定 A（`question-88b36432ff84f589f1388699c8f40fa3`）に基づく。Kratos v1.3.1 実バイナリの pre-persist 拒否時に identity が作成されないことを実証した。
 - E15b の範囲のみ完了。E15c/E15d、F15 の画面実装と D15 全体の統合受け入れは未完了。
 
+### E15c 技術判断・closeout（2026-11-10、unit 範囲のみ）
+
+- 鮮度規定は古い成功を ready の根拠に使わないための規定。既知の失敗は鮮度切れだけでは解除・軽減せず、同じ範囲で失敗段階を覆い、失敗観測時刻より後の成功証拠か generation 変更まで保持する（[ADR「回復の範囲と単調性の原則」](../../decisions/registration-protection-placement.md)、親判断 `question-dae3e9a0d121a99ab797db5bb4c0a922`）。
+- SMTP の証拠は検証段階（connect < start_tls < auth < mail_from < rcpt < data）と SMTP 対話時刻で評価する。応答 code の確認だけでは障害を解除しない。probe は MAIL FROM までの成功で接続範囲の障害のみ解除でき、RCPT/DATA の配送範囲の障害は canary の新規送信成功でのみ解除する。
+- 非列挙の受け入れ範囲は公開 status/body と readiness 経由まで。SMTP 往復時間の差は残余リスクとして残る（親判断 `question-e5dc7328dab8c93081bf5affe9052d15`）。
+- E15d への引き継ぎ: canary 配送再検証の周期実行（自動再開の前提）、business 成功期限切れ時の新 roundtrip、成功対話開始時刻の下限化、Turnstile `observed_at` の統一、proxy 配下の利用者別送信元制限、時間差抑制、フロントは credentials 付きで Kratos CSRF cookie を届ける必要がある。
+- Emumet PR #85 は squash merge 済み（`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`）、Emumet#80 は close 済み。独立 Reviewer approve（run `run-01m72ahfsrhdcaknymyeq23c41`、head `f4ba87e` 時点で must 0。head `665c7404b936bfee7ff7732ba3b6806bcf4b4265` は任意指摘 (3) RSET best-effort 化のみ）、CI 全 pass。実 DB `check-driver` は 311 passed / 1 ignored（live Turnstile）。
+- E15c の範囲のみ完了。E15d、F15 の画面実装と D15 全体の統合受け入れは未完了。
+
 ## E15w — registration-admin-notification-webhook（Emumet#68。外部 Webhook 配送のみ）
 
 - [ ] E15a の永続通知イベント（全種別。override 開始・解除を含む）が、サーバー設定の単一 endpoint へ配送される。event ID は再試行・再起動・再送でも同一。未設定なら配送せず「未設定」が観測でき、ゲート動作に影響しない

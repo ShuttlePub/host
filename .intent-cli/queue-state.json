@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T13:11:04.2677097+00:00",
+  "updated_at": "2026-11-10T14:21:46.8294881+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1126,7 +1126,7 @@
     {
       "execution_unit": "registration-protection-readiness",
       "title": "registration-protection-readiness: \u767B\u9332\u524D\u30E1\u30FC\u30EB proof (SMTP)\u30FBTurnstile Siteverify adapter\u30FB\u5B9F\u691C\u8A3C API\u30FB\u8A2D\u5B9A\u4E16\u4EE3\u30FBreadiness \u9BAE\u5EA6\u671F\u9650\u30FB\u5931\u6557\u5206\u985E\u30FBE15a \u89B3\u6E2C\u5165\u529B",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "registration-gate-control-plane",
         "registration-kratos-guard-contract"
