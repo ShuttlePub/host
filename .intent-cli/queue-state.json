@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T01:25:04.7040631+00:00",
+  "updated_at": "2026-11-10T02:59:28.720061+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -932,7 +932,7 @@
     {
       "execution_unit": "registration-admin-notification-webhook",
       "title": "registration-admin-notification-webhook: \u767B\u9332\u30B2\u30FC\u30C8\u901A\u77E5\u30A4\u30D9\u30F3\u30C8\u306E\u5916\u90E8 Webhook \u914D\u9001 (\u7F72\u540D\u30FBSSRF \u5BFE\u7B56\u30FB\u518D\u8A66\u884C\u30FB\u5931\u6557\u72B6\u614B\u30FB\u7BA1\u7406\u8005\u30C6\u30B9\u30C8/\u518D\u8A66\u884C)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "registration-gate-control-plane"
       ],
