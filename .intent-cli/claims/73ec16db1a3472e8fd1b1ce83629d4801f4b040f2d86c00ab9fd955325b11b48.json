@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:profile-relationship-outbound",
+  "actor": "p3o-worker",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-10T11:21:51.2920963+00:00",
+  "base_commit": "5c6ff9dd6ea53f19c58e091e1534d257290183c4"
+}
