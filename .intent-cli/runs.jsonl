@@ -179,6 +179,8 @@
 {"ts":"2026-11-10T07:21:20.4493916+00:00","execution_unit":"registration-gate-enforcement","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#81","reason":"https://github.com/ShuttlePub/Emumet/issues/81"}
 {"ts":"2026-11-10T07:27:33.414694+00:00","execution_unit":"profile-domain-policy-storage","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":76}
 {"ts":"2026-11-10T07:27:33.414694+00:00","execution_unit":"profile-domain-policy-storage","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":76}
+{"ts":"2026-11-10T07:43:38.2628948+00:00","execution_unit":"registration-kratos-guard-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":79}
+{"ts":"2026-11-10T07:43:38.2628948+00:00","execution_unit":"registration-kratos-guard-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":79}
 {"ts":"2026-11-10T07:44:48.1679188+00:00","execution_unit":"profile-federation-in-place-cutover","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/profile-federation-in-place-cutover/"}
 {"ts":"2026-11-10T07:44:50.0339156+00:00","execution_unit":"profile-domain-follow-guards","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/profile-domain-follow-guards/"}
 {"ts":"2026-11-10T07:44:51.8976059+00:00","execution_unit":"profile-domain-block-detach","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/profile-domain-block-detach/"}

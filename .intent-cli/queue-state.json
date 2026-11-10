@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T07:27:33.427874+00:00",
+  "updated_at": "2026-11-10T07:45:29.9354572+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -817,7 +817,7 @@
     {
       "execution_unit": "registration-kratos-guard-contract",
       "title": "registration-kratos-guard-contract: Kratos v1.3.1 \u306E registration pre-persist guard \u5B9F\u8A3C\u3068\u4FDD\u8B77\u306E\u5B9F\u88C5\u6240\u5728\u306E\u6C7A\u5B9A (\u9694\u96E2\u691C\u8A3C\u30FBfixture)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",

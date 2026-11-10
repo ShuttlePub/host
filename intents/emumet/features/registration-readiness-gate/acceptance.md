@@ -35,6 +35,13 @@
 - [ ] 本番 Kratos 設定への hook 接続は行わない（E15d 所有）
 - draft ゲート: 所在・provider・観測契約を親が確認するまで E15c/E15d を draft しない。成立しない条件が見つかった場合は影響と代案を親へ戻す
 
+### E15b closeout（2026-11-10、unit 範囲のみ）
+
+- Emumet PR #79 は squash merge 済み（`16b9e4301edde8bd4de222ab4d691dc7c32798b8`）、Emumet#64 は close 済み。
+- 独立 Reviewer approve（run `run-01m7244qfjdrzbkbcjdhfdqszh`、must 0）、Rust run `42774934783` と e2e run `42774933166` の CI 全12 checks pass。
+- [registration-protection-placement.md](../../decisions/registration-protection-placement.md) の決定 A（`question-88b36432ff84f589f1388699c8f40fa3`）に基づく。Kratos v1.3.1 実バイナリの pre-persist 拒否時に identity が作成されないことを実証した。
+- E15b の範囲のみ完了。E15c/E15d、F15 の画面実装と D15 全体の統合受け入れは未完了。
+
 ## E15w — registration-admin-notification-webhook（Emumet#68。外部 Webhook 配送のみ）
 
 - [ ] E15a の永続通知イベント（全種別。override 開始・解除を含む）が、サーバー設定の単一 endpoint へ配送される。event ID は再試行・再起動・再送でも同一。未設定なら配送せず「未設定」が観測でき、ゲート動作に影響しない
