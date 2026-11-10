@@ -46,7 +46,7 @@ implementation_issue_packet:
     - "openapi.json を再生成し openapi_spec_matches_committed_file が通る (E8 の 501 記述が保存に変わった差分のみ)。既存 Rust CI が通る"
   revision_history:
     - "2026-11-10: 公開後の是正 (親判断)。P1 の非破壊の追加 migration (username 列・Profile 鍵テーブル・index) は通常の migrations/ に置き本番適用してよい。『P1 は検証用 migration のみで本番採番は P4』とした target_path と technical_baseline の記述を是正した。P4 が所有するのは旧連合データ初期化などの破壊的 migration と P2 の新関係/配送テーブルの本番採番。Emumet#71 の本文も gh issue edit で同期 (AGENTS.md ledger『packet revision after publish』の手順)。"
-    - '2026-11-10: Emumet#71 の issue 本文への同期は保留 (gh issue edit の許可待ち。ユーザー確認 question-a400e8a5dd88cfb79865cbb5282d7dbe)。許可後に github-body.md の内容で本文を置換する。それまで公開済み issue 本文は旧記述 (本番採番は P4) のまま'
+    - '2026-11-10: Emumet#71 の issue 本文を github-body.md の内容で gh issue edit により同期済み (2026-11-10T10:32:53Z、ユーザー許可 question-a400e8a5dd88cfb79865cbb5282d7dbe)。title・ラベル intent-target は変更なし'
 
 intent_placement:
   primary_intent: intents/emumet/features/profile-federation/overview.md
