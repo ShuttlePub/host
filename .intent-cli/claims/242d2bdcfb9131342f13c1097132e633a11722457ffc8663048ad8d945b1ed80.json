@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:personal-domain-content-api-contract",
+  "actor": "design",
+  "team": "shuttlepub-main",
+  "claimed_at": "2026-11-11T19:56:20.8084191+00:00",
+  "base_commit": "fd0ce15ef1815de6de87343f01bd9f7f158cac9a"
+}
