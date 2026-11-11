@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-username-availability-api",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-11T14:48:09.6794266+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-11T14:41:56.1132257+00:00",
+  "base_commit": "531f0801f10fdfcf78be0573c6b0de7f92155da2"
+}
