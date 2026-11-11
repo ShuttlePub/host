@@ -1,5 +1,5 @@
 implementation_issue_packet:
-  issue_title: "profile-domain-block-detach: Profile の domain block 設定と両方向の関係解除・job 取消・最小通知予約の原子的実行と公開 API 接続 (P4 マージ後に有効化。復元・AP Block・投稿制御は含まない)"
+  issue_title: "profile-domain-block-detach: Profile の domain block 設定と両方向の関係解除・job 取消・最小通知予約の原子的実行と公開 API 接続、個別 actor block の AP Block 送信と Undo(Block) (P4 マージ後に有効化。domain block の AP Block・復元・投稿制御は含まない)"
   issue_kind: feature
   source_execution_unit: profile-domain-block-detach
   domain: emumet
@@ -56,6 +56,7 @@ implementation_issue_packet:
     - "個別 actor の block (block_actor) は、domain block とは別に、remote actor へ AP Block (object=相手 actor、ID は block ID から決定的) を関係解除の Undo(Follow)/Reject(Follow) と併用して同一 transaction で予約・配送し、解除は元 Block を埋め込んだ Undo(Block) を送る。Block 未送信のうちの unblock は Block job を取消して Undo を送らない。Local→Local は配送しない。受信した Block / Undo(Block) は関係を変えない (P3i のまま)。配送 job 種別の DB CHECK への Block 追加は D8R の新しい migration で行い、P4 のコードは変更しない"
     - "openapi.json は最新 main から再生成し openapi_spec_matches_committed_file が通る。既存 Rust CI (E2E を含む) が通る"
   revision_history:
+    - "2026-11-11: issue タイトルを範囲追加 (個別 actor block の AP Block 送信と Undo(Block)) に合わせて更新した (旧: …復元・AP Block・投稿制御は含まない)。packet.yaml の issue_title と queue-state.json の title を同じ文言に揃え、Emumet#84 は gh issue edit --title で同期 (ユーザー許可 question-a400e8a5dd88cfb79865cbb5282d7dbe)。ラベルは変更なし"
     - "2026-11-11: 範囲追加 (ユーザー決定 question-e6dfa2b98a9dc74491b19bbcf2ba5ca4『個別 actor ブロックは AP Block を送る (Follow 解除の Undo/Reject と併用、ブロック解除時は Undo(Block))。ドメインブロックは送らない』)。P3o の『AP Block 送信は保留中』を確定に更新し、個別 actor block の AP Block / Undo(Block) の配送を D8R に含めた (Emumet PR #93)。domain block は引き続き AP Block を送らない。"
     - "2026-11-11: Emumet#84 の issue 本文を github-body.md の内容で gh issue edit により同期 (ユーザー許可 question-a400e8a5dd88cfb79865cbb5282d7dbe)。title・ラベルは変更なし"
 
