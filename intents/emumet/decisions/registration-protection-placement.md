@@ -56,8 +56,9 @@ Emumetが実際に使うSMTP設定と実送信/確認結果を観測する。Kra
   business `success:true` と expected hostname/action、期限、一回性、当該generationを照合する。
 - 公式公開test secretによるpass/reject/duplicate/空secret/無効secret/空responseの6条件を実APIで検証した。
   HTTP200にもsuccess:falseがある。公式test-key成功は本番credentialのready証明ではない。
-- 実secretの確認にdummy token/空responseの失敗だけを使わない。有効な当該sitekeyのtokenによる成功が必要で、
-  未検証状態とregistrationのbootstrapはE15cで設計する。不正な利用者tokenでprovider全体を障害扱いしない。
+- ~~実secretの確認にdummy token/空responseの失敗だけを使わない。有効な当該sitekeyのtokenによる成功が必要~~
+  → 2026-11-12に改訂（末尾「Bootstrap revision」）: 入力なしの管理者検証で、ダミー tokenに対する`invalid-input-response`
+  （secret有効）か`invalid-input-secret`/`missing-input-secret`（設定不正）かで判定する。不正な利用者tokenでprovider全体を障害扱いしない。
 
 ### 3. Gate: method-specific pre-persist Emumet webhook
 
@@ -138,7 +139,7 @@ configured=falseのときのE15aの停止latch（復旧しても自動再開し�
 実際に行われた時刻（evidence_at。記録時刻ではない）を持つ。障害は失敗した段階と観測時刻を保持し、同じ範囲
 （connect〜mail_from＝接続範囲、rcpt・data＝配送範囲）に複数の失敗が来たら最も悪い分類・最も遅い段階と時刻を保持する。
 **成功が既知の障害を解除できるのは、成功の段階が障害の段階を覆い、かつevidence_atが障害の観測時刻より後のときだけ。**
-- code確認（登録者・canaryとも）はSMTP対話ではないので、それ自体は障害を解除しない（business鮮度の更新と所有確認にだけ使う）。
+- code確認（登録者。canaryのcode確認は2026-11-12に廃止、末尾「Bootstrap revision」）はSMTP対話ではないので、それ自体は障害を解除しない（business鮮度の更新と所有確認にだけ使う）。
   障害前に送ったメールの確認（過去のメール所有）は現在のSMTPの復旧の証拠ではない。
 - probeは宛先を提示せずMAIL FROMまで検証する（MAIL FROM→RSET→QUIT）。成功の証拠はmail_from段階で、接続範囲の障害
   （MAIL FROMを含む）を解除できるが、RCPT・DATAの障害は覆えない。
@@ -194,7 +195,7 @@ Aの受理/RCPT拒否/DATA失敗/timeoutが判別できてしまう。MAIL FROM�
 
 出典: 親判断 question-273f21f1ce70800ab974ed89f9c8f6bd。d15-q05 の準備済み基準は、設定の存在ではなく検証 API の実応答である。受信ボックスでの roundtrip を継続的に要求する決定ではない。したがって、固定された承認済み canary 宛先への SMTP DATA 受理は、同一 generation の readiness の business TTL 更新と配送段階の障害解除に利用してよい。Turnstile も、公式 Siteverify の解釈可能な業務応答を維持・復旧の証拠とする。単なる TCP 接続・health・設定ファイル存在とは区別する。
 
-E15d の技術選択は、各 generation の初回 bootstrap（メールは管理者 canary code 確認、BOT は有効 token の検証成功）を保持し、以後は周期的な SMTP DATA 受理／Siteverify probe の業務応答で business TTL を更新する。過去の成功が TTL 超過していても同一 generation なら維持・復旧できる。generation 変更後に旧成功を持ち越さず、未 bootstrap の設定を周期 probe だけで operational にしない。MAIL FROM までの接続 probe はメール business TTL を更新しない。公開の任意宛先送信・不正 token は readiness の維持証拠にしない。
+E15d の技術選択は、各 generation の初回 bootstrap（メールは管理者 canary code 確認、BOT は有効 token の検証成功。**この初回 bootstrap の要件は 2026-11-12 に入力なしの管理者［再検証］へ改訂、末尾「Bootstrap revision」**）を保持し、以後は周期的な SMTP DATA 受理／Siteverify probe の業務応答で business TTL を更新する。過去の成功が TTL 超過していても同一 generation なら維持・復旧できる。generation 変更後に旧成功を持ち越さず、未 bootstrap の設定を周期 probe だけで operational にしない。MAIL FROM までの接続 probe はメール business TTL を更新しない。公開の任意宛先送信・不正 token は readiness の維持証拠にしない。
 
 段階×時刻の証拠モデルは維持する。成功の evidence_at は、成功した対話の開始時刻を保守的な下限とする（対話中に観測された新しい障害を、遅れて完了した古い対話が解除しない）。障害の時刻は実際の失敗観測時刻。code 確認それ自体は新しい SMTP 障害を解除しない。設定喪失 latch は provider が復旧しても解除されず、手動再開が必要である。
 
@@ -221,3 +222,14 @@ E15d の技術選択は、各 generation の初回 bootstrap（メールは管�
 SMTP非列挙の時間差は、試行された公開送信の応答を4秒floor（SMTP総timeout3秒）に揃えて軽減するが、DB/ネットワーク停滞・scheduler jitter は残る。非同期化は必要時の追加検討であり、この unit の必須条件とはしない。
 
 本記録は設計・運用契約の精緻化であり、PR/CI/独立レビューの証跡を伴う unit closeout までは E15d/D15 の完了記録ではない。D15 全体は F15 を含むため、この配備接続だけでも完了しない。
+
+
+## Bootstrap revision: 入力なしの管理者［再検証］だけで初回から準備済みにできる（2026-11-12）
+
+出典: ユーザー決定 d15-q05（設定が有効なだけでは足りず、有効な保護について実際に検証 API が応答することを確認して初めて準備済み）、リード承認 question-f24eeb05650d956c943da656275847ac。上記「E15d refinement」と、E15c の「有効な当該 sitekey の token による成功が必要」「メールは管理者 canary code 確認」は、次のとおり**改訂**する（過去の記述は当時の記録として残す）。
+
+- **初回 bootstrap に管理者の入力・受信確認を要求しない。** 管理者の入力なし verify（`POST /api/v1/admin/registration-gate/protections/{protection}/verify` `{}`）の 1 回だけで、当該 generation を準備済み（operational）にできる。widget token・canary の code 入力は廃止する（旧入力は 400。F15 の BFF は入力なし verify だけを使うので影響しない）。周期 probe は引き続き**新しい generation を bootstrap できず**、設定だけでは準備済みにならない（q05）。
+- **メール**: 固定の承認済み canary 宛へ実送信し、SMTP の **DATA 受理**を business success とする。受信箱での確認は求めない。RCPT/DATA を含む各段階の失敗は従来どおり分類して記録し、準備済みにしない。MAIL FROM までの受理・接続 probe だけでは business success にしない。
+- **Turnstile**: 有効でない固定のダミー token で Siteverify を呼び、**応答の本文**で判定する。`invalid-input-response`（・`missing-input-response`・`timeout-or-duplicate`）= secret は有効で API が応答した → business success。`invalid-input-secret` / `missing-input-secret` = `configuration_invalid`。429/5xx/timeout・不正な本文・secret の有効性を示さない応答（`bad-request` だけ・未知の error code）= `temporarily_unavailable`。HTTP 200 だけを根拠にしない（公式テストキーで実証）。以前の「dummy token/空 response の失敗だけを使わない」は、**応答 code が secret の有効性を区別して返す**ことを確認したうえで改訂する。
+- **維持する原則**: 設定ファイルの存在・health・HTTP 200 を ready の証拠にしない。E15c の証拠モデル（段階×時刻、DATA 受理を readiness 証拠、成功の evidence_at は対話の開始時刻の保守的下限、既知の障害は覆う段階の後の証拠か generation 変更でしか解除されない）。**登録者の** code 確認は SMTP 対話ではなく障害を解除しない。generation 変更で旧成功は無効。
+- 実装: Emumet 修正 PR [ShuttlePub/Emumet#99](https://github.com/ShuttlePub/Emumet/pull/99)（Refs #80 #81。E15c/E15d の修正扱い）。

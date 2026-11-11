@@ -47,7 +47,7 @@
 - 鮮度規定は古い成功を ready の根拠に使わないための規定。既知の失敗は鮮度切れだけでは解除・軽減せず、同じ範囲で失敗段階を覆い、失敗観測時刻より後の成功証拠か generation 変更まで保持する（[ADR「回復の範囲と単調性の原則」](../../decisions/registration-protection-placement.md)、親判断 `question-dae3e9a0d121a99ab797db5bb4c0a922`）。
 - SMTP の証拠は検証段階（connect < start_tls < auth < mail_from < rcpt < data）と SMTP 対話時刻で評価する。応答 code の確認だけでは障害を解除しない。probe は MAIL FROM までの成功で接続範囲の障害のみ解除でき、RCPT/DATA の配送範囲の障害は canary の新規送信成功でのみ解除する。
 - 非列挙の受け入れ範囲は公開 status/body と readiness 経由まで。SMTP 往復時間の差は残余リスクとして残る（親判断 `question-e5dc7328dab8c93081bf5affe9052d15`）。
-- E15d への引き継ぎ: canary 配送再検証の周期実行（自動再開の前提）、business 成功期限切れ時の新 roundtrip、成功対話開始時刻の下限化、Turnstile `observed_at` の統一、proxy 配下の利用者別送信元制限、時間差抑制、フロントは credentials 付きで Kratos CSRF cookie を届ける必要がある。
+- E15d への引き継ぎ: canary 配送再検証の周期実行（自動再開の前提）、business 成功期限切れ時の新 roundtrip（初回 bootstrap の管理者 roundtrip 要求は 2026-11-12 に廃止。下記「Bootstrap revision」）、成功対話開始時刻の下限化、Turnstile `observed_at` の統一、proxy 配下の利用者別送信元制限、時間差抑制、フロントは credentials 付きで Kratos CSRF cookie を届ける必要がある。
 - Emumet PR #85 は squash merge 済み（`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`）、Emumet#80 は close 済み。独立 Reviewer approve（run `run-01m72ahfsrhdcaknymyeq23c41`、head `f4ba87e` 時点で must 0。head `665c7404b936bfee7ff7732ba3b6806bcf4b4265` は任意指摘 (3) RSET best-effort 化のみ）、CI 全 pass。実 DB `check-driver` は 311 passed / 1 ignored（live Turnstile）。
 - E15c の範囲のみ完了。E15d、F15 の画面実装と D15 全体の統合受け入れは未完了。
 
@@ -108,7 +108,7 @@
 
 出典: 親判断 question-273f21f1ce70800ab974ed89f9c8f6bd。d15-q05 の準備済み基準は、設定の存在ではなく検証 API の実応答である。受信ボックスでの roundtrip を継続的に要求する決定ではない。したがって、固定された承認済み canary 宛先への SMTP DATA 受理は、同一 generation の readiness の business TTL 更新と配送段階の障害解除に利用してよい。Turnstile も、公式 Siteverify の解釈可能な業務応答を維持・復旧の証拠とする。単なる TCP 接続・health・設定ファイル存在とは区別する。
 
-E15d の技術選択は、各 generation の初回 bootstrap（メールは管理者 canary code 確認、BOT は有効 token の検証成功）を保持し、以後は周期的な SMTP DATA 受理／Siteverify probe の業務応答で business TTL を更新する。過去の成功が TTL 超過していても同一 generation なら維持・復旧できる。generation 変更後に旧成功を持ち越さず、未 bootstrap の設定を周期 probe だけで operational にしない。MAIL FROM までの接続 probe はメール business TTL を更新しない。公開の任意宛先送信・不正 token は readiness の維持証拠にしない。
+E15d の技術選択は、各 generation の初回 bootstrap（メールは管理者 canary code 確認、BOT は有効 token の検証成功。**2026-11-12 に入力なしの管理者［再検証］へ改訂、下記「Bootstrap revision」**）を保持し、以後は周期的な SMTP DATA 受理／Siteverify probe の業務応答で business TTL を更新する。過去の成功が TTL 超過していても同一 generation なら維持・復旧できる。generation 変更後に旧成功を持ち越さず、未 bootstrap の設定を周期 probe だけで operational にしない。MAIL FROM までの接続 probe はメール business TTL を更新しない。公開の任意宛先送信・不正 token は readiness の維持証拠にしない。
 
 段階×時刻の証拠モデルは維持する。成功の evidence_at は、成功した対話の開始時刻を保守的な下限とする（対話中に観測された新しい障害を、遅れて完了した古い対話が解除しない）。障害の時刻は実際の失敗観測時刻。code 確認それ自体は新しい SMTP 障害を解除しない。設定喪失 latch は provider が復旧しても解除されず、手動再開が必要である。
 
@@ -143,3 +143,11 @@ E15d の技術選択は、各 generation の初回 bootstrap（メールは管�
   - SMTP の対話・観測時刻の差による時間差は残る。
   - gate 評価から identity persist までを単一原子操作にできない。
   - 遅延 persist の再観測は 10 秒の有界検証であり、無期限の再観測ではない。
+
+## Bootstrap revision: 入力なしの管理者［再検証］（2026-11-12）
+
+出典: d15-q05、リード承認 question-f24eeb05650d956c943da656275847ac。詳細は [ADR「Bootstrap revision」](../../decisions/registration-protection-placement.md)。
+
+- 受け入れ: 保護が準備済み（operational）になるのは、**入力なしの管理者 verify** が実際の検証 API 応答（メール: 固定 canary 宛の SMTP DATA 受理、Turnstile: ダミー token への `invalid-input-response` = secret 有効）を得たときだけ。管理者の code 入力・widget token・受信確認は要求しない。設定が有効なだけ・周期 probe だけ・health・HTTP 200 だけでは準備済みにならない（実 Kratos E2E q05 で確認）。
+- Turnstile: `invalid-input-secret` / `missing-input-secret` は設定不正、`bad-request` だけ・未知の code・429/5xx は準備済みにならない。公式テストキーで実 Siteverify を検証（`live_turnstile_official_test_keys`、ignored）。
+- 証拠モデル（段階×時刻、DATA 受理）、登録者 code 確認が障害を解除しない原則、generation 束縛は維持。
