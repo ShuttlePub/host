@@ -960,6 +960,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **queue 登録状況（2026-11-11 追加 unit、unit 範囲のみ）**: E15x `registration-webhook-endpoint-management`（[Emumet#97](https://github.com/ShuttlePub/Emumet/issues/97)）を queue 登録済み・issue 公開済み（packet: `.intent-cli/issues/registration-webhook-endpoint-management/`）。依存は E15w（完了）、後続は F15 の Webhook タブ（shuttlepub-frontends#31、open のまま）。
   経緯: F15 の確定仕様 [ui-spec.md](../../emumet/features/registration-readiness-gate/ui-spec.md) 6「Webhook」は送信先の登録・編集・削除と URL の部分マスク表示・状態チップ・テスト・配送失敗の 1 件ずつの再試行を求めるが、E15w は送信先 1 件を環境変数で管理し登録・編集 API を持たない。ユーザーは `question-433de6d63c710adbcaa304b4ba7d1ba6` で「B: Emumet に送信先の登録・編集・削除 API を追加してから ui-spec どおり実装」を選択した。
   E15x の範囲は、管理者専用の複数送信先 CRUD API（revision 楽観ロック・監査）、シークレットの暗号化保存（鍵はサーバー設定・運用文書あり）、通知種別 4 カテゴリの選択（E15a/E15d の 8 種別との対応表）、URL の部分マスク応答、送信先ごとの配送（署名・状態・テスト送信・1 件ずつ再試行）、cursor ページングの配送失敗一覧（最新 50 件外の失敗にも到達）、登録時と接続時の SSRF 対策、既存環境変数 1 件の非破壊移行のみ。F15 の Webhook タブ画面は含まない。D15 全体の ready／完了ではない。
+- **E15x closeout（2026-11-11、unit 範囲のみ）**: Emumet PR #100（Closes #97、head `b9fa4a38bd56d4ae28c564110a7bbeb993493766`）は squash merge 済み（`7843ccb0de3a792741c608d54beabf81b8bd9b45`）、Emumet#97 は close 済み。独立 Reviewer approve（run `run-01m76181y2h6fb484y0zw5bbzm`、must 0）、CI 全 pass。実 DB は driver 67 / application 20 / server 10 passed、0 ignored。実 Kratos E2E も pass。F15 の Webhook タブ実装が後続で、D15 全体は未完了のままとする。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   Ory self-service identity 登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。

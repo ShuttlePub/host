@@ -152,3 +152,18 @@ E15d の技術選択は、各 generation の初回 bootstrap（メールは管�
 - Turnstile: `invalid-input-secret` / `missing-input-secret` は設定不正、`bad-request` だけ・未知の code・429/5xx は準備済みにならない。公式テストキーで実 Siteverify を検証（`live_turnstile_official_test_keys`、ignored）。
 - 証拠モデル（段階×時刻、DATA 受理）、登録者 code 確認が障害を解除しない原則、generation 束縛は維持。
 - 実装状況: Bootstrap 修正 PR ShuttlePub/Emumet#99 merged (squash 11414a68ec1bb6872d8af6c09f7e1a312c19922e)。Turnstile は既知 code に未知の code が混在する拒否応答も一時障害（secret の error が混在する場合は設定不正を優先）。ダミー token での secret 検証順序（無効 secret → `invalid-input-secret`）は公式保証ではなく E15b の実応答と公式テストキーでの実測上の前提（live テストで継続確認）。
+
+## E15x closeout: registration-webhook-endpoint-management（2026-11-11、unit 範囲のみ）
+
+- Emumet PR #100（Closes #97、head `b9fa4a38bd56d4ae28c564110a7bbeb993493766`）は squash merge 済み（`7843ccb0de3a792741c608d54beabf81b8bd9b45`）、#97 は CLOSED。
+- 独立 Reviewer approve（run `run-01m76181y2h6fb484y0zw5bbzm`、must 0）、CI 全 pass。実 DB テストは driver 67 / application 20 / server 10 passed、すべて 0 ignored。実 Kratos E2E も pass。CI の `Check openapi.json is up-to-date` も pass。
+- 設計判断・境界:
+  - 送信先 secret は AES-256-GCM で暗号化し、送信先 ID を AAD として束縛する。鍵は `REGISTRATION_WEBHOOK_ENCRYPTION_KEY` から取得する。鍵ローテーション機構は本 unit の範囲外。
+  - URL は平文保存する。URL の path/query に token が含まれる場合、その情報は DB 上で保護されない。
+  - 既存環境変数 endpoint 1 件の冪等取り込みで、既存配送データを破壊せず移行する。
+  - E15w の旧集約 API を削除し、retry request body の契約を変更した。配送は送信先ごとに並行処理する。
+- 残余・範囲外:
+  - tracing に secret が漏れないことのテストと worker spawn 停止のテストは未実装。
+  - 既存 `GET /ap/accounts/{account_id}` の OpenAPI path parameter 名の不整合は既存不具合であり、本 unit の範囲外。
+  - ローカル `cargo test -p server write_openapi_spec_to_file -- --ignored` は未実行。PR merge ref の CI `Check openapi.json is up-to-date` は pass。
+- E15x の範囲のみ完了。F15 の Webhook タブが後続であり、D15 全体は未完了のままとする。

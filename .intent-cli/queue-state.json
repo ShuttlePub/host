@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T20:01:17.1076892+00:00",
+  "updated_at": "2026-11-11T22:23:25.5722703+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1327,7 +1327,7 @@
     {
       "execution_unit": "registration-webhook-endpoint-management",
       "title": "registration-webhook-endpoint-management: \u767B\u9332\u30B2\u30FC\u30C8 Webhook \u9001\u4FE1\u5148\u306E\u7BA1\u7406 API (\u8907\u6570\u9001\u4FE1\u5148 CRUD\u30FB\u30B7\u30FC\u30AF\u30EC\u30C3\u30C8\u6697\u53F7\u5316\u30FB\u901A\u77E5\u7A2E\u5225\u9078\u629E\u30FB\u9001\u4FE1\u5148\u3054\u3068\u306E\u914D\u9001/\u72B6\u614B/\u30C6\u30B9\u30C8/\u518D\u8A66\u884C\u30FB\u5931\u6557\u4E00\u89A7\u30DA\u30FC\u30B8\u30F3\u30B0)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "registration-admin-notification-webhook"
       ],
