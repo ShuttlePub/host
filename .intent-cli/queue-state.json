@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T19:43:55.170248+00:00",
+  "updated_at": "2026-11-11T20:00:38.0431342+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1342,6 +1342,26 @@
         "repo": "ShuttlePub/Emumet",
         "number": 97,
         "url": "https://github.com/ShuttlePub/Emumet/issues/97"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "personal-domain-content-api-contract",
+      "title": "personal-domain-content-api-contract: \u500B\u4EBA domain mute/block \u306E\u6295\u7A3F\u30FB\u691C\u7D22\u30FB\u901A\u77E5\u306E\u6291\u5236\u3068\u53CC\u65B9\u5411\u306E\u65B0\u898F\u64CD\u4F5C\u62D2\u5426\u306E /api/v1 API \u5951\u7D04",
+      "state": "queued",
+      "dependencies": [
+        "shuttlepub-openapi-foundation",
+        "profile-domain-policy-api-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/personal-domain-content-api-contract/implementation.md",
+        "review_context": ".intent-cli/issues/personal-domain-content-api-contract/review-context.md",
+        "yaml": ".intent-cli/issues/personal-domain-content-api-contract/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",

@@ -1,0 +1,85 @@
+implementation_issue_packet:
+  issue_title: "personal-domain-content-api-contract: 個人 domain mute/block の投稿・検索・通知の抑制と双方向の新規操作拒否の /api/v1 API 契約"
+  issue_kind: feature
+  source_execution_unit: personal-domain-content-api-contract
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "server/, openapi/shuttlepub.json"
+  target_part: "Profile × 正規化 domain の mute/block を投稿・検索・通知の表示面へ適用する契約(抑制表現・引用/純粋 boost の全体非表示・単一投稿 reveal・双方向の新規投稿操作拒否)の型・schema・fixture・501 route"
+  dependencies:
+    - "shuttlepub-openapi-foundation"
+    - "profile-domain-policy-api-contract"
+  technical_baseline:
+    - "S0(shuttlepub-openapi-foundation、ShuttlePub PR #16、squash 4a30cafd691a415c8a651151085d1747e5326cca)の utoipa 基盤・/api/v1 共通エラー形式・routes! 単一登録・決定的な生成 schema(openapi/shuttlepub.json)・再生成差分 CI の上に定義する。S3(quick-reaction-api-contract、PR #17)の命名(/api/v1/profiles/{profile_nanoid}/...)と整合させる"
+    - "契約のみ。実 filter・inbound Activity の実受理拒否・outbound 操作の実拒否・実投稿/反応処理は実装しない。全契約 route は明示的な 501(共通エラー形式)で、成功応答の stub を置かない。todo!/unimplemented! を使わない"
+    - "E8(profile-domain-policy-api-contract、Emumet PR #70、squash 0bfa437、マージ・closeout 済み)の Profile 識別子・正規化 domain・revision の表現を再定義せず揃える。具体的な参照箇所: (1) Emumet openapi.json(ShuttlePub/Emumet main)の /api/v1/profiles/{profile_nanoid}/domain-controls と .../{domain}、component schema DomainControlResponse(profile_id=Profile の nanoid、domain=正規化済み、mode=mute|block、revision=1 始まり int64)・DomainControlMode・PutDomainControlRequest(expected_revision)・ProfileActorRef(kind、actor_url=canonical actor URL)・ProfileResponse(id、username は nullable)、(2) host intents/emumet/features/personal-domain-controls/acceptance.md の『E8 確定契約』『D8P 確定契約』(domain 正規化規則=UTS #46 non-transitional・末尾ドット 1 つ除去・完全一致、不正 domain は 422、revision は作成・置換・削除・再作成のたびに +1 で tombstone により再利用されない、照合は検証済み canonical actor ID の host のみ=ControlDomain::from_actor_id)、(3) host intents/emumet/features/personal-domain-controls/overview.md・packets.md、(4) E8 packet .intent-cli/issues/profile-domain-policy-api-contract/"
+    - "domain 判定の主体は Emumet の domain-controls(Profile × 正規化 domain、完全一致、sub.example.com を含まない)。ShuttlePub は方針を保存・再定義せず、契約上は E8 の表現(profile_nanoid、正規化 domain、mode、revision)を参照して表示面・操作の結果を表現する"
+    - "新規 Follow の受理・送信拒否は Emumet(D8G/D8R)の責務で本ユニットの範囲外。本ユニットは返信・引用・リポスト・いいね/絵文字リアクションの投稿操作と、timeline・検索・通知の表示面だけを契約化する"
+    - "既存 dev API(/api/notes/... 等)は legacy development API で契約対象外、生成 schema に載せない(S0 ADR)"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I08)"
+    - "intents/shuttlepub/packets/candidates.md (D08 節、共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q01〜q15)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+    - "intents/emumet/features/personal-domain-controls/overview.md"
+    - "intents/emumet/features/personal-domain-controls/packets.md"
+    - "intents/emumet/features/personal-domain-controls/acceptance.md (E8 確定契約・D8P 確定契約)"
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md (S0 ADR)"
+    - "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md (consumer 側の参考、3-x・4-1・5-x)"
+  acceptance_criteria:
+    - "E8 との整合: Profile 識別子は profile_nanoid(path)/profile_id(応答、nanoid 文字列)、domain は E8/D8P の正規化済み表現(完全一致、不正は 422)、方針の世代は E8 の revision(1 始まり・単調増加・再利用なし)に揃え、独自の識別子・正規化・revision を導入しない。参照箇所(Emumet openapi.json の domain-controls と DomainControlResponse/DomainControlMode、host acceptance.md の E8/D8P 確定契約)と各フィールドの対応が schema 説明または fixture で確認できる"
+    - "投稿・検索結果・通知の 3 面について、対象 domain 由来の項目を当該 Profile だけで抑制する契約が型と schema で表現される(mute/block 共通)。timeline・通知・検索には隠した痕跡(件数・プレースホルダ・未読数加算・注記)を出さない形が応答 fixture で示される"
+    - "対象 domain の投稿を第三者がコメント付き引用した場合の引用投稿全体の非表示、ブロック/ミュートしていない人による純粋 boost 全体の非表示が、引用者コメントを含めて全体を隠す契約として表現される。引用者本人・無関係な投稿の自動 block/mute は契約に含めない"
+    - "hidden 応答は種別(mute/block)・対象 domain・E8 revision など最小限だけを持ち、本文・投稿者名・添付・CW 内容・メンション等を漏らさない。hidden 応答の payload 検査(禁止フィールド・値の不在)が fixture/テストで固定される"
+    - "自サーバー内の URL 直接閲覧では初期状態で隠し、利用者が明示的に選んだときだけ当該 1 投稿を表示する単一投稿 reveal が契約化される。reveal は他の投稿・引用内の内容・設定(domain-controls の revision)を変えず、再読込・再訪で再び隠す性質を表現する。reveal しても block・CW/センシティブ・削除・閲覧権(可視性)を解除しない(それらの別制約は reveal 後も応答に残る)ことを fixture で示す"
+    - "inbound(ブロック対象 domain から当該 Profile の投稿への新規 返信・引用・リポスト・いいね/絵文字リアクション)の受理拒否結果を、操作種別ごとに個別の契約と fixture にする。いいねと絵文字は同じ許可判断でも wire 表現を同一にしない(別 fixture)。D13 の投稿許可設定があっても block を上書きできない(迂回禁止)例を fixture で示す"
+    - "outbound(当該 Profile から対象 domain への新規 返信・引用・リポスト・いいね/絵文字リアクション)の操作拒否結果を、操作種別ごとに個別の契約と fixture にする。ブロック中は先に明示的な解除を必要とし、操作による自動解除・ミュートへの操作制限追加を契約に含めない。S3 の reaction PUT との整合を取り、S3 の既存契約を破壊しない"
+    - "受理済みのいいね/絵文字の既存反応件数はブロックだけでは減らさず維持され、新規拒否分は加算されない形が集計 fixture で示される(過去分の自動削除/Undo を示唆する型を作らない)"
+    - "全契約 route が明示的な 501(S0 の共通エラー形式)を返し、routes! 単一登録で、todo!/unimplemented! を使わない。生成 schema(openapi/shuttlepub.json)は決定的に更新され、S0 の再生成差分 CI がグリーン。既存 dev API はこの契約・生成 schema に含まれない"
+    - "実 filter・inbound Activity の実受理拒否・outbound の実拒否・実投稿/反応処理を実装していない。契約が『契約のみ・未実装』であることが schema の説明またはテストで確認できる"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D08 節・共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q01〜q15)"
+    - "intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)"
+    - "intents/emumet/features/personal-domain-controls/overview.md (DC、E8/D8P の確定契約は acceptance.md)"
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md (S0 ADR)"
+    - "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md (F8 の UI 合意、consumer 側の参考)"
+  new_intent_needed: false
+  placement_rationale: "primary intent(social-experience.md)の I08 節と candidates.md の D08 節に、S8 の unit・依存(S0・E8)・到達範囲(API 契約のみ)を追記する。新規 intent ノードは不要。D08 の後続 owner が ShuttlePub であることと、将来の personal-domain-content-enforcement 相当 unit が未実装で残ることを D08 に明記する。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に S8 personal-domain-content-api-contract の範囲だけを「queue登録済み」と記録し、I08 と D08 に unit・依存(S0・E8)・到達範囲(契約のみ)を追記する。D08 に、投稿の実 filter・inbound/outbound の実拒否の後続 owner が ShuttlePub であること、将来の personal-domain-content-enforcement 相当 unit が未実装で残ることを明記する。親 candidate D08 全体を ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "S0 の ADR(生成 schema を契約の正本とする)に従うのみで、本ユニット固有の新しい hard-to-reverse 決定はないため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "契約の範囲(表示面の抑制・引用/純粋 boost の全体非表示・単一投稿 reveal・双方向の新規操作拒否)、E8 との整合(Profile 識別子・正規化 domain・revision)、検証境界(schema・fixture・hidden payload 検査・501・再生成差分)を I08 / D08 に記録する。"
+closeout_learning:
+  expected: "hidden 応答の最小化の確定形、reveal の持続範囲の表現、inbound/outbound の拒否結果と D13 迂回禁止の契約化で迷った点、E8 の識別子・revision との対応で確定した形を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (server/, openapi/shuttlepub.json)"
