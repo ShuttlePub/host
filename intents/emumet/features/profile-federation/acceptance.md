@@ -296,6 +296,36 @@ Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 
 - D8G: 送信側 Follow への **domain 方針**は未適用（個別 block 判定の隣に、同じ関係ロック規約の下で挿入する）。承認前の incoming Follow への Reject が宛先不明の件は、P3i が承認前の Follow の inbox を保存するようになれば拡張できる。
 - 重複: server テスト用の独立 DB ヘルパが `driver::database::isolated_db`（P3o）と `server/src/route/profile_graph_test_support.rs`（P3i）の二系統ある。統合は P4 以降の掃除項目。
 
+## RX 確定契約（Emumet PR #95、2026-11-11 マージ済み、squash `49acf9d`、unit `profile-identity-read-exposure`、Emumet#94）
+
+計画外の追加 unit（ユーザー承認 question-da4ae5d616cf6197f307bfffdc86868a）。FN（shuttlepub-frontends#34）が既存 Profile を特定するための読取専用の追加。
+
+### 応答
+
+- `AccountResponse` に `profile_id`（Profile nanoid、**必須**）と `profile_username`（未設定は **null 可**）を追加。既存フィールド・ステータスは不変（追加のみ）。
+- 対象は `AccountResponse` を返す 5 経路: `GET /api/v1/accounts`（cursor 一覧）、`GET /api/v1/accounts?ids=`、`GET /api/v1/accounts/{id}`、`POST /api/v1/accounts`、`PATCH /api/v1/accounts/{id}`。すべて `AccountDetailDto`（`ProfileIdentityDto`）から構築。新 endpoint・permission・username 更新手段・Profile 一覧 API は追加していない。
+
+### 認可・可視性（既存と同一。変更なし）
+
+- 他人の Account は個別取得 404・ids 指定は結果に含まれず、Profile 識別子も露出しない。
+- 無効化 Account は全経路で返らない。停止・BAN 中の Account は ids 指定・個別取得では返らず、**所有者の cursor 一覧だけ**が `moderation` 付きで返す（項目に Profile 識別子を含む）。
+
+### 代表 Profile 規則と限界
+
+- 個人 Account は個人 Profile 1 件（partial unique index）。組織 Account は複数 Profile を持ちうるため、**account あたり最小の Profile id の「代表 Profile」1 件だけ**で記述する。表示項目（display_name 等）と `profile_id` / `profile_username` は同一 Profile。read（`compose_account_details`）と update（`find_by_account_id` を `ORDER BY id LIMIT 1`）で同じ規則のため GET と PATCH が一致する。
+- **限界**: 移管した Profile は、代表に選ばれた場合のみ移管先の組織 Account の応答に返る（移管先が既存 Profile を持つ場合に返る保証はない）。組織の全 Profile の発見や、選択値の不変性（後から小さい id の Profile が加わると代表が変わる）は保証しない。**組織の複数 Profile の列挙は範囲外（後続課題。Profile 一覧 API が必要）**。
+- 移管元の個人 Account は Profile が 0 件になり、従来どおり `Profile not found for account`（NotFound）。本 unit では変更していない。
+
+### 検証
+
+- 実 DB route test（`client_profile_identity_tests.rs`、5 本）: 全経路の値（username あり/なし）、他人の Account、無効化・停止・BAN、実際の `Profile::transfer_account` イベントによる移管、3 Profile の組織での GET/PATCH 一致。無効化は projector 非同期のため `accounts.deleted_at` を直接設定して検証。`openapi_spec_matches_committed_file` と CI の openapi-check は通過。
+
+### 引継ぎ・後続への申し送り
+
+- **P4（Emumet PR #91）統合注意**: `update.rs` の `into_detail` に新引数 `ProfileIdentityDto` が加わった。P4 が `update_account_detail_authorized` に入れるロック処理と両立させる（`find_by_account_id` の `ORDER BY id LIMIT 1` も維持）。
+- **should2（見送り）**: Profile 行が削除された後（Account projector の cascade 削除後）の無効化状態に関するテストは未追加。必要なら後続で追加する。
+- 組織 Account の複数 Profile 列挙・代表の明示選択は後続課題（Profile 一覧 API を含む別 unit）。
+
 ## UI 前提（ユーザー指示）
 
 FN の画面構成を決める実装はモック合意まで保留する。画面構成に依存しない BFF・GraphQL・変換の検証は先行できるが、

@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T05:18:29.9049278+00:00",
+  "updated_at": "2026-11-11T06:12:24.1602995+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1283,7 +1283,7 @@
     {
       "execution_unit": "profile-identity-read-exposure",
       "title": "profile-identity-read-exposure: AccountResponse \u306B Profile \u306E nanoid (profile_id) \u3068 username (profile_username) \u3092\u8FFD\u52A0",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
