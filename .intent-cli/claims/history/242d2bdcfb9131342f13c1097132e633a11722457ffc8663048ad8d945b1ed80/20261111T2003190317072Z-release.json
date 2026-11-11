@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:personal-domain-content-api-contract",
+  "actor": "design",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-11T20:03:19.0317072+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-11T19:56:20.8084191+00:00",
+  "base_commit": "88f9c2b5e252939042f6f76f1902c02cc5d7732a"
+}
