@@ -247,6 +247,8 @@ CW・センシティブ指定の共有モデル／peer契約、既存メンシ�
 `d08-q15-profile-username-identity`で、Profileごとに一意なacct usernameをAccount名と分けて新設し、一度決めた名前は変更しない方針を採用した。Profile移管時にもusername・actor URI・鍵・関係を維持する。
 全peerでの解除遵守・外部側の独自公開阻止や外部データ消去は保証しない。Profile単位への移行を今回含めるが、具体的な移行・認可／保存・AP identity／同期、ドメイン表記の正規化・判定時点、多段引用の帰属判定、直接閲覧の明示表示の具体範囲／UI／持続・Account検索／一覧、既存通知／push・actor情報、受信済みいいね／絵文字件数以外の既存反応・解除後の表示／フォロー解除通知の具体的な連合契約・peer側反映・双方向操作の判定／配送契約等は未決。主要意図整理済みのcandidateだが設計・検証待ちで実装readyではない。出典S08／候補D08。
 
+実行unit S8 `personal-domain-content-api-contract`（ShuttlePub/ShuttlePub、[ShuttlePub#18](https://github.com/ShuttlePub/ShuttlePub/issues/18)、依存S0・E8、2026-11-11にqueue登録済み・issue公開済み、実装・マージは未了）は、上記のtimeline・検索・通知の表示抑制、第三者引用・純粋boostの全体非表示、直接閲覧時の単一投稿reveal、双方向の新規返信・引用・リポスト・いいね／絵文字の拒否結果を、Emumet E8（Emumet PR #70）のProfile識別子・正規化domain・revisionに揃えた**API契約のみ**として定義する（実filter・実受理拒否・実投稿処理は含まない、全routeは明示的501）。ShuttlePub側の実処理は後続owner（将来の`personal-domain-content-enforcement`相当unit、未packet化・未実装）で、I08全体は完了ではない。unit分割・到達範囲は[D08](../packets/candidates.md#d08)。
+
 ## I09
 
 他サーバーのカスタム絵文字で付いた既存反応へ、同じ絵文字で便乗できるようにする。
