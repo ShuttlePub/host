@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:profile-identity-read-exposure",
-  "actor": "rx-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-11T05:21:17.1881678+00:00",
-  "base_commit": "be9f01ddec92cda9003545271ed0a2e95392fc69"
-}

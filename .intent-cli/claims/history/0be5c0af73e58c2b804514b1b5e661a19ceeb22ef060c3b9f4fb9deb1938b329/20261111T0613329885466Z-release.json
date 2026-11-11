@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-identity-read-exposure",
+  "actor": "rx-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-11T06:13:32.9885466+00:00",
+  "reason": "unit merged and closed out",
+  "displaced_holder": "rx-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-11T05:21:17.1881678+00:00",
+  "base_commit": "4eed930a67b3836403b37d76ae07f780da21e2d5"
+}
