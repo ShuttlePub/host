@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:profile-username-availability-api",
-  "actor": "ua-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-11T14:48:16.2328079+00:00",
-  "base_commit": "6e1a09f3a2171a90ec4f54958443fa623305047d"
-}

@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-username-availability-api",
+  "actor": "ua-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-11T16:52:34.1985746+00:00",
+  "reason": "merged and closed out (Emumet PR #98)",
+  "displaced_holder": "ua-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-11T14:48:16.2328079+00:00",
+  "base_commit": "638d264eb4789a49de4e08cf3aecf8c58f922a06"
+}
