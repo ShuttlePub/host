@@ -326,6 +326,18 @@ Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 
 - **should2（見送り）**: Profile 行が削除された後（Account projector の cascade 削除後）の無効化状態に関するテストは未追加。必要なら後続で追加する。
 - 組織 Account の複数 Profile 列挙・代表の明示選択は後続課題（Profile 一覧 API を含む別 unit）。
 
+## FN の BFF 部分の申し送り（shuttlepub-frontends PR #36、画面なし）
+
+BFF・GraphQL・REST 変換・mock・生成型の先行 PR。画面（PureScript の手書きソース）は変更していない。実 Emumet（49acf9d）に対し BFF の GraphQL 経路から実接続を確認済み（作成時の保存、一回限り設定、重複 `USERNAME_TAKEN` と設定済み `USERNAME_ALREADY_SET` の区別、形式・予約語・末尾改行、401/403/404/422、移管後の username 不変）。
+
+- **Metadata（`AccountResponse.fields`）の書込みは未対応（BFF は `createMetadata` / `updateMetadata` / `deleteMetadata` を `UNSUPPORTED` にし、何も書かない）。読取のみ**（nanoid は fields 内の位置）。理由: 上流の `PATCH /api/v1/accounts/{id}` は fields を配列ごと置換するだけで項目 ID も revision（CAS）も無く、位置指定の読み出し→置換では並行 2 更新の lost update や、他クライアントが fields を置換した後の古い画面からの誤更新を防げない。
+  - **後続課題: metadata の安全な書込みには Emumet 側に項目 ID または fields の revision が必要**（別 unit）。それまで画面の Metadata 編集・追加・削除は実 Emumet 接続では使えない。
+- `updateProfile` は Profile 属性（display_name / summary / icon_url / banner_url）だけを PATCH し、fields は送らない（Metadata を上書きしない）。
+- `Account.publicKey` は実 Emumet が返さない（Profile モデル移行で廃止）ため、BFF は GraphQL `String!` のまま常に空文字を返す。画面 PR で Maybe 化・非表示にし schema を nullable にする。
+- 旧 `/profiles`・`/metadata`・`/accounts/{id}/profile` 経路は廃止し、Account / Profile / Metadata は `AccountResponse` から組み立てる。組織 Account は `X-Organization-Id` 未対応のため BFF からは読めない（移管後の username は実 DB で不変を確認）。
+- `USERNAME_CONFLICT` は 409 の重複／設定済みを再確認でも判別できない場合のコード（再確認は 409 後の現在状態であり原因の証明ではない）。
+- Emumet 側の観測（未対応）: Account 名の重複は 500（`accounts_name_key`）。Profile を組織へ移管すると移管元の個人 Account は一覧から消える。
+
 ## UI 前提（ユーザー指示）
 
 FN の画面構成を決める実装はモック合意まで保留する。画面構成に依存しない BFF・GraphQL・変換の検証は先行できるが、
