@@ -30,6 +30,10 @@ FN (shuttlepub-frontends#34) が既存 Profile への一回限り username 設�
 - `cargo test -p server write_openapi_spec_to_file -- --ignored` で再生成し `git diff --exit-code openapi.json`、`openapi_spec_matches_committed_file`
 - `cargo fmt --check`、`cargo clippy`、`cargo test`、`git diff --check`
 
+## Revision history
+
+- 2026-11-11: 公開直後に、停止・BAN 中の Account の可視性の記述を実装 (driver の find_by_nanoids は停止・BAN・無効化を除外、find_by_auth_id は無効化のみ除外) に合わせて訂正。issue #94 の本文も同期。
+
 ## Knowledge Maintenance (G461)
 
 - Intent placement: `intents/emumet/features/profile-federation/overview.md` (primary)

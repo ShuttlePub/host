@@ -19,7 +19,7 @@ FN (`profile-identity-web-adaptation`、shuttlepub-frontends#34) が既存 Profi
 ## Accepted Baseline You May Assume
 
 - P1: Profile の `nanoid()` / `username()` が projection にあり、username は一回限り設定後不変
-- 認可・可視性は既存の Account 取得 (`account_view` 権限、無効化 Account は除外、停止・BAN 中は moderation 付きで返す) を変えない
+- 認可・可視性は既存の Account 取得 (`account_view` 権限、無効化 Account は全経路で除外、停止・BAN 中の Account は ids 指定・個別取得では除外され所有者の cursor 一覧だけが moderation 付きで返す) を変えない
 
 ## Target Repo / Path / Part
 
@@ -52,7 +52,7 @@ Target part: Account 取得・一覧・作成・更新の応答に `profile_id` 
 2. 既存フィールド・ステータスは変更されない (追加のみ)。既存テストと OpenAPI 検証が追加分以外の差分なしで通る
 3. 個人 Account で正しい nanoid と username (未設定は null)。作成直後・取得・一覧・ids 指定・更新後を実 DB で検証
 4. 認可は既存の Account 取得と同じ。他人の Account の Profile 識別子はどこにも露出しない (実 DB で検証)
-5. 無効化は既存どおり返らず、停止・BAN 中は既存どおり moderation 付きで返り Profile 識別子も返る (実 DB で検証)
+5. 無効化は既存どおり全経路で返らず、停止・BAN 中は既存どおり ids 指定・個別取得では返らず所有者の cursor 一覧だけが moderation 付きで返り、その項目に Profile 識別子も含まれる (実 DB で検証)
 6. Profile 移管後は移管先の組織 Account の応答に現れ、移管元の個人 Account の応答には現れない (実 DB で検証)
 7. 組織 Account の扱いを PR に明記。複数 Profile でも表示 Profile と `profile_id` が同一で決定的、GET と PATCH で一致 (実 DB で検証)
 8. `openapi.json` 再生成、`openapi_spec_matches_committed_file` と CI の openapi-check が通る。`DATABASE_URL` を設定した実 DB テストが skip ではなく実行・パスし、既存 Rust CI (fmt / clippy / test) が通る
