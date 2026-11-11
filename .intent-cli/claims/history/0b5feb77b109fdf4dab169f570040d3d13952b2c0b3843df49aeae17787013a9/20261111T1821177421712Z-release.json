@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-identity-web-adaptation",
+  "actor": "fn-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-11T18:21:17.7421712+00:00",
+  "reason": "FN (profile-identity-web-adaptation) \u5B8C\u4E86: shuttlepub-frontends PR #38 \u30DE\u30FC\u30B8\u6E08\u307F (squash 7498380)\u3001queue completed",
+  "displaced_holder": "fn-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-11T05:12:28.5529208+00:00",
+  "base_commit": "db99b96b56a82c7e97c6ffa281ab413b28edd8c1"
+}
