@@ -12,6 +12,10 @@ D03 の SNS 本体 UI とクイックリアクション UI を扱う。画面実
 
 モックは `mocks/index.html` の単一 HTML で、CSS と JavaScript を内包し、外部の `v*.mjs` / `v*.css` を参照しない。
 
+## F3 実装
+
+[PR #42](https://github.com/ShuttlePub/shuttlepub-frontends/pull/42) squash `67ebe19243646a8a78749ae5f8944fcd6f2e34f2` でUIをマージ済み。[ui-spec v6](ui-spec.md)準拠で、S3契約準拠のstateful mockによる受け入れを完了した。実保存backendは未実装で、realは`NOT_IMPLEMENTED`表示。実保存・端末間同期は後続で、D03全体は未完了。
+
 ## 境界
 
 - 公開範囲の「公開・ホーム・フォロワー・ダイレクト」は Misskey に合わせた仮置きであり、ShuttlePub が扱う公開範囲としては未確定。選択肢の最終仕様を決めたものではない。

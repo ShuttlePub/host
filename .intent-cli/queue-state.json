@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T18:19:02.1014501+00:00",
+  "updated_at": "2026-11-11T19:43:55.170248+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -885,7 +885,7 @@
     {
       "execution_unit": "quick-reaction-web-ui",
       "title": "quick-reaction-web-ui: shuttlepub-web \u306E\u30AF\u30A4\u30C3\u30AF\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3 UI(\u30D4\u30C3\u30AB\u30FC\u6700\u4E0A\u6BB5\u306E\u5E38\u7528\u7D75\u6587\u5B57\u30FBProfile \u8A2D\u5B9A UI)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "shuttlepub-web-foundation",
         "quick-reaction-api-contract"
