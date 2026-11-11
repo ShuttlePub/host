@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T06:12:24.1602995+00:00",
+  "updated_at": "2026-11-11T12:28:22.1072179+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -793,7 +793,7 @@
     {
       "execution_unit": "shuttlepub-web-foundation",
       "title": "shuttlepub-web-foundation: shuttlepub-frontends \u306B SNS \u30E1\u30A4\u30F3 UI \u30A2\u30D7\u30EA apps/shuttlepub-web \u306E\u571F\u53F0\u3068 OpenAPI schema \u53D6\u8FBC\u57FA\u76E4",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "shuttlepub-openapi-foundation"
       ],

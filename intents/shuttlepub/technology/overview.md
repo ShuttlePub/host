@@ -58,3 +58,9 @@ kernel の `image` クレートも現時点では使用箇所なし。
 初動 (note-foundation) は Emumet 非依存で nitinol 基盤を検証し、capability
 (post-relay / 署名 API) が Emumet 側で完成した後に API 接続する (D3/D4)。
 その際の要求定義 (契約書) は note-foundation の受け入れ基準に含める (D10)。
+
+## ShuttlePub Web frontend (F0, 2026-11-11)
+
+`apps/shuttlepub-web` は PureScript + Flame の SSR/hydration アプリと Bun BFF で構成する。OpenAPI の正本・生成は ShuttlePub backend 側（S0）が所有し、frontends は producer commit SHA と checksum で固定した生成 OpenAPI を repo 内に取り込む。consumer 側では OpenAPI から TypeScript REST 型を生成し、型付き adapter からアプリ所有の GraphQL SDL に接続、SDL から PureScript 型を生成する。fixture は取り込んだ OpenAPI と照合し、生成物は手編集せず codegen の再現差分を CI で検査する。
+
+mock / real は明示的に選択し、real の 501・失敗を mock へ暗黙 fallback しない。F0 のレイアウトは [quick-reaction-ui ui-spec v6](../features/quick-reaction-ui/ui-spec.md) に従い frontends PR #37（squash `83bd6a2e13c72b4c57363f3d97aab192c0ba6588`）で完了。基盤 PR #30（squash `05f679d9a329bd8c9de2782ad422cddf8e82d149`）は OpenAPI producer pin `4a30cafd691a415c8a651151085d1747e5326cca` を使用する。タイムライン／投稿 API は暫定 SDL で、real adapter は `NOT_IMPLEMENTED`。実 backend 接続済みとは扱わない。検証境界は offline build/mock、codegen 再現性、fixture schema 適合、SSR/hydration と mobile/desktop visual CI。
