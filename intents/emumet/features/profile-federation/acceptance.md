@@ -331,6 +331,42 @@ Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 
 - **should2（見送り）**: Profile 行が削除された後（Account projector の cascade 削除後）の無効化状態に関するテストは未追加。必要なら後続で追加する。
 - 組織 Account の複数 Profile 列挙・代表の明示選択は後続課題（Profile 一覧 API を含む別 unit）。
 
+## UA 確定契約（Emumet PR #98、2026-11-11 マージ済み、squash `6504c91`、unit `profile-username-availability-api`、Emumet#96）
+
+計画外の追加 unit（ユーザー承認 question-66c258dd659b42f5ed0c13ae2c29fdf5）。FN（shuttlepub-frontends#34、emumet-web PR #38）の入力中検証で username の重複も判定するための読取専用 endpoint。独立 Reviewer 承認（head `6ca2512`）。
+
+### API
+
+- `GET /api/v1/profiles/username-availability?username=<value>`（Bearer 必須）。未認証・不正トークンは 401、`username` 欠落は 400。
+- 応答は **200 `{ username, available, reason? }`**（`username` は受信値のエコー、`reason` は `available:false` のときだけ）。`reason` は `invalid_format`（`^[a-z0-9][a-z0-9._-]{0,63}$` に不適合。暗黙変換なし、`Alice`・前後空白・空文字・65 文字を含む）／`reserved`（予約語 17 語）／`taken`。
+- **`taken` は「現在使用中」と「削除済み Profile が使っていて再利用不可」を区別しない**（応答のキー・値とも同一。列挙攻撃・プライバシー配慮）。
+- **可用性は参考値で最終判定ではない**: 最終判定は作成/設定 API の 400／409（確認から送信までに他者が取れば 409 になりうる）。予約（ホールド）なし。username 変更は範囲外（この unit も追加していない）。description と PR に明記。
+
+### 判定源
+
+- 形式・予約語は `ProfileUsername::check`（P1 と同一の規則を流用、重複実装なし）。使用中／削除済みは新設の `ProfileEventStore::username_exists`（`profile_events` の `data ->> 'username'` の存在確認。部分 unique index `profile_events_username_unique` と同じ判定源で、`EXPLAIN` で index 使用を確認）。`profiles` 投影行は使わない（Account 削除で消えるため）。作成時指定（Created）と一回限り設定（UsernameSet）の両イベントが対象。
+- 形式不正・予約語は DB を引かない。副作用なし（イベント・Account・auth account を作らない。`resolve_auth_account_id` を呼ばない）。migration・DependOn・AppModule の変更なし。
+
+### レート制限
+
+- Emumet に HTTP リクエスト単位の制限機構が無かったため **in-process の最小実装**: JWT の `(iss, sub)` 単位のスライディングウィンドウ、**60 回／分**、超過は **429 + `Retry-After`（秒、最小 1）**。超過リクエストは窓に数えない。ユーザー独立。期限切れキーは窓ごとに掃除（メモリは直近約 2 窓の生存キー数に有界）。時刻はロック取得後に採取し、保持する最新時刻より戻さない（並行・時刻逆転の回帰テストあり）。
+- **インスタンス単位で複数インスタンス間では共有しない**（N インスタンスなら実効上限は最大 N 倍）。分散制限が必要なら共有ストア（Redis 等）を使う別 unit。上限・窓は定数（設定化していない）。
+
+### 組織コンテキストの対象外
+
+- 本 endpoint は **JWT 認証だけの router**（`root_router.rs` の `authed_without_organization_context`）に置き、`organization_context_middleware` の外。同 middleware は `X-Organization-Id` があると `resolve_auth_account_id`（find-or-create）で auth account を作るため、読取専用の契約を守るために外した。`X-Organization-Id` は無視され、既存 endpoint の middleware は不変。実 DB テストで、未登録 subject＋組織ヘッダー（既存組織・存在しない組織）でも `auth_accounts` が増えず、ヘッダー付き未認証が 401 であることを確認（修正前の router ではこのテストが失敗することも確認）。
+
+### 検証
+
+- 実 DB（使い捨て PostgreSQL 16）の route test（`client_username_availability_tests.rs`、7 本）: 401・欠落 400、空き／形式不正 13 値／予約語 17 語／使用中（作成時指定・一回限り設定）／削除済み（Account 無効化＋projector 相当の `profiles` 行削除後も `taken`）、**作成/設定 API との一致**（`invalid_format`・`reserved` は 400、`taken` は 409、空きは成功）、副作用なし、組織ヘッダー、429（60 回で 429・別ユーザー無影響）。limiter 単体 7 本、driver の `username_exists` 実 DB テスト。`cargo test --workspace`（kernel 251 / application 297 / driver 324 / server 206）・fmt・clippy・`openapi.json` 再生成一致。
+- CI は実 job（check / driver / openapi-check / e2e / D15 / registration / coverage）がすべて pass。外部集計の `codecov/project`（と `codecov/patch`）は pending のままだったが、main は branch protection なし（必須 check なし）のため head `6ca2512` を `--match-head-commit` で固定してマージ。server の CI job は `DATABASE_URL` を持たず実 DB route test は skip されるため、実 DB 実行はローカルの使い捨て PostgreSQL のみ。
+
+### P4（Emumet PR #91）統合注意・申し送り
+
+- P4 は `openapi.json`・`openapi.rs`・`root_router.rs`・`route.rs`・`api/mod.rs`・`schema.rs`・`client_tests.rs`・`openapi/tests.rs` も触る。UA の変更は新規ファイル中心で共有ファイルは数行の追加だが、統合時に次を保つ: (1) `root_router.rs` の `authed_without_organization_context`（組織 context の外）と merge、(2) `openapi/tests.rs` の username ガード（空き確認 route を GET のみの例外として許容）、(3) `client_tests.rs` の `username_availability` モジュール宣言、(4) `openapi.json` は統合後に再生成（`git merge-tree` では衝突なし）。P4 側のテスト fixture 調整は P4 で対応する。
+- route `/profiles/username-availability` は静的セグメントで、将来 `/profiles/{profile_nanoid}` が mount されても axum では静的ルートが優先される。
+- FN（emumet-web）は 200 の `available`／`reason` で入力中表示を切り替え、429 は `Retry-After` に従って間引く（debounce 推奨）。作成/設定時の 409 は引き続き必ずハンドリングする。
+
 ## FN の BFF 部分の申し送り（shuttlepub-frontends PR #36、画面なし）
 
 BFF・GraphQL・REST 変換・mock・生成型の先行 PR。画面（PureScript の手書きソース）は変更していない。実 Emumet（49acf9d）に対し BFF の GraphQL 経路から実接続を確認済み（作成時の保存、一回限り設定、重複 `USERNAME_TAKEN` と設定済み `USERNAME_ALREADY_SET` の区別、形式・予約語・末尾改行、401/403/404/422、移管後の username 不変）。

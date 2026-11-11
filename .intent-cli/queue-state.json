@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T14:47:39.7406867+00:00",
+  "updated_at": "2026-11-11T16:50:51.6022389+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1305,7 +1305,7 @@
     {
       "execution_unit": "profile-username-availability-api",
       "title": "profile-username-availability-api: \u8A8D\u8A3C\u5FC5\u9808\u306E Profile username \u7A7A\u304D\u78BA\u8A8D API (GET /api/v1/profiles/username-availability) \u3092\u8FFD\u52A0",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
