@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-webhook-endpoint-management",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-11T14:49:43.8189399+00:00",
+  "reason": "hand off after publish (E15x issue #97 published)",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-11T14:42:09.0279813+00:00",
+  "base_commit": "eda490c91cc926ea508a850038ce34e82d41c536"
+}
