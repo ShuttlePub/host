@@ -26,7 +26,7 @@ P4 (in-place cutover) が username を必須化する前に、既存の作成導
 - username の段階 (E8/P1〜P3 optional → FN → P4 required): 本 unit は『新 UI は作成時に username を必ず送る』段階で、API が optional の間も新 UI は必須入力として扱う。username を省略する旧経路 (既存の Account 作成導線) は本 unit で置き換える。P4 の前提は本 unit の merge (モック合意後の画面実装を含む) と P1 との実接続確認。P4 の required 化に依存しない
 - username は Account 名から自動導出しない。Account 名とは別入力で、一度設定したら変更できない (変更 UI・変更 mutation を作らない)。Profile を組織へ移管 (Emumet 側で実装済みの Profile 移管) しても username は変わらず、emumet-web の identity 表示は username を Profile の属性として表示し、Account 名や移管先 Account から導出しない
 - 既存の BFF 構造 (apps/emumet-web/AGENTS.md): bff/schema.graphql が data API の SDL の正本、bff/emumet/{client.ts,real.ts,mock.ts} が Emumet クライアント契約 (snake_case ↔ camelCase 変換は real.ts)、bff/resolvers.ts、bff/loaders.ts、bff/context.ts。PureScript 型は scripts/sync-graphql.ts で bff/schema.graphql から生成 (src/Generated/ は手編集禁止)。現状の GraphQL は CreateAccountInput {name, isBot} と Profile {nanoid, accountId, displayName, summary, iconUrl, bannerUrl} で username を持たない
-- 【統合の直列化】bff/schema.graphql と生成型 (src/Generated/**) の変更は別レーン F15 (registration-gate-admin-ui、shuttlepub-frontends#31) と直列に統合する (同時に別ブランチで更新して衝突させない。main の最新から生成し直す)。F15 の BFF 部分 (PR #33) は merge 済みで、画面部分はモック合意待ち。workspace・CI・visual 共通基盤は別レーン F0 が所有し、本 unit はそれらを変更しない (既存の visual 登録経路へ画面/fixture を追加するのみ)。生成物 (src/Generated/**、OpenAPI 由来型) の手編集は禁止
+- 【統合の直列化】bff/schema.graphql と生成型 (src/Generated/**) の変更は別レーン F15 (registration-gate-admin-ui、shuttlepub-frontends#31) と直列に統合する (同時に別ブランチで更新して衝突させない。main の最新から生成し直す)。F15 の BFF 部分 (PR #33) は merge 済みで、画面部分はモック合意待ち。workspace・CI・visual 共通基盤は別レーン F0 が所有し、本 unit はそれらを変更しない (既存の visual 登録経路へ画面/fixture を追加するのみ。例外として frontend-visual.yml への emumet-web 専用検査 step (emumet-verify) の加算的追加は許容する)。ヘルプページ /help/username (spec の文言のみの最小ページ) の新設と、acct の @host に使う EMUMET_PUBLIC_HOST の明示設定契約 (Emumet の PUBLIC_BASE_URL の host[:port] と一致。EMUMET_API_URL への暗黙のフォールバックなし。未設定・不正は取得失敗) は本 unit の範囲に含む。生成物 (src/Generated/**、OpenAPI 由来型) の手編集は禁止
 - username の重複・予約語・形式違反・未設定・変更禁止はそれぞれ別の状態/エラーとして扱い (409 重複、400 形式・予約語、未設定は null、変更禁止は設定済み Profile への再設定拒否)、BFF/UI で混同しない。サーバー応答の 400/409/401/403 を握りつぶさず、認可の正本は Emumet API とする
 
 ## Target Repo / Path / Part
@@ -46,7 +46,7 @@ Part: emumet-web の Profile username 対応: BFF (Emumet REST 変換・GraphQL 
 - username の変更 (変更 UI・変更 mutation・変更 API)
 - 新しい組織管理画面一式、Profile 移管 UI の新設
 - モック合意前の画面実装 (PureScript の View・画面・ルート・CSS・visual baseline の追加・変更)
-- workspace・CI・visual 共通基盤の変更 (F0 の所有)、shuttlepub-web (SNS アプリ) 側の変更
+- workspace・CI・visual 共通基盤の変更 (F0 の所有。ただし emumet-web 専用検査 step (emumet-verify) を frontend-visual.yml へ加算的に追加することは許容する: 他アプリの job・既存 step は不変が条件。revision_history 参照)、shuttlepub-web (SNS アプリ) 側の変更
 - Emumet 側の実装 (P1)、P4 の username 必須化・切替
 - bff/schema.graphql・生成型の F15 との並行更新 (直列に統合する)
 

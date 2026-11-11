@@ -43,6 +43,11 @@ implementation_issue_packet:
     - "【モック合意後】既存 Profile (username 未設定) に一回限りの設定ができ、設定後は変更できない状態として表示される。重複・予約語・形式違反・未設定・変更禁止が区別して表示される。identity 表示が username を使う"
     - "【モック合意後】SSR/hydration (全状態 fixture で DOM 破損・不一致がない)、visual (mobile/desktop、作成・未設定・設定済み・各エラー) が既存の visual 経路で通る。生成物は手編集されず、sync-graphql の再生成差分が空である"
     - "既存の emumet-web 画面・BFF の挙動 (ログイン、アカウント一覧/詳細、moderation、登録ゲート管理 BFF) は変更されない。username の変更機能・新しい組織管理画面一式は作らない"
+  revision_history:
+    - "2026-11-11: frontend-visual.yml への emumet-web 専用検査 step (emumet-verify: 全状態の SSR→hydration とダイアログのキーボード検査) の加算的追加を許容 (F0 マージ済み。F0 所有条項は並行編集回避が目的。他アプリの job・既存 step は不変であることが条件。AC7 の SSR→hydration CI 証跡)。親 (lane root) の判断。FN 画面 PR shuttlepub-frontends#38 のレビューで確認。"
+    - "2026-11-11: ヘルプページ /help/username の新設 (emumet-web 内の最小ページ。spec ui-username-spec.md の文言のみで新しい方針は足さない。入力欄の (?) の実リンク先) を FN の範囲に含める。親 (lane root) の判断。FN 画面 PR #38 のレビューで確認。"
+    - "2026-11-11: EMUMET_PUBLIC_HOST の明示設定契約を FN の範囲に含める (acct の @host に使う公開ホスト。Emumet の PUBLIC_BASE_URL の host[:port] と一致させる。EMUMET_API_URL への暗黙のフォールバックはしない。未設定・形式不正は BFF が INSTANCE_HOST_NOT_CONFIGURED を返し、画面は確認へ進めず再取得を促す。BFF から Emumet の公開ホストは確かめられないため形式だけ検査)。親 (lane root) の判断。FN 画面 PR #38 のレビューで確認。"
+
 intent_placement:
   primary_intent: intents/emumet/features/profile-federation/overview.md
   supporting_intents:
@@ -76,6 +81,7 @@ knowledge_updates:
     target_paths:
       - "intents/emumet/features/profile-federation/acceptance.md"
     summary: "FN の BFF/GraphQL の確定形、username 関連のエラー区別、画面実装ゲートとモック合意の記録、検証境界を PF acceptance.md に記録する (host 側 closeout writeback)"
+
 closeout_learning:
   expected: "確定した BFF/GraphQL の形、username 関連エラーの区別、fixture の一覧、画面構成のモック合意内容 (host intent 側)、P1 との実接続結果、visual の登録内容"
   write_back_required: true
