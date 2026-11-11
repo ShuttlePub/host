@@ -1,0 +1,7 @@
+execution_unit: registration-webhook-endpoint-management
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/registration-webhook-endpoint-management"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/registration-webhook-endpoint-management/github-body.md"
+created_issue_number: 97
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/97"
+published_label_name: null

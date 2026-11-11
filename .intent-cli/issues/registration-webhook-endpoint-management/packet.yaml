@@ -1,0 +1,83 @@
+implementation_issue_packet:
+  issue_title: "registration-webhook-endpoint-management: 登録ゲート Webhook 送信先の管理 API (複数送信先 CRUD・シークレット暗号化・通知種別選択・送信先ごとの配送/状態/テスト/再試行・失敗一覧ページング)"
+  issue_kind: feature
+  source_execution_unit: registration-webhook-endpoint-management
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/entity, kernel/src/repository, application/src/service, driver/src/webhook, driver/src/http_signing, driver/src/database/postgres, server/src/route, server/src/api, server/src/webhook_worker.rs, server/src/openapi.rs, server/src/route.rs, server/src/main.rs, migrations, openapi.json, docs"
+  target_part: "登録ゲート Webhook の送信先管理: 管理者専用の複数送信先 CRUD API (revision 楽観ロック・監査・URL 部分マスク表示) + シークレットの暗号化保存と鍵運用文書 + 通知種別 4 カテゴリの選択 + E15w 配送の送信先ごと拡張 (署名・状態・テスト送信・1 件ずつ再試行・cursor ページングの失敗一覧) + 既存環境変数 1 件の非破壊移行 + SSRF 対策の登録時/接続時の二段 + OpenAPI 再生成 + 文書更新"
+  dependencies: [registration-admin-notification-webhook]
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない"
+    - "決定の出典: question-433de6d63c710adbcaa304b4ba7d1ba6 (ユーザー選択 B: Emumet に送信先の登録・編集・削除 API を追加してから F15 の ui-spec どおり実装)。F15 の確定仕様は host intents/emumet/features/registration-readiness-gate/ui-spec.md 6「Webhook」。E15w (Emumet#68 / PR #69) は送信先 1 件を環境変数で管理し登録・編集 API を持たない"
+    - "E15w の契約を維持する: Webhook の不達・失敗・設定不備・復号不可・worker 停止・送信先 CRUD は登録ゲートの状態を一切変えず、配送失敗/CRUD が新しい通知イベント (Webhook 配送対象) を生まない (無限再帰なし)。配送は状態遷移 transaction の外側の別 worker。応答本文は読み捨て"
+    - "E15w の配送土台 (stable event ID・allowlist ペイロード・HMAC-SHA256 署名 `v1=` + 署名対象 `timestamp.body`・lease・指数バックオフ + jitter・最大 8 回/24 時間・failed は管理者の再試行まで再送しない・有効化前イベントは配送しない) を送信先ごとに拡張する。event ID は送信先をまたいで同一"
+    - "通知種別 (GateEventKind、E15a/E15d): outage_started / outage_recovered / protection_degraded / protection_lost_stopped / enforcement_lost_stopped / enforcement_restored / override_started / override_revoked の 8 種別。UI の『送る通知』4 カテゴリとの対応 (固定): outage = outage_started + protection_degraded、recovery = outage_recovered + enforcement_restored、auto_stop = protection_lost_stopped + enforcement_lost_stopped、override = override_started + override_revoked。exhaustive match (ワイルドカード禁止) で実装し、webhook_test はカテゴリ対象外"
+    - "シークレットは書き込み専用で応答・ログ・エラー・監査・通知・payload に出さない。DB 保存は実績ある AEAD crate による暗号化 (送信先 ID を AAD、暗号文に鍵識別子)。暗号鍵はサーバー設定で、鍵の生成・保管・喪失時の影響・復旧手順 (シークレット再入力) を docs 化する。鍵ローテーション機構は範囲外。鍵未設定では secret を平文保存せず作成/更新を明示エラーで拒否する"
+    - "一覧/取得の応答は URL を host + 伏せ字 + 末尾数文字の部分マスク形でのみ返し (例 hooks.example.net/••••/a8f2、短い path トークンは末尾を出さない)、全 URL・path・query・userinfo は返さない。したがって更新で URL/シークレット省略 = 変更しない。F15 の編集 UI は欄を空で開く (F15 へ伝達する契約)"
+    - "配送失敗の一覧は cursor ページング (E15a 通知一覧の before/limit/next_cursor の流儀)。件数に関わらず古い failed にも到達でき (F15 レビュー指摘: 最新 50 件 RECENT_DELIVERY_LIMIT 外の failed を再試行できない問題の解消)、(送信先, event ID) 1 件単位の再試行ができる。成功履歴は一覧に出さない"
+    - "SSRF 対策は登録時と接続時の両方: 既存 driver/src/http_signing/ssrf.rs と E15w の driver/src/webhook/endpoint.rs の検査を流用 (共通化は既存挙動・既存テストを変えない最小の抽出)。HTTPS 限定・リダイレクト禁止・接続固定・全アドレス検査・proxy 不使用・テスト用例外は cfg(test)/test-mode 限定"
+    - "既存の環境変数 1 件 (REGISTRATION_WEBHOOK_URL ほか) は非破壊移行: 暗号鍵あり = 起動時に初期送信先として冪等に一度だけ取り込み (既存の未完了/failed 配送を引き継ぎ、取り込み後は DB が正本、削除しても再取り込みしない)、鍵なし = 従来どおり配送し読み取り専用の環境変数送信先として状態に現れる。migration は E15w の配送記録を破壊しない。E15w の集約 API の置換/維持は child が決め PR 本文と docs に明記 (frontends に Webhook API の消費者はなく、F15 BFF は未接続)"
+    - "管理者認可は E15a/E15w と同じ既存 admin 判定 (Keto instance:administrate、ADR 0004)。新しいロールモデルを作らない。revision 楽観ロックは E15a の流儀 (本文の revision、競合 409)"
+    - "共有ファイル (server/src/openapi.rs, server/src/route.rs, server/src/root_router.rs, server/src/main.rs, DI wiring, migrations/, openapi.json) は他 unit と共有する。一件ずつ統合し、その時点の main から openapi.json を再生成する。migration 番号は統合時点の最新の次を採番する。編集は最小限にし他 unit の差分を巻き込まない"
+  intent_references:
+    - intents/emumet/features/registration-readiness-gate/overview.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/features/registration-readiness-gate/ui-spec.md
+    - intents/shuttlepub/packets/candidates.md
+    - intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json
+  acceptance_criteria:
+    - "管理者のみの送信先 CRUD API が動く (複数送信先・件数上限・重複 URL 拒否)。非管理者は全 API で 401/403。更新・削除は revision 楽観ロックで不一致は 409。作成・更新・削除・テスト送信・再試行は監査され、監査に URL 全体・シークレットを残さない"
+    - "一覧/取得の応答は URL を部分マスク形でのみ返し、全 URL・path・query・userinfo を返さない。シークレットは応答・ログ・エラー・監査・通知・payload に出ない。DB には暗号文のみ (平文が DB に無いことを実 DB テストで確認)。暗号鍵はサーバー設定で、鍵の生成・保管・喪失時の影響・復旧手順が docs 化されている。鍵未設定では secret を平文保存せず明示エラー"
+    - "送る通知は 4 カテゴリ (outage / recovery / auto_stop / override) から 1 つ以上選択でき、GateEventKind との対応が exhaustive match で実装され docs 化されている (対応表は受信側文書にも載り、enforcement_lost_stopped / enforcement_restored も追記される)。イベント発生時点でその送信先がそのカテゴリを購読していた場合のみ配送される。webhook_test は選択対象外"
+    - "配送は送信先ごと: event ID は送信先をまたいで同一かつ再試行・再送・管理者再試行で不変、署名は送信先ごとのシークレット (E15w 互換のヘッダー・方式・テストベクタ)、at-least-once、lease、再試行表は E15w どおり。1 つの送信先の失敗・遅延・復号不可が他の送信先とゲートに波及しない。新規送信先は作成後のイベントだけを配送し遡及しない"
+    - "送信先ごとの状態 (正常 healthy / 配送失敗 failing) が取得できる。テスト送信は送信先指定で 1 回だけ送り、ゲート状態・通知一覧・未読件数・送信先の状態・配送記録に影響しない。再試行は (送信先, event ID) 1 件単位と一括の両方ができ、同じ event ID を再送する"
+    - "配送失敗の一覧が cursor ページングで取得でき、最新 50 件より古い failed も到達して 1 件再試行できる (テストで固定)。送信先での絞り込みができ、成功履歴は出さない。送信先ごとの failed 件数と全体の failed 有無 (タブの ● 用) が取得できる"
+    - "SSRF 対策が登録時と接続時の両方にある (HTTPS のみ・userinfo/fragment 拒否・全アドレス検査・接続固定・リダイレクト禁止・timeout・proxy 不使用)。登録時に通った送信先でも接続時に内部アドレスなら拒否し恒久失敗として記録する。SSRF fixture (内部アドレスへ解決するホスト名・IPv4-mapped IPv6・数値表記ゆれ・IPv6 ゾーン・末尾ドット・localhost 系・metadata アドレス・credentials 付き URL・http://・DNS rebinding・リダイレクト先が内部) で確認される。テスト用例外は本番設定から有効化できない"
+    - "既存環境変数 1 件の移行が非破壊: 鍵あり = 初期送信先として冪等に一度だけ取り込み (既存の未完了/failed 配送を引き継ぐ)、鍵なし = 従来どおり配送され API から編集不可と分かる。取り込み後の削除で再取り込みしない。migration は E15w の配送記録を失わない。環境変数未設定/設定不備の挙動は E15w のまま。移行手順が docs 化されている"
+    - "E15w 契約の維持: Webhook の不達・failed・設定不備・復号不可・worker 停止・送信先 CRUD でゲートの状態は変わらず、これらが新しい通知イベント (Webhook 配送対象) を生まない。テストで固定されている"
+    - "OpenAPI (openapi.json) が再生成され差分検査に通る。既存 API (login・POST /api/v1/accounts・E15a の管理 API・通知一覧) の挙動は変更されない。E15w の集約 API を置換/維持した結果が PR 本文と docs に明記される"
+  revision_history:
+    - "2026-11-11: E15w の追加 unit E15x として packet 化 (draft)。F15 ui-spec 6「Webhook」と E15w (環境変数 1 件・登録 API なし) の乖離を、ユーザー決定 question-433de6d63c710adbcaa304b4ba7d1ba6 (B: 送信先 CRUD API を Emumet に追加) で解消する"
+intent_placement:
+  primary_intent: intents/emumet/features/registration-readiness-gate/overview.md
+  supporting_intents:
+    - intents/emumet/features/registration-readiness-gate/ui-spec.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/shuttlepub/packets/candidates.md
+  new_intent_needed: false
+  placement_rationale: "RG feature (registration-readiness-gate) は overview.md / packets.md / acceptance.md / ui-spec.md を持つ。E15x は E15w の追加 unit で、仕様の正本は ui-spec.md 6「Webhook」とユーザー決定 question-433de6d63c710adbcaa304b4ba7d1ba6"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/packets.md
+      - intents/shuttlepub/packets/candidates.md
+    summary: "RG packets.md に E15x 行 (依存 E15w・後続 F15 Webhook タブ・経緯 question-433de6d63c710adbcaa304b4ba7d1ba6) と issue リンクを追記。candidates.md D15 節へ E15x の queue 登録範囲だけを追記 (D15 全体は ready/完了にしない)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/acceptance.md
+    summary: "送信先管理の契約 (カテゴリ対応表・シークレット暗号化と鍵運用・環境変数の移行・失敗一覧ページング・状態の定義) を acceptance.md に記録 (host 側 closeout writeback)。受信側/運用者向け文書は Emumet 側成果物"
+closeout_learning:
+  expected: "確定した API パスと応答形、カテゴリ識別子、暗号方式・鍵設定名・鍵喪失時の挙動、環境変数の取り込み仕様、送信先状態 (healthy/failing) の定義、失敗一覧のカーソル仕様、E15w 集約 API の扱い、F15 へ伝達すべき契約 (編集 UI の URL/シークレット欄は空で開く等)"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "REST API (/api/v1/admin/registration-gate/webhook/endpoints*: 送信先 CRUD・テスト送信・再試行・失敗一覧)、サーバー設定 (暗号鍵・既存環境変数の移行)、受信側/運用者向け Webhook 文書、OpenAPI (openapi.json)"

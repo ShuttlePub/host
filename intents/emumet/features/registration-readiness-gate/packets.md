@@ -16,6 +16,7 @@ domain `emumet`。E15a〜E15w の target は `ShuttlePub/Emumet`、F15 のみ `S
 | E15c | `registration-protection-readiness` | E15b で決めた保護 adapter・実検証 API・設定世代・readiness 鮮度期限・設定喪失と一時障害の分類 | E15a, E15b | PR #85 squash merge 済み（`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`）、[Emumet#80](https://github.com/ShuttlePub/Emumet/issues/80) close 済み |
 | E15d | `registration-gate-enforcement` | 実 Kratos hook 配線・保護実行・継続 probe・ゲートと通知イベントの統合。本番 Kratos 設定変更は E15d が所有 | E15a, E15b, E15c | PR #88 (part 1)・#92 (part 2) squash merge 済み。E15d unit 完了。D15 全体受け入れは F15 画面（モック合意待ち）が残るため保留 |
 | E15w | `registration-admin-notification-webhook` | 永続イベントの外部 Webhook 配送（stable event ID・署名・timeout/再試行・失敗状態・管理者テスト/再試行） | E15a | PR #69 squash merge 済み（[Emumet#68](https://github.com/ShuttlePub/Emumet/issues/68) close 済み） |
+| E15x | `registration-webhook-endpoint-management` | E15w の追加 unit。管理者専用の Webhook 送信先 CRUD API（複数送信先・revision・監査・URL 部分マスク・シークレット暗号化・通知 4 カテゴリ選択）と、送信先ごとの配送・状態・テスト送信・1 件ずつ再試行・cursor ページングの配送失敗一覧・登録時/接続時 SSRF・既存環境変数 1 件の非破壊移行。F15 の Webhook タブ画面は含まない | E15w（完了） | queue 登録・issue 公開済み（[Emumet#97](https://github.com/ShuttlePub/Emumet/issues/97)）。後続は F15 の Webhook タブ。経緯: ユーザー決定 `question-433de6d63c710adbcaa304b4ba7d1ba6`（B: 送信先の登録・編集・削除 API を Emumet に追加してから ui-spec どおり実装） |
 | F15 | `registration-gate-admin-ui` | emumet-web 管理画面（状態・理由・開閉・再開・override・常時警告・通知一覧/既読・Webhook 状態）。target `ShuttlePub/shuttlepub-frontends` | E15a の契約（モック UI は E15c/E15d/E15w と並行可） | queue 登録・issue 公開済み（[shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）。BFF/API 部分 PR #33 は squash merge 済み。**画面実装 PR はモック合意が host intent に記録されるまで出さない**（BFF・API 接続・生成型・fixture は先行可）。F15 は未完了 |
 
 queue 登録済みの unit（登録成功後に追記する）:
@@ -24,6 +25,7 @@ queue 登録済みの unit（登録成功後に追記する）:
 - E15d `registration-gate-enforcement` — [Emumet#81](https://github.com/ShuttlePub/Emumet/issues/81)（packet: `.intent-cli/issues/registration-gate-enforcement/`、2026-11-10 第3便 queue 登録・issue 公開。依存 E15a・E15b・E15c。unit 範囲のみで D15 全体は ready/完了ではない）
 - E15a `registration-gate-control-plane` — [Emumet#65](https://github.com/ShuttlePub/Emumet/issues/65)（packet: `.intent-cli/issues/registration-gate-control-plane/`、2026-11-10 queue 登録・issue 公開）
 - E15b `registration-kratos-guard-contract` — [Emumet#64](https://github.com/ShuttlePub/Emumet/issues/64)（packet: `.intent-cli/issues/registration-kratos-guard-contract/`、2026-11-10 queue 登録・issue 公開）
+- E15x `registration-webhook-endpoint-management` — [Emumet#97](https://github.com/ShuttlePub/Emumet/issues/97)（packet: `.intent-cli/issues/registration-webhook-endpoint-management/`、2026-11-11 queue 登録・issue 公開。依存 E15w（完了）、後続 F15 の Webhook タブ。unit 範囲のみで D15 全体は ready/完了ではない）
 - E15w `registration-admin-notification-webhook` — [Emumet#68](https://github.com/ShuttlePub/Emumet/issues/68)（packet: `.intent-cli/issues/registration-admin-notification-webhook/`、2026-11-10 queue 登録・issue 公開。依存 E15a）
 - F15 `registration-gate-admin-ui` — [shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)（packet: `.intent-cli/issues/registration-gate-admin-ui/`、2026-11-10 queue 登録・issue 公開。依存 E15a の契約・E15w の API。画面実装はモック合意待ち — 下記「F15 の画面実装ゲート」）
 
@@ -69,7 +71,7 @@ queue 登録済みの unit（登録成功後に追記する）:
 ## 依存図
 
 ```text
-E15a ─┬→ E15w ───────────────┐
+E15a ─┬→ E15w ─→ E15x ───────┤   （E15x の API 公開後に F15 の Webhook タブが接続する）
       ├→ F15 ────────────────┤
       └→ E15c ─→ E15d ──────┴→ D15 統合受け入れ
 E15b ───→ E15c
