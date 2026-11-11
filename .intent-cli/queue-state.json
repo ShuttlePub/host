@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T16:50:51.6022389+00:00",
+  "updated_at": "2026-11-11T17:06:53.8279578+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -861,7 +861,7 @@
     {
       "execution_unit": "shuttlepub-web-emumet-auth",
       "title": "shuttlepub-web-emumet-auth: shuttlepub-web \u306E Emumet \u8A8D\u8A3C(Hydra OIDC \u30ED\u30B0\u30A4\u30F3\u30FBsession\u30FBProfile \u9078\u629E)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "shuttlepub-web-foundation"
       ],

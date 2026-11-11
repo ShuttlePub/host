@@ -213,3 +213,5 @@
 {"ts":"2026-11-11T14:47:39.7406867+00:00","execution_unit":"registration-webhook-endpoint-management","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#97","reason":"https://github.com/ShuttlePub/Emumet/issues/97"}
 {"ts":"2026-11-11T16:50:51.5909173+00:00","execution_unit":"profile-username-availability-api","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":98}
 {"ts":"2026-11-11T16:50:51.5909173+00:00","execution_unit":"profile-username-availability-api","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":98}
+{"ts":"2026-11-11T17:06:53.8158657+00:00","execution_unit":"shuttlepub-web-emumet-auth","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":41}
+{"ts":"2026-11-11T17:06:53.8158657+00:00","execution_unit":"shuttlepub-web-emumet-auth","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":41}
