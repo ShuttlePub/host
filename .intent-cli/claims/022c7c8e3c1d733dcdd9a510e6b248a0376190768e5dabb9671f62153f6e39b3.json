@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:profile-username-availability-api",
+  "actor": "design",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-11T14:41:56.1132257+00:00",
+  "base_commit": "60184491497caa25fcb936a85a586dc987804167"
+}
