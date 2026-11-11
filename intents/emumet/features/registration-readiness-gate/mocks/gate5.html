@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="ja" data-color="catppuccin-mocha" data-shape="rounded">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>モック v5: 一般登録の準備ゲート（管理者） — emumet-web</title>
+<style>
+/* ===== design tokens (copied from packages/design-tokens/tokens.css) ===== */
+:root, [data-color="catppuccin-mocha"] {
+  --theme-bg-primary: #1e1e2e; --theme-bg-secondary: #181825; --theme-bg-surface: #313244;
+  --theme-bg-nav: rgba(30, 30, 46, 0.9); --theme-text-primary: #cdd6f4; --theme-text-secondary: #bac2de;
+  --theme-text-muted: #6c7086; --theme-text-heading: #cdd6f4; --theme-accent: #cba6f7;
+  --theme-accent-hover: #b4befe; --theme-border: #45475a; --theme-temp-high: #f38ba8;
+  --theme-temp-low: #89b4fa; --theme-error: #f38ba8;
+  /* 提案: 追加トークン（既存 tokens.css には無い） */
+  --x-success: #a6e3a1; --x-warning: #f9e2af; --x-info: #89b4fa; --x-muted-strong: #9399b2;
+}
+[data-color="tokyo-night"] {
+  --theme-bg-primary: #1a1b26; --theme-bg-secondary: #16161e; --theme-bg-surface: #24283b;
+  --theme-bg-nav: rgba(26, 27, 38, 0.9); --theme-text-primary: #a9b1d6; --theme-text-secondary: #787c99;
+  --theme-text-muted: #565f89; --theme-text-heading: #c0caf5; --theme-accent: #7aa2f7;
+  --theme-accent-hover: #89ddff; --theme-border: #3b4261; --theme-temp-high: #f7768e;
+  --theme-temp-low: #7dcfff; --theme-error: #f7768e;
+  --x-success: #9ece6a; --x-warning: #e0af68; --x-info: #7dcfff; --x-muted-strong: #9aa5ce;
+}
+:root, [data-shape="rounded"] { --theme-radius: 0.75rem; --theme-radius-lg: 1rem; --theme-shadow: 0 2px 8px rgba(0,0,0,.15); }
+[data-shape="sharp"] { --theme-radius: 0px; --theme-radius-lg: 0px; --theme-shadow: none; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: ui-sans-serif, system-ui, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif; background: #0d0d12; color: #d8d8e0; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; }
+:focus-visible { outline: 2px solid var(--theme-accent); outline-offset: 2px; }
+
+/* ===== mock chrome (実画面には含まれない) ===== */
+.mockbar { position: sticky; top: 0; z-index: 50; background: #f4f1e8; color: #222; border-bottom: 3px dashed #c9a23a; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; font-size: 13px; }
+.mockbar strong.tag { background: #c9a23a; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.mockbar label { display: inline-flex; gap: 6px; align-items: center; }
+.mockbar select { padding: 3px 6px; border: 1px solid #aaa; border-radius: 4px; background: #fff; color: #222; }
+.seg { display: inline-flex; border: 1px solid #aaa; border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; background: #fff; color: #222; padding: 4px 10px; cursor: pointer; font-size: 12px; }
+.seg button[aria-pressed="true"] { background: #333; color: #fff; }
+.stage { padding: 24px 16px 40px; display: flex; justify-content: center; }
+.device { width: 100%; max-width: 1180px; container-type: inline-size; border: 1px solid #2c2c38; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+.stage[data-vp="mobile"] .device { max-width: 390px; border-radius: 28px; border-width: 8px; border-color: #2c2c38; }
+.pin { display: none; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #ff8a00; color: #111; font-size: 12px; font-weight: 800; vertical-align: middle; margin: 0 4px; box-shadow: 0 0 0 2px #111; cursor: help; flex: none; }
+.show-pins .pin { display: inline-flex; }
+
+.issues { max-width: 1180px; margin: 0 auto 60px; padding: 0 16px; color: #e8e8ee; }
+.issues h2 { font-size: 20px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+.issue { background: #17171f; border: 1px solid #2c2c38; border-left: 4px solid #ff8a00; border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
+.issue h3 { margin: 0 0 8px; font-size: 15px; display: flex; gap: 8px; align-items: center; }
+.issue h3 .pin { display: inline-flex; }
+.issue ol, .issue ul { margin: 6px 0; padding-left: 22px; font-size: 13.5px; line-height: 1.7; }
+.issue .rec { margin-top: 8px; font-size: 13.5px; background: #1f2a1f; border: 1px solid #355235; padding: 8px 10px; border-radius: 6px; }
+.issue .rec b { color: #a6e3a1; }
+.issue p { font-size: 13.5px; line-height: 1.7; margin: 6px 0; color: #c8c8d4; }
+.notes { font-size: 13px; color: #aaa; line-height: 1.7; }
+
+/* ===== app (Tailwind クラス相当を手書き) ===== */
+.app { min-height: 760px; background: var(--theme-bg-secondary); color: var(--theme-text-primary); position: relative; }
+.nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); background: var(--theme-bg-nav); border-bottom: 1px solid var(--theme-border); }
+.nav-inner { max-width: 56rem; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 12px; }
+.brand { font-size: 1.125rem; font-weight: 700; letter-spacing: -.025em; color: var(--theme-text-heading); }
+.nav ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; align-items: center; }
+.navlink { position: relative; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: .875rem; font-weight: 500; color: var(--theme-text-secondary); border-radius: var(--theme-radius); background: none; border: 0; cursor: pointer; text-decoration: none; transition: color .15s, background .15s; }
+.navlink:hover { color: var(--theme-accent); background: var(--theme-bg-surface); }
+.navlink[aria-current="page"] { color: var(--theme-accent); }
+.nav .who { padding: 8px 12px; font-size: .875rem; color: var(--theme-text-muted); }
+.badge-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--theme-error); color: var(--theme-bg-secondary); font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.content { max-width: 56rem; margin: 0 auto; padding: 48px 24px; }
+.stack > * + * { margin-top: 2rem; }
+.stack-sm > * + * { margin-top: 1rem; }
+.surface { border-radius: var(--theme-radius-lg); border: 1px solid var(--theme-border); background: var(--theme-bg-surface); box-shadow: var(--theme-shadow); }
+.p5 { padding: 1.25rem; } .p6 { padding: 1.5rem; }
+h1.page { font-size: 2.25rem; font-weight: 700; letter-spacing: -.025em; color: var(--theme-text-heading); margin: 0; }
+h2.sec { font-size: 1.25rem; font-weight: 600; color: var(--theme-text-primary); margin: 0 0 .75rem; }
+.card-title { font-size: 1.125rem; font-weight: 600; color: var(--theme-text-heading); margin: 0; }
+.muted { color: var(--theme-text-muted); } .secondary { color: var(--theme-text-secondary); }
+.small { font-size: .875rem; } .xs { font-size: .75rem; }
+.row { display: flex; align-items: center; gap: .75rem; }
+.between { justify-content: space-between; }
+.wrap { flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: .625rem 1rem; font-size: .875rem; font-weight: 500; border-radius: var(--theme-radius); border: 1px solid transparent; cursor: pointer; transition: background .15s, opacity .15s; white-space: nowrap; }
+/* 既存は text-white on accent。モックではコントラスト確保のため暗色文字（論点外の差分） */
+.btn-primary { background: var(--theme-accent); color: var(--theme-bg-secondary); }
+.btn-primary:hover { background: var(--theme-accent-hover); }
+.btn-outline { background: transparent; color: var(--theme-accent); border-color: var(--theme-border); }
+.btn-outline:hover { background: var(--theme-bg-primary); }
+.btn-danger { background: var(--theme-error); color: var(--theme-bg-secondary); }
+.btn-danger-ghost { background: transparent; color: var(--theme-error); border-color: color-mix(in srgb, var(--theme-error) 50%, transparent); }
+.btn-danger-ghost:hover { background: color-mix(in srgb, var(--theme-error) 10%, transparent); }
+.btn-sm { padding: .25rem .75rem; font-size: .75rem; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.input { width: 100%; padding: .5rem .75rem; font-size: .875rem; border: 1px solid var(--theme-border); background: var(--theme-bg-surface); color: var(--theme-text-primary); border-radius: var(--theme-radius); }
+.input:focus { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 50%, transparent); }
+.label { display: block; font-size: .875rem; font-weight: 500; color: var(--theme-text-primary); margin-bottom: .375rem; }
+.hint { font-size: .75rem; color: var(--theme-text-muted); margin: .375rem 0 0; line-height: 1.6; }
+.err-banner { padding: .75rem 1rem; font-size: .875rem; border-radius: var(--theme-radius); color: var(--theme-error); border: 1px solid var(--theme-border); background: rgba(239,68,68,.1); }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; font-size: .75rem; font-weight: 600; border-radius: var(--theme-radius); border: 1px solid currentColor; white-space: nowrap; }
+.tone-success { color: var(--x-success); } .tone-warning { color: var(--x-warning); } .tone-error { color: var(--theme-error); } .tone-muted { color: var(--x-muted-strong); } .tone-info { color: var(--x-info); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; display: inline-block; flex: none; }
+.kv { display: flex; gap: .75rem; padding: .5rem 0; border-bottom: 1px solid var(--theme-border); font-size: .875rem; }
+.kv:last-child { border-bottom: 0; }
+.kv > span:first-child { min-width: 110px; flex: none; color: var(--theme-text-muted); font-weight: 500; }
+.kv > span:last-child { color: var(--theme-text-primary); word-break: break-all; }
+.scrim { position: absolute; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: flex-start; justify-content: center; padding: 96px 16px 16px; z-index: 30; }
+.modal { width: 100%; max-width: 32rem; padding: 1.5rem; }
+.modal h2 { margin: 0 0 .75rem; font-size: 1.25rem; color: var(--theme-text-heading); }
+.check { display: flex; gap: .625rem; align-items: flex-start; font-size: .875rem; color: var(--theme-text-secondary); cursor: pointer; line-height: 1.6; }
+.check input { width: 16px; height: 16px; margin-top: 3px; accent-color: var(--theme-accent); flex: none; }
+.spin { width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: sp .8s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+@container (max-width: 640px) {
+  .nav-inner { padding: 0 12px; height: 56px; }
+  .nav .who { display: none; }
+  .navlink { padding: 8px 6px; }
+  .nav ul { gap: 0; }
+  .nav-inner { gap: 6px; }
+  .content { padding: 24px 16px; }
+  h1.page { font-size: 1.75rem; }
+  .stack > * + * { margin-top: 1.5rem; }
+  .scrim { padding-top: 64px; align-items: flex-start; }
+  .kv { flex-direction: column; gap: 2px; }
+}
+.nav li { display: flex; align-items: center; }
+.strip { background: color-mix(in srgb, var(--theme-error) 16%, var(--theme-bg-primary)); border-bottom: 1px solid var(--theme-error); }
+.strip .inner { max-width: 56rem; margin: 0 auto; padding: .5rem 24px; display: flex; gap: .75rem; align-items: center; font-size: .875rem; }
+.strip b { color: var(--theme-error); flex: 1; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--theme-border); overflow-x: auto; margin-top: 1rem; }
+.tab { padding: .625rem .875rem; font-size: .875rem; font-weight: 500; color: var(--theme-text-secondary); background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.tab[aria-selected="true"] { color: var(--theme-accent); border-bottom-color: var(--theme-accent); }
+.list { overflow: hidden; }
+.li { display: flex; align-items: center; gap: .75rem; padding: .875rem 1.25rem; border-bottom: 1px solid var(--theme-border); font-size: .875rem; }
+.li:last-child { border-bottom: 0; }
+.li .grow { flex: 1; min-width: 0; }
+.li .t { color: var(--theme-text-primary); font-weight: 500; }
+.li .time { color: var(--theme-text-muted); font-size: .75rem; white-space: nowrap; }
+.sec-h { display: flex; align-items: center; gap: .5rem; margin: 0 0 .75rem; font-size: 1rem; font-weight: 600; color: var(--theme-text-primary); }
+.sec-h .sp { flex: 1; }
+.help { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--theme-border); color: var(--theme-text-muted); font-size: .75rem; display: inline-flex; align-items: center; justify-content: center; background: none; cursor: pointer; text-decoration: none; flex: none; }
+.help:hover { color: var(--theme-accent); border-color: var(--theme-accent); }
+.gate { display: flex; align-items: center; gap: .75rem; padding: 1.25rem; flex-wrap: wrap; }
+.gate .name { font-size: 1.125rem; font-weight: 600; color: var(--theme-text-heading); }
+.gate .chip { font-size: .8125rem; padding: 3px 10px; }
+.gate .sp { flex: 1; }
+.gate .why { font-size: .75rem; color: var(--theme-text-muted); }
+.iconbtn { width: 32px; height: 32px; border-radius: var(--theme-radius); border: 1px solid var(--theme-border); background: none; color: var(--theme-accent); cursor: pointer; font-size: 1.125rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.notif { width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--theme-border); color: inherit; cursor: pointer; }
+.nav-inner { position: relative; }
+.bell { position: relative; width: 36px; height: 36px; border-radius: var(--theme-radius); border: 0; background: none; color: var(--theme-text-secondary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.bell:hover, .bell[aria-expanded="true"] { color: var(--theme-accent); background: var(--theme-bg-surface); }
+.bell svg { width: 20px; height: 20px; }
+.bell .badge-count { position: absolute; top: 2px; right: 0; min-width: 16px; height: 16px; font-size: 10px; padding: 0 4px; }
+.bellpanel { position: absolute; top: calc(100% + 4px); width: 360px; max-height: 420px; overflow: auto; z-index: 20; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+.bellpanel.at-right { right: 24px; } .bellpanel.at-left { left: 24px; }
+.bellpanel .ph { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--theme-border); position: sticky; top: 0; background: var(--theme-bg-surface); }
+.bellpanel .ph b { flex: 1; color: var(--theme-text-heading); font-size: .9375rem; }
+.bellpanel .empty { padding: 24px; text-align: center; font-size: .875rem; color: var(--theme-text-muted); }
+@container (max-width: 640px) {
+  .bellpanel, .bellpanel.at-right, .bellpanel.at-left { left: 8px; right: 8px; width: auto; max-height: 70vh; }
+  .bell { width: 32px; height: 32px; }
+}
+.notif:hover { background: var(--theme-bg-primary); }
+.notif .ud { color: var(--theme-accent); width: 8px; flex: none; }
+.notif.read .ud { visibility: hidden; }
+.notif.read .t { color: var(--theme-text-secondary); font-weight: 400; }
+.toast { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--theme-bg-primary); border: 1px solid var(--theme-border); color: var(--theme-text-heading); padding: .625rem 1rem; border-radius: var(--theme-radius); font-size: .875rem; box-shadow: 0 6px 20px rgba(0,0,0,.4); z-index: 40; max-width: 90%; }
+.modal .btns { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1.25rem; }
+.modal p { margin: 0 0 1rem; font-size: .875rem; color: var(--theme-text-secondary); }
+.field + .field { margin-top: 1rem; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+@container (max-width: 640px) {
+  .strip .inner { padding: .5rem 12px; }
+  .li { padding: .75rem 1rem; flex-wrap: wrap; }
+  .gate { padding: 1rem; }
+  .li .url { flex-basis: 100%; }
+  .modal .btns .btn { flex: 1; }
+}
+/* ===== v3: 余白の引き締め（Tailwind の 4px 刻みの範囲） ===== */
+.nav-inner { height: 56px; padding: 0 24px; }
+.navlink { padding: 6px 10px; }
+.nav .who { padding: 6px 10px; }
+.content { padding: 24px 24px 32px; }
+.stack > * + * { margin-top: 16px; }
+.stack-sm > * + * { margin-top: 8px; }
+h1.page { font-size: 1.5rem; line-height: 2rem; }
+.p5, .p6 { padding: 16px; }
+.btn { padding: 8px 14px; }
+.btn-sm { padding: 4px 10px; }
+.input { padding: 8px 12px; }
+.label { margin-bottom: 6px; }
+.hint { margin-top: 4px; line-height: 1.5; }
+.kv { padding: 6px 0; }
+.scrim { padding: 64px 16px 16px; }
+.modal { padding: 20px; }
+.modal h2 { margin-bottom: 8px; font-size: 1.125rem; }
+.check { line-height: 1.5; }
+
+@container (max-width: 640px) {
+  .nav-inner { height: 48px; padding: 0 12px; gap: 4px; }
+  .navlink { padding: 6px 6px; }
+  .content { padding: 12px 12px 24px; }
+  .stack > * + * { margin-top: 10px; }
+  h1.page { font-size: 1.25rem; line-height: 1.75rem; }
+  .p5, .p6 { padding: 12px; }
+  .btn:not(.btn-sm) { padding: 8px 12px; }
+  .scrim { padding: 12px 8px; }
+  .modal { padding: 16px; }
+  .kv { flex-direction: row; gap: 8px; }
+  .kv > span:first-child { min-width: 96px; }
+}
+.strip .inner { padding: 6px 16px; }
+.tabs { margin-top: 8px; }
+.tab { padding: 8px 12px; }
+.li { padding: 10px 16px; gap: 8px; }
+.gate { padding: 12px 16px; gap: 8px; }
+.gate .name { font-size: 1rem; }
+.sec-h { margin-bottom: 8px; font-size: .9375rem; }
+.field + .field { margin-top: 12px; }
+.modal p { margin-bottom: 12px; }
+.modal .btns { margin-top: 16px; }
+@container (max-width: 640px) {
+  .strip .inner { padding: 6px 12px; }
+  .tab { padding: 8px 10px; }
+  .li { padding: 8px 12px; }
+  .gate { padding: 12px; }
+}
+.spc { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0 16px; }
+.spc th, .spc td { border-bottom: 1px solid #2c2c38; padding: 4px 8px; text-align: left; }
+.spc th { color: #aaa; font-weight: 600; }
+.scope ul { margin: 8px 0 0; padding-left: 0; list-style: none; font-size: .875rem; line-height: 1.6; }
+.scope li { margin: 2px 0; }
+.scope .y { color: var(--x-success); font-weight: 700; display: inline-block; width: 1.5em; }
+.scope .n { color: var(--theme-text-muted); font-weight: 700; display: inline-block; width: 1.5em; }
+.scope-line { font-size: .75rem; color: var(--theme-text-muted); margin: 0; display: flex; align-items: center; gap: 4px; }
+.ghost { display: none; border: 2px dashed #c9a23a; background: rgba(201,162,58,.12); color: #e8d9a8; border-radius: 6px; padding: 8px 10px; font-size: 12px; align-items: center; gap: 6px; }
+.show-pins .ghost { display: flex; }
+</style>
+</head>
+<body>
+<div class="mockbar" role="region" aria-label="モック操作">
+  <strong class="tag">モック操作（実画面には含まれません）</strong>
+  <label>シナリオ
+    <select id="m-scenario">
+      <option value="notOpened">1. 未開放・条件未達</option>
+      <option value="open" selected>2. 開放中</option>
+      <option value="degraded">3. 開放中・片方の保護が応答なし</option>
+      <option value="tempSuspended">4. 一時停止（全保護が応答なし）</option>
+      <option value="autoStopped">5. 自動停止（設定喪失）</option>
+      <option value="autoStoppedRecovered">6. 自動停止・保護は復旧</option>
+      <option value="adminStopped">7. 管理者による停止</option>
+      <option value="override">8. 強制開放中</option>
+      <option value="overrideReady">9. 強制開放中・保護は準備済み</option>
+    </select>
+  </label>
+  <label>ベルの位置（論点 1）
+    <select id="m-bell">
+      <option value="right" selected>nav 右側（「管理」の隣）</option>
+      <option value="left">左端（ロゴの前）</option>
+    </select>
+  </label>
+  <label>適用範囲の表示（論点 7）
+    <select id="m-scope">
+      <option value="none" selected>なし（推奨）</option>
+      <option value="line">1 行だけ出す</option>
+      <option value="card">v1 のカードを再現</option>
+    </select>
+  </label>
+  <label>Webhook
+    <select id="m-webhook">
+      <option value="ok" selected>登録済み・正常</option>
+      <option value="failing">登録済み・配送失敗あり</option>
+      <option value="unset">未登録</option>
+    </select>
+  </label>
+  <span class="seg" role="group" aria-label="表示幅"><button data-vp="desktop" aria-pressed="true">Desktop</button><button data-vp="mobile" aria-pressed="false">Mobile 390px</button></span>
+  <span class="seg" role="group" aria-label="配色"><button data-color="catppuccin-mocha" aria-pressed="true">Catppuccin</button><button data-color="tokyo-night" aria-pressed="false">Tokyo Night</button></span>
+  <span class="seg" role="group" aria-label="形"><button data-shape="rounded" aria-pressed="true">Rounded</button><button data-shape="sharp" aria-pressed="false">Sharp</button></span>
+  <label><input type="checkbox" id="m-pins" checked> 論点ピン</label>
+</div>
+
+<div class="stage show-pins" id="stage" data-vp="desktop"><div class="device"><div class="app" id="app"></div></div></div>
+
+<section class="issues" aria-labelledby="issues-h">
+  <h2 id="issues-h">画面 A（v5）: 一般登録の準備ゲート管理 — UI 論点</h2>
+  <p class="notes">v5 の変更（文言のみ）: 「対策」を「保護」に統一（「BOT 対策」も「BOT 保護」）。状態「開放中（防御低下）」を廃止し、片方の保護が応答しなくても状態チップは「開放中」（どの保護かは各行の「応答なし」で分かる）。Webhook の送る通知から「防御低下」を外した（応答なしは「障害」で届く）。「無対策で」「上書き」をやめ、状態は「強制開放中」、操作は［強制開放…］／確認「強制開放しますか？」［強制開放］／警告帯「⚠ 強制開放中［解除］」／［強制開放を解除］にそろえた。</p>
+  <p class="notes">v4 の変更: 「通知」を管理画面のタブから外し、nav のベル（未読数つき）にした。ベルを押すと通知パネルが開く（desktop はベルの下に幅 360px、mobile は画面幅）。管理のタブは「一般登録」「Webhook」の 2 つ。nav の「管理」に付けていた未読数はベルへ移した。Misskey も通知は管理画面の中ではなく、ナビのベル（未読の印つき）から開く。</p>
+  <p class="notes">v3 の変更: 余白・行の高さだけを詰めた（構成と文言は v2 と同じ）。基準は Misskey の CSS（ページ余白 24px／狭い画面 12px、ブロック間 16px／500px 以下 10px、折りたたみ見出し 9px 12px、ボタン 7px 14px、入力欄 高さ 36px）。値は Tailwind の 4px 刻み（10px は 2.5）に丸めた。</p>
+  <table class="spc"><thead><tr><th>箇所</th><th>v2（desktop / mobile）</th><th>v3（desktop / mobile）</th></tr></thead><tbody>
+    <tr><td>ページ余白（contentArea）</td><td>48·24 / 24·16</td><td>24·24 / 12·12</td></tr>
+    <tr><td>ブロック間</td><td>32 / 24</td><td>16 / 10</td></tr>
+    <tr><td>nav の高さ</td><td>64 / 56</td><td>56 / 48</td></tr>
+    <tr><td>ページ見出し</td><td>36px / 28px</td><td>24px / 20px</td></tr>
+    <tr><td>タブ（上余白・内側）</td><td>16, 10·14</td><td>8, 8·12 / 8·10</td></tr>
+    <tr><td>一覧の行（保護・通知・Webhook）</td><td>14·20 / 12·16</td><td>10·16 / 8·12</td></tr>
+    <tr><td>一般登録の状態パネル</td><td>20 / 16</td><td>12·16 / 12</td></tr>
+    <tr><td>セクション見出しの下</td><td>12</td><td>8</td></tr>
+    <tr><td>ボタン（通常 / 小）</td><td>10·16 / 4·12</td><td>8·14 / 4·10</td></tr>
+    <tr><td>警告帯</td><td>8·24</td><td>6·16 / 6·12</td></tr>
+    <tr><td>モーダル（内側・上の空き）</td><td>24, 96 / 24, 64</td><td>20, 64 / 16, 12</td></tr>
+  </tbody></table>
+  <p class="notes">v2 の方針: Misskey のコントロールパネルにならい、画面には「状態と操作」だけを置き、仕組み（自動再開／手動再開の違い、適用範囲、強制開放の挙動）は (?) からヘルプページへ回す。配置: nav の「管理」→ タブ「一般登録」「Webhook」（v4）。Route は <code>AdminRegistration</code> / <code>AdminWebhook</code>。通知はベルのパネルなので Route は不要（論点 1 で案 3 を選ぶ場合だけ <code>AdminNotifications</code> を足す）。成功・警告色はトークンの追加が必要。</p>
+
+  <div class="issue"><h3><span class="pin">1</span>通知ベルの位置と開き方</h3>
+    <p>v4 で「通知はタブではなくベルで分ける」ことは反映済み。残るのは位置と開き方（位置はモック上部の「ベルの位置」で切り替えられる）。</p>
+    <ol><li>nav 右側（「管理」の隣）にベル。押すとその場にパネルが開く。</li><li>左端（ロゴの前）にベル。開き方は 1 と同じ。</li><li>ベルは通知ページ（/admin/notifications）へのリンクにし、パネルは出さない（Misskey の通知ページ型）。</li></ol>
+    <div class="rec"><b>推奨: 1</b> — 「管理」の隣にあると管理者向けの通知だと分かりやすく、どのページからでも一覧を見て戻れる。通知は管理者にしか届かないので、ベル自体も管理者にだけ出す。将来一般利用者向けの通知を入れる場合は同じベルにまとめる前提。<b>v3 から変更</b>: v3 の推奨（nav の「管理」に未読数＋管理内の「通知」タブ）は、ユーザーの指摘で取りやめた。</div></div>
+
+  <div class="issue"><h3><span class="pin">2</span>状態の見せ方</h3>
+    <ol><li>状態チップと、その状態で押せる操作だけを出す。挙動の説明は (?) からヘルプへ。</li><li>状態チップと全操作を並べ、押せないものは無効表示。</li><li>状態遷移図を常に表示。</li></ol>
+    <div class="rec"><b>推奨: 1</b> — <b>v1 から変更</b>: v1 は「次に起きること」の説明文を状態カードに書いていたが、v2 では削除した。自動で再開する一時停止には［再開］を出さず、自動停止には［再開］を出すので、ボタンの有無で違いが伝わる。</div></div>
+
+  <div class="issue"><h3><span class="pin">3</span>強制開放の確認の強さ</h3>
+    <ol><li>確認モーダル（影響 1 行＋必須チェック＋危険色ボタン）。</li><li>1 に加えて、サーバー名などの文字列入力を求める。</li><li>1 に加えて、再認証を求める。</li></ol>
+    <div class="rec"><b>推奨: 1</b> — <b>v1 から変更</b>: v1 にあったリスク 5 項目の箇条書きと理由入力欄を削除し、「解除するまで自動停止しません」の 1 行だけにした。</div></div>
+
+  <div class="issue"><h3><span class="pin">4</span>強制開放中の警告帯の範囲と形</h3>
+    <ol><li>管理画面の枠に常に表示し、閉じられない。［解除］付き。</li><li>管理者には全ページに表示。</li><li>1 だが閉じられる。</li></ol>
+    <div class="rec"><b>推奨: 1</b>（変更なし。帯の文言は 1 行に短縮）</div></div>
+
+  <div class="issue"><h3><span class="pin">5</span>メール認証・BOT 保護の設定をこの画面で変えるか</h3>
+    <ol><li>状態表示と［再検証］だけ。設定方法は (?) からヘルプへ。</li><li>この画面で編集できる（Misskey は管理画面でプロバイダとキーを編集する）。</li><li>有効・無効の切り替えだけ画面で行う。</li></ol>
+    <div class="rec"><b>推奨: 1</b>（変更なし。各カードの「設定は Ory で…手順を見る」の行は、見出しの (?) 1 つに集約）</div></div>
+
+  <div class="issue"><h3><span class="pin">6</span>Webhook の登録と表示</h3>
+    <ol><li>「+」→モーダル（URL・シークレット・送る通知）で登録する。一覧には URL の一部を伏せて表示。失敗した配送だけを並べ、1 件ずつ再試行できる。</li><li>URL を全文表示し、全配送の履歴を出す。</li><li>URL も再入力でしか変えられない書き込み専用にする。</li></ol>
+    <div class="rec"><b>推奨: 1</b> — <b>v1 から変更</b>: v1 は設定フォームを画面に常に置き、成功分を含む配送履歴を全部出していた。v2 では「+」→モーダルにし、配送履歴は失敗分だけにした（Misskey の Webhook 設定も一覧＋作成ボタンの形）。</div></div>
+
+  <div class="issue"><h3><span class="pin">7</span>「招待と既存利用者の Account 追加は対象外」を画面に出すか</h3>
+    <p>場所: 管理 →「一般登録」タブの一番下（「保護」一覧の下）。v1 はここに「この設定が適用される範囲」カードを置き、v2 で外した。モック上部の「適用範囲の表示」で 3 案を切り替えられる（「なし」のときは、論点ピン表示中だけ黄色い点線で位置を示す）。</p>
+    <ol><li>出さない。「一般登録」の (?) からヘルプへ。</li><li>1 行だけ出す（「対象: 新規の一般登録のみ。招待・既存利用者の Account 追加は対象外」）。</li><li>v1 のカード（見出し＋3 項目＋補足）を出す。</li></ol>
+    <div class="rec"><b>推奨: 1</b> — 画面は状態と操作だけにする v2 の方針に合わせる。「招待も止まるのでは」と管理者が迷うことが多そうなら 2。</div></div>
+
+  <p class="notes"><b>仮置き</b>: 強制開放を解除したとき条件を満たしていなければ「停止中」に戻す／一時停止中は［強制開放…］を出さない／［再検証］で一時障害が復旧するのはモック上の演出／アクセントボタンの文字色はコントラストのため暗色。</p>
+</section>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pin = (n, t) => `<span class="pin" aria-hidden="true" title="論点 ${n}: ${esc(t)}">${n}</span>`;
+const chip = (tone, text) => `<span class="chip tone-${tone}"><span class="dot"></span>${esc(text)}</span>`;
+const help = (label) => `<a class="help" href="#" data-act="noop" aria-label="${esc(label)}のヘルプ" title="ヘルプ">?</a>`;
+
+const NAME = { email: 'メール認証', bot: 'BOT 保護' };
+const PST = {
+  unset: { label: '未設定', tone: 'muted' },
+  invalid: { label: '設定エラー', tone: 'error', note: { email: 'SMTP 接続先が不正', bot: 'サイトキーが不正' } },
+  unchecked: { label: '未確認', tone: 'info' },
+  ready: { label: '準備済み', tone: 'success' },
+  outage: { label: '応答なし', tone: 'warning', note: { email: 'タイムアウト', bot: 'タイムアウト' } },
+};
+const SCEN = {
+  notOpened: ['notOpened', 'unchecked', 'unset'], open: ['open', 'ready', 'ready'], degraded: ['open', 'outage', 'ready'],
+  tempSuspended: ['open', 'outage', 'unset'], autoStopped: ['autoStopped', 'unset', 'invalid'], autoStoppedRecovered: ['autoStopped', 'ready', 'unset'],
+  adminStopped: ['adminStopped', 'ready', 'ready'], override: ['override', 'unset', 'unset'], overrideReady: ['override', 'ready', 'unset'],
+};
+const S = {
+  bellOpen: false, bellPos: 'right',
+  scope: 'none',
+  view: 'gate', gate: 'open', prot: { email: 'ready', bot: 'ready' }, at: { email: '09:41', bot: '09:41' }, verifying: {},
+  modal: null, ack: false, toast: '', webhook: 'ok', testing: false, retrying: {},
+  notifs: [
+    { id: 1, read: false, tone: 'warning', t: 'メール認証が応答しません', at: '09:32' },
+    { id: 2, read: false, tone: 'success', t: 'BOT 保護が復旧しました', at: '07:58' },
+    { id: 3, read: false, tone: 'warning', t: '一般登録を一時停止しました', at: '07:40' },
+    { id: 4, read: true, tone: 'error', t: '一般登録を自動停止しました', at: '10/18' },
+    { id: 5, read: true, tone: 'info', t: 'hana が強制開放を解除しました', at: '10/15' },
+  ],
+  failed: [{ id: 'd3', at: '07:40', t: '一般登録を一時停止しました' }],
+};
+const met = () => S.prot.email === 'ready' || S.prot.bot === 'ready';
+const unread = () => S.notifs.filter((n) => !n.read).length;
+
+function gateState() {
+  const g = S.gate;
+  if (g === 'override') return { tone: 'error', label: '強制開放中', acts: ['revoke'] };
+  if (g === 'open') {
+    const outage = ['email', 'bot'].some((k) => S.prot[k] === 'outage');
+    if (met()) return { tone: 'success', label: '開放中', acts: ['stop'] };
+    if (outage) return { tone: 'warning', label: '一時停止中', acts: ['stop'] };
+    S.gate = 'autoStopped'; return gateState();
+  }
+  if (g === 'autoStopped') return { tone: 'error', label: '自動停止', acts: ['reopen', 'override'] };
+  if (g === 'adminStopped') return { tone: 'muted', label: '停止中', acts: ['reopen', 'override'] };
+  return { tone: 'muted', label: '未開放', acts: ['open', 'override'] };
+}
+
+function bellBtn() {
+  const n = unread();
+  return `${pin(1, '通知ベル')}<button class="bell" data-act="bell" aria-haspopup="dialog" aria-expanded="${S.bellOpen}" aria-label="通知${n ? `（未読 ${n} 件）` : ''}" title="通知">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+    ${n ? `<span class="badge-count" aria-hidden="true">${n}</span>` : ''}</button>`;
+}
+function bellPanel() {
+  if (!S.bellOpen) return '';
+  const n = unread();
+  return `<div class="surface bellpanel at-${S.bellPos}" role="dialog" aria-label="通知">
+    <div class="ph"><b>通知</b><button class="btn btn-outline btn-sm" data-act="readall" ${n ? '' : 'disabled'}>すべて既読にする</button></div>
+    ${S.notifs.length ? S.notifs.map((x) => `<button class="li notif ${x.read ? 'read' : ''}" data-act="read" data-id="${x.id}">
+      <span class="ud"><span class="dot"></span><span class="sr">${x.read ? '' : '未読'}</span></span>
+      <span class="tone-${x.tone}" aria-hidden="true">●</span><span class="grow t">${esc(x.t)}</span><span class="time">${x.at}</span></button>`).join('') : '<div class="empty">なし</div>'}
+  </div>`;
+}
+function nav() {
+  const left = S.bellPos === 'left';
+  return `<nav class="nav" aria-label="メイン"><div class="nav-inner"><span class="row" style="gap:6px">${left ? bellBtn() : ''}<span class="brand">Ratcap</span></span><ul>
+    <li><a class="navlink" href="#" data-act="noop">Home</a></li>
+    <li><a class="navlink" href="#" data-act="noop">Settings</a></li>
+    <li><a class="navlink" href="#" aria-current="page" data-act="view" data-v="gate">管理</a></li>
+    ${left ? '' : `<li>${bellBtn()}</li>`}
+    <li><span class="who">turtton</span></li>
+    <li><button class="navlink" data-act="noop">Logout</button></li></ul>${bellPanel()}</div></nav>`;
+}
+function strip() {
+  if (S.gate !== 'override') return '';
+  return `<div class="strip" role="alert"><div class="inner">${pin(4, '警告帯')}<b>⚠ 強制開放中</b>
+    <button class="btn btn-danger-ghost btn-sm" data-act="revoke">解除</button></div></div>`;
+}
+function head() {
+  const tab = (v, l, x = '') => `<button class="tab" role="tab" aria-selected="${S.view === v}" data-act="view" data-v="${v}">${l}${x}</button>`;
+  return `<div><h1 class="page">管理</h1><div class="tabs" role="tablist">
+    ${tab('gate', '一般登録')}${tab('webhook', 'Webhook', S.webhook === 'failing' ? ' <span class="tone-warning" aria-label="配送失敗あり">●</span>' : '')}</div></div>`;
+}
+function scopeHtml() {
+  if (S.scope === 'line') return `<p class="scope-line">${pin(7, '適用範囲の表示')}対象: 新規の一般登録のみ。招待・既存利用者の Account 追加は対象外</p>`;
+  if (S.scope === 'card') return `<section class="surface p5 scope"><h3 class="card-title">${pin(7, '適用範囲の表示')}この設定が適用される範囲</h3><ul>
+    <li><span class="y" aria-hidden="true">✓</span>新しい ID を作る一般登録（セルフサービス登録）</li>
+    <li><span class="n" aria-hidden="true">—</span><span class="muted">対象外:</span> ログイン済みの利用者が Account を追加作成すること</li>
+    <li><span class="n" aria-hidden="true">—</span><span class="muted">対象外:</span> 特定の相手への招待（招待機能を提供する場合も、この条件は求めません）</li>
+    </ul><p class="hint">停止中・一時受付停止中も、既存利用者のログインや利用には影響しません。</p></section>`;
+  return `<div class="ghost" aria-hidden="true">${pin(7, '適用範囲の表示')}（モック注記）v1 はここに「この設定が適用される範囲」カードがあった。v2 以降は表示なし</div>`;
+}
+function gateView() {
+  const st = gateState();
+  const btn = {
+    open: () => `<button class="btn btn-primary btn-sm" data-act="open" ${met() ? '' : 'disabled'}>開放</button>`,
+    reopen: () => `<button class="btn btn-primary btn-sm" data-act="open" ${met() ? '' : 'disabled'}>再開</button>`,
+    stop: () => `<button class="btn btn-outline btn-sm" data-act="stop">停止</button>`,
+    override: () => (met() ? '' : `${pin(3, '強制開放の確認')}<button class="btn btn-danger-ghost btn-sm" data-act="modal" data-m="override">強制開放…</button>`),
+    revoke: () => `<button class="btn btn-outline btn-sm" data-act="revoke">強制開放を解除</button>`,
+  };
+  const blocked = st.acts.some((a) => a === 'open' || a === 'reopen') && !met();
+  const rows = ['email', 'bot'].map((k) => {
+    const s = S.prot[k], p = PST[s], v = S.verifying[k];
+    const note = p.note ? `<span class="xs tone-${p.tone}">${p.note[k]}</span>` : '';
+    return `<div class="li"><span class="grow t" style="white-space:nowrap;flex:1 0 auto">${NAME[k]}</span>${chip(p.tone, p.label)}${note}
+      ${s === 'unset' ? '' : `<span class="time">${esc(S.at[k])}</span><button class="btn btn-outline btn-sm" data-act="verify" data-k="${k}" ${v ? 'disabled' : ''}>${v ? '<span class="spin" aria-hidden="true"></span>' : ''}再検証</button>`}</div>`;
+  }).join('');
+  return `<section class="surface gate" aria-label="一般登録">
+      <span class="name">一般登録</span>${help('一般登録の状態')}${pin(2, '状態の見せ方')}
+      <span class="chip tone-${st.tone}"><span class="dot"></span>${st.label}</span>
+      <span class="sp"></span>${blocked ? '<span class="why">保護が未準備</span>' : ''}${st.acts.map((a) => btn[a]()).join('')}
+    </section>
+    <section><h2 class="sec-h">保護${help('保護の設定方法')}${pin(5, '設定をどこで変えるか')}</h2>
+      <div class="surface list">${rows}</div></section>${scopeHtml()}`;
+}
+function notifsView() {
+  const n = unread();
+  return `<section><div class="sec-h"><span class="sp"></span><button class="btn btn-outline btn-sm" data-act="readall" ${n ? '' : 'disabled'}>すべて既読にする</button></div>
+    <div class="surface list">${S.notifs.map((x) => `<button class="li notif ${x.read ? 'read' : ''}" data-act="read" data-id="${x.id}">
+      <span class="ud"><span class="dot"></span><span class="sr">${x.read ? '' : '未読'}</span></span>
+      <span class="tone-${x.tone}" aria-hidden="true">●</span><span class="grow t">${esc(x.t)}</span><span class="time">${x.at}</span></button>`).join('')}</div></section>`;
+}
+function webhookView() {
+  const add = `<button class="iconbtn" data-act="modal" data-m="wh" aria-label="Webhook を追加">+</button>`;
+  if (S.webhook === 'unset') {
+    return `<section><h2 class="sec-h">送信先<span class="sp"></span>${pin(6, 'Webhook')}${add}</h2>
+      <div class="surface" style="padding:2rem;text-align:center"><span class="muted small">なし</span></div></section>`;
+  }
+  const failing = S.webhook === 'failing' && S.failed.length;
+  return `<section><h2 class="sec-h">送信先<span class="sp"></span>${pin(6, 'Webhook')}${add}</h2>
+      <div class="surface list"><div class="li"><span class="grow t mono url">hooks.example.net/••••/a8f2</span>
+        ${failing ? chip('warning', '配送失敗') : chip('success', '正常')}
+        <button class="btn btn-outline btn-sm" data-act="test" ${S.testing ? 'disabled' : ''}>${S.testing ? '<span class="spin"></span>' : ''}テスト</button>
+        <button class="btn btn-outline btn-sm" data-act="modal" data-m="wh">編集</button></div></div></section>
+    ${failing ? `<section><h2 class="sec-h">配送失敗</h2><div class="surface list">${S.failed.map((d) => `<div class="li"><span class="time">${d.at}</span><span class="grow t">${esc(d.t)}</span>
+      <button class="btn btn-outline btn-sm" data-act="retry" data-id="${d.id}" ${S.retrying[d.id] ? 'disabled' : ''}>${S.retrying[d.id] ? '<span class="spin"></span>' : ''}再試行</button></div>`).join('')}</div></section>` : ''}`;
+}
+function modal() {
+  if (!S.modal) return '';
+  let b = '';
+  if (S.modal === 'override') {
+    b = `<h2 id="mh">強制開放しますか？</h2><p>解除するまで自動停止しません。</p>
+      <label class="check"><input type="checkbox" data-act="ack" ${S.ack ? 'checked' : ''}> リスクを理解しました</label>
+      <div class="btns"><button class="btn btn-outline" data-act="close">キャンセル</button><button class="btn btn-danger" data-act="doOverride" ${S.ack ? '' : 'disabled'}>強制開放</button></div>`;
+  } else if (S.modal === 'revoke') {
+    b = `<h2 id="mh">強制開放を解除しますか？</h2><p>一般登録は停止します。</p>
+      <div class="btns"><button class="btn btn-outline" data-act="close">キャンセル</button><button class="btn btn-primary" data-act="doRevoke">解除</button></div>`;
+  } else if (S.modal === 'wh') {
+    const edit = S.webhook !== 'unset';
+    b = `<h2 id="mh">Webhook</h2>
+      <div class="field"><label class="label" for="wh-u">URL</label><input class="input" id="wh-u" type="url" value="${edit ? 'https://hooks.example.net/••••/a8f2' : ''}"></div>
+      <div class="field"><label class="label" for="wh-s">シークレット</label><input class="input" id="wh-s" type="password" placeholder="${edit ? '••••••••' : ''}" autocomplete="off"></div>
+      <div class="field"><span class="label">送る通知</span>${['障害', '復旧', '自動停止', '強制開放'].map((e) => `<label class="check"><input type="checkbox" checked> ${e}</label>`).join('')}</div>
+      <div class="btns">${edit ? '<button class="btn btn-danger-ghost" data-act="whdel" style="margin-right:auto">削除</button>' : ''}<button class="btn btn-outline" data-act="close">キャンセル</button><button class="btn btn-primary" data-act="whsave">保存</button></div>`;
+  }
+  return `<div class="scrim" data-act="scrim"><div class="surface modal" role="dialog" aria-modal="true" aria-labelledby="mh">${b}</div></div>`;
+}
+function render() {
+  const body = S.view === 'gate' ? gateView() : webhookView();
+  $('#app').innerHTML = `${nav()}${strip()}<div class="content stack">${head()}${body}</div>${modal()}${S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : ''}`;
+  if (S.modal) { const f = $('.modal input, .modal button'); f && f.focus({ preventScroll: true }); $('.modal').scrollIntoView({ block: 'center' }); }
+}
+let tt; function toast(m) { S.toast = m; clearTimeout(tt); tt = setTimeout(() => { S.toast = ''; render(); }, 2200); }
+function addN(tone, t) { S.notifs.unshift({ id: Date.now(), read: false, tone, t, at: 'いま' }); }
+function scenario(k) { const [g, e, b] = SCEN[k]; S.gate = g; S.prot = { email: e, bot: b }; S.at = { email: e === 'unchecked' ? '—' : '09:41', bot: '09:41' }; S.modal = null; }
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el || !$('#app').contains(el)) return;
+  const a = el.dataset.act;
+  if (a === 'scrim' && e.target !== el) return;
+  if (a === 'ack') { S.ack = el.checked; const b = $('[data-act="doOverride"]'); if (b) b.disabled = !el.checked; return; }
+  e.preventDefault();
+  switch (a) {
+    case 'view': S.view = el.dataset.v; break;
+    case 'modal': S.modal = el.dataset.m; S.ack = false; break;
+    case 'close': case 'scrim': S.modal = null; break;
+    case 'open': S.gate = 'open'; toast('開放しました'); break;
+    case 'stop': S.gate = 'adminStopped'; toast('停止しました'); break;
+    case 'revoke': if (met()) { S.gate = 'open'; addN('info', 'turtton が強制開放を解除しました'); toast('強制開放を解除しました'); } else { S.modal = 'revoke'; } break;
+    case 'doRevoke': S.modal = null; S.gate = 'adminStopped'; addN('info', 'turtton が強制開放を解除しました'); toast('強制開放を解除しました'); break;
+    case 'doOverride': S.modal = null; S.gate = 'override'; addN('error', 'turtton が強制開放しました'); break;
+    case 'verify': { const k = el.dataset.k; S.verifying[k] = true;
+      setTimeout(() => { S.verifying[k] = false; S.at[k] = 'いま'; const s = S.prot[k];
+        if (s === 'unchecked' || s === 'outage') { S.prot[k] = 'ready'; if (s === 'outage') addN('success', `${NAME[k]}が復旧しました`); }
+        render(); }, 900); break; }
+    case 'bell': S.bellOpen = !S.bellOpen; break;
+    case 'read': { const n = S.notifs.find((x) => String(x.id) === el.dataset.id); if (n) n.read = true; break; }
+    case 'readall': S.notifs.forEach((n) => { n.read = true; }); break;
+    case 'test': S.testing = true; setTimeout(() => { S.testing = false; toast(S.webhook === 'failing' ? 'テスト送信に失敗しました' : 'テスト送信しました'); render(); }, 900); break;
+    case 'retry': { const id = el.dataset.id; S.retrying[id] = true; setTimeout(() => { S.retrying[id] = false; S.failed = S.failed.filter((d) => d.id !== id); if (!S.failed.length) { S.webhook = 'ok'; $('#m-webhook').value = 'ok'; } toast('再送しました'); render(); }, 900); break; }
+    case 'whsave': S.modal = null; if (S.webhook === 'unset') { S.webhook = 'ok'; $('#m-webhook').value = 'ok'; } toast('保存しました'); break;
+    case 'whdel': S.modal = null; S.webhook = 'unset'; $('#m-webhook').value = 'unset'; toast('削除しました'); break;
+    default: break;
+  }
+  render();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.bellOpen) { S.bellOpen = false; render(); const b = $('.bell'); b && b.focus(); return; } if (e.key === 'Escape' && S.modal) { S.modal = null; render(); } });
+document.addEventListener('mousedown', (e) => { if (S.bellOpen && !e.target.closest('.bellpanel') && !e.target.closest('.bell')) { S.bellOpen = false; render(); } });
+$('#m-bell').addEventListener('change', (e) => { S.bellPos = e.target.value; render(); });
+$('#m-scenario').addEventListener('change', (e) => { scenario(e.target.value); S.view = 'gate'; render(); });
+$('#m-webhook').addEventListener('change', (e) => { S.webhook = e.target.value; S.failed = e.target.value === 'failing' ? [{ id: 'd3', at: '07:40', t: '一般登録を一時停止しました' }] : []; render(); });
+$('#m-scope').addEventListener('change', (e) => { S.scope = e.target.value; S.view = 'gate'; render(); });
+$('#m-pins').addEventListener('change', (e) => $('#stage').classList.toggle('show-pins', e.target.checked));
+document.querySelectorAll('.mockbar .seg').forEach((g) => g.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  if (b.dataset.vp) $('#stage').dataset.vp = b.dataset.vp;
+  if (b.dataset.color) document.documentElement.dataset.color = b.dataset.color;
+  if (b.dataset.shape) document.documentElement.dataset.shape = b.dataset.shape;
+}));
+scenario('open'); S.failed = []; render();
+</script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="ja" data-color="catppuccin-mocha" data-shape="rounded">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>モック v3: Profile ユーザー名の入力 — emumet-web</title>
+<style>
+/* ===== design tokens (copied from packages/design-tokens/tokens.css) ===== */
+:root, [data-color="catppuccin-mocha"] {
+  --theme-bg-primary: #1e1e2e; --theme-bg-secondary: #181825; --theme-bg-surface: #313244;
+  --theme-bg-nav: rgba(30, 30, 46, 0.9); --theme-text-primary: #cdd6f4; --theme-text-secondary: #bac2de;
+  --theme-text-muted: #6c7086; --theme-text-heading: #cdd6f4; --theme-accent: #cba6f7;
+  --theme-accent-hover: #b4befe; --theme-border: #45475a; --theme-temp-high: #f38ba8;
+  --theme-temp-low: #89b4fa; --theme-error: #f38ba8;
+  /* 提案: 追加トークン（既存 tokens.css には無い） */
+  --x-success: #a6e3a1; --x-warning: #f9e2af; --x-info: #89b4fa; --x-muted-strong: #9399b2;
+}
+[data-color="tokyo-night"] {
+  --theme-bg-primary: #1a1b26; --theme-bg-secondary: #16161e; --theme-bg-surface: #24283b;
+  --theme-bg-nav: rgba(26, 27, 38, 0.9); --theme-text-primary: #a9b1d6; --theme-text-secondary: #787c99;
+  --theme-text-muted: #565f89; --theme-text-heading: #c0caf5; --theme-accent: #7aa2f7;
+  --theme-accent-hover: #89ddff; --theme-border: #3b4261; --theme-temp-high: #f7768e;
+  --theme-temp-low: #7dcfff; --theme-error: #f7768e;
+  --x-success: #9ece6a; --x-warning: #e0af68; --x-info: #7dcfff; --x-muted-strong: #9aa5ce;
+}
+:root, [data-shape="rounded"] { --theme-radius: 0.75rem; --theme-radius-lg: 1rem; --theme-shadow: 0 2px 8px rgba(0,0,0,.15); }
+[data-shape="sharp"] { --theme-radius: 0px; --theme-radius-lg: 0px; --theme-shadow: none; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: ui-sans-serif, system-ui, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif; background: #0d0d12; color: #d8d8e0; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; }
+:focus-visible { outline: 2px solid var(--theme-accent); outline-offset: 2px; }
+
+/* ===== mock chrome (実画面には含まれない) ===== */
+.mockbar { position: sticky; top: 0; z-index: 50; background: #f4f1e8; color: #222; border-bottom: 3px dashed #c9a23a; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; font-size: 13px; }
+.mockbar strong.tag { background: #c9a23a; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.mockbar label { display: inline-flex; gap: 6px; align-items: center; }
+.mockbar select { padding: 3px 6px; border: 1px solid #aaa; border-radius: 4px; background: #fff; color: #222; }
+.seg { display: inline-flex; border: 1px solid #aaa; border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; background: #fff; color: #222; padding: 4px 10px; cursor: pointer; font-size: 12px; }
+.seg button[aria-pressed="true"] { background: #333; color: #fff; }
+.stage { padding: 24px 16px 40px; display: flex; justify-content: center; }
+.device { width: 100%; max-width: 1180px; container-type: inline-size; border: 1px solid #2c2c38; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+.stage[data-vp="mobile"] .device { max-width: 390px; border-radius: 28px; border-width: 8px; border-color: #2c2c38; }
+.pin { display: none; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #ff8a00; color: #111; font-size: 12px; font-weight: 800; vertical-align: middle; margin: 0 4px; box-shadow: 0 0 0 2px #111; cursor: help; flex: none; }
+.show-pins .pin { display: inline-flex; }
+
+.issues { max-width: 1180px; margin: 0 auto 60px; padding: 0 16px; color: #e8e8ee; }
+.issues h2 { font-size: 20px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+.issue { background: #17171f; border: 1px solid #2c2c38; border-left: 4px solid #ff8a00; border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
+.issue h3 { margin: 0 0 8px; font-size: 15px; display: flex; gap: 8px; align-items: center; }
+.issue h3 .pin { display: inline-flex; }
+.issue ol, .issue ul { margin: 6px 0; padding-left: 22px; font-size: 13.5px; line-height: 1.7; }
+.issue .rec { margin-top: 8px; font-size: 13.5px; background: #1f2a1f; border: 1px solid #355235; padding: 8px 10px; border-radius: 6px; }
+.issue .rec b { color: #a6e3a1; }
+.issue p { font-size: 13.5px; line-height: 1.7; margin: 6px 0; color: #c8c8d4; }
+.notes { font-size: 13px; color: #aaa; line-height: 1.7; }
+
+/* ===== app (Tailwind クラス相当を手書き) ===== */
+.app { min-height: 760px; background: var(--theme-bg-secondary); color: var(--theme-text-primary); position: relative; }
+.nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); background: var(--theme-bg-nav); border-bottom: 1px solid var(--theme-border); }
+.nav-inner { max-width: 56rem; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 12px; }
+.brand { font-size: 1.125rem; font-weight: 700; letter-spacing: -.025em; color: var(--theme-text-heading); }
+.nav ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; align-items: center; }
+.navlink { position: relative; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: .875rem; font-weight: 500; color: var(--theme-text-secondary); border-radius: var(--theme-radius); background: none; border: 0; cursor: pointer; text-decoration: none; transition: color .15s, background .15s; }
+.navlink:hover { color: var(--theme-accent); background: var(--theme-bg-surface); }
+.navlink[aria-current="page"] { color: var(--theme-accent); }
+.nav .who { padding: 8px 12px; font-size: .875rem; color: var(--theme-text-muted); }
+.badge-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--theme-error); color: var(--theme-bg-secondary); font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.content { max-width: 56rem; margin: 0 auto; padding: 48px 24px; }
+.stack > * + * { margin-top: 2rem; }
+.stack-sm > * + * { margin-top: 1rem; }
+.surface { border-radius: var(--theme-radius-lg); border: 1px solid var(--theme-border); background: var(--theme-bg-surface); box-shadow: var(--theme-shadow); }
+.p5 { padding: 1.25rem; } .p6 { padding: 1.5rem; }
+h1.page { font-size: 2.25rem; font-weight: 700; letter-spacing: -.025em; color: var(--theme-text-heading); margin: 0; }
+h2.sec { font-size: 1.25rem; font-weight: 600; color: var(--theme-text-primary); margin: 0 0 .75rem; }
+.card-title { font-size: 1.125rem; font-weight: 600; color: var(--theme-text-heading); margin: 0; }
+.muted { color: var(--theme-text-muted); } .secondary { color: var(--theme-text-secondary); }
+.small { font-size: .875rem; } .xs { font-size: .75rem; }
+.row { display: flex; align-items: center; gap: .75rem; }
+.between { justify-content: space-between; }
+.wrap { flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: .625rem 1rem; font-size: .875rem; font-weight: 500; border-radius: var(--theme-radius); border: 1px solid transparent; cursor: pointer; transition: background .15s, opacity .15s; white-space: nowrap; }
+/* 既存は text-white on accent。モックではコントラスト確保のため暗色文字（論点外の差分） */
+.btn-primary { background: var(--theme-accent); color: var(--theme-bg-secondary); }
+.btn-primary:hover { background: var(--theme-accent-hover); }
+.btn-outline { background: transparent; color: var(--theme-accent); border-color: var(--theme-border); }
+.btn-outline:hover { background: var(--theme-bg-primary); }
+.btn-danger { background: var(--theme-error); color: var(--theme-bg-secondary); }
+.btn-danger-ghost { background: transparent; color: var(--theme-error); border-color: color-mix(in srgb, var(--theme-error) 50%, transparent); }
+.btn-danger-ghost:hover { background: color-mix(in srgb, var(--theme-error) 10%, transparent); }
+.btn-sm { padding: .25rem .75rem; font-size: .75rem; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.input { width: 100%; padding: .5rem .75rem; font-size: .875rem; border: 1px solid var(--theme-border); background: var(--theme-bg-surface); color: var(--theme-text-primary); border-radius: var(--theme-radius); }
+.input:focus { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 50%, transparent); }
+.label { display: block; font-size: .875rem; font-weight: 500; color: var(--theme-text-primary); margin-bottom: .375rem; }
+.hint { font-size: .75rem; color: var(--theme-text-muted); margin: .375rem 0 0; line-height: 1.6; }
+.err-banner { padding: .75rem 1rem; font-size: .875rem; border-radius: var(--theme-radius); color: var(--theme-error); border: 1px solid var(--theme-border); background: rgba(239,68,68,.1); }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; font-size: .75rem; font-weight: 600; border-radius: var(--theme-radius); border: 1px solid currentColor; white-space: nowrap; }
+.tone-success { color: var(--x-success); } .tone-warning { color: var(--x-warning); } .tone-error { color: var(--theme-error); } .tone-muted { color: var(--x-muted-strong); } .tone-info { color: var(--x-info); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; display: inline-block; flex: none; }
+.kv { display: flex; gap: .75rem; padding: .5rem 0; border-bottom: 1px solid var(--theme-border); font-size: .875rem; }
+.kv:last-child { border-bottom: 0; }
+.kv > span:first-child { min-width: 110px; flex: none; color: var(--theme-text-muted); font-weight: 500; }
+.kv > span:last-child { color: var(--theme-text-primary); word-break: break-all; }
+.scrim { position: absolute; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: flex-start; justify-content: center; padding: 96px 16px 16px; z-index: 30; }
+.modal { width: 100%; max-width: 32rem; padding: 1.5rem; }
+.modal h2 { margin: 0 0 .75rem; font-size: 1.25rem; color: var(--theme-text-heading); }
+.check { display: flex; gap: .625rem; align-items: flex-start; font-size: .875rem; color: var(--theme-text-secondary); cursor: pointer; line-height: 1.6; }
+.check input { width: 16px; height: 16px; margin-top: 3px; accent-color: var(--theme-accent); flex: none; }
+.spin { width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: sp .8s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+@container (max-width: 640px) {
+  .nav-inner { padding: 0 12px; height: 56px; }
+  .nav .who { display: none; }
+  .navlink { padding: 8px 6px; }
+  .nav ul { gap: 0; }
+  .nav-inner { gap: 6px; }
+  .content { padding: 24px 16px; }
+  h1.page { font-size: 1.75rem; }
+  .stack > * + * { margin-top: 1.5rem; }
+  .scrim { padding-top: 64px; align-items: flex-start; }
+  .kv { flex-direction: column; gap: 2px; }
+}
+.nav li { display: flex; align-items: center; }
+.narrow { max-width: 32rem; margin-left: auto; margin-right: auto; }
+.igroup { display: flex; align-items: stretch; border: 1px solid var(--theme-border); border-radius: var(--theme-radius); background: var(--theme-bg-surface); overflow: hidden; }
+.igroup:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 50%, transparent); }
+.igroup.err { border-color: var(--theme-error); }
+.igroup.ok { border-color: color-mix(in srgb, var(--x-success) 70%, transparent); }
+.igroup .affix { padding: .5rem .625rem; font-size: .875rem; color: var(--theme-text-muted); background: var(--theme-bg-primary); display: flex; align-items: center; white-space: nowrap; }
+.igroup input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--theme-text-primary); padding: .5rem; font-size: .875rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.igroup input:focus { outline: none; }
+.cap { margin-top: .375rem; font-size: .75rem; display: flex; flex-direction: column; gap: 2px; }
+.help { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--theme-border); color: var(--theme-text-muted); font-size: .6875rem; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; margin-left: 4px; vertical-align: middle; }
+.help:hover { color: var(--theme-accent); border-color: var(--theme-accent); }
+.label { display: flex; align-items: center; }
+.info { display: flex; align-items: center; gap: .75rem; padding: .625rem 1rem; border-radius: var(--theme-radius); background: color-mix(in srgb, var(--x-warning) 10%, transparent); border: 1px solid color-mix(in srgb, var(--x-warning) 35%, transparent); font-size: .875rem; }
+.info .grow { flex: 1; }
+.info a { color: var(--theme-accent); }
+.banner { width: 100%; height: 12rem; border-radius: var(--theme-radius-lg); background: linear-gradient(to right, color-mix(in srgb, var(--theme-accent) 30%, transparent), color-mix(in srgb, var(--theme-accent) 10%, transparent)); }
+.phead { display: flex; align-items: flex-end; gap: 1rem; margin-top: -2.5rem; padding: 0 1rem; }
+.avatar { width: 5rem; height: 5rem; border-radius: var(--theme-radius-lg); border: 4px solid var(--theme-bg-primary); background: var(--theme-accent); color: var(--theme-bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; flex: none; }
+.avatar.sm { width: 3rem; height: 3rem; border-width: 0; font-size: 1.125rem; }
+.phead h1 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--theme-text-heading); }
+.handle, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.handle { font-size: .875rem; color: var(--theme-text-muted); }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.acard { padding: 1.25rem; cursor: pointer; text-align: left; width: 100%; color: inherit; font: inherit; display: flex; gap: 1rem; align-items: center; }
+.acard:hover { border-color: var(--theme-accent); }
+.acard .nm { font-size: 1.125rem; font-weight: 600; color: var(--theme-text-primary); }
+.acard .hd { font-size: .8125rem; color: var(--theme-text-muted); font-family: ui-monospace, monospace; }
+.bot { padding: 1px 6px; font-size: .6875rem; font-weight: 600; background: var(--theme-accent); color: var(--theme-bg-secondary); border-radius: var(--theme-radius); margin-left: .375rem; vertical-align: middle; font-family: inherit; }
+.toast { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--theme-bg-primary); border: 1px solid var(--theme-border); color: var(--theme-text-heading); padding: .625rem 1rem; border-radius: var(--theme-radius); font-size: .875rem; box-shadow: 0 6px 20px rgba(0,0,0,.4); z-index: 40; max-width: 90%; }
+.modal .big { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.0625rem; color: var(--theme-text-heading); word-break: break-all; margin: 0 0 .5rem; }
+.modal p { margin: 0; font-size: .875rem; color: var(--theme-text-secondary); }
+.modal .btns { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1.25rem; }
+.field + .field { margin-top: 1.25rem; }
+.mockbar .samples button { border: 1px solid #aaa; background: #fff; color: #222; border-radius: 4px; padding: 2px 8px; font-size: 12px; cursor: pointer; font-family: ui-monospace, monospace; }
+@container (max-width: 640px) {
+  .cards { grid-template-columns: 1fr; }
+  .igroup .affix.host { display: none; }
+  .phead h1 { font-size: 1.25rem; }
+  .banner { height: 8rem; }
+  .modal .btns .btn { flex: 1; }
+}
+@container (min-width: 641px) and (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+/* ===== v3: 余白の引き締め（Tailwind の 4px 刻みの範囲） ===== */
+.nav-inner { height: 56px; padding: 0 24px; }
+.navlink { padding: 6px 10px; }
+.nav .who { padding: 6px 10px; }
+.content { padding: 24px 24px 32px; }
+.stack > * + * { margin-top: 16px; }
+.stack-sm > * + * { margin-top: 8px; }
+h1.page { font-size: 1.5rem; line-height: 2rem; }
+.p5, .p6 { padding: 16px; }
+.btn { padding: 8px 14px; }
+.btn-sm { padding: 4px 10px; }
+.input { padding: 8px 12px; }
+.label { margin-bottom: 6px; }
+.hint { margin-top: 4px; line-height: 1.5; }
+.kv { padding: 6px 0; }
+.scrim { padding: 64px 16px 16px; }
+.modal { padding: 20px; }
+.modal h2 { margin-bottom: 8px; font-size: 1.125rem; }
+.check { line-height: 1.5; }
+
+@container (max-width: 640px) {
+  .nav-inner { height: 48px; padding: 0 12px; gap: 4px; }
+  .navlink { padding: 6px 6px; }
+  .content { padding: 12px 12px 24px; }
+  .stack > * + * { margin-top: 10px; }
+  h1.page { font-size: 1.25rem; line-height: 1.75rem; }
+  .p5, .p6 { padding: 12px; }
+  .btn:not(.btn-sm) { padding: 8px 12px; }
+  .scrim { padding: 12px 8px; }
+  .modal { padding: 16px; }
+  .kv { flex-direction: row; gap: 8px; }
+  .kv > span:first-child { min-width: 96px; }
+}
+.field + .field { margin-top: 16px; }
+.cap { margin-top: 4px; }
+.info { padding: 8px 12px; }
+.banner { height: 8rem; }
+.phead { margin-top: -2rem; padding: 0 12px; gap: 12px; }
+.avatar { width: 4rem; height: 4rem; font-size: 1.25rem; }
+.avatar.sm { width: 2.5rem; height: 2.5rem; font-size: 1rem; }
+.phead h1 { font-size: 1.25rem; }
+.cards { gap: 12px; }
+.acard { padding: 12px 16px; gap: 12px; }
+.acard .nm { font-size: 1rem; }
+.modal .btns { margin-top: 16px; }
+.submit-row { margin-top: 16px; }
+@container (max-width: 640px) {
+  .banner { height: 6rem; }
+  .avatar { width: 3.5rem; height: 3.5rem; }
+  .phead { margin-top: -1.75rem; }
+  .phead h1 { font-size: 1.125rem; }
+  .cards { gap: 8px; }
+  .acard { padding: 12px; }
+  .field + .field { margin-top: 12px; }
+}
+.spc { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0 16px; }
+.spc th, .spc td { border-bottom: 1px solid #2c2c38; padding: 4px 8px; text-align: left; }
+.spc th { color: #aaa; font-weight: 600; }
+.iconbtn { width: 36px; height: 36px; border-radius: var(--theme-radius); border: 0; background: var(--theme-accent); color: var(--theme-bg-secondary); cursor: pointer; font-size: 1.25rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.iconbtn:hover { background: var(--theme-accent-hover); }
+</style>
+</head>
+<body>
+<div class="mockbar" role="region" aria-label="モック操作">
+  <strong class="tag">モック操作（実画面には含まれません）</strong>
+  <label>画面
+    <select id="m-view">
+      <option value="list">Home（一覧）</option>
+      <option value="new" selected>New Account</option>
+      <option value="unset">Account 詳細: ユーザー名未設定</option>
+      <option value="set">Account 詳細: 設定済み</option>
+    </select>
+  </label>
+  <label>Account 作成の形（論点 7）
+    <select id="m-create">
+      <option value="page" selected>別ページ（現行の AccountNew）</option>
+      <option value="modal">一覧の「＋」→ モーダル</option>
+    </select>
+  </label>
+  <label>確認方式
+    <select id="m-confirm">
+      <option value="modal" selected>A: 確認モーダル</option>
+      <option value="check">B: チェックボックス</option>
+      <option value="none">C: 注意書きのみ（Misskey 型）</option>
+    </select>
+  </label>
+  <span class="samples">入力例:
+    <button data-sample="alice">alice（使用済み）</button>
+    <button data-sample="admin">admin（予約語）</button>
+    <button data-sample="Alice_W">Alice_W（大文字）</button>
+    <button data-sample="_alice">_alice（先頭）</button>
+    <button data-sample="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">65 文字</button>
+    <button data-sample="alice.w">alice.w（OK）</button>
+  </span>
+  <span class="seg" role="group" aria-label="表示幅"><button data-vp="desktop" aria-pressed="true">Desktop</button><button data-vp="mobile" aria-pressed="false">Mobile 390px</button></span>
+  <span class="seg" role="group" aria-label="配色"><button data-color="catppuccin-mocha" aria-pressed="true">Catppuccin</button><button data-color="tokyo-night" aria-pressed="false">Tokyo Night</button></span>
+  <span class="seg" role="group" aria-label="形"><button data-shape="rounded" aria-pressed="true">Rounded</button><button data-shape="sharp" aria-pressed="false">Sharp</button></span>
+  <label><input type="checkbox" id="m-pins" checked> 論点ピン</label>
+</div>
+
+<div class="stage show-pins" id="stage" data-vp="desktop"><div class="device"><div class="app" id="app"></div></div></div>
+
+<section class="issues" aria-labelledby="issues-h">
+  <h2 id="issues-h">画面 B（v3）: Profile ユーザー名の入力 — UI 論点</h2>
+  <p class="notes">v3 の変更: 余白・行の高さだけを詰めた（構成と文言は v2 と同じ）。基準は Misskey の CSS（ページ余白 24px／狭い画面 12px、ブロック間 16px／500px 以下 10px、入力欄 高さ 36px・ラベル下 8px・補足上 8px、注意枠 12px 14px）。値は Tailwind の 4px 刻み（10px は 2.5）に丸めた。</p>
+  <table class="spc"><thead><tr><th>箇所</th><th>v2（desktop / mobile）</th><th>v3（desktop / mobile）</th></tr></thead><tbody>
+    <tr><td>ページ余白（contentArea）</td><td>48·24 / 24·16</td><td>24·24 / 12·12</td></tr>
+    <tr><td>ブロック間</td><td>32 / 24</td><td>16 / 10</td></tr>
+    <tr><td>nav の高さ</td><td>64 / 56</td><td>56 / 48</td></tr>
+    <tr><td>ページ見出し</td><td>36px / 28px</td><td>24px / 20px</td></tr>
+    <tr><td>フォームのカード内側</td><td>24</td><td>16 / 12</td></tr>
+    <tr><td>入力欄どうしの間</td><td>20</td><td>16 / 12</td></tr>
+    <tr><td>入力欄の下の状態表示の上</td><td>6</td><td>4</td></tr>
+    <tr><td>詳細のバナー高さ・アイコン</td><td>192, 80 / 128, 80</td><td>128, 64 / 96, 56</td></tr>
+    <tr><td>Profile の各行</td><td>8·0（mobile はラベルと値を縦積み）</td><td>6·0（mobile もラベルと値を横並び）</td></tr>
+    <tr><td>一覧カード（内側・間隔）</td><td>20, 16</td><td>12·16, 12 / 12, 8</td></tr>
+    <tr><td>未設定の注意（1 行）</td><td>10·16</td><td>8·12</td></tr>
+    <tr><td>モーダル（内側・上の空き）</td><td>24, 96 / 24, 64</td><td>20, 64 / 16, 12</td></tr>
+  </tbody></table>
+  <p class="notes">v2 の方針: Misskey の新規登録フォームにならい、ユーザー名欄は「ラベル＋(?)、@ と @host を入力欄に付ける、下に状態 1 行」だけにした（Misskey は「後から変更できません」も常に出すが、ここでは確認方式 C のときだけ出す）。X の設定画面（「ユーザー名 ＞」の行を押して入力 1 つの画面へ）にならい、既存 Profile での設定は Profile 欄の行からモーダルを開く形にした。配置は v1 と同じ（<code>AccountNew</code> / <code>AccountDetail</code> / <code>Accounts</code> に追加、Route は増やさない）。</p>
+
+  <div class="issue"><h3><span class="pin">1</span>@ 表示に Account 名とユーザー名のどちらを使うか</h3>
+    <ol><li>@ 表記はユーザー名に統一し、Account 名は Account Info にだけ出す。</li><li>現状どおり @Account 名を見出しにする。</li><li>両方を並べる。</li></ol>
+    <div class="rec"><b>推奨: 1</b>（v1 は一覧カードとヘッダにも「Account: work」を補助表示していたが、v2 では Account Info だけに残した）</div></div>
+
+  <div class="issue"><h3><span class="pin">2</span>ユーザー名の初期値</h3>
+    <ol><li>空欄。Account 名が使える形式なら「Account 名から入力」の提案ボタンを出す。</li><li>Account 名を自動でコピーする。</li><li>空欄で提案なし。</li></ol>
+    <div class="rec"><b>推奨: 3</b> — <b>v1 から変更</b>（v1 の推奨は 1）。Misskey にも X にも提案ボタンはなく、入力欄が 1 つ増えるだけなので省いた。</div></div>
+
+  <div class="issue"><h3><span class="pin">3</span>「変更できない」の確認方式</h3>
+    <ol><li>A: 確定時にモーダルを出す（完成形の ID と「後から変更できません」の 1 行だけ）。</li><li>B: フォーム内の必須チェックボックス。</li><li>C: 入力欄の下に「後から変更できません」と出すだけ（Misskey 型）。</li></ol>
+    <div class="rec"><b>推奨: A</b>（変更なし。ただしモーダルの説明文は削り、ID と 1 行だけにした。入力欄の下の「後から変更できません」は C のときだけ表示し、A・B ではモーダル／チェックボックスと重複するので出さない。C はモック上部の「確認方式」で比較できる）</div></div>
+
+  <div class="issue"><h3><span class="pin">4</span>検証のタイミングと大文字の扱い</h3>
+    <ol><li>入力中に検証し、重複は入力が止まってから確認する。大文字はエラーにする（自動変換しない）。</li><li>大文字は自動で小文字に変換する。</li><li>送信時にまとめて検証する。</li></ol>
+    <div class="rec"><b>推奨: 1</b> — <b>v1 から一部変更</b>: v1 にあった「小文字にする →」ボタンは削除し、エラーは「a〜z、0〜9、. _ - が使えます」の 1 行にまとめた（Misskey と同じ粒度）。</div></div>
+
+  <div class="issue"><h3><span class="pin">5</span>ユーザー名未設定の既存 Profile への導線の強さ</h3>
+    <ol><li>一覧に「ユーザー名未設定」と表示し、詳細の先頭に 1 行の注意＋［設定する］を出す。設定は Profile 欄の行からモーダルで行う。</li><li>ログイン直後にモーダルで設定を求める。</li><li>設定するまで他の操作をできなくする。</li></ol>
+    <div class="rec"><b>推奨: 1</b> — <b>v1 から一部変更</b>: v1 は詳細の先頭に説明文付きのカードを置き、その中で入力させていた。v2 では注意を 1 行（Misskey の管理画面の注意と同じ形）にし、入力はモーダルに移した。</div></div>
+
+  <div class="issue"><h3><span class="pin">6</span>予約語・使用済みのときに代わりの候補を出すか</h3>
+    <ol><li>使える候補を 2〜3 個出し、押すと入力される。</li><li>出さない。</li></ol>
+    <div class="rec"><b>推奨: 2</b> — <b>v1 から変更</b>（v1 の推奨は「使用済みのときだけ 1」）。Misskey は「利用できません」と出すだけで、候補なしでも困らないため。</div></div>
+
+  <div class="issue"><h3><span class="pin">7</span>Account 作成を別ページにするか、一覧の「＋」から開くモーダルにするか</h3>
+    <p>場所: Home（Accounts 一覧）の右上の作成ボタン。現行は「+ New Account」で別ページ（/accounts/new）に移る。モック上部の「Account 作成の形」で切り替え、一覧から作成までを試せる。</p>
+    <ol><li>現行どおり別ページ（New Account）。</li><li>一覧右上の「＋」→ モーダル（Account 名・ユーザー名・Bot・［作成］）。確認は同じモーダルの中で次の段に切り替わる。</li></ol>
+    <div class="rec"><b>推奨: 2</b> — 入力は 3 つだけで一覧から離れる必要がなく、D08 で指示された「＋→モーダル」ともそろう。実装では Route の AccountNew を消すか、モーダルを開いた一覧への入口として残すかを別に決める。</div></div>
+
+  <p class="notes"><b>仮置き</b>: ホスト名 <code>emumet.example</code> と予約語・使用済みの名前は仮／mobile では入力欄の「@emumet.example」を省略／既存画面の見出し（Accounts / New Account / Profile 等）は英語のまま。</p>
+</section>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const HOST = 'emumet.example';
+const RESERVED = ['admin', 'root', 'api', 'www', 'mail', 'support', 'help', 'about', 'settings', 'login', 'logout', 'register', 'accounts', 'users', 'inbox', 'outbox', 'system', 'emumet', 'shuttlepub'];
+const TAKEN = ['alice', 'bob', 'turtton', 'hana'];
+const RE = /^[a-z0-9][a-z0-9._-]{0,63}$/;
+const pin = (n, t) => `<span class="pin" aria-hidden="true" title="論点 ${n}: ${esc(t)}">${n}</span>`;
+const help = `<a class="help" href="#" data-act="noop" aria-label="ユーザー名のヘルプ" title="ヘルプ">?</a>`;
+
+const S = { createMode: 'page', view: 'new', confirm: 'modal', modal: null, step: 'input', toast: '', created: 'alice.w', account: '', isBot: false,
+  u: { new: { v: '', check: 'idle', ack: false }, set: { v: '', check: 'idle', ack: false } } };
+
+function syncCheck(v) {
+  if (!v) return { s: 'empty' };
+  if (v.length > 64) return { s: 'error', m: '長すぎます' };
+  if (!RE.test(v)) return { s: 'error', m: '先頭は a〜z か 0〜9、以降は a〜z、0〜9、. _ - が使えます' };
+  if (RESERVED.includes(v)) return { s: 'error', m: '利用できません' };
+  return { s: 'pending' };
+}
+function stateOf(ctx) {
+  const u = S.u[ctx]; const r = syncCheck(u.v);
+  if (r.s !== 'pending') return r;
+  if (u.check !== 'ok' && u.check !== 'taken') return { s: 'checking' };
+  return u.check === 'taken' ? { s: 'error', m: '利用できません' } : { s: 'ok' };
+}
+const timers = {};
+function onInput(ctx, v) {
+  S.u[ctx].v = v; S.u[ctx].check = 'idle'; clearTimeout(timers[ctx]);
+  if (syncCheck(v).s === 'pending') timers[ctx] = setTimeout(() => { S.u[ctx].check = TAKEN.includes(v) ? 'taken' : 'ok'; update(ctx); }, 700);
+  update(ctx);
+}
+function capHtml(ctx) {
+  const st = stateOf(ctx);
+  const line = st.s === 'checking' ? '<span class="secondary"><span class="spin" aria-hidden="true"></span> 確認しています</span>'
+    : st.s === 'ok' ? '<span class="tone-success">✓ 利用できます</span>'
+    : st.s === 'error' ? `<span class="tone-error">✕ ${esc(st.m)}</span>` : '';
+  return `${line}${S.confirm === 'none' ? '<span class="tone-warning">⚠ 後から変更できません</span>' : ''}`;
+}
+function field(ctx) {
+  const u = S.u[ctx]; const st = stateOf(ctx);
+  return `<div class="field"><div class="label">${pin(4, '検証')}<label for="un-${ctx}">ユーザー名</label>${help}</div>
+    <div class="igroup ${st.s === 'error' ? 'err' : st.s === 'ok' ? 'ok' : ''}" id="ig-${ctx}"><span class="affix" aria-hidden="true">@</span>
+      <input id="un-${ctx}" data-un="${ctx}" value="${esc(u.v)}" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="80" aria-describedby="cap-${ctx}" aria-invalid="${st.s === 'error'}">
+      <span class="affix host" aria-hidden="true">@${HOST}</span></div>
+    <div class="cap" id="cap-${ctx}" aria-live="polite">${capHtml(ctx)}</div>
+    ${S.confirm === 'check' ? `<label class="check" style="margin-top:.75rem">${pin(3, '確認方式')}<input type="checkbox" data-act="ack" data-ctx="${ctx}" ${u.ack ? 'checked' : ''}> 変更できないことを確認しました</label>` : ''}</div>`;
+}
+function can(ctx) {
+  const ok = stateOf(ctx).s === 'ok' && (S.confirm !== 'check' || S.u[ctx].ack);
+  return ctx === 'new' ? ok && S.account.trim() !== '' : ok;
+}
+function update(ctx) {
+  const ig = $(`#ig-${ctx}`); if (!ig) return; const st = stateOf(ctx);
+  ig.className = `igroup ${st.s === 'error' ? 'err' : st.s === 'ok' ? 'ok' : ''}`;
+  $(`#un-${ctx}`).setAttribute('aria-invalid', String(st.s === 'error'));
+  $(`#cap-${ctx}`).innerHTML = capHtml(ctx);
+  const b = $(`#go-${ctx}`); if (b) b.disabled = !can(ctx);
+}
+
+function nav() {
+  return `<nav class="nav" aria-label="メイン"><div class="nav-inner"><span class="brand">Ratcap</span><ul>
+    <li><a class="navlink" href="#" data-act="go" data-v="list" ${S.view === 'list' ? 'aria-current="page"' : ''}>Home</a></li>
+    <li><a class="navlink" href="#" data-act="noop">Settings</a></li><li><span class="who">turtton</span></li>
+    <li><button class="navlink" data-act="noop">Logout</button></li></ul></div></nav>`;
+}
+function listView() {
+  const card = (go, ini, dn, un, bot) => `<button class="surface acard" data-act="go" data-v="${go}"><div class="avatar sm">${ini}</div>
+    <div style="min-width:0"><div class="nm">${esc(dn)}${bot ? '<span class="bot">Bot</span>' : ''}</div>
+    <div class="hd">${un ? `@${esc(un)}@${HOST}` : `${pin(5, '未設定への導線')}<span class="tone-warning" style="font-family:inherit">ユーザー名未設定</span>`}</div></div></button>`;
+  return `<div class="row between wrap"><h1 class="page">Accounts</h1>${S.createMode === 'modal'
+      ? `<span class="row" style="gap:4px">${pin(7, 'Account 作成の形')}<button class="iconbtn" data-act="openNew" aria-label="New Account" title="New Account">+</button></span>`
+      : `<span class="row" style="gap:4px">${pin(7, 'Account 作成の形')}<button class="btn btn-primary" data-act="go" data-v="new">+ New Account</button></span>`}</div>
+    <div class="cards">${card('set', 'A', 'Alice', S.created)}${card('unset', 'W', '仕事用', '')}${card('set', 'N', 'News Bot', 'newsbot', true)}</div>`;
+}
+function newView() {
+  return `<div class="narrow stack"><h1 class="page">${pin(7, 'Account 作成の形')}New Account</h1><div class="surface p6">
+    <div class="field"><label class="label" for="acc">${pin(1, '@ 表示に使う名前')}Account 名</label><input class="input" id="acc" data-acc value="${esc(S.account)}" autocomplete="off"></div>
+    ${field('new')}
+    <div class="field"><label class="check"><input type="checkbox" data-act="bot" ${S.isBot ? 'checked' : ''}> Bot</label></div>
+    <div class="submit-row"><button class="btn btn-primary" style="width:100%" id="go-new" data-act="submit" data-ctx="new" ${can('new') ? '' : 'disabled'}>${S.confirm === 'modal' ? pin(3, '確認方式') : ''}作成</button></div>
+  </div></div>`;
+}
+function detailView(set) {
+  const un = S.created;
+  return `${set ? '' : `<div class="info" role="status">${pin(5, '未設定への導線')}<span class="grow">⚠ ユーザー名が未設定です</span><a href="#" data-act="openSet">設定する</a></div>`}
+    <div class="stack-sm"><div class="banner"></div><div class="phead"><div class="avatar">${set ? 'A' : 'W'}</div><div style="padding-bottom:.25rem;min-width:0">
+      <h1>${set ? 'Alice' : '仕事用'}</h1><div class="handle">${pin(1, '@ 表示に使う名前')}${set ? `@${esc(un)}@${HOST}` : '<span class="tone-warning" style="font-family:inherit">ユーザー名未設定</span>'}</div></div></div></div>
+    <section class="surface p5"><div class="row between" style="margin-bottom:.5rem"><h2 class="card-title">Profile</h2><button class="btn btn-outline btn-sm" data-act="noop">Edit</button></div>
+      <div class="kv"><span>ユーザー名</span><span>${set ? `<span class="mono">@${esc(un)}</span> <span aria-label="変更不可" title="変更不可">🔒</span>` : '<button class="btn btn-outline btn-sm" data-act="openSet">設定</button>'}</span></div>
+      <div class="kv"><span>Display Name</span><span>${set ? 'Alice' : '仕事用'}</span></div>
+      <div class="kv"><span>Summary</span><span>${set ? 'ShuttlePub で遊んでいます。' : '—'}</span></div>
+      <div class="kv"><span>Icon URL</span><span>—</span></div><div class="kv"><span>Banner URL</span><span>—</span></div></section>
+    <section class="surface p5"><h2 class="card-title" style="margin-bottom:.5rem">Account Info</h2>
+      <div class="kv"><span>Account 名</span><span>${set ? 'alice-main' : 'work'}</span></div>
+      <div class="kv"><span>ID</span><span>${set ? '01JAB…7KQ' : '01HZX…2MD'}</span></div>
+      <div class="kv"><span>Created</span><span>${set ? '2026/10/21' : '2026/09/02'}</span></div></section>`;
+}
+function modal() {
+  if (!S.modal) return '';
+  const ctx = S.modal; const v = S.u[ctx].v;
+  let b;
+  if (S.step === 'confirm') {
+    b = `<h2 id="mh">${ctx === 'new' ? 'この ID で作成しますか？' : 'このユーザー名にしますか？'}</h2>
+      <div class="big">@${esc(v)}@${HOST}</div><p>後から変更できません。</p>
+      <div class="btns"><button class="btn btn-outline" data-act="back">戻る</button><button class="btn btn-primary" data-act="finish">${ctx === 'new' ? '作成' : '設定'}</button></div>`;
+  } else if (ctx === 'new') {
+    b = `<h2 id="mh">New Account</h2>
+      <div class="field"><label class="label" for="acc">Account 名</label><input class="input" id="acc" data-acc value="${esc(S.account)}" autocomplete="off"></div>
+      ${field('new')}
+      <div class="field"><label class="check"><input type="checkbox" data-act="bot" ${S.isBot ? 'checked' : ''}> Bot</label></div>
+      <div class="btns"><button class="btn btn-outline" data-act="close">キャンセル</button><button class="btn btn-primary" id="go-new" data-act="submit" data-ctx="new" ${can('new') ? '' : 'disabled'}>${S.confirm === 'modal' ? pin(3, '確認方式') : ''}作成</button></div>`;
+  } else {
+    b = `<h2 id="mh">ユーザー名を設定</h2>${field('set')}
+      <div class="btns"><button class="btn btn-outline" data-act="close">キャンセル</button><button class="btn btn-primary" id="go-set" data-act="submit" data-ctx="set" ${can('set') ? '' : 'disabled'}>${S.confirm === 'modal' ? pin(3, '確認方式') : ''}設定</button></div>`;
+  }
+  return `<div class="scrim" data-act="scrim"><div class="surface modal" role="dialog" aria-modal="true" aria-labelledby="mh">${b}</div></div>`;
+}
+function render() {
+  const body = S.view === 'list' ? listView() : S.view === 'new' ? newView() : detailView(S.view === 'set');
+  $('#app').innerHTML = `${nav()}<div class="content stack">${body}</div>${modal()}${S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : ''}`;
+  if (S.modal) { const f = $('.modal input') || $('.modal .btn-primary'); f && f.focus({ preventScroll: true }); $('.modal').scrollIntoView({ block: 'center' }); }
+  $('#m-view').value = S.modal === 'new' && S.createMode === 'modal' ? 'new' : S.view;
+}
+let tt; function toast(m) { S.toast = m; clearTimeout(tt); tt = setTimeout(() => { S.toast = ''; render(); }, 2200); }
+function finish(ctx) { S.created = S.u[ctx].v; S.modal = null; S.step = 'input'; S.view = 'set'; toast(ctx === 'new' ? '作成しました' : '設定しました'); }
+
+$('#app').addEventListener('input', (e) => {
+  if (e.target.dataset.un) onInput(e.target.dataset.un, e.target.value);
+  if (e.target.hasAttribute('data-acc')) { S.account = e.target.value; update('new'); }
+});
+$('#app').addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act;
+  if (a === 'scrim' && e.target !== el) return;
+  if (a === 'ack') { S.u[el.dataset.ctx].ack = el.checked; update(el.dataset.ctx); return; }
+  if (a === 'bot') { S.isBot = el.checked; return; }
+  e.preventDefault();
+  switch (a) {
+    case 'go': S.view = el.dataset.v; break;
+    case 'openSet': S.modal = 'set'; S.step = 'input'; break;
+    case 'submit': { const ctx = el.dataset.ctx; if (S.confirm === 'modal') { S.modal = ctx; S.step = 'confirm'; } else finish(ctx); break; }
+    case 'openNew': S.modal = 'new'; S.step = 'input'; break;
+    case 'back': if (S.modal === 'set' || (S.modal === 'new' && S.createMode === 'modal')) { S.step = 'input'; } else { S.modal = null; S.step = 'input'; } break;
+    case 'finish': finish(S.modal); break;
+    case 'close': case 'scrim': S.modal = null; S.step = 'input'; break;
+    default: break;
+  }
+  render();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.modal) { S.modal = null; S.step = 'input'; render(); } });
+function openView(v) {
+  S.modal = null; S.step = 'input';
+  if (v === 'new' && S.createMode === 'modal') { S.view = 'list'; S.modal = 'new'; } else S.view = v;
+}
+$('#m-view').addEventListener('change', (e) => { openView(e.target.value); render(); });
+$('#m-create').addEventListener('change', (e) => { S.createMode = e.target.value; openView(S.view === 'new' || S.modal === 'new' ? 'new' : 'list'); render(); });
+$('#m-confirm').addEventListener('change', (e) => { S.confirm = e.target.value; render(); });
+document.querySelectorAll('[data-sample]').forEach((b) => b.addEventListener('click', () => {
+  let ctx = 'new';
+  if (S.view === 'unset') { ctx = 'set'; S.modal = 'set'; S.step = 'input'; } else if (S.createMode === 'modal') { S.view = 'list'; S.modal = 'new'; S.step = 'input'; } else if (S.view !== 'new') S.view = 'new';
+  render(); const i = $(`#un-${ctx}`); i.value = b.dataset.sample; onInput(ctx, b.dataset.sample);
+}));
+$('#m-pins').addEventListener('change', (e) => $('#stage').classList.toggle('show-pins', e.target.checked));
+document.querySelectorAll('.mockbar .seg').forEach((g) => g.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  if (b.dataset.vp) $('#stage').dataset.vp = b.dataset.vp;
+  if (b.dataset.color) document.documentElement.dataset.color = b.dataset.color;
+  if (b.dataset.shape) document.documentElement.dataset.shape = b.dataset.shape;
+}));
+render();
+</script>
+</body>
+</html>

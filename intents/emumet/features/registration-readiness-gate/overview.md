@@ -14,7 +14,7 @@ Ory identity の作成）に対する「登録ゲート」を Emumet が管理�
   [D15 candidate](../../../shuttlepub/packets/candidates.md#d15)
 - ユーザー決定の正本:
   [grill 記録](../../../shuttlepub/interviews/discord-feature-grill-2026-10-15.json)の
-  `d15-q01`〜`d15-q11`
+  `d15-q01`〜`d15-q12`
 - 計画（execution unit 分割）の正本: [packets.md](packets.md)。契約・検証境界: [acceptance.md](acceptance.md)
 
 ## 確定済みのユーザー決定（要約。詳細は grill 記録が正本）
@@ -32,6 +32,7 @@ Ory identity の作成）に対する「登録ゲート」を Emumet が管理�
 | q09 | 無対策でも、管理者が警告を明示確認すれば一般開放できる override を認める |
 | q10 | override は管理者が明示解除するまで有効。上書き中は通常の自動停止・障害時拒否判定を行わず、管理画面に常時表示 |
 | q11 | 通知は管理画面内の通知一覧＋未読表示、および外部 Webhook を初回から含める。メール通知は前提にしない |
+| q12 | F15 の画面構成・文言・見た目は A v5 モックに合意。実装基準は `ui-spec.md` |
 
 ## 状態の考え方（E15a が契約化する）
 
@@ -51,10 +52,11 @@ Ory identity の作成）に対する「登録ゲート」を Emumet が管理�
 3. **override の開始・解除も通知に含める。** 通知一覧（未読/既読）と外部 Webhook（E15w）の両方へ `override_started` / `override_revoked` を配送対象にする。誰が実行したかは監査記録にも残す。
 4. **警告バナーは管理画面内の全ページに常時表示し、一般画面には出さない。** 文言・見た目はリード側モックへのユーザー合意待ち（下記）。
 
-## F15 画面構成のモック合意（未記録）
+## F15 画面構成のモック合意
 
-F15（`registration-gate-admin-ui`、shuttlepub-frontends#31）の画面構成・文言・見た目は未決。ユーザー方針は「説明が多すぎる、Misskey/X を見て引き算」。
-リード側モックへのユーザー合意が確定したら、この節（または同ディレクトリの intent）へ記録する。**記録されるまで画面実装 PR を出さない**
+F15（`registration-gate-admin-ui`、shuttlepub-frontends#31）の画面構成・文言・見た目は A v5（artifact `artifact-537a0eb64a9c2ff65df0fbd8251c58f1`）に合意済み。合意確認では SNS v5 / A v5 / B v3 を名指しし、ユーザーは SNS v5 の修正 2 点を伝えたうえで「あとはOK」と回答した。A v5 の全論点を実装基準とし、「BOT 対策」を「BOT 保護」に統一、Webhook 通知種類から「防御低下」を除く案も含む。
+
+画面実装の基準は [ui-spec.md](ui-spec.md)、HTML と CSS は [mocks/](mocks/) を参照する。**画面実装を再開できる**（ただし F15 / D15 全体の完了を意味しない）。
 （BFF・API 接続・生成型・fixture は先行可）。
 
 ## Non-goals

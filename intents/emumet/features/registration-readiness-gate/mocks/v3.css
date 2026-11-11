@@ -1,0 +1,33 @@
+/* ===== v3: 余白の引き締め（Tailwind の 4px 刻みの範囲） ===== */
+.nav-inner { height: 56px; padding: 0 24px; }
+.navlink { padding: 6px 10px; }
+.nav .who { padding: 6px 10px; }
+.content { padding: 24px 24px 32px; }
+.stack > * + * { margin-top: 16px; }
+.stack-sm > * + * { margin-top: 8px; }
+h1.page { font-size: 1.5rem; line-height: 2rem; }
+.p5, .p6 { padding: 16px; }
+.btn { padding: 8px 14px; }
+.btn-sm { padding: 4px 10px; }
+.input { padding: 8px 12px; }
+.label { margin-bottom: 6px; }
+.hint { margin-top: 4px; line-height: 1.5; }
+.kv { padding: 6px 0; }
+.scrim { padding: 64px 16px 16px; }
+.modal { padding: 20px; }
+.modal h2 { margin-bottom: 8px; font-size: 1.125rem; }
+.check { line-height: 1.5; }
+
+@container (max-width: 640px) {
+  .nav-inner { height: 48px; padding: 0 12px; gap: 4px; }
+  .navlink { padding: 6px 6px; }
+  .content { padding: 12px 12px 24px; }
+  .stack > * + * { margin-top: 10px; }
+  h1.page { font-size: 1.25rem; line-height: 1.75rem; }
+  .p5, .p6 { padding: 12px; }
+  .btn:not(.btn-sm) { padding: 8px 12px; }
+  .scrim { padding: 12px 8px; }
+  .modal { padding: 16px; }
+  .kv { flex-direction: row; gap: 8px; }
+  .kv > span:first-child { min-width: 96px; }
+}

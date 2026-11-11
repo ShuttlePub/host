@@ -21,6 +21,7 @@ D08 [personal-domain-controls](../personal-domain-controls/overview.md)（略号
   `d08-q13`（Profile 単位移行と実保存・フォロー解除を今回含める）、
   `d08-q14`（既存連合 identity は破棄可・本番利用者なし。Move・リダイレクト・互換維持なし）、
   `d08-q15`（Profile ごとに一意・不変の username。Account 名とは別。移管でも維持）。
+- Profile ユーザー名入力 UI の合意: `d08-q17-profile-username-ui-mock-v3-agreement`（B v3 artifact `artifact-85133f12a28b0790bdd055775cc20a12`、全論点を推奨案どおり採用）。合意確認で B v3 を名指しされた後、ユーザーは SNS v5 の修正 2 点を伝えて「あとはOK」と回答。
 - 既存決定: Emumet ADR 0002（アカウントアドレス）/ 0003（委任署名）/ 0007（組織 Account・Profile 移管）。
   既存要求: [ap-federation](../ap-federation/overview.md) / [block-mute](../block-mute/overview.md)。
 
@@ -54,6 +55,10 @@ D08 [personal-domain-controls](../personal-domain-controls/overview.md)（略号
 - 一意性は DB でも保証。削除済み username は再利用しない。Account 名から自動導出しない。
 - username 更新 API を通常の編集機能として設けない（一回限り設定のみ）。
 - この文字種は P4 の Mastodon / Iceshrimp E2E でも検証する。
+
+## emumet-web username UI モック合意
+
+FN の Profile ユーザー名 UI は B v3 に合意済み。画面実装は [ui-username-spec.md](ui-username-spec.md) を基準とし、HTML と共通 CSS は [mocks/](mocks/) に保存する。UI 合意は FN の実装完了や D08 全体の完了を意味しない。
 
 ### 認証・責務
 
