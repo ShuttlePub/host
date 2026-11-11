@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-identity-read-exposure",
+  "actor": "design",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-11T05:21:10.7292567+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "design",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-11T05:14:14.3089325+00:00",
+  "base_commit": "8e976ed596f9cbbb07a6d195cc83ce9ff49da879"
+}

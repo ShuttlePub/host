@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:profile-identity-read-exposure",
-  "actor": "design",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-11T05:14:14.3089325+00:00",
-  "base_commit": "dd39d836b011cee3516c8f80bca9d795e3237527"
-}
