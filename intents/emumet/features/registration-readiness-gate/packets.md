@@ -100,6 +100,12 @@ BFF・API 接続・生成型・全状態 fixture など画面構成に依存し�
 - shuttlepub-frontends PR #33（head `3e07fec5d96c1e8c715f7bb6b0195bdcbcf60be2`）は squash merge 済み（`7516562db15952144dd406070ffe3d3f95de02c3`）。Refs #31。独立 Reviewer approve（run `run-01m71j8qsyj87h460v46bhqyqn`、must 0）、CI 全 pass。
 - BFF/API・生成型・fixture の先行部分のみ。画面実装はモック合意待ちで未着手。issue #31 は OPEN のまま、F15 は未完了で queue 状態も変更しない。
 
+### F15 画面部分の進捗（2026-11-11）
+
+- F15 画面 PR shuttlepub-frontends #39（head `93f0b83eb8b6d7edbcc59bc8e239bf799f399fee`）は squash merge 済み（`3c7c7e2b9984db1762b2092ae18f4959751569ed`）。基準は [ui-spec.md](ui-spec.md)（モック A v5）。Refs #31（closing keyword なし）。独立 Reviewer approve（main #41 との衝突解消差分を含む）、CI 全 pass。
+- Webhook 登録 UI（「＋」・登録/編集モーダル・URL 部分マスク・古い配送失敗の再試行）は E15x（[Emumet#97](https://github.com/ShuttlePub/Emumet/issues/97)）の merge 後に後続 PR で実装する（ユーザー決定 `question-433de6d63c710adbcaa304b4ba7d1ba6`）。ui-spec の (?) はヘルプの置き場所が決まるまで出さない。
+- issue #31 は OPEN のまま。F15 は未完了で、closeout・pr-transition・queue 状態の変更はしない。claim `execution-unit:registration-gate-admin-ui`（actor `f15-worker`）は後続 PR のため保持。
+
 ## 編集競合と merge 順
 
 Emumet の共有ファイル（`server/src/openapi.rs`、`server/src/route.rs`、本番 router を組み立てる `server/src/main.rs`、
