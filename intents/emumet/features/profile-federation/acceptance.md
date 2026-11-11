@@ -111,7 +111,7 @@ URL 系の列は **1024 バイト以下**（kernel の検証と DB の CHECK。�
 | `profile_follows` | Follow の**世代**。follower/followee（local `profile_id` か remote `actor_url` の一方）、**元 Follow activity ID**、state `pending`/`accepted`/`ended`、終了理由 `undone`/`rejected`/`blocked`、`accepted_at`/`ended_at`、API 用 `nanoid`。有効な世代（ended 以外）は (follower, followee) ごとに高々 1。世代の識別は follower ごとの activity ID の一意。終了済みの世代も残す。remote→remote・自己 Follow は不可（CHECK） |
 | `profile_blocks` / `profile_mutes` | 個別設定。owner は常にローカル Profile、target は local Profile か remote actor URL。API 用 `nanoid`。自己指定は不可 |
 | `profile_inbound_activities` | 重複受信記録。キー `(receiver_profile_id, actor_url, activity_id)`、`receive_count`、初回/最終受信時刻 |
-| `profile_delivery_jobs` | 配送 job。冪等キー `(sender_profile_id, activity_id, target_inbox)`。activity 種別 `Follow`/`Accept`/`Reject`/`Undo`（AP Block は送らない）、**送信本文のバイト列そのもの**（TEXT。HTTP 署名 digest のため正規化しない）、`follow_id`、state `pending`/`in_flight`/`retrying`/`delivered`/`failed`/`cancelled`、`attempt_count`、`next_attempt_at`、lease（`lease_owner`/`lease_token`/`lease_expires_at`）、最終結果・HTTP status・失敗理由、取消理由 |
+| `profile_delivery_jobs` | 配送 job。冪等キー `(sender_profile_id, activity_id, target_inbox)`。activity 種別 `Follow`/`Accept`/`Reject`/`Undo`（個別 actor block の AP `Block` を D8R が追加。DB CHECK は D8R の新 migration `20261122000001` で `Block` を許可。domain block は `Block` を送らない）、**送信本文のバイト列そのもの**（TEXT。HTTP 署名 digest のため正規化しない）、`follow_id`、state `pending`/`in_flight`/`retrying`/`delivered`/`failed`/`cancelled`、`attempt_count`、`next_attempt_at`、lease（`lease_owner`/`lease_token`/`lease_expires_at`）、最終結果・HTTP status・失敗理由、取消理由 |
 | `profile_delivery_attempts` | 試行履歴 `(job_id, attempt_no)`、開始/終了、結果分類、HTTP status |
 
 ### Follow の世代の契約（P3i/P3o）
@@ -226,7 +226,7 @@ Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 
 ## P3o 確定契約（Emumet PR #86、2026-11-10 マージ済み、squash `fc11471`）
 
 > 実装は `ShuttlePub/Emumet` の kernel（`entity::profile_graph::delivery_policy`、`repository::profile_delivery_sender`・`profile_delivery`）、driver（`profile_delivery`＝送信 adapter・actor / WebFinger resolver）、application（`service::profile_relationship`＝use case・配送 worker・activity 組み立て）、server（`route::profile_relationship`・`api::profile_delivery_worker`）。
-> route・worker とも **本番 root router・`main` へ未接続**（テスト専用の `ProfileRelationshipRouter` と `spawn_profile_delivery_worker`）。`openapi.json`・`root_router.rs`・`main.rs` は変更なし（OpenAPI は E8 の 501 skeleton のまま）。**AP Block の送信可否はユーザー確認中（下記）。**
+> route・worker とも **本番 root router・`main` へ未接続**（テスト専用の `ProfileRelationshipRouter` と `spawn_profile_delivery_worker`）。`openapi.json`・`root_router.rs`・`main.rs` は変更なし（OpenAPI は E8 の 501 skeleton のまま）。**AP Block の送信は確定（下記。実装は D8R、Emumet PR #93）。**
 
 ### use case（`ProfileRelationshipUseCase`）
 
@@ -234,7 +234,7 @@ Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 
 |---|---|---|
 | `follow_profile` | `POST /profiles/{id}/follows` | remote 宛て: pending 世代 + `Follow` job を同一 transaction で予約。**ローカル Profile 宛て: HTTP を経由せず**、同じ transaction で承認済み世代を `Local(ProfileId)` 同士で確定（配送 job なし。下記） |
 | `unfollow_profile` | `DELETE /profiles/{id}/follows/{follow_id}` | 世代を ended(undone) にし、未送信 Follow は取消、試行済みなら `Undo(Follow)` を予約 |
-| `block_actor` / `unblock_actor` | `POST …/blocks`・`DELETE …/blocks/{id}` | block 保存 + 双方向の有効世代を ended(blocked) + 相手へ `Undo(Follow)`（自分→相手）/ `Reject(Follow)`（相手→自分）を予約。**AP `Block` は送らない**。解除は関係を復元せず配送もしない |
+| `block_actor` / `unblock_actor` | `POST …/blocks`・`DELETE …/blocks/{id}` | block 保存 + 双方向の有効世代を ended(blocked) + 相手へ `Undo(Follow)`（自分→相手）/ `Reject(Follow)`（相手→自分）を予約。**P3o 時点では AP `Block` は送らなかったが、D8R で remote actor 宛てに `Block` を併用・解除は `Undo(Block)` に確定（下記）**。解除は関係を復元しない |
 | `mute_actor` / `unmute_actor` | `POST …/mutes`・`DELETE …/mutes/{id}` | 表示抑制の設定のみ。関係・配送は変えない |
 | following 一覧 | `GET …/following` | **P3i の `ProfileFollowListUseCase`・`route_profile_follow_lists` に一本化**（P3o は一覧を持たない） |
 
@@ -281,9 +281,14 @@ Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 
 - `ProfileDeliveryJobRepository::find_by_follow(follow_id, activity_type)`（関係終了時に既存の Follow / Accept job の宛先 inbox・状態を引く）、`renew_lease(claim, now, extension)`（上記）。`ProfileDeliveryEnqueuer` / `NewProfileDeliveryJob` は変更なし。
 - `kernel::impl_database_delegation!` に `DependOnProfileMuteRepository` と `DependOnProfileDeliveryJobRepository` の委譲を追加（他は P3i が追加済み）。
 
-### AP Block 送信は保留中（ユーザー確認中）
+### AP Block 送信は確定（ユーザー決定 question-e6dfa2b98a9dc74491b19bbcf2ba5ca4、2026-11-11）
 
-旧 Account 版は `Block` を送っていたが、D08「AP Block は送らない」と P2 の job 種別（Follow / Accept / Reject / Undo ＋ DB CHECK）に従い、**現状は個別 actor block でも Block を送らず Undo / Reject だけを配送する**。個別 block でも Block を送るかの確認は未回答（ユーザー確認中）。「送る」となった場合の差分は小さい（P2 fixture の job 種別 CHECK に `Block` を追加し、`block_actor` に配送予約、`unblock_actor` に `Undo(Block)`）ので後続の小 PR で対応する。
+**個別 actor の block は AP `Block` を送る（Follow 解除の Undo / Reject と併用、解除時は `Undo(Block)`）。ドメインブロックは AP Block を送らない。** 実装は D8R（Emumet PR #93。P4 マージ後に rebase）:
+
+- `block_actor`: remote actor 宛てに `Block`（`object` = 相手 actor、ID `{actor}/blocks/{block ID}`）を、関係解除・Undo/Reject の予約と同一 transaction で予約する。ローカル Profile 相手は配送しない。相手を解決できなくても block と解除は適用し、解除した Follow から分かる inbox があればそこへ、無ければ `Block` だけ予約しない。
+- `unblock_actor`: 未送信の `Block` job は取消して `Undo` を送らない。送信済み・結果不明は元 `Block` を埋め込んだ `Undo(Block)` を同じ宛先へ予約（送信中だった可能性があれば、取消後に取り直した時刻から 120 秒 / lease 後。Follow の Undo と同じ規則）。
+- 配送 job 種別の DB CHECK への `Block` 追加は D8R の新しい migration `20261122000001_profile_delivery_block_activity.sql`（P4 のコードは変更しない）。`ProfileDeliveryJobRepository::find_by_activity`、`ProfileBlockRepository::find_by_nanoid` を追加。
+- 受信した `Block` / `Undo(Block)` は P3i のまま非対応（関係を変えない。テストで確認）。
 
 ### 検証
 

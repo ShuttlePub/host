@@ -28,7 +28,7 @@ facets: [vocabulary, invariant]
 | q05〜q08, q11 | 表示抑制（timeline・検索・通知）、第三者コメント付き引用／純粋 boost の全体非表示、直接 URL は単一投稿 reveal、既存反応件数は維持 |
 | q09 | **完全一致**のみ（`example.com` は `sub.example.com` を含まない） |
 | q10 | block 解除しても関係を復元せず、復元用一覧も保持しない |
-| q12 | **AP Block は送らない**。Follow 解除に必要な最小限の通知のみ |
+| q12 | **domain block は AP Block を送らない**。Follow 解除に必要な最小限の通知のみ。**個別 actor block は AP Block を送る**（Undo/Reject と併用、解除は Undo(Block)。後の決定 ユーザー決定 question-e6dfa2b98a9dc74491b19bbcf2ba5ca4） |
 | q13/q14/q15 | Profile 単位移行・実保存・Follow 解除を今回含める。旧連合 identity は破棄、Profile username は一意・不変 |
 
 ## 責務分割

@@ -13,7 +13,8 @@ implementation_issue_packet:
     - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない。"
     - "確定済みの先行 unit: E8 (Emumet#66 / PR #70、squash 0bfa437)。P2 (Emumet#72 / PR #77、squash f523b86): 保存モデル・共通 enqueue interface・配送 worker 向け port・初期化対象/非対象一覧は host の PF acceptance.md『P2 確定契約』が正本。D8P (Emumet#73 / PR #76、squash b3e87f2): domain 正規化・tombstone revision・所有者認可・照合関数 FindDomainControlForActorUseCase (検証済み canonical actor ID の host と完全一致) は host の DC acceptance.md『D8P 確定契約』が正本で、domain-controls route は本番未 mount。P1 (Emumet#71 / PR #78) はレビュー修正中で、actor URL は {PUBLIC_BASE_URL}/ap/profiles/{nanoid}、Profile 鍵は新テーブル profile_signing_keys、本番 router 構築を server/src/root_router.rs に切り出す (確定形は P1 closeout で PF に記録される。P1 マージ前は PR #78 と Emumet#71 の契約に合わせ、曖昧なら issue で質問する)。P3o (Emumet#74)・P3i (Emumet#75)・FN (shuttlepub-frontends#34) は実装中または未マージ"
     - "migration の分担 (親判断、2026-11-10): P1・D8P の非破壊の追加 migration (列・テーブル・index) は通常の migrations/ に置き本番適用してよい (D8P の 20260920000001_profile_domain_controls.sql は既に本番 migrations/ にある)。P4 (profile-federation-in-place-cutover) が所有するのは、旧連合データ初期化などの破壊的 migration と、P2 の新関係・配送テーブルの本番採番・配置 (driver/fixtures/profile_social_graph/ の 01 schema・02 reset)"
-    - "block の意味 (D08 決定 q01/q10/q12): 表示抑制に加え、対象 domain の利用者との既存 Follow/Follower 関係を自分側の記録から両方向に解除する。解除しても関係は復元しない (復元用関係一覧も保持しない。再び繋がるには利用者が再フォローする)。相手サーバーへ AP Block は明示送信せず、フォロー解除に必要な最小限の通知 (Undo/Reject) だけを送る"
+    - "migration (D8R、2026-11-11): 個別 actor block の AP Block のため、配送 job 種別の DB CHECK (P4 が配置した Follow/Accept/Reject/Undo) に Block を加える新しい migration を D8R が追加する。P4 のコードは変更しない"
+    - "block の意味 (D08 決定 q01/q10/q12): 表示抑制に加え、対象 domain の利用者との既存 Follow/Follower 関係を自分側の記録から両方向に解除する。解除しても関係は復元しない (復元用関係一覧も保持しない。再び繋がるには利用者が再フォローする)。domain block は相手サーバーへ AP Block を送らず、フォロー解除に必要な最小限の通知 (Undo/Reject) だけを送る。個別 actor の block (P3o の block_actor) は、これに加えて AP Block (object=相手 actor) を配送し、解除は Undo(Block) を送る (ユーザー決定による範囲追加。revision_history 参照)"
     - "関係の解除は P2 確定契約の end_active_between (両方向の有効な世代を終了、受理済みかは accepted_at で判別、終了理由 blocked) と、配送 job の cancel_undelivered_for_follow / cancel、共通 enqueue interface (ProfileDeliveryEnqueuer、関係変更と同一 transaction) を使う。block 本体の適用 (拒否判定・解除・job 予約) は use case の責務 (P2 の申し送り)"
     - "解除時に送る activity は関係の作者に従う: 自分 (block した Profile) が送った Follow には、元 Follow activity ID を参照する Undo(Follow)。相手が送った Follow (相手作成) には、正当な Reject (元 Follow を参照) 等を使い、相手作成の Follow を自分が作者であるかのように Undo しない。pending 関係 (未 Accept) も解除する。受理済み関係は Follow/Follower 両方向を解除する"
     - "未送信 job は取消 (cancel)。送信済み・結果不明 (in_flight で lease 切れ等) の場合は、相手側の状態を整えるために必要な後始末 (Undo/Reject) を予約する。配送中に競合した job の後始末も扱う"
@@ -24,7 +25,7 @@ implementation_issue_packet:
     - "自 host の domain を block 対象にした場合 (local/local 関係の扱い) の挙動が曖昧なら、実装で独断せず issue で質問する"
     - "共有ファイル (server/src/openapi.rs, route.rs, main.rs, root_router.rs, DI wiring, migrations/, openapi.json) は他レーンと競合する。共有ファイルの統合は一件ずつ行い、その時点の main から OpenAPI を再生成する (openapi_spec_matches_committed_file を通す)"
     - "検証は DATABASE_URL を設定した実 DB テストで行う。DB テストを skip のみで通過させない (test_with::env による skip は検証として数えない)"
-    - "D08 ユーザー決定 (grill d08-q01〜q15): Profile 単位、完全一致 domain のみ、mute は表示抑制のみ、block は双方向 Follow 解除＋新規操作拒否 (解除しても関係復元なし)、AP Block は送らない (フォロー解除に必要な最小限の通知のみ)、旧連合 identity は引き継がず新 Profile actor から開始 (旧連合データのみ初期化、DB 全消去ではない)、username は Profile ごとに一意・一度決めたら不変・移管後も維持"
+    - "D08 ユーザー決定 (grill d08-q01〜q15): Profile 単位、完全一致 domain のみ、mute は表示抑制のみ、block は双方向 Follow 解除＋新規操作拒否 (解除しても関係復元なし)、domain block は AP Block を送らない (フォロー解除に必要な最小限の通知のみ。個別 actor block は AP Block を送る=範囲追加)、旧連合 identity は引き継がず新 Profile actor から開始 (旧連合データのみ初期化、DB 全消去ではない)、username は Profile ごとに一意・一度決めたら不変・移管後も維持"
   intent_references:
     - "intents/emumet/features/personal-domain-controls/overview.md"
     - "intents/emumet/features/personal-domain-controls/packets.md"
@@ -47,12 +48,17 @@ implementation_issue_packet:
     - "pending (未 Accept) の関係も解除される。受理済みは Follow・Follower 両方向が解除される。対象は完全一致の domain の actor のみで、sub.example.com に example.com の block は影響しない"
     - "自分が送った Follow の解除には、元 Follow activity ID を参照する Undo(Follow) が送られる。相手が送った Follow の解除には正当な Reject (元 Follow を参照) 等が送られ、相手作成の Follow を自分が作者であるかのように Undo しない (wire-level の activity 検査で確認)"
     - "未送信の job は取り消される。送信済み・結果不明の job は必要な後始末が予約される。配送中に block が競合しても後始末が漏れず、二重送信が無害"
-    - "外部障害 (相手の 5xx・timeout・不達) でも block と関係解除のローカル適用は成功し巻き戻らない。AP Block activity は送られない (署名付き mock peer の受信内容で確認)"
+    - "外部障害 (相手の 5xx・timeout・不達) でも block と関係解除のローカル適用は成功し巻き戻らない。domain block では AP Block activity は送られない (署名付き mock peer の受信内容で確認)。個別 actor block では Block (object=相手 actor) が署名付きで配送され、解除で元 Block を埋め込んだ Undo(Block) が届く (Block が未送信なら Block job を取消して Undo なし、120 秒・lease 規則は Follow の Undo と同じ。ローカル相手は配送しない。Undo/Reject との併用。範囲追加)"
     - "block を解除 (DELETE 等) しても関係は復元されず、復元用関係一覧も保持されない。解除後に古い activity を再送しても関係が復活しない。再フォローは利用者の新しい操作"
     - "domain-controls route が本番 root router に接続され (P4 マージ後)、現在の所有者のみが block を書き込める。revision 競合 (409)・不在 (404)・不正 domain (422)・認可 (401/403) が D8P 契約どおり。mute の挙動 (関係を切らず Follow を拒否しない) は変わらない"
     - "block・解除は Profile ごとに分離され、同一 Account 内の別 Profile・他 Account の Profile の関係に影響しない。Profile 移管後も方針が Profile に付いたまま働く"
-    - "Emumet の Follow 制御のみを実適用しており、投稿操作の実制御・AP Block・復元機能を含まない。openapi.json の注記が実際の mount 状態と一致する"
+    - "Emumet の Follow 制御のみを実適用しており、投稿操作の実制御・domain block の AP Block・復元機能を含まない (個別 actor block の AP Block は範囲に含む)。openapi.json の注記が実際の mount 状態と一致する"
+    - "個別 actor の block (block_actor) は、domain block とは別に、remote actor へ AP Block (object=相手 actor、ID は block ID から決定的) を関係解除の Undo(Follow)/Reject(Follow) と併用して同一 transaction で予約・配送し、解除は元 Block を埋め込んだ Undo(Block) を送る。Block 未送信のうちの unblock は Block job を取消して Undo を送らない。Local→Local は配送しない。受信した Block / Undo(Block) は関係を変えない (P3i のまま)。配送 job 種別の DB CHECK への Block 追加は D8R の新しい migration で行い、P4 のコードは変更しない"
     - "openapi.json は最新 main から再生成し openapi_spec_matches_committed_file が通る。既存 Rust CI (E2E を含む) が通る"
+  revision_history:
+    - "2026-11-11: 範囲追加 (ユーザー決定 question-e6dfa2b98a9dc74491b19bbcf2ba5ca4『個別 actor ブロックは AP Block を送る (Follow 解除の Undo/Reject と併用、ブロック解除時は Undo(Block))。ドメインブロックは送らない』)。P3o の『AP Block 送信は保留中』を確定に更新し、個別 actor block の AP Block / Undo(Block) の配送を D8R に含めた (Emumet PR #93)。domain block は引き続き AP Block を送らない。"
+    - "2026-11-11: Emumet#84 の issue 本文を github-body.md の内容で gh issue edit により同期 (ユーザー許可 question-a400e8a5dd88cfb79865cbb5282d7dbe)。title・ラベルは変更なし"
+
 intent_placement:
   primary_intent: intents/emumet/features/personal-domain-controls/overview.md
   supporting_intents:

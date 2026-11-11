@@ -8,7 +8,7 @@
 - [ ] P の設定は同一 Account の別 Profile Q・他 Account の Profile に波及せず、全体 HostModeration も発生させない
 - [ ] 設定は実保存され再取得後も適用される（D8P）
 - [ ] block 対象 domain から P への新規 Follow、P から対象 domain への新規 Follow を拒否（D8G）。mute は拒否しない
-- [ ] block で pending を含む両方向の関係が解除され、AP Block は送らず最小限の通知のみ。外部障害でもローカル適用は成功（D8R）
+- [ ] block で pending を含む両方向の関係が解除され、**domain block は AP Block を送らず**最小限の通知（Undo/Reject）のみ（個別 actor block は AP Block と Undo(Block) を送る。ユーザー決定 question-e6dfa2b98a9dc74491b19bbcf2ba5ca4）。外部障害でもローカル適用は成功（D8R）
 - [ ] 解除後も関係は復元されず、復元用一覧も保持されない。再フォローは利用者操作
 - [ ] 完全一致のみ（`sub.example.com` に `example.com` の設定は適用されない）
 - [ ] 返信・引用・リポスト・いいね／絵文字の新規受理・送信拒否、表示抑制（ShuttlePub 側・後続 unit）
@@ -60,7 +60,7 @@
 | E8 | 上記 |
 | D8P | 実 DB、正規化表（IDNA 等）、認可、同時更新、Profile 分離・移管 |
 | D8G | 受信・送信・配送・block 更新の競合、重複、遅延 Accept。unblock 後の古い activity 再送で関係が復活しない |
-| D8R | 実 DB・署名付き mock peer・配送競合・wire-level activity 検査（自分の Follow は元 Follow を参照する Undo、相手の Follow は Reject 等。AP Block なし） |
+| D8R | 実 DB・署名付き mock peer・配送競合・wire-level activity 検査（自分の Follow は元 Follow を参照する Undo、相手の Follow は Reject 等。domain block では AP Block なし。個別 actor block は Block と、解除の Undo(Block) を配送） |
 | F8 | FA 経由の実 Emumet E2E、BFF 変換、UI・visual。投稿部分は mock／未接続と明示 |
 
 ### D8G 確定契約（Emumet PR #89、squash `931a686`、2026-11-10 マージ済み、queue completed、issue #83 closed）
