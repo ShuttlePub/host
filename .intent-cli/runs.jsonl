@@ -220,3 +220,4 @@
 {"ts":"2026-11-11T19:43:55.1613447+00:00","execution_unit":"quick-reaction-web-ui","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":42}
 {"ts":"2026-11-11T19:43:55.1613447+00:00","execution_unit":"quick-reaction-web-ui","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":42}
 {"ts":"2026-11-11T20:00:38.0623609+00:00","execution_unit":"personal-domain-content-api-contract","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/personal-domain-content-api-contract/"}
+{"ts":"2026-11-11T20:01:17.1076892+00:00","execution_unit":"personal-domain-content-api-contract","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/ShuttlePub#18","reason":"https://github.com/ShuttlePub/ShuttlePub/issues/18"}

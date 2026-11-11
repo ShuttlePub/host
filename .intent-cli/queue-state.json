@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T20:00:38.0431342+00:00",
+  "updated_at": "2026-11-11T20:01:17.1076892+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1362,6 +1362,11 @@
         "implementation": ".intent-cli/issues/personal-domain-content-api-contract/implementation.md",
         "review_context": ".intent-cli/issues/personal-domain-content-api-contract/review-context.md",
         "yaml": ".intent-cli/issues/personal-domain-content-api-contract/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/ShuttlePub",
+        "number": 18,
+        "url": "https://github.com/ShuttlePub/ShuttlePub/issues/18"
       },
       "worker_role": "implementation",
       "review_role": "review",
