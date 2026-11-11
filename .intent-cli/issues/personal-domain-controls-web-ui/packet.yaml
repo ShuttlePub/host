@@ -48,6 +48,9 @@ implementation_issue_packet:
     - "mock と実接続の切替が明確で、501 や未接続を成功として表示しない。dev API や契約外 API を呼ばない"
     - "画面構成 (レイアウト・画面遷移・デザイン) を決める UI 部分は、host intent に記録されたユーザーとのモック合意に従って実装され、その合意記録を参照して作られている (合意前の独自画面構成を含まない)"
     - "キーボード操作でも設定・解除の導線が使え、SSR/hydration・mobile/desktop の visual baseline が通る。既存 CI が通る"
+  revision_history:
+    - "2026-11-11: 範囲の具体化 (親判断 question-e944b2435f1cdc4f64c77966d9be6b0e)。S8 (personal-domain-content-api-contract) が host queue 未登録・packet なしで、shuttlepub-web に投稿・TL・プロフィール画面が無い (SNS 本体 shell は F0 layout #27 で作業中) ため、F8 は 2 段に分ける。第1段 = 設定「ミュート・ブロック」画面 (ui-spec 1-1〜1-6・2-1〜2-5、ブロック解除/ミュート変更ダイアログ) + BFF + 実 Emumet 接続 ([shuttlepub-frontends PR #40](https://github.com/ShuttlePub/shuttlepub-frontends/pull/40)、Refs #35)。第2段 = 投稿表示面 (ui-spec 3-x・4-1・5-x) と投稿/プロフィールの「…」メニュー (主導線)。第2段は S8 の契約確定と F0 layout のマージ後の別 PR。第1段のマージだけでは F8 は完了しない (issue #35 は open のまま)"
+    - "2026-11-11: 範囲拡大 (親判断 question-264025add8f063e784847caf6de38bed、合意済み ui-spec 1-2/1-6 に基づく)。設定画面の『アカウント』タブに、Emumet の個別 blocks/mutes API (E8 契約・P3o 実装・本番 mount は P4) による個別アカウントの mute/block 一覧と解除 (ミュート解除の元に戻す、ブロック解除の［ミュートに変更］) を含める。個別アカウントの追加は主導線 (第2段) 側。Emumet の個別 relation 応答は対象の canonical actor URL だけで名前・アイコン・acct が無いため、行は actor URL 表示 (ui-spec 1-6 との差分。名前等は Emumet 側 API 追加が必要)。個別 block は AP Block を送る仕様 (question-e6dfa2b98a9dc74491b19bbcf2ba5ca4) だが画面に説明は置かない (ui-spec の引き算どおりで文言の食い違いなし)"
 intent_placement:
   primary_intent: intents/shuttlepub/product/social-experience.md
   supporting_intents:
