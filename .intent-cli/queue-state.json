@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-10T19:25:02.087455+00:00",
+  "updated_at": "2026-11-11T05:18:29.9049278+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1274,6 +1274,28 @@
         "repo": "ShuttlePub/shuttlepub-frontends",
         "number": 35,
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/35"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "profile-identity-read-exposure",
+      "title": "profile-identity-read-exposure: AccountResponse \u306B Profile \u306E nanoid (profile_id) \u3068 username (profile_username) \u3092\u8FFD\u52A0",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/profile-identity-read-exposure/implementation.md",
+        "review_context": ".intent-cli/issues/profile-identity-read-exposure/review-context.md",
+        "yaml": ".intent-cli/issues/profile-identity-read-exposure/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 94,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/94"
       },
       "worker_role": "implementation",
       "review_role": "review",
