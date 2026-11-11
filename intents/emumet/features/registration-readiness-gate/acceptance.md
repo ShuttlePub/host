@@ -151,3 +151,4 @@ E15d の技術選択は、各 generation の初回 bootstrap（メールは管�
 - 受け入れ: 保護が準備済み（operational）になるのは、**入力なしの管理者 verify** が実際の検証 API 応答（メール: 固定 canary 宛の SMTP DATA 受理、Turnstile: ダミー token への `invalid-input-response` = secret 有効）を得たときだけ。管理者の code 入力・widget token・受信確認は要求しない。設定が有効なだけ・周期 probe だけ・health・HTTP 200 だけでは準備済みにならない（実 Kratos E2E q05 で確認）。
 - Turnstile: `invalid-input-secret` / `missing-input-secret` は設定不正、`bad-request` だけ・未知の code・429/5xx は準備済みにならない。公式テストキーで実 Siteverify を検証（`live_turnstile_official_test_keys`、ignored）。
 - 証拠モデル（段階×時刻、DATA 受理）、登録者 code 確認が障害を解除しない原則、generation 束縛は維持。
+- 実装状況: Bootstrap 修正 PR ShuttlePub/Emumet#99 merged (squash 11414a68ec1bb6872d8af6c09f7e1a312c19922e)。Turnstile は既知 code に未知の code が混在する拒否応答も一時障害（secret の error が混在する場合は設定不正を優先）。ダミー token での secret 検証順序（無効 secret → `invalid-input-secret`）は公式保証ではなく E15b の実応答と公式テストキーでの実測上の前提（live テストで継続確認）。
