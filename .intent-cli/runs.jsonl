@@ -207,3 +207,5 @@
 {"ts":"2026-11-11T06:12:24.1499658+00:00","execution_unit":"profile-identity-read-exposure","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":95}
 {"ts":"2026-11-11T12:28:22.0922461+00:00","execution_unit":"shuttlepub-web-foundation","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":37}
 {"ts":"2026-11-11T12:28:22.0922461+00:00","execution_unit":"shuttlepub-web-foundation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":37}
+{"ts":"2026-11-11T14:44:33.6313386+00:00","execution_unit":"profile-username-availability-api","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/profile-username-availability-api/"}
+{"ts":"2026-11-11T14:44:54.4770607+00:00","execution_unit":"profile-username-availability-api","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#96","reason":"https://github.com/ShuttlePub/Emumet/issues/96"}

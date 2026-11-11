@@ -1,0 +1,75 @@
+implementation_issue_packet:
+  issue_title: "profile-username-availability-api: 認証必須の Profile username 空き確認 API (GET /api/v1/profiles/username-availability) を追加"
+  issue_kind: feature
+  source_execution_unit: profile-username-availability-api
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/event_store/profile.rs, driver/src/database/postgres/profile_event_store.rs, application/src/service/profile_username_availability.rs (新規), application/src/service.rs, server/src/api/profile_username_availability.rs (新規), server/src/route/profile_username_availability.rs と同名ディレクトリのレート制限 (新規), server/src/schema/profile_username_availability.rs (新規), server/src/root_router.rs, server/src/openapi.rs, server/src/route.rs, server/src/api/mod.rs, server/src/schema.rs, server/src/route/account/client_username_availability_tests.rs (実 DB route test、新規), openapi.json"
+  target_part: "Profile username の入力中検証用に、形式・予約語・使用中/削除済み (再利用不可) を判定して available / unavailable と理由を返す、認証必須でレート制限付きの読取専用 endpoint の追加"
+  dependencies: []
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない。"
+    - "計画外の追加 unit (ユーザー承認 question-66c258dd659b42f5ed0c13ae2c29fdf5)。FN (shuttlepub-frontends#34、emumet-web) の username 入力中検証で、形式・予約語に加えて重複も判定できるようにするため、username の空き確認 API を Emumet に追加する。username の作成時指定 (POST /api/v1/accounts の profile_username、POST /api/v1/profiles の username) と一回限り設定 (POST /api/v1/profiles/{profile_nanoid}/username) は P1 でマージ済みで、重複は送信時に 409 になるだけで事前に調べる手段がない"
+    - "判定規則は P1 と同一で、重複して実装しない。形式 `^[a-z0-9][a-z0-9._-]{0,63}$` (ASCII 小文字・数字・`.` `_` `-`、1〜64 文字、先頭は英小文字か数字) と予約語 17 語は kernel の ProfileUsername::check (ProfileUsernameError::Format / Reserved) をそのまま使う。暗黙変換 (trim・大文字小文字の畳み込み・Unicode 正規化) はしない。入力が `Alice` や ` alice` なら形式不正として返し、正規化した候補は返さない"
+    - "使用中・削除済みの判定源は profile_events の部分 unique index (profile_events_username_unique: `((data ->> 'username')) WHERE (data ->> 'username') IS NOT NULL`) と同じ。profile_events は append-only で Profile (と Account) の削除後も残るので、削除済み Profile の username も再利用不可として unavailable になる。profiles 投影行 (削除で消える) を判定源にしない。作成時指定 (Created イベント) と一回限り設定 (UsernameSet イベント) の両方が同じ index に載るので、イベントに username を持つ行の存在確認 1 つで、作成/設定 API が 409 にする条件と一致する"
+    - "判定は ProfileEventStore に追加する読取専用メソッド (username の存在確認、`SELECT EXISTS (... WHERE data ->> 'username' = $1)`、unique index を使う) を application の新しいユースケース (profile_username_availability.rs) から呼ぶ。ProfileEventStore の実装は PostgresProfileEventStore だけ (DependOnProfileEventStore は配線済み) なので、新しい DependOn・AppModule・マクロの変更は不要。副作用を持たない (イベント・Account・auth account の find-or-create を作らない。リクエストは JWT の検証だけで通り、resolve_auth_account_id を呼ばない)"
+    - "応答は 200 OK の JSON `{ username, available, reason? }`。available=true のとき reason は出さない。available=false の reason は `invalid_format` (形式不正) / `reserved` (予約語) / `taken` (使用中、または削除済みで再利用不可)。`taken` は使用中と削除済みを区別しない (列挙攻撃・プライバシー配慮: 他人の Profile の存在や削除の履歴を username から推測させない)。この方針を API の description と PR に明記する。username クエリパラメータの欠落は 400 (形式不正の `invalid_format` とは別。空文字は形式不正として 200)。form 不正・予約語は DB を引かずに返す"
+    - "認証必須: /api/v1 の JWT 認証 middleware 配下に置く (未認証・不正トークンは 401)。route は GET /api/v1/profiles/username-availability。`/profiles/{profile_nanoid}/username` (POST) とは別の経路で衝突しない。所有者・組織コンテキストの認可は不要 (誰の Profile の情報も返さない)。X-Organization-Id は使わない"
+    - "可用性は参考値で最終判定ではない。作成/設定 API の判定 (400 / 409) が最終で、確認から送信までの間に他のリクエストが同じ username を取れば送信時に 409 になりうる。予約 (ホールド) はしない。この旨を endpoint の description に明記する"
+    - "レート制限: Emumet には HTTP リクエスト単位のレート制限機構が無い (registration_protection のメール送信制限は別物)。このため最小の in-process 制限を新規に入れる: JWT の (iss, sub) 単位のスライディングウィンドウ (既定 1 分あたり 60 リクエスト)、超過は 429 Too Many Requests と Retry-After (秒) ヘッダ。超過したリクエストは窓に数えない。ユーザーごとに独立で、他のユーザーの上限に影響しない。期限切れのキーは掃除してメモリを有界にする。複数インスタンス間では共有しない (インスタンス単位) ことを description と PR に明記する。制限は認証後にだけ適用する。router の組立てごとに 1 つの limiter を route 単位の Extension として渡し、AppModule・handler.rs は変更しない。テストでは小さい上限・時刻を差し替えて 429 を決定的に検証できる形にする"
+    - "OpenAPI は route + openapi.rs 登録 + openapi.json 再生成の 3 点セット。openapi_spec_matches_committed_file が生成物とコミット済み openapi.json の一致を検証し、CI の openapi-check が git diff --exit-code openapi.json で確認する。新しいスキーマ (応答と reason の enum) と 400 / 401 / 429 の応答を登録する"
+    - "P4 (PR #91、未マージ・承認済み) は account / profile 周辺と openapi.json・openapi.rs・root_router.rs・route.rs・api/mod.rs・schema.rs・client_tests.rs を触る。変更は新規ファイル中心とし、共有ファイルは 1 行〜数行の追加 (モジュール宣言・mount・OpenAPI 登録・テストモジュール宣言) だけに留め、無関係なリファクタを含めない。openapi.json は再生成で追加分だけの差分にする"
+  intent_references:
+    - "intents/emumet/features/profile-federation/overview.md"
+    - "intents/emumet/features/profile-federation/packets.md"
+    - "intents/emumet/features/profile-federation/acceptance.md"
+    - "intents/emumet/decisions/profile-actor-identity.md"
+    - "intents/shuttlepub/packets/candidates.md (D08 節)"
+  acceptance_criteria:
+    - "未認証 (Authorization なし・不正トークン) の GET /api/v1/profiles/username-availability は 401。実 DB の route test で検証する。username パラメータ欠落は 400"
+    - "応答ケースを実 DB の route test で検証する: 空き (available=true、reason なし)、形式不正 (大文字・前後空白・空文字・先頭が記号・65 文字・`@` など。reason=invalid_format)、予約語 (reason=reserved。17 語すべて)、使用中 (作成時指定または一回限り設定で保存済み。reason=taken)、削除済み (保存後に Account を無効化して Profile 投影行が消えた後も reason=taken)。使用中と削除済みの応答本文は reason を含めて同じ形で区別できない"
+    - "作成/設定 API の判定と一致する: 同じ入力で、unavailable (invalid_format・reserved) は POST /api/v1/accounts の profile_username と POST /api/v1/profiles/{profile_nanoid}/username が 400、taken は 409、available は作成/設定が成功する。実 DB で 5 ケースすべてについて確認する。暗黙変換がない (`Alice` は invalid_format で、作成 API も 400)"
+    - "判定源が DB の部分 unique index と同じ: 作成時指定と一回限り設定の両経路で保存した username が taken になり、確認だけでは何も保存されない。実 DB で profile_events と accounts・auth_accounts の行数が確認の前後で変わらない (副作用なし) ことを検証する"
+    - "レート制限: ユーザー (iss, sub) 単位で上限超過が 429 + Retry-After になり、別ユーザーは影響を受けない。窓が過ぎれば回復する (時刻差し替えの単体テスト)。超過リクエストは窓に数えない。上限内の応答は変わらない。キー掃除でメモリが有界であることを単体テストで確認する"
+    - "API の description と PR に次を明記する: 可用性は参考値で最終判定は作成/設定時の 400 / 409 であること、予約 (ホールド) はしないこと、使用中と削除済みを区別しない (列挙攻撃・プライバシー配慮) こと、レート制限が in-process でインスタンス単位であること、username 変更はこの unit の範囲外であること"
+    - "新しい DB migration・DependOn・AppModule 変更を追加しない。既存 endpoint の経路・応答・ステータスを変えない。openapi.json を再生成し、openapi_spec_matches_committed_file と CI の openapi-check (git diff --exit-code openapi.json) が通る。DATABASE_URL を設定した実 DB テストが skip ではなく実行・パスし、既存 Rust CI (fmt / clippy / test) が通る"
+intent_placement:
+  primary_intent: intents/emumet/features/profile-federation/overview.md
+  supporting_intents:
+    - intents/emumet/features/profile-federation/packets.md
+    - intents/emumet/features/profile-federation/acceptance.md
+    - intents/emumet/decisions/profile-actor-identity.md
+    - intents/shuttlepub/packets/candidates.md
+  new_intent_needed: false
+  placement_rationale: "P1 (username 実保存・一回限り設定) の入力中検証を補完する読取側の追加で、FN が重複を事前判定する前提。Profile 移行基盤の PF feature に置く"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/profile-federation/packets.md
+      - intents/shuttlepub/packets/candidates.md
+    summary: "queue 登録後に「計画外の追加 unit (ユーザー承認 question-66c258dd659b42f5ed0c13ae2c29fdf5)、queue 登録済み＋issue 番号」と記録し、マージ後に実装状況と確定形 (path・応答・reason 種別・レート制限値) を追記する。D08 全体を ready／完了にしない (host-only)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: "endpoint の path・応答形・reason 種別 (invalid_format / reserved / taken)、使用中と削除済みを区別しない方針、レート制限の方式・値・単位 (in-process、(iss, sub) 単位)、判定源 (profile_events の unique index と同一) の確定形"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/profile-federation/packets.md
+    - intents/emumet/features/profile-federation/acceptance.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "REST API の読取 endpoint (GET /api/v1/profiles/username-availability、openapi.json)"
