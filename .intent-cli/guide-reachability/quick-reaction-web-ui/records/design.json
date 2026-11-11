@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "quick-reaction-web-ui",
+  "role": "design",
+  "host_commit": "6b1b9f2eb0a63d3e21904286c719e4996c8e2db1",
+  "recorded_at": "2026-11-11T19:52:02.9415498+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": null
+}
