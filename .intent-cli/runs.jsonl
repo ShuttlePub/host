@@ -215,3 +215,5 @@
 {"ts":"2026-11-11T16:50:51.5909173+00:00","execution_unit":"profile-username-availability-api","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":98}
 {"ts":"2026-11-11T17:06:53.8158657+00:00","execution_unit":"shuttlepub-web-emumet-auth","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":41}
 {"ts":"2026-11-11T17:06:53.8158657+00:00","execution_unit":"shuttlepub-web-emumet-auth","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":41}
+{"ts":"2026-11-11T18:19:02.0920808+00:00","execution_unit":"profile-identity-web-adaptation","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":38}
+{"ts":"2026-11-11T18:19:02.0920808+00:00","execution_unit":"profile-identity-web-adaptation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":38}

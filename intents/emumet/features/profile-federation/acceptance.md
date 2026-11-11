@@ -379,7 +379,49 @@ BFF・GraphQL・REST 変換・mock・生成型の先行 PR。画面（PureScript
 - `USERNAME_CONFLICT` は 409 の重複／設定済みを再確認でも判別できない場合のコード（再確認は 409 後の現在状態であり原因の証明ではない）。
 - Emumet 側の観測（未対応）: Account 名の重複は 500（`accounts_name_key`）。Profile を組織へ移管すると移管元の個人 Account は一覧から消える。
 
+## FN 確定（shuttlepub-frontends PR #38、2026-11-11 マージ済み、squash `7498380`、unit `profile-identity-web-adaptation`、shuttlepub-frontends#34）
+
+FN は BFF 部分（PR #36、squash `284eaa4`）と画面部分（PR #38、squash `74983800d49bbb29b522246d5912674412017642`）の 2 PR で完了し、queue completed。画面は参照モック B v3（ui-username-spec.md）に合意した構成で実装した。独立 Reviewer 承認（head `5ea5bdf`、must 0）、CI（build・screens）green、実 Emumet に対する BFF 経由 E2E は main 49acf9d（59 項目×3 回）と main 6504c91（空き確認、36 項目×3 回）で全 PASS。固定 OpenAPI は Emumet main 6504c91。
+
+### UI 実装の要点（apps/emumet-web）
+
+- **Account 作成**: 一覧右上の「＋」から開くモーダル（Account 名・ユーザー名・Bot）。ユーザー名は必須（`CreateAccountInput.username: String!`）で初期値は空欄・候補なし。[作成] で同じモーダルが「この ID で作成しますか？ / 後から変更できません。」の確認に切り替わる。`/accounts/new` は「モーダルを開いた一覧」への入口として残した。
+- **入力中検証**: 形式・長さ・予約語をその場で判定（大文字は変換せずエラー）、入力が止まって 400ms 後にサーバーへ問い合わせ。1 行の状態表示（確認しています／✓ 利用できます／✕ 理由／空き状況を確認できませんでした［再確認］）。ボタンは「利用できます」かつ host 取得済みのときだけ有効。確認中・送信中に遅れて届いた検証応答は無視する。
+- **送信時のエラー種別の画面表現**: `USERNAME_TAKEN`・`USERNAME_INVALID_FORMAT`・`USERNAME_RESERVED` は入力欄の状態表示に戻る。`USERNAME_ALREADY_SET` と設定時の判別不能 409（`USERNAME_CONFLICT`）はダイアログを閉じて保存済み状態を再取得。`ACCOUNT_RESTRICTED`・`FORBIDDEN`・`UNSUPPORTED` はバナー文言。
+- **未設定の既存 Profile**: 一覧は「ユーザー名未設定」、詳細は先頭の 1 行の注意＋［設定する］から一回限りのモーダル（入力→確認）。設定後は `@name` と 🔒。強制しない。
+- **@ 表記**: 一覧・詳細ヘッダは Profile の username（`@name@host`）。Account 名は Account Info の行にだけ出す（ヘッダの見出しにも使わない）。
+- **モーダル**: ネイティブ `<dialog>` + `showModal()`。初期フォーカス・Tab 折り返し・背面無効・Escape（確認→入力→閉じる）・フォーカス復帰。古い応答は世代と対象 Account で照合して捨てる。入力中検証の 401 は `SessionExpired`。
+
+### EMUMET_PUBLIC_HOST 契約
+
+- acct の `@host` は `Query.instanceHost`（BFF の環境変数 **`EMUMET_PUBLIC_HOST` の明示設定が契約**。Emumet の `PUBLIC_BASE_URL` の host[:port] と同じ値）。`EMUMET_API_URL`（内部 API ホスト）への暗黙のフォールバックはしない。
+- 未設定・形式不正は `INSTANCE_HOST_NOT_CONFIGURED`。画面は host が取れるまで確認へ進めず、「ホスト名を取得できませんでした［再取得］」を出す。mock は未設定なら `emumet.example`。BFF から Emumet の公開ホストを確かめる API は無いので、形式だけ検査し一致は検証しない（運用で `PUBLIC_BASE_URL` と揃える）。
+
+### /help/username
+
+- 入力欄の (?) は新しいタブで開く実リンクで、emumet-web 内の最小ヘルプページ `/help/username`（ui-username-spec.md の文言のみ）。
+
+### 空き確認の接続と UNKNOWN
+
+- BFF の `checkProfileUsername` は、形式・予約語を自分で判定し（違反なら上流を呼ばずレート制限を節約）、満たすときだけ UA の `GET /api/v1/profiles/username-availability` を呼ぶ。結果は `VALID / FORMAT / RESERVED / TAKEN / UNKNOWN`。上流の `invalid_format` / `reserved` / `taken` はそのまま FORMAT / RESERVED / TAKEN。
+- **UNKNOWN**（429・接続不可・時間切れ・5xx・契約違反）は「✓ 利用できます」を出さず、［作成］［設定］も押せず、［再確認］を出す。**確認できなかった結果を「利用できる」として扱わない。** 上流の 401 は UNAUTHENTICATED、403 は FORBIDDEN としてエラーのまま（UNKNOWN に隠さない）。
+- 可用性は参考値で確保しない。最終判定は送信時の 409（`USERNAME_TAKEN`）。実 Emumet で、VALID の後に他者が取得した場合の 409 を確認済み。レート制限（60 回/分、(iss, sub) 単位）は 61 回目から 429 になり UNKNOWN を返す（別ユーザーは影響なし）。
+
+### publicKey 非表示・metadata 書込み
+
+- `Account.publicKey` は nullable（BFF は常に null）で、画面は空なら「Public Key」行を出さない。
+- Metadata の書込み（作成・更新・削除）は BFF で `UNSUPPORTED` のまま（読取のみ）。画面は入口を残し、押すと「この操作は現在サポートされていません」を出す。
+
+### 引継ぎ（FN の範囲外・後続課題）
+
+- **UNKNOWN の visual／ブラウザ検査**: 状態は hydration 検査（全 76 組合せ）と spago テストには含むが、visual のケースとブラウザ操作検査は未追加。
+- **metadata の安全な書込み API**: Emumet 側に項目 ID または fields の revision が必要（別 unit）。それまで Metadata の編集・追加・削除は実接続で使えない。
+- **組織 Account の複数 Profile**: 画面は代表 1 件のみ。列挙・代表の明示選択は Profile 一覧 API を含む別 unit。
+- visual の 404 検出の強化は Reviewer の任意指摘で F15（登録ゲート管理画面）由来のため、FN では扱わない。
+- 実 Emumet へのブラウザ UI 接続（real モードの Kratos/Hydra 経由）は FN では未実施（UI は mock データで検証）。
+
 ## UI 前提（ユーザー指示）
 
 FN の画面構成を決める実装はモック合意まで保留する。画面構成に依存しない BFF・GraphQL・変換の検証は先行できるが、
 FN の受け入れ（SSR/hydration・visual を含む画面検証）は画面構成のモック合意後に行う。
+→ 合意（B v3）後に画面を実装・検証し、FN は確定した（上の「FN 確定」参照）。

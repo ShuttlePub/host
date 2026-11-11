@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T17:06:53.8279578+00:00",
+  "updated_at": "2026-11-11T18:19:02.1014501+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1102,7 +1102,7 @@
     {
       "execution_unit": "profile-identity-web-adaptation",
       "title": "profile-identity-web-adaptation: emumet-web \u306E Profile username (Account \u4F5C\u6210\u6642\u306E\u5225\u5165\u529B\u30FB\u5909\u66F4\u4E0D\u53EF\u306E\u8AAC\u660E\u30FB\u65E2\u5B58 Profile \u3078\u306E\u4E00\u56DE\u9650\u308A\u8A2D\u5B9A) \u2014 BFF\u30FBGraphQL\u30FB\u30E2\u30C3\u30AF\u30FBidentity \u8868\u793A (shuttlepub-frontends apps/emumet-web)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "profile-actor-identity-foundation"
       ],
