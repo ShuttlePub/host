@@ -54,7 +54,7 @@ F8 の UI モック v5 は `d08-q16-ui-mock-v5-agreement` で合意済み。画�
 
 - 照合は**検証済み canonical actor ID の host**で行う。inbox／CDN host は使わない。IDNA 等の正規化は D8P で確定する。
 - block と Follow 更新は共通ロック規約で直列化。local/local は両 Profile を一定順序でロック。
-- block 書込 route は D8R 接続まで本番未 mount。
+- domain-controls route は D8R（Emumet PR #93）で mute・block とも本番 root router に mount 済み（block 書込は同一 transaction で既存関係を解除する）。
 - Undo／Reject 等の後始末は block 中も許可。unblock 後に古い activity が再送されても関係は復活しない。
 - 自分の Follow には元 Follow を参照する Undo、相手の Follow には Reject 等を使う。相手作成の Follow を自分が作者であるかのように Undo しない。
 

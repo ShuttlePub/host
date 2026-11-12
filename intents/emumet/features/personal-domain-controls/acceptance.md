@@ -78,6 +78,27 @@
 - **Profile 削除 CASCADE とのロック順**: Profile 削除（Account 無効化 projection）は Profile → Follow → job の順に行をロックするため、job → Follow の順に更新する配送前ガードは Profile 行 `FOR SHARE`（`lock_profile_row_shared`）→ advisory lock の順で取得。Profile 行 → advisory → Follow/job 行の順を守ること（owner 確認経路は `FOR SHARE`、inbound は FK insert の `FOR KEY SHARE`）。
 - **気づき（既存挙動・対象外）**: `account_projector` は書込み失敗で rollback しても checkpoint を進めるため、Account 無効化の projection が再試行されず残留しうる。
 
+### D8R 確定契約（Emumet PR #93、squash `82fa49b`、2026-11-12 マージ済み、queue completed、issue #84 closed）
+- **到達範囲**: domain-controls（GET 一覧・GET/PUT/DELETE `/{domain}`、mute・block とも）を本番 `server/src/root_router.rs` に mount（`route_domain_controls`）。domain `block` の PUT（新規・mute からの置換・block の再保存）が、同一 transaction で対象 domain の既存関係を両方向に解除する。個別 actor block（`block_actor`）の AP Block / Undo(Block) 配送を含む（ユーザー決定 question-e6dfa2b98a9dc74491b19bbcf2ba5ca4、範囲追加）。**含まない**: 復元用関係一覧・解除時の復元・domain block の AP Block・投稿操作の実制御（ShuttlePub 後続）。「D08 本番適用完了」ではない。
+- **解除処理（domain block PUT）**: `application/src/service/profile_relationship/domain_block.rs` と `service/domain_control.rs` の `put_attempt`。ロック（Profile 行 FOR SHARE → advisory → job → Follow、`lock_profile_for_domain_control_write` と同じ）の下で、所有 Profile の有効な Follow（pending 含む・following / followers 両方向）のうち、相手の検証済み canonical actor ID の host が対象 domain と**完全一致**するものを読み、block 保存後に `end_active_between` で両方向の有効な世代を終了理由 `blocked` で終了し、関係の作者ごとに後始末を予約する。途中失敗は block の保存を含め全体 rollback。外部配送の失敗・timeout は配送状態の問題でローカル適用は巻き戻らない。
+- **最小通知予約の定義**: `Undo(Follow)` / `Reject(Follow)` のみ。domain block は AP `Block` を作らない。
+
+| 関係の作者 | 未送信 job | 送信済み・結果不明 |
+|---|---|---|
+| 自分が送った Follow | Follow job を取消（相手は何も知らないので何も送らない） | 元 Follow を `object` に埋め込んだ `Undo(Follow)`（actor は自分）。送信中だった可能性（in_flight、cancel と claim の競合）があれば後述の起算で遅らせる |
+| 相手が送った Follow | Accept job を取消し、元 Follow を参照する `Reject(Follow)` を予約。相手作成の Follow を自分が作者であるかのように Undo しない | 同上（送信中の Accept があれば Reject を遅らせる） |
+
+- **後始末の起算時刻**: Undo / Reject の配送開始は、元 job の取消が済んだ後に取り直した時刻 + 120 秒（lease 期限が分かればそれ以降）。取消が行ロック待ちで遅れても元の送信より先に後始末が着地しない。Follow の Undo・Accept の Reject・Block の Undo に共通（`cancel_returning` 系が取消の瞬間の状態・lease を返す。**transaction 内で呼ぶこと**）。
+- **個別 actor block**: `Undo(Follow)` / `Reject(Follow)` に加え、remote actor の inbox へ `Block`（`object` = 相手 actor、ID `{actor}/blocks/{block ID}`）を同一 transaction で予約。ローカル相手は配送しない。inbox は解決済み inbox → 同じ actor 対の最新 job → 解除した Follow から分かる inbox の順。`unblock_actor` は、未送信の `Block` は取消して Undo なし、送信済み・結果不明は元 Block を埋め込んだ `Undo(Block)`（相手に block が残り得るときのみ）。受信した Block / Undo(Block) は関係を変えない（P3i のまま）。
+- **actor 対の整合と settle 下限**: 相手は actor 対で block を管理する（Undo(Block) は Block の ID を見ない）ため、block / unblock は actor 対ごとの advisory lock（`lock_block_pair`）の下で同じ actor 対の未配送 `Block` / `Undo(Block)` を先に取消す。取消の瞬間に送信中だった job があれば、新テーブル `profile_block_settle`（PK = 送信元 Profile × 相手 actor URL、`settle_not_before`）の下限を `GREATEST(取消後に取り直した時刻 + 120 秒, 取消時点の lease 期限, 既存値)` へ単調に引き上げ、以後その actor 対の Block / Undo(Block) は下限以上に始める。再ブロックで古い Undo(Block) が最新の Block を打ち消さない。`profile_block_settle` は初期化（reset）後も保持される。
+- **migration**: `migrations/20261122000001_profile_delivery_block_activity.sql`（配送 job 種別の CHECK に `Block` を追加、`profile_block_settle` 作成）。P4 のコードは変更していない。
+- **解除後の非復元**: DELETE（unblock）は関係を復元せず何も配送しない（個別 actor の unblock の Undo(Block) を除く）。復元用の一覧も持たない。解除後に古い Follow を再送しても世代は復活しない（P2 `ReplayedActivity`）。mute への置換・削除は何も解除しない。
+- **自 host の domain を block した場合**: D8G の送信側ガード（local actor URL の host も対象）と整合させ、同じ host のローカル Profile との関係も解除する（配送なし）。ローカル相手は block 保存前に特定し、所有 Profile と併せて昇順の単一 `lock_profiles` で取る。ロック下の再読でローカル相手が新たに現れたら何も書かずに transaction をやり直す（最大 5 回）。
+- **mount・CORS・OpenAPI**: root router に 4 operation を mount（mute・block とも全体）。CORS `allow_methods` に **PUT** を追加（DELETE は元から許可、許可リストは `cors_layer_for` に分離して preflight をテスト）。「未 mount 検査」は root router での mount 検査（無認証 401・所有者のみ 200・403/404/409/422）に置換。OpenAPI の「NOT MOUNTED / CONTRACT ONLY」注記を外して `openapi.json` を再生成。
+- **分離**: 自分の block のみが対象で、同一 Account の別 Profile・他 Account の Profile の関係は変わらない。
+- **検証（マージ時）**: 実 DB の workspace テスト application 283 / driver 361 / kernel 266 / server 214 passed（0 failed）、fmt・clippy -D warnings・OpenAPI 再生成差分なし、CI（E2E を含む全 job）green。署名付き mock peer の wire-level 検査（Undo/Reject の JSON・AP Block が出ない）、rollback、配送中競合、ロック変異検査を含む。
+- **未確認・申し送り**: 実 peer（Mastodon）での Undo / Reject / Block の受理は未検証（Iceshrimp S10 と mock peer のみ）。domain block の E2E シナリオは mock peer が IP リテラル host で domain control を保存できないため未追加。`delivery::a_worker_that_lost_its_lease_while_signing_does_not_send`（P3o）と main の webhook テストに全体並列の高負荷時のみ失敗した例がある（単独・再実行で pass）。
+
 ## 責務の境界
 
 - Emumet は新規 Follow のみ実適用する。投稿操作の受理・送信拒否は ShuttlePub の後続責務で、Emumet に重複実装しない。
