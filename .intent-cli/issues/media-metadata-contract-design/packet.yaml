@@ -1,0 +1,71 @@
+implementation_issue_packet:
+  issue_title: "media-metadata-contract-design: 画像メタデータ(利用許諾・通常タグ・センシティブ分類)の Booskiff producer 契約設計"
+  issue_kind: feature
+  source_execution_unit: media-metadata-contract-design
+  domain: booskiff
+  target_repo: ShuttlePub/Booskiff
+  target_path: "docs/"
+  target_part: "画像メタデータ(利用許諾・通常タグ・センシティブ分類)の producer 契約設計文書(API 案・状態遷移表・テストベクトル・責務分担・未決事項)。稼働コードは追加しない"
+  dependencies: []
+  technical_baseline:
+    - "Booskiff は Rust(Axum)+PostgreSQL+S3 互換。所有は owner_type+owner_id(Account)、Profile 概念なし(D4)。認証は信頼 issuer の JWT(JWKS 検証のみ)"
+    - "本 unit は設計文書のみ。migration・route・openapi.json など稼働コードは変更しない(CI の openapi-drift が変わらないこと)"
+    - "/public/{key} の immutable キャッシュは可変メタデータに流用しない。publish は共有固定のトリガーにしない(d02-q06)"
+    - "ShuttlePub は Booskiff を投稿表示時に参照し、連合配送は Emumet 経由。ShuttlePub 側の契約は別 unit(WebAPI 定義のみ・utoipa・501 スタブの方針)"
+  intent_references:
+    - "intents/booskiff/features/media-metadata.md"
+    - "intents/shuttlepub/product/social-experience.md (I02, I11)"
+    - "intents/shuttlepub/packets/candidates.md (D02, D10, D11)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d02-q01〜q11, d10-q01〜q11, d11-q01〜q04)"
+    - "intents/booskiff/decisions/2026-08-29-initial-shaping.md (D4, D12, D19)"
+  acceptance_criteria:
+    - "設計文書が ShuttlePub/Booskiff の docs 配下(docs/drive/ の慣例に沿う)に追加され、docs/README.md の索引から辿れる"
+    - "メタデータモデル(file ID・所有者・revision・許諾の版参照と固定状態・通常タグ・センシティブ分類 ID)、許諾カタログ(8 選択肢+管理者独自許諾、版参照)、API 案(所有者向け/ShuttlePub 向け内部)が型案・route・エラーを含めて定義される"
+    - "状態遷移表が、限定共有・下書き・自分だけ・予約投稿・投稿拒否・応答喪失・同時変更・連合配送失敗を説明でき、既存画像の状態例(すべて未指定・既共有は固定・未共有だけ後設定可能)を含む"
+    - "許諾は初回共有で固定されても、通常タグ・センシティブ分類は固定後も更新可能であることが API・状態遷移・テストベクトルで示される"
+    - "別 file(同一 bytes を含む)・他人の file・他人の投稿を誤って更新・固定しないことが認可・競合・失敗のテストベクトルで示される。所有者以外は 404(存在秘匿)等の応答規約が定義される"
+    - "可変メタデータに /public/{key} の immutable キャッシュを流用しないこと、メタデータ変更で画像 bytes・公開 URL が変わらないこと、file 削除/unpublish を許諾取消しと扱わないことが明記される"
+    - "Booskiff と ShuttlePub の責務分担(固定トリガー・変更通知・対象投稿の特定・失敗分再試行・連合表現)が表で示され、child への親状態の移管をしない"
+    - "未決の製品判断(D11 反映範囲、他人・別 Profile の再利用)は保留として、両案比較・推奨案(同じ Profile のみ、対象外投稿は参照版固定)・判断に依存する箇所が明示され、技術判断・他 unit 合意事項と区別される"
+    - "後続実装 unit(許諾、タグ・分類、共有固定、変更通知)への分割案と依存順序が示される。稼働コード・migration・openapi.json は変更されない"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/booskiff/features/media-metadata.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D02, D10, D11 節)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d02/d10/d11)"
+  new_intent_needed: false
+  placement_rationale: "media-metadata.md と candidates.md の D02/D10/D11 節に、本 unit の範囲(契約設計のみ・実装未着手)と成果物の場所を追記する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/booskiff/features/media-metadata.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後は media-metadata-contract-design の範囲だけを「queue登録済み/契約設計のみ」と記録し、親 candidate(D02/D10/D11)全体を ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "設計文書内の推奨は未確定。ユーザー判断(D11 反映範囲)確定後、hard-to-reverse な決定があれば ADR を起票する。"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "ShuttlePub/Booskiff: docs/"
+    summary: "画像メタデータ契約の設計文書を Booskiff docs/ に追加し docs/README.md の索引に載せる。"
+closeout_learning:
+  expected: "固定境界(予約/確定/解放)の選択理由と、ユーザー判断待ち 2 点(D11 反映範囲・他人/別 Profile の再利用)の確定内容を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/booskiff/features/media-metadata.md"
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/Booskiff リポジトリ (docs/)"
