@@ -1007,6 +1007,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   Ory self-service identity 登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。
+> 履歴注記: 以下の「最小受付・検証案（未実施）」と「未決事項」は候補段階の初期案を保持した履歴であり、現時点の実装・受入状態を示さない。D15の最終状態は上記の全体 closeout と[registration-readiness-gate acceptance](../../emumet/features/registration-readiness-gate/acceptance.md)を参照。
 - **最小受付・検証案（未実施）**: メールのみ／BOT対策のみ／両方／どちらもない設定の4例で、前3例は最低条件を満たし、最後だけは一般開放を拒否するOR条件を検証する。
   設定だけが有効で検証APIが応答しない場合は準備済みと扱わないことも確認する。
   開放中に最低条件を満たす対策が残らない一時障害では新規一般登録だけを拒否し、管理者へ障害・復旧を通知して、API復旧後に自動受付再開することを確認する。

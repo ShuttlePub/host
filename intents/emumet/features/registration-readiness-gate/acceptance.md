@@ -17,6 +17,8 @@
 - 残余リスク: hook 除去時に Emumet 単独では物理的に登録を遮断できない、LB sampling は有限、SMTP の時間差、評価から persist まで非原子的、遅延 persist の再観測は 10 秒有界、Webhook URL は平文保存、鍵ローテーションは範囲外、tracing 非漏洩テストは未実装。
 - 未決: (?) ヘルプページの置き場所。
 
+> 履歴注記: 以下の下位unitチェックリストに残る未チェック項目・「未決」記述は、当初の受入案を保持した履歴であり、統合後の現状を上書きしない。最終状態は上記「D15 統合 closeout」を参照。
+
 ## E15a — registration-gate-control-plane（control plane のみ）
 
 - [ ] メール認証 OR BOT 対策の組合せ（メールのみ／BOT のみ／両方／どちらもなし）で最低条件の判定が成立する
