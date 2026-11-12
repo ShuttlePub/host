@@ -160,7 +160,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **既存との関係**: [Booskiff の使命](../../booskiff/identity/mission.md) のファイル管理を候補根拠にする。
   公開 / 非公開のアクセス制御と利用許諾は別の属性として契約を詰める。
   D11のタグ・センシティブ分類訂正の複数の自分投稿への反映は維持するが、公開後固定の利用条件には流用しない。
-
+- **採用済み（`d02-q07-store-media-metadata-in-booskiff`）**: 画像メタデータ（利用許諾・通常タグ・センシティブ分類）はBooskiff（ファイル管理サービス）に保存し、ShuttlePubは投稿表示時に参照する。
 <a id="d03"></a>
 
 ## D03 — quick-reaction
