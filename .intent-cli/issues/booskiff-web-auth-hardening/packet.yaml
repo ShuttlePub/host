@@ -1,0 +1,60 @@
+implementation_issue_packet:
+  issue_title: "booskiff-web-auth-hardening: booskiff-web の real 認証の同名 cookie 受理と Hydra remembered session による別ユーザー認証リスクの修正"
+  issue_kind: bug
+  source_execution_unit: booskiff-web-auth-hardening
+  domain: ratcap
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "packages/auth-core, packages/auth-bun, apps/booskiff-web/bff, apps/booskiff-web/e2e/real, apps/booskiff-web/e2e/compose.e2e.real.yml"
+  target_part: "同名 cookie の曖昧受理の排除 (共有 parser / CookieJar / logout の Kratos cookie 転送) と、real 認可要求への prompt=login 付与 (A→logout→B で B として認証される回帰を固定)"
+  dependencies:
+    - "hydra-oidc-real-e2e (shuttlepub-frontends#15 / PR #18 マージ済): real E2E 基盤 (provider.ts の PROVIDER_REMEMBER_LOGIN 分岐は shuttlepub-web-emumet-auth PR #32 で追加済)"
+    - "login-flow-oauth-start (shuttlepub-frontends#20 / PR #22 マージ済): /auth/login 成功後に /auth/oauth/start へ繋ぐ導線"
+  technical_baseline:
+    - "リスク1 (実在): packages/auth-core/src/cookie-header.ts の parseCookieValue は同名 cookie のうち最初の値を採用する。getRealSession / getOAuthState (auth-bun/session-req.ts 経由) と booskiff-web の callback state 検証に使われるため、兄弟 Domain 等から注入された同名 cookie でログイン途中の PKCE/state cookie やセッション cookie が差し替わり得る (cookie tossing)。packages/auth-bun/src/cookie-jar.ts の CookieJar.mergeBrowserCookies も同名 ory_kratos* cookie の最初の値を採用し、bff/auth-real.ts の revokeAndCollectKratosCookies は ory_kratos* を重複のまま Kratos へ転送する"
+    - "リスク2 (実在): apps/booskiff-web/bff/auth-real.ts の startRealOAuth は認可要求に prompt を付けない。logout は revoke と Kratos logout のみで Hydra の remembered login session が残るため、provider が remember:true で accept している構成では A→logout→B で B の Kratos session が確立していても Hydra が remembered subject (A) を skip 承認し、B のつもりのユーザーが A として認証され得る"
+    - "参照実装: apps/shuttlepub-web/bff/auth.ts (shuttlepub-web-emumet-auth PR #32/#41) は uniqueAuthCookie (同名重複なら null) と prompt=login で対処済み。ただし shared 部は未修正のため booskiff-web (および emumet-web) には未適用"
+    - "RP-initiated logout (id_token_hint + Hydra /oauth2/sessions/logout) は AppSession が id_token を保持せず、Hydra logout UI の設定・ブラウザ遷移を要するため本 unit では実装しない。prompt=login により remembered session があっても毎回現在の Kratos identity を再確認させることで A→logout→B を防ぐ。この残余リスク (Hydra 側の remembered cookie が有効期限まで残る) は PR に明記する"
+    - "real E2E (e2e/real) は Docker と BOOSKIFF_CORE_DIR (private checkout) を要し、CI は BOOSKIFF_READ_TOKEN 不在なら skip される。real E2E は追加するがローカル実行できない場合は PR に未実行と明記する。BFF 単体テスト (bun test bff/、packages/auth-bun) で同名 cookie・prompt=login・認可 URL を直接検証する"
+  intent_references:
+    - "intents/ratcap/intent-tree/00-map.md"
+    - "intents/ratcap/features/oauth2-consent/packets.md"
+  acceptance_criteria:
+    - "共有 parseCookieValue は同名 cookie が複数あれば null を返し (どれも採用しない)、session / OAuth state cookie の読取に曖昧な値を使わない。単一 cookie の既存動作は不変"
+    - "CookieJar.mergeBrowserCookies は同名 ory_kratos* cookie が複数あれば当該名を転送せず、logout の Kratos cookie 転送も CookieJar 経由で同じ規則に統一される"
+    - "startRealOAuth の認可 URL に prompt=login が付く (mock モードは不変)"
+    - "回帰テスト: 同名 cookie (session / oauth state / ory_kratos) の扱い、prompt=login を含む認可 URL、重複 oauth cookie の callback が invalid_state になること"
+    - "real E2E に A→logout→B で B として認証される回帰 (remember 有効の provider、prompt を外した対照では A になる) と remember 有効ケースを追加する。ローカル実行できない場合は未実行を PR に明記する"
+    - "既存の bun test (booskiff-web bff / auth-bun / emumet-web / shuttlepub-web)、tsc、booskiff-web mock E2E の回帰がない。RP-initiated logout 不採用の残余リスクが PR に記録される"
+intent_placement:
+  primary_intent: intents/ratcap/intent-tree/00-map.md
+  supporting_intents:
+    - intents/ratcap/features/oauth2-consent/packets.md
+  new_intent_needed: false
+  placement_rationale: "既存の oauth2-consent feature (booskiff-web real 認証) の認証セキュリティ不備修正であり、新規 intent は不要"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: ""
+closeout_learning:
+  expected: "Hydra の remembered login session と Kratos session が別管理であることに起因する A→logout→B の認証混同、および cookie の曖昧受理 (cookie tossing) を共有 auth パッケージ側で fail-closed にする設計知見"
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (packages/auth-core, packages/auth-bun, apps/booskiff-web)"

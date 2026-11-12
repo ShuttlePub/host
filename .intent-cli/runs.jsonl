@@ -231,3 +231,5 @@
 {"ts":"2026-11-12T06:28:26.3264282+00:00","execution_unit":"profile-domain-block-detach","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":93}
 {"ts":"2026-11-12T12:31:22.710205+00:00","execution_unit":"personal-domain-content-api-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":19}
 {"ts":"2026-11-12T12:31:22.710205+00:00","execution_unit":"personal-domain-content-api-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":19}
+{"ts":"2026-11-12T13:15:53.4189686+00:00","execution_unit":"booskiff-web-auth-hardening","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/booskiff-web-auth-hardening/"}
+{"ts":"2026-11-12T13:16:29.359132+00:00","execution_unit":"booskiff-web-auth-hardening","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#44","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/44"}

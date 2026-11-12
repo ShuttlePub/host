@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-12T12:31:22.7206464+00:00",
+  "updated_at": "2026-11-12T13:16:29.359132+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1368,6 +1368,31 @@
         "repo": "ShuttlePub/ShuttlePub",
         "number": 18,
         "url": "https://github.com/ShuttlePub/ShuttlePub/issues/18"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "booskiff-web-auth-hardening",
+      "title": "booskiff-web-auth-hardening: booskiff-web \u306E real \u8A8D\u8A3C\u306E\u540C\u540D cookie \u53D7\u7406\u3068 Hydra remembered session \u306B\u3088\u308B\u5225\u30E6\u30FC\u30B6\u30FC\u8A8D\u8A3C\u30EA\u30B9\u30AF\u306E\u4FEE\u6B63",
+      "state": "queued",
+      "dependencies": [
+        "hydra-oidc-real-e2e (shuttlepub-frontends#15 / PR #18 \u30DE\u30FC\u30B8\u6E08): real E2E \u57FA\u76E4 (provider.ts \u306E PROVIDER_REMEMBER_LOGIN \u5206\u5C90\u306F shuttlepub-web-emumet-auth PR #32 \u3067\u8FFD\u52A0\u6E08)",
+        "login-flow-oauth-start (shuttlepub-frontends#20 / PR #22 \u30DE\u30FC\u30B8\u6E08): /auth/login \u6210\u529F\u5F8C\u306B /auth/oauth/start \u3078\u7E4B\u3050\u5C0E\u7DDA"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/ratcap/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/booskiff-web-auth-hardening/implementation.md",
+        "review_context": ".intent-cli/issues/booskiff-web-auth-hardening/review-context.md",
+        "yaml": ".intent-cli/issues/booskiff-web-auth-hardening/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/shuttlepub-frontends",
+        "number": 44,
+        "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/44"
       },
       "worker_role": "implementation",
       "review_role": "review",
