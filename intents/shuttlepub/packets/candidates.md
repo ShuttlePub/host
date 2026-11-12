@@ -630,13 +630,14 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   candidate・queue未登録・issue未公開・仮slug未予約を維持する。外部絵文字の一覧／picker拡充は追加要件としない。
 - **外部カスタム絵文字の利用範囲として採用済み**: `d09-q01-existing-reaction-chip-only`。投稿に付いた既存リアクションのチップを押したときだけ利用でき、最近使った絵文字やpicker検索には表示しない。操作はD03 C3と同じく、他人のチップを押して同じ絵文字で反応し、未反応時のみ適用する。
 - **外部カスタム絵文字が取得できない場合として採用済み**: `d09-q02-unavailable-emoji-name-fallback`。画像を表示できない場合は代わりに`:name:`を表示し、送信は許可する。
+- **元サーバーで削除された絵文字のキャッシュとして採用済み**: `d09-q03-expire-deleted-emoji-cache`。一定期間後にこちらの保存分も削除し、以後は`:name:`を表示する。具体的な期間は未決。
 - **仮 slug**: `remote-emoji-reaction-reuse`。
 - **target repo 別分割**: ShuttlePub の絵文字 identity・取得 / 利用条件・連合 reaction 表現候補、
   frontends の既存リアクションからの操作候補。Emumet の配送契約変更が必要なら分割する。
 - **最小受付・検証案（未実施）**: 既存の外部カスタム絵文字リアクションから、選んだものと同じidentityで便乗できること、最近使った絵文字やpicker検索には出ないことを確認する。
-  名前が同じでドメインが違う絵文字を区別し、利用不能／取得不能・peer表現非対応を成功と誤表示しない契約を検証する。
+  名前が同じでドメインが違う絵文字を区別し、取得不能時は`:name:`を表示して送信できること、元サーバーで削除された絵文字の保存分が一定期間後に削除され以後`:name:`表示となることを確認する。利用不能・peer表現非対応を成功と誤表示しない契約を検証する。
 - **依存**: 既存 reaction、カスタム絵文字の参照と Note 連合接続。
-- **未決事項**: 絵文字identity／出自の照合と取得、キャッシュ・削除、peer形式差と失敗時の扱い。
+- **未決事項**: 絵文字identity／出自の照合と取得、元サーバーでの削除検出・保存分の具体的な削除期間／実装、peer形式差と失敗時の扱い。
   具体的なwire・反応数制約やLikeと絵文字の同時利用は未決。D13の共通許可分類をwire同一化とはしない。
 - **既存との関係**: reaction 基盤の拡張。D03 の短縮操作とは別候補として扱い、後から接続できる。
 - **限定した実装・一次資料確認（2026-10-20、実行検証なし）**: ShuttlePub main `7eea43d82d8945e05348794fa22c668fe90075d3`の[Noteモデル](https://github.com/ShuttlePub/ShuttlePub/blob/7eea43d82d8945e05348794fa22c668fe90075d3/kernel/src/note.rs#L8-L12)はActorId→Stringで、[同actor・同reactionの再送](https://github.com/ShuttlePub/ShuttlePub/blob/7eea43d82d8945e05348794fa22c668fe90075d3/kernel/src/note.rs#L77-L92)は冪等だが、不透明なStringだけでは外部絵文字契約を示さない。
