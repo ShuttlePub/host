@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:registration-gate-leak-shutdown-tests",
+  "actor": "d15-hardening-worker",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-12T13:13:15.6620346+00:00",
+  "base_commit": "38b3ae743457eb7c25dc21824225a2e2ace89d17"
+}
