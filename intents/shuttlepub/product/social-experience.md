@@ -71,6 +71,7 @@ CC0は6種のCCライセンスとは別の、法の許す範囲で著作権等�
 追加採用方針（`d02-q07-store-media-metadata-in-booskiff`）: 画像メタデータ（利用許諾・通常タグ・センシティブ分類）はBooskiff（ファイル管理サービス）に保存し、ShuttlePubは投稿表示時に参照する。
 追加採用方針（`d02-q08-existing-images-unspecified-license`）: 既存画像はすべて未指定として扱い、未共有の画像のみ後から許諾を設定できる。
 追加採用方針（`d02-q09-only-file-owner-sets-license`）: 画像ファイルの所有者のみが許諾を設定できる。ファイル所有者が権利者本人であることは保証しない。
+追加採用方針（`d02-q10-same-bytes-per-file-license`）: 同一bytesでも別fileなら、それぞれ別々に扱う。
 ## I03
 
 常用絵文字を設定し、リアクションピッカー最上段から素早く選んで反応できるようにする。
