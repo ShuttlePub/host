@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:personal-domain-controls-web-ui",
-  "actor": "f8-worker",
-  "team": "shuttlepub-main",
-  "claimed_at": "2026-11-12T12:40:27.782288+00:00",
-  "base_commit": "d9e14c2d6327105cc160e271523c56bea54fe39b"
-}
