@@ -348,6 +348,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   製品版・サーバー設定・rate limit・可視性ごとの取得可能性は実測待ち。相手APIのbearer認証情報と自分のAP署名identityは別で、他鯖への追加アカウント登録必須・認証回避／scraping採用や公開情報限定の製品仕様を決めたものではない。
 - **採用済み（`d06-q03-silently-refresh-stale-remote-data`）**: 古い可能性は表示せず、そのまま表示しながら裏で更新し、取得後に差し替える。
 - **採用済み（`d06-q04-unsupported-quote-as-link`）**: メニュー項目を「リンクで引用」に変えアイコンもリンクにし、押すと引用カードの代わりにリンクカードが入った投稿フォームを開く。確認画面は出さない。
+- **採用済み（`d06-q05-declare-tested-remote-versions`）**: 動作確認したバージョンを明記し、それ以外のバージョンは「動くかもしれない」扱いとする。
 <a id="d07"></a>
 
 ## D07 — note-edit-federation
