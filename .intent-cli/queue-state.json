@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-12T16:25:32.2334257+00:00",
+  "updated_at": "2026-11-12T20:48:42.3441676+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1402,7 +1402,7 @@
     {
       "execution_unit": "registration-gate-leak-shutdown-tests",
       "title": "registration-gate-leak-shutdown-tests: \u767B\u9332\u30B2\u30FC\u30C8\u306E tracing secret \u975E\u6F0F\u6D29\u3068 Webhook \u914D\u9001 worker\u30FBprobe worker \u505C\u6B62\u6642\u306E\u6D88\u5931\u30FB\u91CD\u8907\u306A\u3057\u306E\u56DE\u5E30\u30C6\u30B9\u30C8",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
