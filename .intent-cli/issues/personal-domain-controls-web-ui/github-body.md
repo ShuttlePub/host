@@ -81,7 +81,7 @@ FA 経由の実 Emumet E2E (実ログイン→実方針保存・取得→Follow 
 
 ## Dependencies
 
-shuttlepub-web-foundation、shuttlepub-web-emumet-auth、profile-domain-policy-api-contract、profile-domain-block-detach
+shuttlepub-web-foundation、shuttlepub-web-emumet-auth、profile-domain-policy-api-contract、profile-domain-block-detach、personal-domain-content-api-contract (S8。2026-11-12 追加: ShuttlePub PR #19 squash 60cb47d60da3c5b4ff3fc570fe3bc1796f983b3b でマージ済み、契約のみ・全 route 501)
 
 ## Merge Order
 

@@ -1261,7 +1261,8 @@
         "shuttlepub-web-foundation",
         "shuttlepub-web-emumet-auth",
         "profile-domain-policy-api-contract",
-        "profile-domain-block-detach"
+        "profile-domain-block-detach",
+        "personal-domain-content-api-contract"
       ],
       "blocked_by": [],
       "clarification_return_path": "intents/shuttlepub/clarifications/open.md",

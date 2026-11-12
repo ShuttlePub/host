@@ -61,6 +61,8 @@ FA 経由の実 Emumet E2E (実ログイン→実方針保存・取得→Follow 
 
 F0・FA はマージ済み (基盤部分)。【先行可】部分は E8 確定済みのためモック合意を待たず進め、S8 依存部分は S8 確定後。画面実装はモック合意後。実 Emumet 接続の最終受け入れは D8R (と P4) のマージ後。bff/schema.graphql・生成型は FN・F15・F3 等と直列に統合する。
 
+2026-11-12 追記: S8 (personal-domain-content-api-contract) は ShuttlePub PR #19 (squash 60cb47d60da3c5b4ff3fc570fe3bc1796f983b3b) でマージ済み (契約のみ・全 route 501)。queue の dependencies に追加した。第2段 (投稿表示面・「…」メニュー) は S8 の生成 schema をこの SHA に固定して取り込む。
+
 ## Knowledge Maintenance (G461)
 
 - Intent placement: `intents/shuttlepub/product/social-experience.md (primary)。supporting: intents/shuttlepub/packets/candidates.md (D08 節)、intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q01〜q15)、intents/shuttlepub/interviews/discord-feature-prioritization-2026-11-09.json (candidate-priority-q01〜q03)、intents/emumet/features/personal-domain-controls/overview.md ほか`
