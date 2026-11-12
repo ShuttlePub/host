@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-12T05:58:02.669245+00:00",
+  "updated_at": "2026-11-12T06:28:26.3433824+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1231,7 +1231,7 @@
     {
       "execution_unit": "profile-domain-block-detach",
       "title": "profile-domain-block-detach: Profile \u306E domain block \u8A2D\u5B9A\u3068\u4E21\u65B9\u5411\u306E\u95A2\u4FC2\u89E3\u9664\u30FBjob \u53D6\u6D88\u30FB\u6700\u5C0F\u901A\u77E5\u4E88\u7D04\u306E\u539F\u5B50\u7684\u5B9F\u884C\u3068\u516C\u958B API \u63A5\u7D9A\u3001\u500B\u5225 actor block \u306E AP Block \u9001\u4FE1\u3068 Undo(Block) (P4 \u30DE\u30FC\u30B8\u5F8C\u306B\u6709\u52B9\u5316\u3002domain block \u306E AP Block\u30FB\u5FA9\u5143\u30FB\u6295\u7A3F\u5236\u5FA1\u306F\u542B\u307E\u306A\u3044)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "profile-domain-follow-guards",
         "profile-federation-in-place-cutover"
