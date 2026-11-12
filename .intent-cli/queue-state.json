@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-11T22:23:25.5722703+00:00",
+  "updated_at": "2026-11-12T05:36:31.5682649+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1177,7 +1177,7 @@
     {
       "execution_unit": "profile-federation-in-place-cutover",
       "title": "profile-federation-in-place-cutover: \u65E7\u9023\u5408\u30C7\u30FC\u30BF\u306E\u521D\u671F\u5316\u3068 Profile \u9023\u5408\u3078\u306E\u672C\u756A\u5207\u66FF (\u7834\u58CA\u7684 migration\u30FBProfile \u9375\u306E\u4E00\u56DE\u9650\u308A\u751F\u6210\u30FBroot router/worker \u5207\u66FF\u30FB\u65E7 route/\u7F72\u540D API \u5EC3\u6B62\u30FBusername \u5FC5\u9808\u5316\u30FBE2E \u66F4\u65B0\u3002\u30DE\u30FC\u30B8\u30FB\u5207\u66FF\u524D\u306B\u30E6\u30FC\u30B6\u30FC\u78BA\u8A8D\u5FC5\u9808)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "profile-actor-identity-foundation",
         "profile-social-graph-storage",

@@ -223,3 +223,5 @@
 {"ts":"2026-11-11T20:01:17.1076892+00:00","execution_unit":"personal-domain-content-api-contract","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/ShuttlePub#18","reason":"https://github.com/ShuttlePub/ShuttlePub/issues/18"}
 {"ts":"2026-11-11T22:23:25.5631828+00:00","execution_unit":"registration-webhook-endpoint-management","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":100}
 {"ts":"2026-11-11T22:23:25.5631828+00:00","execution_unit":"registration-webhook-endpoint-management","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":100}
+{"ts":"2026-11-12T05:36:31.558099+00:00","execution_unit":"profile-federation-in-place-cutover","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":91}
+{"ts":"2026-11-12T05:36:31.558099+00:00","execution_unit":"profile-federation-in-place-cutover","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":91}
