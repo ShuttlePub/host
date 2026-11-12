@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:registration-webhook-endpoint-management",
-  "actor": "e15x-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-11T16:02:13.6456865+00:00",
-  "base_commit": "663eff7128b1e5f1633fed315c2480f4752a71ba"
-}

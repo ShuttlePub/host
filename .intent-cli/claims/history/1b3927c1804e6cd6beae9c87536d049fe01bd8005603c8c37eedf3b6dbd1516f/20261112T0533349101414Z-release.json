@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-webhook-endpoint-management",
+  "actor": "e15x-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-12T05:33:34.9101414+00:00",
+  "reason": "E15x merged (Emumet#100 7843ccb); closeout recorded",
+  "displaced_holder": "e15x-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-11T16:02:13.6456865+00:00",
+  "base_commit": "ac5d5dbc92af8291931a72b0398ae5e293f7d6ad"
+}
