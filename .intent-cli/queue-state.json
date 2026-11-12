@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-12T13:16:29.359132+00:00",
+  "updated_at": "2026-11-12T13:16:54.2554101+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1393,6 +1393,28 @@
         "repo": "ShuttlePub/shuttlepub-frontends",
         "number": 44,
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/44"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "registration-gate-leak-shutdown-tests",
+      "title": "registration-gate-leak-shutdown-tests: \u767B\u9332\u30B2\u30FC\u30C8\u306E tracing secret \u975E\u6F0F\u6D29\u3068 Webhook \u914D\u9001 worker\u30FBprobe worker \u505C\u6B62\u6642\u306E\u6D88\u5931\u30FB\u91CD\u8907\u306A\u3057\u306E\u56DE\u5E30\u30C6\u30B9\u30C8",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/registration-gate-leak-shutdown-tests/implementation.md",
+        "review_context": ".intent-cli/issues/registration-gate-leak-shutdown-tests/review-context.md",
+        "yaml": ".intent-cli/issues/registration-gate-leak-shutdown-tests/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 101,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/101"
       },
       "worker_role": "implementation",
       "review_role": "review",

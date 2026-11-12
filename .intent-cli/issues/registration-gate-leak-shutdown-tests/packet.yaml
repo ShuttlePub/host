@@ -1,0 +1,64 @@
+implementation_issue_packet:
+  issue_title: "registration-gate-leak-shutdown-tests: 登録ゲートの tracing secret 非漏洩と Webhook 配送 worker・probe worker 停止時の消失・重複なしの回帰テスト"
+  issue_kind: feature
+  source_execution_unit: registration-gate-leak-shutdown-tests
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/test_utils, kernel/Cargo.toml, server/src, application/src/service, driver/src/webhook, .github/workflows/lint-and-test.yml, docs"
+  target_part: "D15 受け入れ確認の未実装 2 点の回帰テスト化: (1) tracing に Webhook secret・暗号鍵・保護 provider の secret・登録者メール・確認コード・URL の path/query/userinfo が出ない (共通ログ捕捉 helper、Webhook 管理/配送・登録 guard hook・保護の各経路、secret 保持型の Debug/Display)、(2) Webhook 配送 worker と probe worker の shutdown/再起動で通知・ジョブが消失・重複しない (協調停止・graceful shutdown・強制中断・再起動の冪等性・強制 probe と maintenance の途中中断)。実バグは最小修正、範囲外は報告。CI で実 DB テストの skip を検査"
+  dependencies: []
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない"
+    - "対象は host intents/emumet/features/registration-readiness-gate/acceptance.md の E15x closeout 残余『tracing に secret が漏れないことのテストと worker spawn 停止のテストは未実装』。ユーザー本人が『laneに戻さずにもう巻き取って進めてほしい』と指示して着手 (thread-xxs52dcx)"
+    - "Webhook の契約は変更しない: at-least-once・stable event ID・lease・指数バックオフ・最大 8 回/24 時間・failed は管理者の再試行まで再送しない・不達でゲート状態を変えない・失敗通知を再帰させない。『重複しない』は、協調停止と再起動で同じ (送信先, event ID) が 2 回送られない、強制中断後の再送は lease 失効後に同じ event ID で 1 回だけ、gate イベントと配送記録の行が重複・消失しない、の意味"
+    - "テストは DATABASE_URL を設定した実 DB で実行し skip のみの成功にしない (CI は passed >= 1 かつ 0 ignored を検査)。ログ捕捉は production の fmt 出力形式で TRACE まで・span を含め、各テストで捕捉の非空を自己検査する"
+    - "API・仕様・OpenAPI は変えない (openapi.json 無変更)。実バグが見つかった場合のみ最小修正 (例: main が worker 停止の in-flight 完了を待たない) を行い PR に明記する。範囲外の問題は修正せず報告"
+    - "共有ファイル server/src/main.rs は他 unit と共有。変更は worker 停止待ちに限定する"
+  intent_references:
+    - intents/emumet/features/registration-readiness-gate/overview.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+  acceptance_criteria:
+    - "共通のログ捕捉 helper があり各テストが捕捉の非空を自己検査する。Webhook 管理 (作成/更新/テスト/再試行/削除と失敗パス)・配送サイクル・環境変数の起動ログ・登録 guard hook・保護 (確認コード・provider 障害・maintenance) の全経路で、列挙した secret / メール / 確認コード / URL の path・query・userinfo / 暗号鍵が全レベルのログに出ない"
+    - "secret を保持する型の Debug / Display が secret を出さない表明がある"
+    - "Webhook 配送 worker の協調停止 (途中)・graceful shutdown (in-flight)・強制中断 (lease 失効後に同じ event ID で 1 回だけ再送)・停止中イベントの再起動後 1 回配送・再起動の冪等性が実 DB テストで固定され、受信側の (送信先, event ID) の重複と消失がない。main が停止時に worker の in-flight 完了を有界時間で待つ"
+    - "強制 probe と保護 maintenance の途中中断で fail-open・通知の捏造・canary の取り残し・重複がなく再起動後に収束する。停止要求でループが戻る"
+    - "停止・再起動はゲート状態を変えず新しい通知イベントを生まない"
+    - "追加テストは実 DB で実行され skip のみの成功ではなく CI が検査する。既存テストは全緑、openapi.json は変更されない"
+  revision_history:
+    - "2026-11-13: D15 受け入れ確認の残件 (acceptance.md E15x closeout 残余) の unit として packet 化 (draft)"
+intent_placement:
+  primary_intent: intents/emumet/features/registration-readiness-gate/overview.md
+  supporting_intents:
+    - intents/emumet/features/registration-readiness-gate/packets.md
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+  new_intent_needed: false
+  placement_rationale: "RG feature (registration-readiness-gate) の acceptance.md が未実装として記録した検証の実装 unit。仕様の変更はなく、検証の追加のみ"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/packets.md
+    summary: "RG packets.md に本 unit の行 (依存なし・D15 受け入れ確認の残件) と issue リンクを追記 (host 側 closeout で実施)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/registration-readiness-gate/acceptance.md
+    summary: "acceptance.md の『未実装』記述 (tracing secret 非漏洩・worker 停止) を実装済みの検証内容と見つかった問題に更新 (host 側 closeout writeback)"
+closeout_learning:
+  expected: "実装した検証の一覧と実行結果、見つかった実バグと最小修正の内容、at-least-once における重複の定義、残余リスク"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/registration-readiness-gate/acceptance.md
+    - intents/emumet/features/registration-readiness-gate/packets.md
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []

@@ -1,0 +1,7 @@
+execution_unit: registration-gate-leak-shutdown-tests
+publish_status: issue-created
+packet_path: "/var/tmp/evorch-scratch-1000-1b531f2bc252cbe8/t-thread-xxs52dcx/host-d15f/.intent-cli/issues/registration-gate-leak-shutdown-tests"
+issue_body_path: "/var/tmp/evorch-scratch-1000-1b531f2bc252cbe8/t-thread-xxs52dcx/host-d15f/.intent-cli/issues/registration-gate-leak-shutdown-tests/github-body.md"
+created_issue_number: 101
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/101"
+published_label_name: null
