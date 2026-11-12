@@ -30,7 +30,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 | D12 | S12 | 投稿・検索の内容に応じた案内と制御 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
 | D13 | S13 | 投稿ごとの反応 Allow リスト | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
 | D14 | S14 | サーバーを越えるモデレーション証跡 | emumet / shuttlepub (未決) | 未決 (Emumet / ShuttlePub の共同調査) | 調査結論後に判断 | candidate (調査) |
-| D15 | S15 | 安全対策の準備を条件に一般登録を開放 | emumet | ShuttlePub/Emumet | ShuttlePub/shuttlepub-frontends | candidate |
+| D15 | S15 | 安全対策の準備を条件に一般登録を開放 | emumet | ShuttlePub/Emumet | ShuttlePub/shuttlepub-frontends | completed |
 | D16 | S16 | タグ通報によるトレンド抑制 | shuttlepub | ShuttlePub/ShuttlePub | ShuttlePub/shuttlepub-frontends、必要時 ShuttlePub/Emumet | candidate |
 | D17 | S17 | turbo 時に見た元投稿と現在の内容を検証 | shuttlepub | ShuttlePub/ShuttlePub | 必要時 ShuttlePub/Emumet、ShuttlePub/shuttlepub-frontends | candidate |
 
@@ -925,7 +925,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 
 - **意図**: [I15](../product/social-experience.md#i15)。メール認証・CAPTCHA 等の対策準備が整わないまま
   新規登録を一般開放し、スパム BOT の踏み台となることを防ぐ。
-- **候補の状態**: 主要な利用意図は整理済み。準備判定・登録経路との接続・一時障害等の契約は設計・検証待ちで、実装readyとはしない。D15全体はcandidateのまま（仮slug未予約）で、queue登録済みの unit は下記「queue 登録状況」を参照する。
+- **候補の状態**: D15 は実装・統合受け入れまで完了（2026-11-12）。queue 登録済み unit と完了記録は下記を参照する。完了後も残る技術リスク・未決事項は最終 closeout に明記する。
 - **最低条件の組合せとして採用済み**: [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d15-q01-either-email-or-bot-protection`。
   メール認証またはCAPTCHA等のBOT対策のどちらか一方を用意すれば一般開放できるOR条件とする。両方の用意は可能だが必須ではなく、どちらもない状態は通常認めない（管理者が警告を確認する明示上書きは`d15-q09`を参照）。
   特定CAPTCHA提供者・すべてのBOT対策の同等扱い・OAuthによる代替までは決めていない。
@@ -962,6 +962,9 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   経緯: F15 の確定仕様 [ui-spec.md](../../emumet/features/registration-readiness-gate/ui-spec.md) 6「Webhook」は送信先の登録・編集・削除と URL の部分マスク表示・状態チップ・テスト・配送失敗の 1 件ずつの再試行を求めるが、E15w は送信先 1 件を環境変数で管理し登録・編集 API を持たない。ユーザーは `question-433de6d63c710adbcaa304b4ba7d1ba6` で「B: Emumet に送信先の登録・編集・削除 API を追加してから ui-spec どおり実装」を選択した。
   E15x の範囲は、管理者専用の複数送信先 CRUD API（revision 楽観ロック・監査）、シークレットの暗号化保存（鍵はサーバー設定・運用文書あり）、通知種別 4 カテゴリの選択（E15a/E15d の 8 種別との対応表）、URL の部分マスク応答、送信先ごとの配送（署名・状態・テスト送信・1 件ずつ再試行）、cursor ページングの配送失敗一覧（最新 50 件外の失敗にも到達）、登録時と接続時の SSRF 対策、既存環境変数 1 件の非破壊移行のみ。F15 の Webhook タブ画面は含まない。D15 全体の ready／完了ではない。
 - **E15x closeout（2026-11-11、unit 範囲のみ）**: Emumet PR #100（Closes #97、head `b9fa4a38bd56d4ae28c564110a7bbeb993493766`）は squash merge 済み（`7843ccb0de3a792741c608d54beabf81b8bd9b45`）、Emumet#97 は close 済み。独立 Reviewer approve（run `run-01m76181y2h6fb484y0zw5bbzm`、must 0）、CI 全 pass。実 DB は driver 67 / application 20 / server 10 passed、0 ignored。実 Kratos E2E も pass。F15 の Webhook タブ実装が後続で、D15 全体は未完了のままとする。
+- **D15 全体 closeout（2026-11-12）**: F15 最終 PR shuttlepub-frontends #43（Closes #31、head `287ce17b329f34b5191f8ab8d9fd937e1fa59ca1`）は squash merge 済み（`1227ca8abc4fb80a78fb88e9fa1b888be0db7c7c`）、#31 CLOSED。前段 #33 (`7516562db15952144dd406070ffe3d3f95de02c3`)・#39 (`3c7c7e2b9984db1762b2092ae18f4959751569ed`) も squash merge 済み。独立 Reviewer approve（run `run-01m76dttgrd68w833r0n102zte`、must 0）、CI 2 checks pass（build、Components and application screens）。
+  D15 全 unit 完了: E15a #67 (`0ac9e9c087f61447c9a2c5e4a4cbf04a1075f2ca`)、E15w #69 (`ae9bdddef26c21b2d70e08a5a8f74ac5e6153d05`)、E15b #79 (`16b9e4301edde8bd4de222ab4d691dc7c32798b8`)、E15c #85 (`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`)、E15d #88 (`ef063d67bc28b2a93fb6c09babc73d90216fa176`)・#92 (`95e3f77c7517d3337380df95f74a90eabe6b4ee0`)、bootstrap 修正 #99 (`11414a68ec1bb6872d8af6c09f7e1a312c19922e`)、E15x #100 (`7843ccb0de3a792741c608d54beabf81b8bd9b45`)、F15 #33/#39/#43（上記）。
+  残余リスク: hook 除去時に Emumet 単独では物理的に登録を遮断できない、LB sampling は有限、SMTP の時間差、評価から persist まで非原子的、遅延 persist の再観測は 10 秒有界、Webhook URL は平文保存、鍵ローテーションは対象外、tracing 非漏洩テストは未実装。未決: (?) ヘルプページの置き場所。
 - **仮 slug**: `registration-readiness-gate`。
 - **target repo 別分割**: Emumet と Ory の設定責務・readiness 契約を先行候補にする。
   Ory self-service identity 登録経路の gate と、frontends の管理 UI・不足条件表示を分ける。

@@ -3,12 +3,19 @@
 > See [overview.md](overview.md) for goals and [packets.md](packets.md) for the unit split / dependency graph.
 > 各項目は unit の範囲だけを対象とする。D15 全体の受け入れは E15d + E15w + F15 が揃うまで保留。
 
-## 全体（D15 統合受け入れ。未達）
+## 全体（D15 統合受け入れ。2026-11-12 完了）
 
-- [ ] 実 Kratos 経路（browser / API の直接 registration、作成済み flow、設定変更後、UI を経由しない入口）で D15 の全状態が守られる (E15d)
-- [ ] 外部 Webhook が管理画面を開いていなくても障害・復旧・防御低下を届ける (E15w)
-- [ ] 管理画面で状態・開閉・再開・override・通知一覧/既読が操作でき、override 中の警告が画面遷移で消えない (F15)
-- [ ] ログイン済み利用者の `POST /api/v1/accounts` と login がゲートの影響を受けない (E15d)
+- [x] 実 Kratos 経路（browser / API の直接 registration、作成済み flow、設定変更後、UI を経由しない入口）で D15 の全状態が守られる (E15d)
+- [x] 外部 Webhook が管理画面を開いていなくても障害・復旧・防御低下を届ける (E15w)
+- [x] 管理画面で状態・開閉・再開・override・通知一覧/既読が操作でき、override 中の警告が画面遷移で消えない (F15)
+- [x] ログイン済み利用者の `POST /api/v1/accounts` と login がゲートの影響を受けない (E15d)
+
+### D15 統合 closeout（2026-11-12）
+
+- F15 最終 PR shuttlepub-frontends #43（Closes #31、head `287ce17b329f34b5191f8ab8d9fd937e1fa59ca1`）は squash merge 済み（`1227ca8abc4fb80a78fb88e9fa1b888be0db7c7c`）。#31 は CLOSED。前段 #33 (`7516562db15952144dd406070ffe3d3f95de02c3`)・#39 (`3c7c7e2b9984db1762b2092ae18f4959751569ed`) も squash merge 済み。独立 Reviewer approve（run `run-01m76dttgrd68w833r0n102zte`、must 0）、CI 2 checks pass。
+- D15 全 unit 完了: E15a #67 (`0ac9e9c087f61447c9a2c5e4a4cbf04a1075f2ca`)、E15w #69 (`ae9bdddef26c21b2d70e08a5a8f74ac5e6153d05`)、E15b #79 (`16b9e4301edde8bd4de222ab4d691dc7c32798b8`)、E15c #85 (`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`)、E15d #88 (`ef063d67bc28b2a93fb6c09babc73d90216fa176`)・#92 (`95e3f77c7517d3337380df95f74a90eabe6b4ee0`)、bootstrap 修正 #99 (`11414a68ec1bb6872d8af6c09f7e1a312c19922e`)、E15x #100 (`7843ccb0de3a792741c608d54beabf81b8bd9b45`)、F15 #33/#39/#43（上記）。
+- 残余リスク: hook 除去時に Emumet 単独では物理的に登録を遮断できない、LB sampling は有限、SMTP の時間差、評価から persist まで非原子的、遅延 persist の再観測は 10 秒有界、Webhook URL は平文保存、鍵ローテーションは範囲外、tracing 非漏洩テストは未実装。
+- 未決: (?) ヘルプページの置き場所。
 
 ## E15a — registration-gate-control-plane（control plane のみ）
 
@@ -71,15 +78,15 @@
 - 独立 Reviewer approve（run `run-01m71kqtt6n5htgs0g8zsyqdfz`、must 0）、CI run `42745129343` 全 pass。`check-driver` は実 DB テストを実行し、0 ignored（前 run で確認済み）。
 - E15w の範囲のみ完了。E15b/E15c/E15d と F15 の画面実装は未完了であり、D15 全体の受け入れは未達のままとする。
 
-## F15 — registration-gate-admin-ui（shuttlepub-frontends#31。BFF/API 接続は先行可、画面はモック合意待ち）
+## F15 — registration-gate-admin-ui（shuttlepub-frontends#31。画面を含め完了）
 
 - **部分進捗（2026-11-10）**: PR #33（head `3e07fec5d96c1e8c715f7bb6b0195bdcbcf60be2`、Refs #31）の BFF/API・生成型・fixture 部分を squash merge 済み（`7516562db15952144dd406070ffe3d3f95de02c3`）。独立 Reviewer approve（run `run-01m71j8qsyj87h460v46bhqyqn`、must 0）、CI 全 pass。画面実装はモック合意待ちで未着手。issue #31 は OPEN、F15 は未完了（queue 状態は変更しない）。
-- [ ] 【画面実装ゲート】モックへのユーザー合意が host intent に記録されるまで画面実装 PR を出さない。BFF・API 接続・生成型・全状態 fixture は先行可（画面とは別 PR）
-- [ ] 【先行可】BFF（状態・開閉・再開・override・通知一覧/未読/既読・Webhook 状態/テスト/再試行）が GraphQL・REST 変換・stateful mock・生成型に揃う。非管理者・未認証は fail closed。secret は応答に含まれない
-- [ ] 【先行可】全状態 fixture（Accept 防御低下あり/なし・TemporaryReject・Stopped・AdminClosed・override On・409 競合・一時障害・通知・Webhook 各状態）が API 契約に照合される
-- [ ] 管理者のみ操作可。revision 競合・一時障害・手動再開必要・閉鎖を混同しない
-- [ ] 【モック合意後】override 警告が管理画面内の全ページに常時表示され、画面遷移・再読込・SSR/hydration で消えず、一般画面には出ない
-- [ ] 【モック合意後】管理操作（override は警告 ack 必須）・通知一覧/未読/既読・Webhook 状態/テスト/再試行、SSR/hydration、visual（全状態）
+- [x] 【画面実装ゲート】モックへのユーザー合意が host intent に記録されるまで画面実装 PR を出さない。BFF・API 接続・生成型・全状態 fixture は先行可（画面とは別 PR）
+- [x] 【先行可】BFF（状態・開閉・再開・override・通知一覧/未読/既読・Webhook 状態/テスト/再試行）が GraphQL・REST 変換・stateful mock・生成型に揃う。非管理者・未認証は fail closed。secret は応答に含まれない
+- [x] 【先行可】全状態 fixture（Accept 防御低下あり/なし・TemporaryReject・Stopped・AdminClosed・override On・409 競合・一時障害・通知・Webhook 各状態）が API 契約に照合される
+- [x] 管理者のみ操作可。revision 競合・一時障害・手動再開必要・閉鎖を混同しない
+- [x] 【モック合意後】override 警告が管理画面内の全ページに常時表示され、画面遷移・再読込・SSR/hydration で消えず、一般画面には出ない
+- [x] 【モック合意後】管理操作（override は警告 ack 必須）・通知一覧/未読/既読・Webhook 状態/テスト/再試行、SSR/hydration、visual（全状態）
 - 統合: `bff/schema.graphql`・生成型は FN と直列、共通基盤は F0 所有、生成物の手編集禁止。実ゲートとの組合せは D15 統合受け入れ
 
 ## override の細部（技術設計詳細。overview.md 参照。E15a/E15w/F15 に反映）

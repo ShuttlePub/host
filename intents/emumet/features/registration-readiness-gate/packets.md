@@ -17,7 +17,7 @@ domain `emumet`。E15a〜E15w の target は `ShuttlePub/Emumet`、F15 のみ `S
 | E15d | `registration-gate-enforcement` | 実 Kratos hook 配線・保護実行・継続 probe・ゲートと通知イベントの統合。本番 Kratos 設定変更は E15d が所有 | E15a, E15b, E15c | PR #88 (part 1)・#92 (part 2) squash merge 済み。E15d unit 完了。D15 全体受け入れは F15 画面（モック合意待ち）が残るため保留 |
 | E15w | `registration-admin-notification-webhook` | 永続イベントの外部 Webhook 配送（stable event ID・署名・timeout/再試行・失敗状態・管理者テスト/再試行） | E15a | PR #69 squash merge 済み（[Emumet#68](https://github.com/ShuttlePub/Emumet/issues/68) close 済み） |
 | E15x | `registration-webhook-endpoint-management` | E15w の追加 unit。管理者専用の Webhook 送信先 CRUD API（複数送信先・revision・監査・URL 部分マスク・シークレット暗号化・通知 4 カテゴリ選択）と、送信先ごとの配送・状態・テスト送信・1 件ずつ再試行・cursor ページングの配送失敗一覧・登録時/接続時 SSRF・既存環境変数 1 件の非破壊移行。F15 の Webhook タブ画面は含まない | E15w（完了） | PR #100 squash merge 済み（`7843ccb0de3a792741c608d54beabf81b8bd9b45`）、[Emumet#97](https://github.com/ShuttlePub/Emumet/issues/97) close 済み。後続は F15 の Webhook タブ。経緯: ユーザー決定 `question-433de6d63c710adbcaa304b4ba7d1ba6`（B: 送信先の登録・編集・削除 API を Emumet に追加してから ui-spec どおり実装） |
-| F15 | `registration-gate-admin-ui` | emumet-web 管理画面（状態・理由・開閉・再開・override・常時警告・通知一覧/既読・Webhook 状態）。target `ShuttlePub/shuttlepub-frontends` | E15a の契約（モック UI は E15c/E15d/E15w と並行可） | queue 登録・issue 公開済み（[shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）。BFF/API 部分 PR #33 は squash merge 済み。**画面実装 PR はモック合意が host intent に記録されるまで出さない**（BFF・API 接続・生成型・fixture は先行可）。F15 は未完了 |
+| F15 | `registration-gate-admin-ui` | emumet-web 管理画面（状態・理由・開閉・再開・override・常時警告・通知一覧/既読・Webhook 状態）。target `ShuttlePub/shuttlepub-frontends` | E15a の契約（モック UI は E15c/E15d/E15w と並行可） | queue 登録・issue 公開済み（[shuttlepub-frontends#31](https://github.com/ShuttlePub/shuttlepub-frontends/issues/31)）。PR #33/#39/#43 squash merge 済み。F15 完了、#31 close 済み |
 
 queue 登録済みの unit（登録成功後に追記する）:
 
@@ -73,6 +73,13 @@ queue 登録済みの unit（登録成功後に追記する）:
 - Emumet PR #100（Closes #97、head `b9fa4a38bd56d4ae28c564110a7bbeb993493766`）は squash merge 済み（`7843ccb0de3a792741c608d54beabf81b8bd9b45`）、#97 は close 済み。
 - 独立 Reviewer approve（run `run-01m76181y2h6fb484y0zw5bbzm`、must 0）、CI 全 pass。実 DB は driver 67 / application 20 / server 10 passed、0 ignored。実 Kratos E2E も pass。
 - E15x の範囲のみ完了。F15 の Webhook タブ実装が後続であり、D15 全体は未完了のままとする。
+
+### D15 / F15 最終 closeout（2026-11-12）
+
+- F15 の最終 PR shuttlepub-frontends #43（Closes #31、head `287ce17b329f34b5191f8ab8d9fd937e1fa59ca1`）は squash merge 済み（`1227ca8abc4fb80a78fb88e9fa1b888be0db7c7c`）。前段 #33 は `7516562db15952144dd406070ffe3d3f95de02c3`、#39 は `3c7c7e2b9984db1762b2092ae18f4959751569ed` で squash merge 済み。独立 Reviewer approve（run `run-01m76dttgrd68w833r0n102zte`、must 0）、CI 2 checks pass（build、Components and application screens）。shuttlepub-frontends#31 は CLOSED。
+- D15 は全 unit 完了: E15a #67 (`0ac9e9c087f61447c9a2c5e4a4cbf04a1075f2ca`)、E15w #69 (`ae9bdddef26c21b2d70e08a5a8f74ac5e6153d05`)、E15b #79 (`16b9e4301edde8bd4de222ab4d691dc7c32798b8`)、E15c #85 (`d3e157c8e5b1b39c49e1ace6431a6825bb71f0e7`)、E15d #88 (`ef063d67bc28b2a93fb6c09babc73d90216fa176`)・#92 (`95e3f77c7517d3337380df95f74a90eabe6b4ee0`)、E15d bootstrap 修正 #99 (`11414a68ec1bb6872d8af6c09f7e1a312c19922e`)、E15x #100 (`7843ccb0de3a792741c608d54beabf81b8bd9b45`)、F15 #33/#39/#43（上記）。
+- 残余リスク: hook 除去時に Emumet 単独では物理的に登録を遮断できないこと、LB sampling が有限であること、SMTP の時間差、評価から persist までが非原子的であること、遅延 persist の再観測は 10 秒有界であること、Webhook URL が平文保存であること、鍵ローテーションは対象外、tracing 非漏洩テストは未実装。
+- 未決: (?) ヘルプページの置き場所。
 
 ## 依存図
 
