@@ -12,7 +12,7 @@
 - [ ] 解除後も関係は復元されず、復元用一覧も保持されない。再フォローは利用者操作
 - [ ] 完全一致のみ（`sub.example.com` に `example.com` の設定は適用されない）
 - [ ] 返信・引用・リポスト・いいね／絵文字の新規受理・送信拒否、表示抑制（ShuttlePub 側・後続 unit）
-- [ ] UI から実ログイン→実方針保存・取得→Follow 解除まで確認（F8）
+- [x] UI から実ログイン→実方針保存・取得→Follow 解除まで確認（F8。2026-11-12、第1段 PR #40 で Emumet main 82fa49b に対するローカル実 E2E。シナリオのリポジトリ移設は引継ぎ。下の「F8 確定」）
 
 ## E8（契約）の受け入れ境界
 
@@ -98,6 +98,16 @@
 - **分離**: 自分の block のみが対象で、同一 Account の別 Profile・他 Account の Profile の関係は変わらない。
 - **検証（マージ時）**: 実 DB の workspace テスト application 283 / driver 361 / kernel 266 / server 214 passed（0 failed）、fmt・clippy -D warnings・OpenAPI 再生成差分なし、CI（E2E を含む全 job）green。署名付き mock peer の wire-level 検査（Undo/Reject の JSON・AP Block が出ない）、rollback、配送中競合、ロック変異検査を含む。
 - **未確認・申し送り**: 実 peer（Mastodon）での Undo / Reject / Block の受理は未検証（Iceshrimp S10 と mock peer のみ）。domain block の E2E シナリオは mock peer が IP リテラル host で domain control を保存できないため未追加。`delivery::a_worker_that_lost_its_lease_while_signing_does_not_send`（P3o）と main の webhook テストに全体並列の高負荷時のみ失敗した例がある（単独・再実行で pass）。
+
+### F8 確定（shuttlepub-frontends PR #40 squash `cb02b99`・PR #46 squash `c88b96b`、2026-11-12 マージ済み、queue completed、issue #35 closed）
+
+- **到達範囲**: 第1段 = 設定「ミュート・ブロック」画面（ui-spec v5 1-x・2-x、ドメイン・アカウント両タブ）＋ BFF ＋実 Emumet 接続（固定 OpenAPI は Emumet main 82fa49b。Follow 制御は実適用）。第2段 = 投稿表示面（ui-spec v5 3-1〜3-6・4-1〜4-5・5-1）と投稿／プロフィールの「…」メニュー（1-1）を、S8 生成 schema（ShuttlePub `60cb47d60da3c5b4ff3fc570fe3bc1796f983b3b` 固定、producer fixture も同 commit）準拠の mock で実装。
+- **未接続の明示**: 投稿抑制・反応拒否の実適用は ShuttlePub 後続（S8 は契約のみ・全 route 501）。設定画面の注記に加え、投稿表示面にも mock 時「投稿の非表示・操作の制限はプレビューです（サーバー未接続）」を表示。real の投稿系は NOT_IMPLEMENTED。
+- **reveal の保証**: 単一投稿 reveal はページ内限り（保存・同期しない、［隠す］・再読込・再訪・Profile 切替で隠し直す）。reveal してもブロック中の操作制限・CW・センシティブ・削除・閲覧権は解除しない。hidden 応答に本文・作者は載らない（BFF テスト）。要求番号で応答を照合し、［隠す］後・旧世代の応答を破棄。設定変更・409 回復で表示中の投稿を取り直し、取り直し中は旧 reveal（操作可否を含む）を使わず、失敗時は隠し表示＋エラー＋再試行。
+- **ui-spec との差**: 3-4（引用の隠し表示に「引用しています／引用元」を出さない、引用を reveal しても引用元は隠したまま）は S8 優先。spec どおりにするには S8 契約の拡張が必要。1-6（アカウントタブの名前・アイコン・acct）は Emumet の個別 relation 応答が actor URL のみのため actor URL 表示。通知・検索（5-2/5-3）は画面が後続 unit のため UI なし（BFF の S8 投影と fixture 検証のみ）。
+- **純粋 boost の直接 URL**: boost wrapper 固有の画面・URL を作らず、元投稿 URL の通常の単一投稿 reveal に委ねる（TL では純粋 boost を全体ごと痕跡なく除く）。
+- **検証（マージ時）**: 第1段は実 Emumet E2E（ローカル、2/2 pass ×2）。第2段は spago test・bun test 187・producer S8 fixture の再生一致・shuttlepub-verify（desktop/mobile、キーボード・モーダル・inert・Profile 切替・遅延応答・2 タブ 409）・visual（新規 18 枚）、CI 全 job green。
+- **引継ぎ**: (1) 実 Emumet E2E シナリオのリポジトリ移設（`apps/shuttlepub-web/e2e`、Keto を含む compose、`e2e/emumet-revision` を Emumet main 82fa49b 以降へ）。(2) アカウントタブの actor 名等の Emumet API。(3) visual 撮影前のフォーカス待ち。(4) S8 契約拡張と ShuttlePub の実投稿制御。
 
 ## 責務の境界
 

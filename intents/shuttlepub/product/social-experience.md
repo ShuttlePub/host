@@ -265,6 +265,8 @@ CW・センシティブ指定の共有モデル／peer契約、既存メンシ�
 
 実行unit S8 `personal-domain-content-api-contract`（ShuttlePub/ShuttlePub、[ShuttlePub#18](https://github.com/ShuttlePub/ShuttlePub/issues/18)、依存S0・E8）は、上記のtimeline・検索・通知の表示抑制、第三者引用・純粋boostの全体非表示、直接閲覧時の単一投稿reveal、双方向の新規返信・引用・リポスト・いいね／絵文字の拒否結果を、Emumet E8 のProfile識別子・正規化domain・revisionに揃えた**API契約のみ**として定義し、2026-11-12にマージ済み（[PR #19](https://github.com/ShuttlePub/ShuttlePub/pull/19)、squash `60cb47d60da3c5b4ff3fc570fe3bc1796f983b3b`。E8 commit `11414a6` と整合）。全routeは明示的501で、実filter・実受理拒否・実投稿処理は含まない。ShuttlePub側の実処理は後続owner（将来の`personal-domain-content-enforcement`相当unit、未packet化・未実装）で、I08全体は完了ではない。boost wrapperを直接revealした際に元投稿も表示するかは未決で、S8契約範囲外の後続確認事項。unit分割・到達範囲は[D08](../packets/candidates.md#d08)。
 
+実行unit F8 `personal-domain-controls-web-ui`（ShuttlePub/shuttlepub-frontends、[#35](https://github.com/ShuttlePub/shuttlepub-frontends/issues/35)）は2026-11-12に**完了**（第1段[PR #40](https://github.com/ShuttlePub/shuttlepub-frontends/pull/40) squash `cb02b99`、第2段[PR #46](https://github.com/ShuttlePub/shuttlepub-frontends/pull/46) squash `c88b96b62639f77e3b63bb1d7a7770ad23ec8e1d`、queue completed、issue closed）。shuttlepub-webに、合意済みUI仕様v5の設定「ミュート・ブロック」画面＋BFF＋実Emumet接続（Follow制御は実適用）と、投稿表示面（TLの痕跡なし除外、直接URLの隠し表示と単一投稿reveal、ブロック中の鍵付き操作と解除導線、返信折りたたみ、ユーザーページ）・投稿／プロフィールの「…」メニューを実装した。投稿表示面はS8生成schema（`60cb47d6`固定）準拠のmockで、投稿抑制・反応拒否の実適用はShuttlePub後続（画面はmock時に未接続と表示）。ui-spec 3-4との差（引用の隠し表示に「引用しています／引用元」を出さず、reveal後も引用元は隠したまま）はS8優先で、specどおりにはS8契約の拡張が必要。純粋boostの直接URLは、boost wrapper固有の画面・URLを作らず元投稿URLの通常の単一投稿revealに委ねる方針で実装した（S8の未決事項に対するUI側の扱い）。**Emumet側とUIのD08範囲は完了**したが、ShuttlePubの実投稿制御が後続のためI08全体は完了ではない。引継ぎは[DC packets](../../emumet/features/personal-domain-controls/packets.md)の「F8 完了」。
+
 ## I09
 
 他サーバーのカスタム絵文字で付いた既存反応へ、同じ絵文字で便乗できるようにする。
