@@ -347,6 +347,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   [Misskey公式の公開範囲説明](https://misskey-hub.net/en/docs/for-users/features/note/#home)ではHomeは誰でも閲覧可能、Followers／Directは制限付き、LocalOnlyは連合されない。公開範囲と連合可否は区別する。
   製品版・サーバー設定・rate limit・可視性ごとの取得可能性は実測待ち。相手APIのbearer認証情報と自分のAP署名identityは別で、他鯖への追加アカウント登録必須・認証回避／scraping採用や公開情報限定の製品仕様を決めたものではない。
 - **採用済み（`d06-q03-silently-refresh-stale-remote-data`）**: 古い可能性は表示せず、そのまま表示しながら裏で更新し、取得後に差し替える。
+- **採用済み（`d06-q04-unsupported-quote-as-link`）**: メニュー項目を「リンクで引用」に変えアイコンもリンクにし、押すと引用カードの代わりにリンクカードが入った投稿フォームを開く。確認画面は出さない。
 <a id="d07"></a>
 
 ## D07 — note-edit-federation
