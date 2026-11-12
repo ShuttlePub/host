@@ -229,3 +229,5 @@
 {"ts":"2026-11-12T05:58:02.6584588+00:00","execution_unit":"registration-gate-admin-ui","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":43}
 {"ts":"2026-11-12T06:28:26.3264282+00:00","execution_unit":"profile-domain-block-detach","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":93}
 {"ts":"2026-11-12T06:28:26.3264282+00:00","execution_unit":"profile-domain-block-detach","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":93}
+{"ts":"2026-11-12T12:31:22.710205+00:00","execution_unit":"personal-domain-content-api-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":19}
+{"ts":"2026-11-12T12:31:22.710205+00:00","execution_unit":"personal-domain-content-api-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":19}

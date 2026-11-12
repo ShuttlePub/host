@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-12T06:28:26.3433824+00:00",
+  "updated_at": "2026-11-12T12:31:22.7206464+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1351,7 +1351,7 @@
     {
       "execution_unit": "personal-domain-content-api-contract",
       "title": "personal-domain-content-api-contract: \u500B\u4EBA domain mute/block \u306E\u6295\u7A3F\u30FB\u691C\u7D22\u30FB\u901A\u77E5\u306E\u6291\u5236\u3068\u53CC\u65B9\u5411\u306E\u65B0\u898F\u64CD\u4F5C\u62D2\u5426\u306E /api/v1 API \u5951\u7D04",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "shuttlepub-openapi-foundation",
         "profile-domain-policy-api-contract"
