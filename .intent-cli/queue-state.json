@@ -23,7 +23,8 @@
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
-      "priority_revision": 0
+      "priority_revision": 0,
+      "linked_pr": "https://github.com/ShuttlePub/shuttlepub-frontends/pull/42"
     },
     {
       "execution_unit": "block-mute-federation",
