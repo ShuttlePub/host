@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:personal-domain-controls-web-ui",
+  "actor": "f8-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-12T08:22:29.4623726+00:00",
+  "reason": "F8 \u7B2C1\u6BB5 (shuttlepub-frontends PR #40, squash cb02b99) \u30DE\u30FC\u30B8\u6E08\u307F\u3002\u7B2C2\u6BB5 (\u6295\u7A3F\u8868\u793A\u9762\u30FB\u2026\u30E1\u30CB\u30E5\u30FC) \u306F S8 \u5F85\u3061\u3067\u7740\u624B\u6642\u671F\u672A\u5B9A\u306E\u305F\u3081\u89E3\u653E\u3057\u3001\u7740\u624B\u6642\u306B\u518D acquire \u3059\u308B",
+  "displaced_holder": "f8-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-11T11:14:57.4141158+00:00",
+  "base_commit": "9d71a0ec6edb09448e56dfdc7ca61d029a025d82"
+}
