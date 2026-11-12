@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-gate-leak-shutdown-tests",
+  "actor": "d15-hardening-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-12T20:56:40.2707681+00:00",
+  "reason": "Emumet PR #102 merged (8b6ceb46); closeout recorded",
+  "displaced_holder": "d15-hardening-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-12T13:13:15.6620346+00:00",
+  "base_commit": "cb2cdf15a97190e230b85b05c143b0e999999b75"
+}
