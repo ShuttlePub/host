@@ -111,6 +111,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   [初動決定](../decisions/2026-08-29-initial-shaping.md) D5/D7 の語彙・機能を尊重する。
   D13の引用・リポスト等の許可分類との対応は、D01で操作を追加する方式を選ぶ場合に、その意味が決まった後で統合確認する。
 - **採用済み（`d01-q06-direct-link-author-history`）**: 直接リンクから開いた場合は元の投稿者の履歴を表示する。
+- **採用済み（`d01-q07-no-switch-to-author-history`）**: 切替は初回リリースでは用意せず、後続でも不要と見込む。
 <a id="d02"></a>
 
 ## D02 — media-reuse-license
