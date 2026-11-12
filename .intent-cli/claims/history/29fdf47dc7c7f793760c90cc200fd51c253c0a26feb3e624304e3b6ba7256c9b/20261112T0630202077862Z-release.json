@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-domain-block-detach",
+  "actor": "d8r-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-12T06:30:20.2077862+00:00",
+  "reason": "PR #93 merged (squash 82fa49b), closeout recorded",
+  "displaced_holder": "d8r-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T20:26:44.0601362+00:00",
+  "base_commit": "0b15f8a3797d17844b64ca5986870ce2b4146425"
+}
