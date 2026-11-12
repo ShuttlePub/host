@@ -368,6 +368,18 @@ Follow 受信は 1 transaction で「関係ロック → 重複記録 → block 
 - route `/profiles/username-availability` は静的セグメントで、将来 `/profiles/{profile_nanoid}` が mount されても axum では静的ルートが優先される。
 - FN（emumet-web）は 200 の `available`／`reason` で入力中表示を切り替え、429 は `Retry-After` に従って間引く（debounce 推奨）。作成/設定時の 409 は引き続き必ずハンドリングする。
 
+## P4 確定契約（Emumet PR #91、2026-11-12 マージ済み、squash `daeb625`、unit `profile-federation-in-place-cutover`、issue #82）
+
+> 正本は [ADR profile-federation-in-place-reset](../../decisions/profile-federation-in-place-reset.md) の「P4 確定」節。ユーザー承認 question-da1bedb39ffb364045fe1abf7721d9e4（マージのみ。**本番切替は運用者が別途実施・未実施**）。
+
+- migration: `20261120000001`（前提検査＋新関係・配送テーブル）／`20261120000002`（前提検査＋旧連合データ初期化＋台帳）／`20261121000001`（鍵の外部キーを外す）。初期化対象は旧 6 テーブルのみ（`TRUNCATE`、CASCADE なし）、非対象は全保持。再実行で再消去・鍵再生成なし。
+- 前提検査: username 未設定の Profile があれば P4 の migration は 1 つも適用されず拒否（DB は切替前のまま。復旧は切替前バイナリで username 設定 → 再試行）。
+- route: Profile actor・WebFinger・inbox・identity・Follow／following／followers・個別 block／mute・username 設定を本番 mount。`/ap/accounts/**`・`/internal/v1/accounts/{id}/sign`・`.../public-key`・Account 単位の Follow／block／mute 系は 410 Gone。domain-controls は未 mount のまま。
+- username は作成 API で必須（省略・null は 400、OpenAPI `required`）。
+- **契約変更**: P1 確定契約の「Profile 鍵は Profile 行削除で cascade」を、鍵を保持して再 materialize 時に同じ鍵で復帰、に変更（再有効化は全 event 履歴から Profile を再 materialize）。停止・BAN・無効化中の Account の Profile は actor・WebFinger・inbox 404、新規 Follow 拒否、配送は待機。
+- 検証: 実 DB（切替リハーサル、reset 6 本、lifecycle／moderation の実 DB 結合テスト）、E2E（mock peer・Iceshrimp・Mastodon・basic）が CI で green。
+- 引継ぎ: Metadata の窓制約、`Update(Person)`・公開 outbox・AP collection の不在、旧 repository／テーブルの残置、署名付き取得（AUTHORIZED_FETCH）未対応、**本番切替は運用者が別途実施（未実施）**。詳細は ADR。
+
 ## FN の BFF 部分の申し送り（shuttlepub-frontends PR #36、画面なし）
 
 BFF・GraphQL・REST 変換・mock・生成型の先行 PR。画面（PureScript の手書きソース）は変更していない。実 Emumet（49acf9d）に対し BFF の GraphQL 経路から実接続を確認済み（作成時の保存、一回限り設定、重複 `USERNAME_TAKEN` と設定済み `USERNAME_ALREADY_SET` の区別、形式・予約語・末尾改行、401/403/404/422、移管後の username 不変）。

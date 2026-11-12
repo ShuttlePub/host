@@ -78,13 +78,33 @@
 - D8R（block の関係解除・公開 API 接続）は P4 の root router 一括 mount 後に block 書込を有効化する。D8G は P4 前でも隔離構成で検証できる。
 - ADR 0002/0003/0007 の本文は変更しない。本 ADR と [profile-actor-identity](profile-actor-identity.md) が実装確定値を記録する。
 
-## Open（P4 closeout で確定して本 ADR に追記）
+## P4 確定（2026-11-12、Emumet PR #91 マージ済み、squash `daeb625`、issue #82）
 
-- 破壊的 migration の最終ファイル名・番号、P2 schema fixture の本番配置形
-- 新 Profile 鍵の生成タイミング・冪等性の担保方式
-- 前提検査（username 未設定の拒否）の実装方式と拒否時の運用
-- 旧 route 撤去の最終一覧と廃止応答の形（status・本文）
-- 切替 runbook（停止・起動順・スモーク項目）と、ユーザー確認の記録場所
+> ユーザー承認: マージは question-da1bedb39ffb364045fe1abf7721d9e4（「P4 のマージを承認する（本番切替は別途運用者が実施）」）。**本番切替（新バイナリの本番起動）は運用者が別途実施する。本記録の時点では未実施**。本番 DB・本番環境には一切触れていない（ローカル・CI のみで検証）。
+
+- **migration（採番・本番配置）**: `20261120000001_profile_social_graph.sql`（先頭に username 前提検査、続けて P2 の新関係・配送テーブル。非破壊）、`20261120000002_reset_legacy_federation.sql`（前提検査＋旧連合データ初期化＋台帳 `profile_federation_resets`（`legacy-account-federation-v1`）、1 transaction）、`20261121000001_profile_signing_keys_survive_deactivation.sql`（鍵の外部キーを外す。契約変更、下記）。P1・D8P の既存 migration は再採番していない。`driver/fixtures/` は削除し、テストは本番 migration を使う。
+- **初期化対象**: `follows` `blocks` `mutes` `remote_accounts` `outbox_activities` `signing_keys`（明示 `TRUNCATE`、CASCADE なし）。**保持**: AuthAccount・Account・Profile・組織 membership・`profile_transfer_requests`・Account/Profile/Metadata/Report のイベント履歴・`registration_gate_*`・`projection_checkpoints`・`profile_domain_controls`・`profile_signing_keys`・`images`・新モデルの全テーブル（旧リモート icon の孤児 `images` は残る）。保持の自動照合（全非対象テーブルの行数・内容 hash）と、対象を参照する外部キーが非対象にある場合は `TRUNCATE` 失敗で rollback、を実 DB で検証済み。
+- **前提検査（切替拒否）**: username 未設定の Profile が 1 件でもあれば `RAISE EXCEPTION`。同じ検査を最初の P4 migration の先頭と初期化 migration の両方に置き、通常は先頭で拒否されて **P4 の migration が 1 つも適用されず DB は切替前のまま**。新バイナリは起動しないので、復旧は「切替前のバイナリで username を設定 → 再試行」（バックアップ復元は不要。Emumet `docs/profile-federation-cutover.md` §3.1）。DB の NOT NULL 化はしない（旧イベント列に username を持たない Created が残りうる）。
+- **一回限り**: 台帳に記録済みなら再実行しても再消去しない。新 Profile 鍵は `server/src/cutover.rs`（`main` で migration 直後・worker／router より前）が `EnsureProfileSigningKeysUseCase` で、**有効な鍵を持たない Profile にだけ** 1 transaction＋advisory lock で生成する（有効鍵 1 つの部分 unique index が最後の砦）。再起動しても鍵は変わらない。切替後に作る Profile（`POST /api/v1/accounts`・`/profiles`）は作成 transaction 内で鍵を作り、Account 単位の鍵は作らない。旧 `signing_keys` からの変換はしない。
+- **契約変更（P1 確定契約の是正、host `5337d22`）**: Profile 鍵は `profiles` 行の削除に cascade させず保持する（Account の無効化の projection でも `profiles` 行は削除されるため）。再有効化の Account projector が、その Account が所有する Profile を**全 event 履歴から再 materialize**（tailing の窓に依存しない）し、同じ id・username・鍵で復帰する。将来 Profile を恒久削除する経路を作る場合は鍵の明示的な削除が必要（`7db7802`）。
+- **Account の状態と Profile**: 停止（suspend）・BAN・無効化中の Account の Profile は actor ではない（actor・WebFinger・inbox は 404、新規 Follow は発信 403・Profile 宛て 400）。配送 worker は `claim_due` でその Profile の job を取得しない（待機、試行回数を消費しない、解除後に送信）。無効化では Profile 行が消え、関係・job は外部キーで一緒に消える（再有効化でも戻らない）。
+- **mount した route**（本番 root router）: `GET /ap/profiles/{nanoid}`、`GET /.well-known/webfinger`（username 基準）、`POST /ap/profiles/{nanoid}/inbox`、`GET /api/v1/profiles/{nanoid}`（identity、所有者のみ）、Follow／unfollow／following／followers、個別 block・mute（作成・一覧・削除）、username 一回限り設定。**未 mount のまま**: domain-controls（D8P。mute/block とも D8R が block 書込を有効化するまで。未 mount と何も保存されないことをテストで固定）。Profile 配送 worker は `main` から起動（`PROFILE_DELIVERY_POLL_INTERVAL_MS`、既定 2000）。
+- **廃止した route（410 Gone、新 actor へ redirect しない。OpenAPI から除外）**: `/ap/accounts/**`（全 method）、`POST /internal/v1/accounts/{id}/sign`、`GET /internal/v1/accounts/{id}/public-key`（有効な token でも署名・旧鍵取得不可。代替の汎用署名 API は作らない。Profile 公開鍵は actor 文書から取得）、`/api/v1/accounts/{id}/follow|unfollow|followers|following|block|unblock|blocks|mute|unmute|mutes`。Account 管理 API は維持。旧 actor・inbox・outbox・collections・配送のコード、`Update(Person)` 配送、`application/src/service/block.rs`・`mute.rs` は削除。
+- **username 必須化**: `POST /api/v1/accounts` の `profile_username`・`POST /api/v1/profiles` の `username` は省略・null で 400。OpenAPI は `required`・非 nullable。
+- **切替手順・前提・ロールバック**: 手順は Emumet `docs/profile-federation-cutover.md`（旧 inbox・関係書込・配送 worker を含む旧プロセス全体を停止 → バックアップ → 新バイナリを 1 プロセス起動 → スモーク）。前提は username 全設定済み（FN マージ済み）・master key password・バックアップ・`PUBLIC_BASE_URL`・projection の追従。**旧モデルへの逆変換は保証しない（ロールバック不可、復元はバックアップから）**。
+- **PR の引継ぎ対応**: `ProfileReadModel::update` は `WHERE version <= $7` の条件付き更新（古い snapshot は `Concurrency` で拒否。GREATEST は内容を戻すため廃止）、移管承認・Profile 編集は Profile 行ロックで直列化、`purge_received_before` は `UndoFollow` 記録を残す方針（未接続）、本番共有 router での mount／410／未 mount 検査、実 HTTP の Profile inbox 結合（fake peer・redirect・SSRF）、`signing_keys`（旧）と `profile_signing_keys` は別テーブルで reset は前者のみ。
+- **E2E**: mock peer 16・Iceshrimp 4・Mastodon 4・basic 6 が CI で green（削除・skip なし。Profile 鍵を DB から復号して署名する fixture。`.`・`_`・`-` を含む username を Mastodon/Iceshrimp で検証）。
+
+### Reviewer 任意事項・後続への引継ぎ
+
+- 再有効化で Metadata（`metadatas`）も同じ tailing 窓の制約を持つ（既存の挙動。identity・鍵・actor には影響しない）。
+- Iceshrimp／Mastodon E2E は docker 内の自己署名 https の相手のため、相手の actor／鍵取得は `test-mode` の cache 注入で解決している。cache なしの実 HTTP 取得は mock peer E2E と lifecycle 結合テストが担保。相手 actor の取得は署名なし GET のため、`AUTHORIZED_FETCH` 必須の相手には Follow を配送できない（署名付き取得は未実装）。
+- `Update(Person)` 配送（Profile 編集の外部伝播）と Profile の公開 outbox・followers／following の AP collection は新モデルにない（後続課題）。
+- 旧 Account 単位の kernel／driver の repository と旧テーブルは残置（切替で空になり以後書かれない）。コード・表の削除は別 PR。
+- Profile を恒久削除する経路は無い。作るなら鍵の明示的削除が必要。
+- AP Block 送信（個別 actor block）は確定済みの「送らない」を維持。
+- 後片付け（2026-11-12）: worktree は削除済み、リモートブランチはホスティング側で削除済み。**残存**: ローカルブランチ `feat/profile-federation-in-place-cutover`（Emumet、head `d6684aa` = マージ済み head。実行ガードが削除を保留）と、検証用 E2E compose プロジェクト `emumet-p4e2e`（停止済み、ボリューム `emumet-p4e2e_postgres-data` / `emumet-p4e2e_rustfs-data` を含む。ユーザー判断で削除せず残す）。手動削除は `git branch -D feat/profile-federation-in-place-cutover`（Emumet）と `docker compose -p emumet-p4e2e -f <compose.yml> down -v`（compose.yml は検証時の一時ファイルで、`down -v` 相当は `docker rm` と `docker volume rm` でも可）。
+- **本番切替は運用者が別途実施（未実施）**。実施時に runbook のスモーク項目を使い、結果を本節に追記すること。
 
 ## Links
 
