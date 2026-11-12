@@ -164,6 +164,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **採用済み（`d02-q08-existing-images-unspecified-license`）**: 既存画像はすべて未指定として扱い、未共有の画像のみ後から許諾を設定できる。
 - **採用済み（`d02-q09-only-file-owner-sets-license`）**: 画像ファイルの所有者のみが許諾を設定できる。ファイル所有者が権利者本人であることは保証しない。
 - **採用済み（`d02-q10-same-bytes-per-file-license`）**: 同一bytesでも別fileなら、それぞれ別々に扱う。
+- **採用済み（`d02-q11-admin-adds-license-options`）**: 最初から管理者が独自の利用許諾を追加できるようにする。定義形式と連合表現は技術設計に残す。
 <a id="d03"></a>
 
 ## D03 — quick-reaction
