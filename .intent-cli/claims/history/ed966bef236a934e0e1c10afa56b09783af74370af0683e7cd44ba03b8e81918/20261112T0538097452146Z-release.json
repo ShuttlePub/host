@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-federation-in-place-cutover",
+  "actor": "p4-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-12T05:38:09.7452146+00:00",
+  "reason": "P4 merged (Emumet PR #91, squash daeb625); closeout recorded",
+  "displaced_holder": "p4-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-10T15:45:26.8934761+00:00",
+  "base_commit": "39643f7ac8d986575c9b0f8d3aaea5a84909e486"
+}
