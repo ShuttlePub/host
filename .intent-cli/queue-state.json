@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-12T13:16:54.2554101+00:00",
+  "updated_at": "2026-11-12T16:25:32.2334257+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -19,12 +19,11 @@
         "number": 20,
         "url": "https://github.com/ShuttlePub/Emumet/issues/20"
       },
-      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/21",
+      "linked_pr": "https://github.com/ShuttlePub/shuttlepub-frontends/pull/42",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
-      "priority_revision": 0,
-      "linked_pr": "https://github.com/ShuttlePub/shuttlepub-frontends/pull/42"
+      "priority_revision": 0
     },
     {
       "execution_unit": "block-mute-federation",
@@ -1257,7 +1256,7 @@
     {
       "execution_unit": "personal-domain-controls-web-ui",
       "title": "personal-domain-controls-web-ui: shuttlepub-web \u306E\u500B\u4EBA domain mute/block \u8A2D\u5B9A UI (\u5B9F Emumet \u63A5\u7D9A\u30FB\u89E3\u9664\u6642\u975E\u5FA9\u5143\u306E\u8AAC\u660E\u30FB\u6295\u7A3F\u8868\u793A\u9762\u306E S8 \u6E96\u62E0 mock\u3002\u753B\u9762\u69CB\u6210\u306F\u30E2\u30C3\u30AF\u5408\u610F\u5F8C)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "shuttlepub-web-foundation",
         "shuttlepub-web-emumet-auth",
