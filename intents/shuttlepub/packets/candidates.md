@@ -770,6 +770,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   複数の自分投稿への反映とD07の更新／履歴／通知・D17の比較・連合先更新の整合は契約検証待ち。一般旧履歴非公開・保持／保全期限や可視性・削除／ブロック等は維持する。
 - **採用済み（`d11-q02-personal-then-server-tag-suggestions`）**: 通常タグの補完候補は自分のタグを優先し、その後にサーバー全体のタグを提示する。
 - **採用済み（`d11-q03-federate-normal-tags-as-ap-extension`）**: 通常タグはActivityPub拡張として送信し、非対応側では無視される想定とする。
+- **採用済み（`d11-q04-retry-only-failed-cross-post-updates`）**: 反映に失敗した分だけ自動再試行し、成功した分は維持する。
 <a id="d12"></a>
 
 ## D12 — contextual-content-guidance

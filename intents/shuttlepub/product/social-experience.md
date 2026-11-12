@@ -301,6 +301,7 @@ I07の編集・I17の比較へ接続するが、具体モデルやpeer反映を�
 通常タグとセンシティブ分類の物理保存単位やBooskiff配置、再upload／公開URL上書き方式は確定しない。出典S11／候補D11。
 追加採用方針（`d11-q02-personal-then-server-tag-suggestions`）: 通常タグの補完候補は自分のタグを優先し、その後にサーバー全体のタグを提示する。
 追加採用方針（`d11-q03-federate-normal-tags-as-ap-extension`）: 通常タグはActivityPub拡張として送信し、非対応側では無視される想定とする。
+追加採用方針（`d11-q04-retry-only-failed-cross-post-updates`）: 反映に失敗した分だけ自動再試行し、成功した分は維持する。
 ## I12
 
 投稿・検索の内容に応じて案内・リンク・確認による支援を行う。
