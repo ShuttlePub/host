@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:media-metadata-contract-design",
+  "actor": "media-metadata-design-worker",
+  "team": "booskiff-main",
+  "claimed_at": "2026-11-12T20:56:27.5110246+00:00",
+  "base_commit": "972b5ce97fa3882d1be61bb1fa4884d49f852da5"
+}
