@@ -1107,3 +1107,4 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   [RFC 9421](https://www.rfc-editor.org/rfc/rfc9421.html#section-1.4)のHTTPメッセージ署名だけで、
   再共有者が当時表示した本文・添付や現在版との一致を証明できるとは扱わない。内容・版・turboを結ぶ証拠の方式は未決。
 - **採用済み（`d17-q04-reverify-when-evidence-arrives`）**: 再照合して表示を更新し、いつ照合したかが分かるようにする。
+- **採用済み（`d17-q05-transformed-media-is-unverifiable`）**: 「確認できない」として扱う。

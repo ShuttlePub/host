@@ -477,3 +477,4 @@ Note/reply/turbo/turbo_quote、基本リアクション、timelineの基盤を�
 原文の外部6URLは全て保存した。Misskey本体の2 issueページは取得できたが指定comment本文は
 未検証、他4URLは取得できなかった。他製品の現在の挙動は今回の記録では確定していない。
 追加採用方針（`d17-q04-reverify-when-evidence-arrives`）: 再照合して表示を更新し、いつ照合したかが分かるようにする。
+追加採用方針（`d17-q05-transformed-media-is-unverifiable`）: 「確認できない」として扱う。
