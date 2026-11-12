@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:booskiff-web-auth-hardening",
-  "actor": "bwa-worker",
-  "team": "booskiff-frontends",
-  "claimed_at": "2026-11-12T13:13:03.4505877+00:00",
-  "base_commit": "9233e50c943306ddf9071b2d55e5bad69d90a812"
-}

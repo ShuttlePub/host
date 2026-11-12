@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:booskiff-web-auth-hardening",
+  "actor": "bwa-worker",
+  "team": "booskiff-frontends",
+  "recorded_at": "2026-11-12T13:17:57.0151078+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "bwa-worker",
+  "displaced_team": "booskiff-frontends",
+  "displaced_claimed_at": "2026-11-12T13:13:03.4505877+00:00",
+  "base_commit": "d1adc113b8040b9a9e596b8442239a2af6b598b0"
+}
