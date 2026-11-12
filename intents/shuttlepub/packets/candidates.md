@@ -629,6 +629,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **候補の状態**: 原案の主要な利用意図は整理済み。identity・取得／利用条件・連合表現等の設計・検証待ちで実装readyではない。
   candidate・queue未登録・issue未公開・仮slug未予約を維持する。外部絵文字の一覧／picker拡充は追加要件としない。
 - **外部カスタム絵文字の利用範囲として採用済み**: `d09-q01-existing-reaction-chip-only`。投稿に付いた既存リアクションのチップを押したときだけ利用でき、最近使った絵文字やpicker検索には表示しない。操作はD03 C3と同じく、他人のチップを押して同じ絵文字で反応し、未反応時のみ適用する。
+- **外部カスタム絵文字が取得できない場合として採用済み**: `d09-q02-unavailable-emoji-name-fallback`。画像を表示できない場合は代わりに`:name:`を表示し、送信は許可する。
 - **仮 slug**: `remote-emoji-reaction-reuse`。
 - **target repo 別分割**: ShuttlePub の絵文字 identity・取得 / 利用条件・連合 reaction 表現候補、
   frontends の既存リアクションからの操作候補。Emumet の配送契約変更が必要なら分割する。
