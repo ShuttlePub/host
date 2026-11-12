@@ -172,7 +172,17 @@ E15d の技術選択は、各 generation の初回 bootstrap（メールは管�
   - 既存環境変数 endpoint 1 件の冪等取り込みで、既存配送データを破壊せず移行する。
   - E15w の旧集約 API を削除し、retry request body の契約を変更した。配送は送信先ごとに並行処理する。
 - 残余・範囲外:
-  - tracing に secret が漏れないことのテストと worker spawn 停止のテストは未実装。
+  - tracing に secret が漏れないことのテストと worker spawn 停止のテストは、E15x closeout 後の追補 unit `registration-gate-leak-shutdown-tests`（Emumet PR #102）で実装済み（下記「D15 受け入れ確認の追補」）。
   - 既存 `GET /ap/accounts/{account_id}` の OpenAPI path parameter 名の不整合は既存不具合であり、本 unit の範囲外。
   - ローカル `cargo test -p server write_openapi_spec_to_file -- --ignored` は未実行。PR merge ref の CI `Check openapi.json is up-to-date` は pass。
 - E15x の範囲のみ完了。F15 の Webhook タブが後続であり、D15 全体は未完了のままとする。
+
+## D15 受け入れ確認の追補: registration-gate-leak-shutdown-tests（2026-11-13）
+
+- Emumet PR #102（Closes #101、head `5fb2cea570858d5614bb6bcdd3b74e728d476b51`）は squash merge 済み（`8b6ceb46b47f50da4889febb77619b4ae856586f`）、#101 は CLOSED。独立 Reviewer approve（run `run-01m78qk4hv9x0jb415fwxx032g`、must 0）、CI 全 pass（codecov/project のみ informational で未確定）。
+- 実装した検証（実 DB、skip なし。追加 13 件、CI の `hardening-db` ジョブが passed >= 1・0 ignored を検査）:
+  - tracing の secret 非漏洩: 共通ログ捕捉 helper `kernel::test_utils::LogCapture`（production と同じ fmt、TRACE まで）。Webhook の管理・配送・環境変数の起動ログ、登録 guard hook、保護の確認コード・provider 障害・maintenance、Turnstile/SMTP adapter で、secret・URL の path/query/userinfo・暗号鍵・メール・確認コード・proof・bot token が出ないことを固定（漏洩を仕込む変異で失敗することを確認）。
+  - Webhook 配送 worker の停止: 協調停止（途中）・graceful shutdown（in-flight）・強制中断（lease 失効後に同じ event ID で 1 回だけ再送）・停止中イベント・再起動の冪等性。
+  - probe worker の停止: 強制 probe を準備前/送信中/クリーンアップ中で中断しても通知を捏造せず、証拠を書き換えず、canary は失われず、再起動で収束。probe / maintenance ループは停止要求で戻る。maintenance の中断掃引（bot 単独障害で通知が中断なしと一致）。
+- 見つかった実バグと最小修正: `main` が Webhook worker の in-flight 完了を待たずに終了し、送信済み・記録前の配送が lease 失効後に再送されていた。`WebhookShutdown::stop_and_wait` を追加し main が最大 20 秒待つ。
+- 残余・未修正: maintenance は 1 サイクルが原子的でなく、メール障害 + 同サイクル内の回復で途中停止すると途中状態の通知が増え得る。中断された canary は settle されず期限削除（10 分）まで毎サイクル確認される（無害）。grace 超過時（20 秒）の保証範囲の明記と境界テスト、maintenance 中断の到達点での固定、追加の配送失敗分岐の到達 assert は Reviewer の任意指摘として未対応。送信後・記録前の強制終了による再送は at-least-once の仕様。

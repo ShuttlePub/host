@@ -131,3 +131,5 @@ E15w（Emumet#68）は E15a（Emumet#65）の merge 後に rebase し、共有�
 
 durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に
 child へ親状態を作成しない。
+
+- 追補 unit `registration-gate-leak-shutdown-tests`（Emumet [#101](https://github.com/ShuttlePub/Emumet/issues/101) / PR #102、2026-11-13 merge 済み、packet: `.intent-cli/issues/registration-gate-leak-shutdown-tests/`）: tracing の secret 非漏洩と Webhook 配送 worker・probe worker 停止時の消失・重複なしの回帰テスト。依存なし、D15 の受け入れ確認の残件。詳細は acceptance.md「D15 受け入れ確認の追補」。
