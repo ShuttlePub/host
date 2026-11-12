@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:registration-gate-admin-ui",
+  "actor": "f15-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-12T05:58:55.8224928+00:00",
+  "reason": "F15 final PR #43 squash-merged; recording D15 completion",
+  "displaced_holder": "f15-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-11T11:05:47.5361027+00:00",
+  "base_commit": "5eaae893ed25f258dae357e01c55cceebcee515b"
+}
