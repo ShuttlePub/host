@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "media-metadata-contract-design",
+  "role": "design",
+  "host_commit": "699397770eec731d545cb0aa2b819d09ae8a229d",
+  "recorded_at": "2026-11-14T07:18:46.1456049+00:00",
+  "targets": [
+    "intents/booskiff/features/media-metadata.md",
+    "intents/shuttlepub/packets/candidates.md"
+  ],
+  "note": "Booskiff PR #8 (squash 5c72e5c) \u306E\u5951\u7D04\u8A2D\u8A08\u5B8C\u4E86\u3068 D11=\u6848B\u30FB\u4ED6Account\u518D\u5229\u7528=R1 \u306E\u30E6\u30FC\u30B6\u30FC\u6C7A\u5B9A\u3092\u8FFD\u8A18"
+}
