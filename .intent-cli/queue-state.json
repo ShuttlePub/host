@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T04:20:29.1040052+00:00",
+  "updated_at": "2026-11-14T04:23:03.7575962+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1552,6 +1552,11 @@
         "implementation": ".intent-cli/issues/hidden-quote-indication-contract/implementation.md",
         "review_context": ".intent-cli/issues/hidden-quote-indication-contract/review-context.md",
         "yaml": ".intent-cli/issues/hidden-quote-indication-contract/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/ShuttlePub",
+        "number": 24,
+        "url": "https://github.com/ShuttlePub/ShuttlePub/issues/24"
       },
       "worker_role": "implementation",
       "review_role": "review",
