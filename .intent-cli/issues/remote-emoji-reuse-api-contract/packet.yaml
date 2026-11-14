@@ -1,0 +1,70 @@
+implementation_issue_packet:
+  issue_title: "remote-emoji-reuse-api-contract: 他サーバーのカスタム絵文字で付いた既存リアクションへの便乗(D09)の /api/v1 API 契約"
+  issue_kind: feature
+  source_execution_unit: remote-emoji-reuse-api-contract
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "server/, openapi/shuttlepub.json"
+  target_part: "S3 quick-reaction と S8 personal-domain の契約を拡張する外部(他サーバー)カスタム絵文字の出自・画像状態・利用範囲の表現と、既存リアクション便乗の PUT 判定順(型・schema・fixture・501 route)"
+  dependencies: [shuttlepub-openapi-foundation, quick-reaction-api-contract, personal-domain-content-api-contract]
+  technical_baseline:
+    - "S0 の utoipa 基盤・/api/v1 共通エラー形式・生成 schema(openapi/shuttlepub.json)と、マージ済みの S3(server/src/api_v1/quick_reaction.rs)・S8(server/src/api_v1/personal_domain.rs)を拡張する。別正本・別 route 群は作らない"
+    - "契約のみで実保存・外部絵文字の取得/キャッシュ/削除検出・連合 EmojiReact の送受信は実装しない。route は引き続き明示的な 501(todo!/unimplemented! は使わない)"
+    - "EmojiRef(絵文字の identity)は変更しない。追加は EmojiView の optional フィールドと S8 EmojiReactionCount の optional view のみで、既存 S0/S3/S8 の fixture・生成 schema の既存形は後方互換のまま通る"
+    - "既存 dev API POST /api/notes/{id}/reactions は legacy development API で契約対象外、生成 schema に載せない"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I09, I03)"
+    - "intents/shuttlepub/packets/candidates.md (D09、D03、共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d09-q01〜q03、d03-q03/q05/q09/q10)"
+    - "ユーザー UI 決定(thread-xxs52dcx 内の最新指示): 同名で別サーバーの絵文字の見分けは地球マーク(外部印)をリアクションチップに出す(U5=c)"
+  acceptance_criteria:
+    - "EmojiView に optional の origin(出自ドメイン)・image_state(画像の有無。availability とは独立)・usage(existing_reaction_only | anywhere)が追加され、EmojiRef は変更されない。Unicode・同一サーバーのカスタム絵文字では origin が無く、他サーバーの絵文字では origin があり usage が existing_reaction_only になる"
+    - "S8 の EmojiReactionCount に optional の view(EmojiView)が追加され、チップ単位で外部か否か(view.origin の有無)が分かる。カスタム絵文字のチップは view を持ち、view.emoji は同じチップの emoji と一致する。同名・別ドメインの絵文字は異なる identity のチップとして並び origin で区別できる"
+    - "新エラー emoji_usage_not_allowed(422)が共通エラー形式に追加される"
+    - "常用絵文字設定の PUT で外部(existing_reaction_only)絵文字を加えると 422 emoji_usage_not_allowed(details は /favorites/{index})になり、設定の応答(favorites)に外部絵文字は現れない"
+    - "reaction PUT の判定順が契約・fixture で固定される: 1 利用可否(emoji_unavailable 422)→ 2 現在の選択と同じなら 200 no-op → 3 外部絵文字でその投稿に同じ絵文字のチップが無ければ 422 emoji_usage_not_allowed → 4 外部絵文字で自分が別の絵文字で反応済みなら 409(直接置換しない、現在の反応は維持)→ 5 選択 200"
+    - "画像を表示できない外部絵文字(image_state が欠落)でも availability が available なら PUT が成立し、表示は :name:(shortcode)に退避できる情報が応答に含まれる。元サーバーで削除されキャッシュ期限切れの絵文字は image 無し + :name: 表示用の shortcode を保つ(具体的な保存期間は契約に含めない)"
+    - "D03 q09(解除 API 遅延)・q10(再リアクション通知抑制)は応答に現れないため追加フィールドを設けないことが明記される。DELETE の冪等・利用可否非依存は不変"
+    - "全 route が明示的な 501(共通エラー形式)のまま。既存 S0/S3/S8 のテスト・fixture が回帰せず、生成 schema(openapi/shuttlepub.json)が更新され S0 の再生成差分 CI がグリーン"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D09 節・D03 節・共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d09-q01〜q03、d03-q09/q10)"
+  new_intent_needed: false
+  placement_rationale: "primary intent(social-experience.md)の I09 節と candidates.md の D09 節に、本 unit の依存(S0/S3/S8)・到達範囲(API 契約のみ、取得/保存/連合は未実装)・UI 決定(地球マーク U5=c)を追記する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に remote-emoji-reuse-api-contract の範囲だけを「queue登録済み」と記録し、D09 に「API契約のみ、取得・キャッシュ・連合は未実装」と判定順・外部印の保証を記録する。親 candidate D09 全体を ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "S0 の ADR(生成 schema を契約の正本とする)に従うのみで、本ユニット固有の新しい hard-to-reverse 決定はないため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "契約の範囲(EmojiView 追加フィールド、S8 チップの view、新エラー、reaction PUT 判定順)と検証境界(schema・fixture・501)を I09 / D09 に記録する。"
+closeout_learning:
+  expected: "外部絵文字の identity(EmojiRef 不変・出自は view 側)、判定順(利用可否→no-op→チップ有無→別反応 409)、画像状態と利用可否の独立について迷った点と確定した形を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (server/, openapi/shuttlepub.json)"
