@@ -14,7 +14,7 @@ D04 の検索 UI は `from:@acct` を投稿者チップへ変換し、入力中�
 - 2 operation(`.../search/authors/resolve`、`.../search/authors/suggestions`)、bearer_auth 必須、handler は extractor なしで常に 501
 - 入力検査の純粋関数(acct / prefix)と照合用の正規化(NFKC＋小文字化。返却表記は保持)、閉じた応答 schema、エラー契約(429 rate_limited / 503 author_lookup_timeout・author_lookup_unavailable を ErrorCode に追加)
 - 対象集合(取得済み・公開参照可能・ミュート/ブロック除外)と非外部照会を契約文書と schema 説明に明記
-- 判断(packet 時の設計): ①acct の host を自サーバーの host と同一に指定した場合は host 省略と同じ(自サーバーの確定 username)。応答の `acct` は常に `user@host`(自サーバーの作者も自サーバーの host 付き)で、そのまま resolve に再投入できる。②resolve は明示指定のためミュート/ブロック除外を適用しない(候補ではないため。除外は suggestions のみ)。その後の検索は #23 の規則(domain の mute/block は空結果の 200)。③acct の host にポートは含められない(`:` は URL 構文として拒否)。④prefix は表示名の空白を許すため制御文字のみ拒否する
+- 判断(packet 時の設計): ①acct の host を自サーバーの host と同一に指定した場合は host 省略と同じ(自サーバーの確定 username)。応答の `acct` は常に `user@host`(自サーバーの作者も自サーバーの host 付き)。suggestions が返す remote 作者の acct は表示用で未検証でありうるため、選んだ候補は `actor_url` で識別し acct の再 resolve に依存しない。②resolve は明示指定のためミュート/ブロック除外を適用しない(候補ではないため。除外は suggestions のみ)。その後の検索は #23 の規則(domain の mute/block は空結果の 200)。③acct の host にポートは含められない(`:` は URL 構文として拒否)。④prefix は表示名の空白を許すため制御文字・U+FFFD のみ拒否する。⑤照合用の NFKC のため server に `icu_normalizer`(default-features なし、既に `Cargo.lock` にある crate)を追加する(DB・HTTP・非同期の依存ではない)
 
 ## Out of scope
 
@@ -40,3 +40,4 @@ D04 の検索 UI は `from:@acct` を投稿者チップへ変換し、入力中�
 ## Revision history
 
 - 2026-11-14: 初版(ユーザー決定 d04-q13〜q15 を反映)。
+- 2026-11-14 (実装時の整合、ShuttlePub PR #27): 上記判断③⑤を追記(suggestions の acct は表示用で再 resolve に依存しない、`icu_normalizer` の追加)。issue 本文と packet.yaml の受け入れ基準は不変。
