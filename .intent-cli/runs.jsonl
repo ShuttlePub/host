@@ -241,3 +241,4 @@
 {"ts":"2026-11-12T20:48:42.3345369+00:00","execution_unit":"registration-gate-leak-shutdown-tests","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":102}
 {"ts":"2026-11-14T03:30:23.2569303+00:00","execution_unit":"booskiff-web-auth-hardening","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":45}
 {"ts":"2026-11-14T03:30:23.2569303+00:00","execution_unit":"booskiff-web-auth-hardening","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":45}
+{"ts":"2026-11-14T03:32:14.1931114+00:00","execution_unit":"media-metadata-contract-design","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/media-metadata-contract-design/"}

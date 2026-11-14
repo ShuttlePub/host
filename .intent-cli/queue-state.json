@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T03:30:23.2700488+00:00",
+  "updated_at": "2026-11-14T03:32:14.1583594+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1415,6 +1415,23 @@
         "repo": "ShuttlePub/Emumet",
         "number": 101,
         "url": "https://github.com/ShuttlePub/Emumet/issues/101"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "media-metadata-contract-design",
+      "title": "media-metadata-contract-design: \u753B\u50CF\u30E1\u30BF\u30C7\u30FC\u30BF(\u5229\u7528\u8A31\u8AFE\u30FB\u901A\u5E38\u30BF\u30B0\u30FB\u30BB\u30F3\u30B7\u30C6\u30A3\u30D6\u5206\u985E)\u306E Booskiff producer \u5951\u7D04\u8A2D\u8A08",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/booskiff/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/media-metadata-contract-design/implementation.md",
+        "review_context": ".intent-cli/issues/media-metadata-contract-design/review-context.md",
+        "yaml": ".intent-cli/issues/media-metadata-contract-design/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",
