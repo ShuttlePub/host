@@ -1,0 +1,72 @@
+implementation_issue_packet:
+  issue_title: "hidden-quote-indication-contract: ブロック/ミュート中ドメインの投稿を引用した投稿の直接表示で「引用が理由」と引用元ドメインを示し、単一投稿 reveal で引用元も表示する /api/v1 API 契約拡張(D08 ui-spec 3-4)"
+  issue_kind: feature
+  source_execution_unit: hidden-quote-indication-contract
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "server/, openapi/shuttlepub.json"
+  target_part: "S8 personal-domain の直接表示(getPersonalNote / revealPersonalNote の NotePresentation・EmbeddedNotePresentation・DirectItem)を拡張する、hidden 理由の判別子(直接の対象か引用か)と引用元ドメイン、reveal で引用元も表示する経路(型・schema・fixture・501 route)"
+  dependencies: [shuttlepub-openapi-foundation, personal-domain-content-api-contract]
+  technical_baseline:
+    - "S0 の utoipa 基盤・/api/v1 共通エラー形式・生成 schema(openapi/shuttlepub.json)と、マージ済みの S8(server/src/api_v1/personal_domain.rs の NotePresentation / EmbeddedNotePresentation / DirectItem / DirectNoteResponse、server/docs/personal-domain-content-contract.md、server/tests/personal_domain.rs、fixtures/personal_domain/reveal.json ほか)を拡張する。別正本・別 route 群は作らない。route は同じ GET /api/v1/profiles/{profile_nanoid}/notes/{note_id}(getPersonalNote)と POST .../reveal(revealPersonalNote)のまま"
+    - "契約のみ。実フィルタ・実 reveal・enforcement は実装しない。route は引き続き明示的な 501(todo!/unimplemented! は使わない)"
+    - "S8 の現行契約を変更する(破壊的): NotePresentation::Hidden に必須の理由判別子を加え、EmbeddedNotePresentation から Hidden variant を取り除く(Visible と Restricted のみ)。これにより『外側を reveal しても埋め込み元は隠したまま』という S8 の注記を置き換える。frontends が S8 生成 schema を SHA pin で取り込んでいる場合は新 producer SHA への pin 更新が必要なことを docs に明記する"
+    - "維持するもの: FeedItem(タイムライン・通知・検索)は変更しない。タイムライン・検索・通知は引用した投稿ごと痕跡なしで省略する現行(ui-spec 5-1〜5-3)のまま。reveal は永続化せずそのページの間だけ有効(E8 revision を変えない、再読込・再訪で GET に戻り再び隠す、再利用可能な reveal token なし)。操作可否(operations)は引用者本人(直接の投稿)の author ドメイン基準のままで、引用元ドメインは操作を制限しない。CW/センシティブ/削除/閲覧権のゲートは reveal 後も Restricted で内容を返さない。ネストした引用の帰属は未規定のまま"
+    - "pre-reveal の Hidden は内容を一切返さない(本文・投稿者・メディア・CW 文・メンション・引用元本文・引用元の投稿者を含めない)。返してよいのは state・理由判別子・mode・domain・revision だけで、schema と serde の両方が未知フィールドを拒否し、ContractFixups の enum 閉鎖(server/src/openapi.rs)が生成 schema に反映される"
+    - "既存 dev API(/api/notes/... 等)は legacy development API で契約対象外、生成 schema に載せない(S0 ADR)"
+    - "同じ server/src/api_v1/personal_domain.rs・openapi/shuttlepub.json を触る note-search-api-contract(ShuttlePub PR #23)が未マージの場合がある。競合は先にマージされた方に合わせて再生成して解消し、相手のブランチは触らない"
+  intent_references:
+    - "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md (3-1〜3-4 直接 URL・引用、5-1〜5-3 タイムライン・通知・検索に痕跡を出さない)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q06-hide-entire-third-party-quotes、d08-q07-explicit-reveal-on-direct-open)"
+    - "ユーザー決定(thread-xxs52dcx 内の最新回答): ブロック/ミュート中ドメインの投稿を引用した投稿を URL で開いたとき、「（ブロック/ミュート）中のドメインの投稿を引用しています／引用元: <domain>」＋［この投稿だけ表示］を出し、押すと引用された元の投稿も含めて全体を表示する。タイムライン(FeedItem)で引用した投稿ごと出さない現行は維持し、reveal 前に本文・引用元本文を返さない内容漏洩防止も維持する"
+    - "intents/shuttlepub/product/social-experience.md (I08 周辺、個人 domain 制御の表示)"
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md (S0 ADR)"
+  acceptance_criteria:
+    - "hidden 理由の判別子: NotePresentation::Hidden が必須の理由判別子 cause(閉じた enum、direct と quote)を持つ。direct はその投稿自体の author が制御ドメインの場合(ブーストラッパーの直接 reveal は S8 同様に対象外)、quote は投稿自体の author は制御ドメインでなく、直接の引用先(quoted target)が制御ドメインの場合。cause=quote のとき domain は引用元(引用先 author)の canonical actor ID host(E8 ControlDomain)、mode と revision はその引用元ドメインの E8 制御のもの。cause=direct のとき domain・mode・revision は投稿自体の author ドメインの制御のもの。投稿自体の author も引用先も制御対象の場合は cause=direct とし、domain は投稿自体の author 側(引用元ドメインは別フィールドで返さない。reveal は 1 回で両方を解除する)。Hidden の閉じたフィールドは state・cause・mode・domain・revision だけで、本文・投稿者・メディア・CW 文・メンション・引用元の本文・投稿者・note_id などは持てない(schema と serde が未知フィールドを拒否し、生成 schema の cause 列挙が閉じている)"
+    - "引用が理由の隠しの条件: 直接の引用先が削除済みまたは呼び出し側に閲覧権が無い場合は、引用元ドメインを漏らさないため cause=quote の Hidden を作らず、引用先は Restricted(deleted / visibility)として内容なしで返す。ネストした引用(引用先がさらに引用している投稿)の帰属は決めない。docs に未規定と明記する"
+    - "reveal で引用元も表示: POST reveal(revealPersonalNote)の 1 回の明示操作で、その投稿とその直接の引用先(1 つだけ)を同時に解除する。EmbeddedNotePresentation から Hidden variant を取り除き Visible(note)と Restricted(reason)のみとし、DirectItem::Quote の quoted_note は reveal 後に Visible になりうる。CW・センシティブ・削除・閲覧権のゲートは reveal 後も Restricted のまま内容を返さない(引用元側のゲートも同様)。別の投稿・引用元のさらに先の引用・ブロック・E8 revision は変えない。引用元ドメインがブロックでも、reveal 後の引用者への操作(operations)は制限されず、引用元ドメインを理由に操作を制限しない(引用者本人の author ドメイン基準のまま)"
+    - "GET の初期表示: 対象の投稿を GET で開くと、直接の対象でも引用が理由でも reveal 前は Hidden(内容なし)で、引用が理由のときだけ cause=quote と引用元ドメイン・mode を返す。Hidden の他の挙動(Profile 封筒、403/404、domain の mute/block だけでは reveal を禁止しない、reveal は永続化・同期・キャッシュしない)は S8 のまま。ui-spec 3-4 の「引用元ドメインを示す」が型で表現でき、3-1 の直接の対象は種別とドメインだけを示す現行のまま"
+    - "タイムライン・検索・通知は不変: FeedItem には hidden variant を追加せず、引用先が制御ドメインの引用は引用者のコメントごと痕跡なしで省略する S8 の契約・fixture・テストが変わらず通る(ui-spec 5-1〜5-3)。ContentPageInfo・件数・注記の閉じた形も変えない"
+    - "fixture(reveal.json の reveal_quote の更新と、引用が理由の隠し専用の新 fixture)と test-only 参照投影: 直接の対象 → cause=direct、引用元がブロック/ミュート中ドメイン → cause=quote と引用元ドメイン、author と引用先の両方が制御対象 → cause=direct、引用先が削除済み/閲覧不可 → cause=quote を作らず Restricted、reveal で引用元が Visible になる、引用元が CW/センシティブなら reveal 後も Restricted、reveal 後も引用元ブロックでは引用者への操作が制限されない、reveal 前の Hidden が引用元の本文・投稿者を含まない(未知フィールド・漏洩候補の schema/serde 拒否)、cause 欠落・未知値の拒否、EmbeddedNotePresentation に hidden が無いこと、タイムライン/検索/通知は引用ごと省略のまま"
+    - "全契約 route が明示的な 501(S0 の共通エラー形式)を返し、routes! 単一登録のまま、todo!/unimplemented! を使わない。生成 schema(openapi/shuttlepub.json)は決定的に更新され S0 の再生成差分 CI がグリーン。既存 S0/S3/S8 のテストが回帰しない(hidden/reveal/embedded の検証更新を除く)。S8 契約文書(server/docs/personal-domain-content-contract.md)と fixtures README が更新され、置き換えられた『外側の reveal は引用元を隠したまま』の記述が残らず、『契約のみ・未実装』が schema の説明またはテストで確認できる"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md (3-4・5-1)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d08-q06、d08-q07)"
+  new_intent_needed: false
+  placement_rationale: "primary intent(social-experience.md)の D08 に関する節と candidates.md に、本 unit の依存(S0・S8)・到達範囲(API 契約のみ)・S8 の「外側 reveal は引用元を隠したまま」を置き換える決定(引用が理由の hidden 判別子、reveal で引用元も表示)を追記する。新規 intent ノードは不要。実フィルタ・reveal の実装は後続の ShuttlePub unit が持つことを明記する。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+    summary: "queue 登録後に hidden-quote-indication-contract の範囲だけを記録し、D08 の直接表示契約に「引用が理由の hidden 判別子と引用元ドメイン、reveal で引用元も表示」を追記する。親 candidate D08 全体を完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "S0 の ADR(生成 schema を契約の正本とする)に従うのみで、本ユニット固有の新しい hard-to-reverse 決定はないため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md"
+    summary: "ui-spec 3-4 に API 側の対応(cause=quote と引用元ドメイン、reveal で引用元も表示、引用先が削除・閲覧不可なら引用が理由の隠しにしない)を記録し、S8 の旧注記を置き換えたことを残す。"
+closeout_learning:
+  expected: "hidden 理由を cause(direct|quote)の閉じた判別子で表した形、二重原因は direct に寄せ reveal を 1 回で全解除にする判断、引用先が削除・閲覧不可なら引用元ドメインを漏らさない扱い、EmbeddedNotePresentation から Hidden を取り除いた破壊的変更(frontends の pin 更新)を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (server/, openapi/shuttlepub.json)"

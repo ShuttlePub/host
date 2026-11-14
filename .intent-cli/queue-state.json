@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T04:07:42.6584952+00:00",
+  "updated_at": "2026-11-14T04:20:29.1040052+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1532,6 +1532,26 @@
         "repo": "ShuttlePub/Emumet",
         "number": 104,
         "url": "https://github.com/ShuttlePub/Emumet/issues/104"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "hidden-quote-indication-contract",
+      "title": "hidden-quote-indication-contract: \u30D6\u30ED\u30C3\u30AF/\u30DF\u30E5\u30FC\u30C8\u4E2D\u30C9\u30E1\u30A4\u30F3\u306E\u6295\u7A3F\u3092\u5F15\u7528\u3057\u305F\u6295\u7A3F\u306E\u76F4\u63A5\u8868\u793A\u3067\u300C\u5F15\u7528\u304C\u7406\u7531\u300D\u3068\u5F15\u7528\u5143\u30C9\u30E1\u30A4\u30F3\u3092\u793A\u3057\u3001\u5358\u4E00\u6295\u7A3F reveal \u3067\u5F15\u7528\u5143\u3082\u8868\u793A\u3059\u308B /api/v1 API \u5951\u7D04\u62E1\u5F35(D08 ui-spec 3-4)",
+      "state": "queued",
+      "dependencies": [
+        "shuttlepub-openapi-foundation",
+        "personal-domain-content-api-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/hidden-quote-indication-contract/implementation.md",
+        "review_context": ".intent-cli/issues/hidden-quote-indication-contract/review-context.md",
+        "yaml": ".intent-cli/issues/hidden-quote-indication-contract/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",
