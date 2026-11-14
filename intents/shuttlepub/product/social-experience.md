@@ -103,6 +103,7 @@ CC0は6種のCCライセンスとは別の、法の許す範囲で著作権等�
 （この「投稿者必須・投稿者なし全体検索は提供しない」の部分は、`d04-q09-global-keyword-search-without-author`で置き換えた。標準構成でも投稿者なしのキーワードのみの検索をDB部分一致・件数／応答時間上限付きで提供する。q05のその他の構成差は維持する。）
 `d04-q06-body-and-cw-search`で、q05の本文のみというCW検索の暫定意向を置き換え、投稿本文とCWの両方を検索対象にする方針を採用した。CW付き投稿は検索結果でも畳んだまま表示し、検索エンジン有無で検索結果の意味を変えない。
 `d04-q07-exclude-pure-reposts`で、投稿者指定検索は本人の通常投稿・返信・コメント付き引用を対象とし、本人のコメントがない純粋なリポストは含めない方針を採用した。
+`d04-q13-author-suggestion-scope`・`d04-q14-acct-resolution-basis`・`d04-q15-host-omitted-acct`で、入力中の投稿者候補は「ShuttlePubが投稿を取得済みの作者のうち閲覧Profileが公開参照可能なもの」だけとし、ミュート・ブロック中の相手（個別・ドメイン）は出さない（Emumetの共有表示キャッシュ全件は他Profileのblock/mute起因の取得履歴を漏らすため使わない）。`@user@host`の解決根拠は自サーバーの確定usernameか検証済みremote acct対応のみで、表示用に導出しただけのacctでは解決せず、外部照会（WebFinger・actor取得）は一切しない。host省略の`from:@alice`は自サーバーのaliceとして扱う。この API 契約は unit `note-search-author-lookup-api-contract`（UI先行の契約のみ・全route明示501。実処理は後続unit）。
 未取得の他鯖履歴まで網羅する保証はせず、DB index等の具体方式・応答時間上限値・編集／削除／閲覧権変更との整合は設計・検証する。
 主要な利用意図は整理済みのcandidateだが、検索契約の設計・検証待ちで実装readyではない。
 他製品のローカル限定検索等の追記を、今回の必須要件に追加しない。出典S04／候補D04。

@@ -18,6 +18,9 @@
 | D09 U5 | 同名で別サーバーの絵文字の見分け方 | チップに地球マーク（外部印）を出す (c)。grill 記録 `d09-q04-emoji-origin-indicator` | 「D09: U5 cで」 |
 | D09 モック補完 | 元サーバーで削除済みの絵文字チップ | 取得失敗時と同じ `:name:` 表示にし、押して利用可能。保存期間は未決（明示的な選択回答ではなく、提示モックへの異論なしによる補完） | grill 記録 `d09-q05-deleted-emoji-chip-fallback` |
 | v2 合意 | v2 の論点 U1〜U3 と仮決め 2 点 | 論点はすべて推奨 (a)（§3）。仮決め（§4）も含めて合意 | 「D04 v2はこれでOK」; grill 記録 `d04-q12-v2-search-ui-mock-agreement` |
+| 候補の範囲 | `from:@` の入力中に出すアカウント候補は、ShuttlePub が投稿を取得済みの作者のうち、閲覧 Profile が公開参照可能なものだけ。ミュート・ブロック中の相手（個別・ドメイン）は出さない。Emumet の共有表示キャッシュ全件は、他 Profile の block/mute 起因の取得履歴を漏らすため使わない | 「A,Bは推奨で」; grill 記録 `d04-q13-author-suggestion-scope` |
+| acct の解決根拠 | `@user@host` の解決根拠は自サーバーの確定 username か、検証済みの remote acct 対応のみ。表示用に導出した acct（preferred_username＋actor host、WebFinger 未検証）では解決しない。外部照会はしない | 「A,Bは推奨で」; grill 記録 `d04-q14-acct-resolution-basis` |
+| host 省略の acct | `from:@alice` のように host を省略したら自サーバーの alice として扱う（直接確定可） | 「Cはbで」; grill 記録 `d04-q15-host-omitted-acct` |
 
 v2 合意の前提として引き続き有効な D04 の grill 決定（[D04 candidate](../../packets/candidates.md#d04)）: 自サーバー・他サーバーの投稿者を指定でき、対象は取得済みで閲覧できる投稿のみ（q01）、投稿者は 1 人（q02）、投稿者だけの検索は新しい順（q03）、部分一致（q04）、本文と CW を検索し CW は畳んだまま（q06）、純粋なリポストは含めない（q07）。
 
@@ -30,7 +33,7 @@ v2 合意の前提として引き続き有効な D04 の grill 決定（[D04 can
 - 検索画面に「＋投稿者」などの常設ボタンは置かない
 
 ### `from:@acct` の自動変換と投稿者チップ
-- 候補: `from:@` の後に入力すると、取得済みアカウントの候補を名前・acct の前方一致で最大 5 件出す（アバター・名前・`@user@host`、一致部分を強調）。↑↓ で移動、Enter で選択、Esc で閉じる。mobile は各行 44px 以上
+- 候補: `from:@` の後に入力すると、取得済みアカウントの候補を名前・acct の前方一致で最大 5 件出す（アバター・名前・`@user@host`、一致部分を強調）。候補は ShuttlePub が投稿を取得済みの作者のうち閲覧 Profile が公開参照可能なものだけで、ミュート・ブロック中の相手（個別・ドメイン）は出さない（`d04-q13-author-suggestion-scope`）。↑↓ で移動、Enter で選択、Esc で閉じる。mobile は各行 44px 以上
 - 変換の契機: 候補を選ぶ・`from:@acct` の後にスペース・Enter。変換すると入力から `from:@acct` を取り除き、欄内に投稿者チップを出す
   - 変換だけでは検索しない（候補の選択・スペース）。Enter で変換した場合は、そのまま検索まで進む
 - 変換の瞬間: チップを一瞬強調する（縮小からの出現＋アクセント色の外枠、約 1.4 秒で通常表示）
@@ -43,6 +46,8 @@ v2 合意の前提として引き続き有効な D04 の grill 決定（[D04 can
 - 未取得などで解決できない `from:@nobody@unknown.example` は、変換せず文字のまま欄に残す
 - 欄の直下に赤字 1 行「@nobody@unknown.example が見つかりません」（`aria-invalid`、`aria-describedby` で関連付け）
 - 検索はしない。リモートへの問い合わせ（照会）はしない（未取得のアカウントは取得済みの投稿もないため）
+- 解決の根拠は自サーバーの確定 username か検証済みの remote acct 対応のみ（`d04-q14-acct-resolution-basis`）。表示用に導出しただけの acct では解決しないので、「見つかりません」になりうる。外部照会は同期・非同期とも一切しない
+- host を省略した `from:@alice` は自サーバーの alice として扱う（`d04-q15-host-omitted-acct`）。API 契約は unit `note-search-author-lookup-api-contract`（resolve／suggestions の 2 operation）
 
 ### プロフィールからの入口
 - プロフィールのヘッダー右「…」（［フォロー中］の右）で開くメニューの先頭に「この人の投稿を検索」。メニューは「この人の投稿を検索／リンクをコピー／@user をミュート／@user をブロック（赤）」
