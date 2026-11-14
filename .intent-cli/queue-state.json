@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T07:16:58.0583701+00:00",
+  "updated_at": "2026-11-14T08:19:43.9691108+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1520,7 +1520,7 @@
     {
       "execution_unit": "profile-relation-actor-display",
       "title": "profile-relation-actor-display: \u500B\u5225 block\u30FBmute \u4E00\u89A7\u306E\u5FDC\u7B54\u306B\u5BFE\u8C61 actor \u306E\u8868\u793A\u60C5\u5831 (\u8868\u793A\u540D\u30FB\u30A2\u30A4\u30B3\u30F3\u30FBacct\u30FB\u53D6\u5F97\u72B6\u614B) \u3092\u8FFD\u52A0 (D08 ui-spec 1-6)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
@@ -1534,6 +1534,7 @@
         "number": 104,
         "url": "https://github.com/ShuttlePub/Emumet/issues/104"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/106",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

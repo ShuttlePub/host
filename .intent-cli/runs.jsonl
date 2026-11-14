@@ -269,3 +269,6 @@
 {"ts":"2026-11-14T07:05:01.8484656+00:00","execution_unit":"note-search-api-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":23}
 {"ts":"2026-11-14T07:16:58.0398358+00:00","execution_unit":"media-metadata-contract-design","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Booskiff","pr":8}
 {"ts":"2026-11-14T07:16:58.0398358+00:00","execution_unit":"media-metadata-contract-design","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Booskiff","pr":8}
+{"ts":"2026-11-14T08:18:39.7766876+00:00","execution_unit":"profile-relation-actor-display","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":106}
+{"ts":"2026-11-14T08:18:39.7766876+00:00","execution_unit":"profile-relation-actor-display","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":106}
+{"ts":"2026-11-14T08:19:43.9981259+00:00","execution_unit":"profile-relation-actor-display","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":106}
