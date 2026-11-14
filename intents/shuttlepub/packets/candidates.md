@@ -643,6 +643,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **外部カスタム絵文字の利用範囲として採用済み**: `d09-q01-existing-reaction-chip-only`。投稿に付いた既存リアクションのチップを押したときだけ利用でき、最近使った絵文字やpicker検索には表示しない。操作はD03 C3と同じく、他人のチップを押して同じ絵文字で反応し、未反応時のみ適用する。
 - **外部カスタム絵文字が取得できない場合として採用済み**: `d09-q02-unavailable-emoji-name-fallback`。画像を表示できない場合は代わりに`:name:`を表示し、送信は許可する。
 - **元サーバーで削除された絵文字のキャッシュとして採用済み**: `d09-q03-expire-deleted-emoji-cache`。一定期間後にこちらの保存分も削除し、以後は`:name:`を表示する。具体的な期間は未決。
+- **同名で別サーバーの絵文字の出自表示として採用済み**: `d09-q04-emoji-origin-indicator`。チップに地球マーク（外部印）を出して区別する。
 - **仮 slug**: `remote-emoji-reaction-reuse`。
 - **target repo 別分割**: ShuttlePub の絵文字 identity・取得 / 利用条件・連合 reaction 表現候補、
   frontends の既存リアクションからの操作候補。Emumet の配送契約変更が必要なら分割する。
