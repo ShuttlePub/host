@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T04:45:47.7475099+00:00",
+  "updated_at": "2026-11-14T04:52:25.4026524+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1497,7 +1497,7 @@
     {
       "execution_unit": "profile-federation-dormant-profile-cutover",
       "title": "profile-federation-dormant-profile-cutover: \u7121\u52B9\u5316 Profile \u306E\u5207\u66FF\u524D\u63D0\u691C\u67FB\u30FB\u9375\u521D\u671F\u5316\u3092\u4FDD\u8A3C",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
@@ -1511,6 +1511,7 @@
         "number": 103,
         "url": "https://github.com/ShuttlePub/Emumet/issues/103"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/105",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
