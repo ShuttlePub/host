@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T10:27:16.6605155+00:00",
+  "updated_at": "2026-11-14T12:24:15.5754966+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1618,7 +1618,7 @@
     {
       "execution_unit": "shuttlepub-web-schema-pin-2026-11",
       "title": "shuttlepub-web-schema-pin-2026-11: shuttlepub-web \u306E producer schema pin \u66F4\u65B0\u3068\u65E2\u5B58\u30B3\u30FC\u30C9\u306E\u4E92\u63DB\u79FB\u884C (ShuttlePub #21/#23/#25/#27\u30FBEmumet #106)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
@@ -1632,6 +1632,7 @@
         "number": 47,
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/47"
       },
+      "linked_pr": "https://github.com/ShuttlePub/shuttlepub-frontends/pull/48",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
