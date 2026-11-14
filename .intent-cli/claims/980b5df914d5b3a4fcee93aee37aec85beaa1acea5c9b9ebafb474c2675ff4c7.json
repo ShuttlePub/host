@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:profile-relation-actor-display",
-  "actor": "d08-1-6-emumet-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-14T03:50:48.3907457+00:00",
-  "base_commit": "cdbb9d91a1a55d8f3ccac035ed29a59c658ea2fc"
-}

@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-relation-actor-display",
+  "actor": "d08-1-6-emumet-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-14T04:47:23.2457805+00:00",
+  "reason": "PR ShuttlePub/Emumet#106 opened (Closes #104); lead owns review/merge/closeout",
+  "displaced_holder": "d08-1-6-emumet-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-14T03:50:48.3907457+00:00",
+  "base_commit": "22d661ff138be0a4334816da9552486ee6319a1f"
+}
