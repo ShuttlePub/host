@@ -291,3 +291,5 @@
 {"ts":"2026-11-14T17:18:58.0725829+00:00","execution_unit":"remote-emoji-deleted-reuse-contract","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/ShuttlePub","pr":29}
 {"ts":"2026-11-14T18:37:48.9094011+00:00","execution_unit":"shuttlepub-web-remote-emoji-reuse-ui","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":50}
 {"ts":"2026-11-14T18:37:48.9094011+00:00","execution_unit":"shuttlepub-web-remote-emoji-reuse-ui","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":50}
+{"ts":"2026-11-14T18:44:21.131265+00:00","execution_unit":"shuttlepub-web-personal-domain-controls-fixes","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/shuttlepub-web-personal-domain-controls-fixes/"}
+{"ts":"2026-11-14T18:44:33.8274897+00:00","execution_unit":"shuttlepub-web-personal-domain-controls-fixes","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#51","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/51"}

@@ -1,0 +1,72 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-web-personal-domain-controls-fixes: ミュート・ブロック一覧のアイコン・名前・acct 表示と、引用による非表示の文言 (D08 画面手直し)"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-web-personal-domain-controls-fixes
+  domain: shuttlepub
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/shuttlepub-web (bff・src・test・README・e2e), apps/ui-catalog/visual (一覧行・引用による非表示の登録・期待値)"
+  target_part: "個人単位のドメイン制御 (D08) の手直し: アカウントタブ (ミュート・ブロック一覧) の行のアイコン・名前・acct 表示 (d08-q18/q20、d09-q06) と、第三者の引用による非表示の文言・引用元ドメイン表示 (d08-q19、ui-spec 3-4)"
+  dependencies:
+    - "shuttlepub-web-schema-pin-2026-11 (frontends PR #48、producer pin ShuttlePub a00d234 / Emumet c4d6ea3 を取り込み済み、HiddenContent{cause,control} と ActorPolicy.targetActor を BFF に保持済み)"
+    - "shuttlepub-web-remote-emoji-reuse-ui (frontends PR #50、d09-q06 の他サーバー画像経路の判断: 自サーバー経由の安全な配信経路は契約に無い)"
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。frontends 側に親状態を作成しない"
+    - "仕様の正本は host main の intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md (1-6 一覧、3-4 引用) と mocks/d08-v5.html、candidates.md D08 の d08-q18/q19/q20、d09-q06。ユーザー決定済みの作業順 (準備・D09・D08・D04) の D08 unit"
+    - "データ経路は既存 BFF のまま (/graphql actorPolicies → bff/policy/real.ts → Emumet GET /api/v1/profiles/{id}/blocks|mutes)。ブラウザから Emumet を直接呼ばない。target_actor (kind/actor_url/status/display_name/icon_url/acct/preferred_username/profile_id) を使い、actor URL から acct・名前を推測しない"
+    - "d08-q20: pending/unavailable も含め、名前は display_name → preferred_username → acct → actor URL の順の代替、状態文は出さない、解除は常に可能。行は icon／name／acct、種別バッジなし、解除は「ミュート解除」青・「ブロック解除」赤のテキスト"
+    - "d09-q06: 他サーバーの icon_url をブラウザで直接読まない。自サーバー経由の安全な配信経路は契約に無い (D09 で確認済み) ので remote は常に代替アイコン。local の icon の扱いは根拠付きで判断し PR 本文に記載する"
+    - "解除の識別子は従来の policy ID。同名・同 acct でも正しい ID を解除する。トースト・確認ダイアログも同じ呼び方に揃える。一覧取得の 501 を空一覧扱いしない、解除失敗を成功扱いしない"
+    - "d08-q19 / ui-spec 3-4: HiddenContent.cause=quote のとき「ミュート中／ブロック中のドメインの投稿を引用しています」＋「引用元: <domain>」＋［この投稿だけ表示］。cause=direct は従来文言。reveal で引用先も表示 (#25)。本文を取得して推測しない、hidden 応答に本文・作者・引用本文を結合しない。CW・センシティブ・削除・閲覧権の独立制限は維持。旧 README の「引用を reveal しても引用元は hidden」前提を更新する"
+    - "高密度 UI、説明文は最小 (説明はヘルプへ)。マージは独立レビュー後にリードが指示する"
+  intent_references:
+    - "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md"
+    - "intents/shuttlepub/features/personal-domain-controls-ui/overview.md"
+    - "intents/shuttlepub/packets/candidates.md"
+    - "intents/shuttlepub/product/social-experience.md"
+  acceptance_criteria:
+    - "ミュート・ブロック一覧 (アカウントタブ) の行が icon／name／acct で表示され、種別バッジなし・状態文なし、解除は「ミュート解除」(青)・「ブロック解除」(赤) のテキストのまま。表示は target_actor だけから作り、actor URL から名前・acct を推測しない"
+    - "local/remote × resolved/pending/unavailable × 表示項目欠落 (display_name・icon_url・acct・preferred_username の欠け) で、名前が display_name → preferred_username → acct → actor URL の順に代替され、acct は先頭 @ なしを表示時のみ @ 付きにし、解除が常に可能"
+    - "他サーバーの icon_url をブラウザが外部サーバーへ読み込まない (外部リクエスト 0)。remote は常に代替アイコン。local の icon の扱いを根拠付きで決め PR 本文に記載する"
+    - "解除は policy ID で行い、同名・同 acct・同表示の複数行でも選んだ行の ID だけを解除する。トースト・確認ダイアログの呼び方が一覧の表示名と揃う。一覧取得 501 は空一覧にせずエラー、解除失敗は成功扱いしない"
+    - "HiddenContent.cause=quote は引用文言＋引用元ドメイン＋［この投稿だけ表示］、cause=direct は従来文言。両方に該当するときは producer の cause 優先順位に従う。reveal で引用先も表示でき、［隠す］・Profile 切替・古い応答の破棄が正しく働く。hidden の GraphQL 応答に本文・作者・引用本文が漏れない。CW・センシティブ・削除・閲覧権の独立制限は維持"
+    - "ui-spec 1-6/3-4 と mocks に対する差分 (F8 修正項目) を洗い出して反映し、対応表を PR 本文に記載する。README の旧前提を更新する"
+    - "テスト追加: 一覧の組合せ・表示項目欠落・外部 icon を読まない・同名同 acct の正しい ID 解除・cause quote/direct と優先順位・hidden 応答の非漏洩・reveal→隠す・Profile 切替・古い応答破棄・501。ui-catalog の visual 登録 (shuttlepub-verify desktop/mobile・capture) と E2E (mock・cookie-isolation) を更新する"
+    - "purs-tidy check、openapi:verify、codegen:check、spago build/test、bun test、tsc --noEmit、ui-catalog の test/visual、既存 E2E が通り、既存 CI (check/e2e/frontend-visual) がグリーン。real E2E は EMUMET_READ_TOKEN 未設定で skip される既知事情を PR 本文に明記する"
+  revision_history: []
+
+intent_placement:
+  primary_intent: intents/shuttlepub/features/personal-domain-controls-ui/overview.md
+  supporting_intents:
+    - intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md
+    - intents/shuttlepub/packets/candidates.md
+  new_intent_needed: false
+  placement_rationale: "D08 の画面手直しは personal-domain-controls-ui の既存仕様 (ui-spec 1-6 / 3-4、d08-q18/q19/q20) の実装追従で、新規 intent ノードは不要。到達範囲・local icon の判断・D04 への申し送りは closeout で candidates.md に追記する"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "D08 画面手直しの到達範囲、local icon の判断と根拠、D04 への申し送りを記録する。"
+closeout_learning:
+  expected: "一覧行の表示規則 (名前の代替順・acct・icon の扱い)、引用による非表示 (cause=quote/direct) の画面の扱い、local icon の判断、D04 への申し送り。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/shuttlepub-web)"
