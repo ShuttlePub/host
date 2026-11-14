@@ -14,7 +14,7 @@ frontends が D04 の検索 UI(`from:@user` を `author` へ変換する BFF/UI)
 - 検索の意味: 本文と CW が対象、引用先・返信先の本文は対象外、% _ \ はリテラル、新しい順(`created_at` 降順、同時刻は `note_id` 降順)。大文字小文字・複数語 AND は未決と明記
 - 新設結果型: `NoteSearchResponse.items` は `NoteSearchItem`(`post` / `reply` / `quote`)。各 item は `note_id`・`author`・`created_at`・表示本体(`text` か `content_warning` の閉じた sum 型)
 - 閲覧可能な投稿のみ。S8 の mute/block 抑制を検索にも適用(痕跡なし)。対象 domain の author は 200 空結果
-- 404(未取得 author、details.field=author)、新エラー `search_timeout`(503、部分結果なし)
+- 404(未取得 author、details.field=author)。時間上限は再開可能な進捗があれば部分結果の 200(`page.truncated=true`、`next_cursor` 必須)、進捗が無い場合だけ新エラー `search_timeout`(503)
 - カーソル: `(created_at, note_id)` の keyset と検索条件(Profile・author・q)への結び付け、不一致・破損は 400(details.field=cursor)
 - ページ途中の編集・削除・閲覧権変更・mute/block 追加の扱い(スナップショットなし、各ページは最新状態で評価、重複なし)
 - fixture(`search.json`)と test-only 参照投影、`surfaces.json` の search 検証の差し替え、型・schema・501 route テスト、docs/README 更新、`openapi/shuttlepub.json` の再生成
@@ -24,13 +24,13 @@ frontends が D04 の検索 UI(`from:@user` を `author` へ変換する BFF/UI)
 - 実検索・DB 部分一致(pg_trgm 等)・検索エンジン連携・負荷対策・件数/時間の実計測・実カーソル発行
 - 複数投稿者(OR)検索、日付・メディア種別などの条件、個人履歴検索(別機能)、アカウント検索
 - 大文字小文字の同一視・複数語 AND の確定(未決のまま)
-- `from:@user` の解析(UI/BFF の責務)、外部 actor の取得処理
+- `from:@user` の解析と acct→actor ID の解決(UI/BFF の責務。既存 API に解決手段が無く、未解決の acct は検索しない)、外部 actor の取得処理
 - timeline / notifications / FeedItem の変更、既存 dev API の変更、frontends の UI 実装
 
 ## Verification
 
 - 型・serialization テスト(`NoteSearchItem` の往復、repost・CW+content 拒否、`SearchTimeout` コード)
-- 生成 schema テスト(入力パラメーターの範囲、新結果型の closure、`search_timeout` 503 の応答、dev API を含まない)と再生成差分なし
+- 生成 schema テスト(入力パラメーターの範囲、新結果型の closure、`search_timeout` 503 と truncated の部分結果、dev API を含まない)と再生成差分なし
 - `search.json` fixture を schema と test-only 参照投影に照合(種別・CW・author/q 組合せ・400/404/503・suppress・ページ境界・カーソル不一致・ページ途中の変化)
 - 全契約 route が 501 を返す route テスト、既存 S0/S3/S8 テストの回帰なし
 - Rust CI(fmt / clippy -D warnings / test / build / git diff --check)と openapi 再生成差分 CI がグリーン
@@ -43,3 +43,7 @@ frontends が D04 の検索 UI(`from:@user` を `author` へ変換する BFF/UI)
 - Docs update: D04 に「API 契約のみ」と未決事項・ページ途中の変化の扱いを記録
 - Closeout learning: 全体検索の負荷上限の表現、カーソル結び付け、純粋リポストの型排除を記録(`write_back_required: true`)
 - Guide reachability (G645): `guide workflow task implementation-loop` / implementation / ShuttlePub/ShuttlePub (`server/`, `openapi/shuttlepub.json`)
+
+## Revision history
+
+- 2026-11-14 (リード経由のユーザー合意、D04 UI モック v2): 時間上限到達時は部分結果の 200(page.truncated=true、next_cursor 必須)を第一案とし、再開可能な進捗が無い場合だけ search_timeout(503、0 件扱い)とする。acct→actor ID 解決は既存 API に無く BFF/UI の責務(未解決は検索しない)。次ページはスクロール自動読み込みでカーソル方式のまま。当初の公開本文にあった「部分結果は返さない」を置き換える。

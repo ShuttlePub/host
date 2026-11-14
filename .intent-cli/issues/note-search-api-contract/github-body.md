@@ -33,7 +33,7 @@ Target part: "S8 personal-domain の検索 route(searchPersonalNotes)を拡張�
 - 検索の意味: 本文と CW が対象(引用先・返信先の本文は対象外)、% _ \ はリテラル、新しい順(`created_at` 降順、同時刻は `note_id` 降順)、検索エンジンの有無で結果の意味を変えない
 - 新設結果型 `NoteSearchItem`(`post` / `reply` / `quote`)。`note_id`・`author`・`created_at`・表示本体(`text` か `content_warning` の閉じた sum 型、CW 付きは本文を返さない)。純粋リポストは型で表現不能。応答に隠した件数・注記・total を持たない
 - 閲覧可能な投稿のみ(閲覧不可・削除済みは出さない)。対象 domain の author は 404/403/注記ではなく 200 空結果
-- 404 not_found(未取得 author、details.field=author)、新エラー `search_timeout`(503、部分結果なし)
+- 404 not_found(未取得 author、details.field=author)。時間上限は再開可能な進捗があれば部分結果の 200(`page.truncated=true`、`next_cursor` 必須、items は欠落のない前方 prefix)、進捗が無い場合だけ新エラー `search_timeout`(503)。`page` は閉じた `NoteSearchPageInfo`
 - カーソル: 内部は `(created_at, note_id)` の keyset で検索条件(Profile・author・q)に結び付く。不一致・破損は 400(details.field=cursor)。E8 revision の変更では失効しない
 - ページ途中の編集・削除・閲覧権変更・mute/block 追加の扱い: スナップショットなし、各ページはリクエスト時点の最新状態で評価、重複を返さない、編集は順序を動かさない
 - fixture(`search.json`)と test-only 参照投影、`surfaces.json` の search 検証の差し替え(timeline/notifications は維持)、型・schema・501 route テスト、docs・README の更新、`openapi/shuttlepub.json` の再生成
@@ -43,20 +43,20 @@ Target part: "S8 personal-domain の検索 route(searchPersonalNotes)を拡張�
 - 実検索・DB 部分一致・検索エンジン連携・負荷対策・実カーソル発行・件数/時間の実計測
 - 複数投稿者(OR)検索、日付・メディア種別条件、個人履歴検索、アカウント検索
 - 大文字小文字の同一視・複数語 AND の確定
-- `from:@user` の解析、外部 actor の取得処理
+- `from:@user` の解析と acct→actor ID の解決(UI/BFF の責務。既存 API に解決手段が無く、未解決の acct は検索しない)、外部 actor の取得処理
 - timeline / notifications / FeedItem の変更、既存 dev API の変更、frontends の UI 実装
 
 ## Standalone Child Issue Contract
 
-この issue の子 PR が単体で納めるもの: ShuttlePub/ShuttlePub の既存 S8 `searchPersonalNotes` を拡張し、任意の `author`・`q`・`limit`・`cursor` の入力、新設の結果型 `NoteSearchItem`(CW のみ表示・純粋リポストの型排除)、カーソルと検索条件の結び付け、ページ途中の変化の扱い、400/404/`search_timeout`(503)のエラーを、型・生成 OpenAPI schema・`search.json` fixture・明示的な 501 route として追加し、生成 schema を更新すること。実検索は実装せず、既存 S0/S3/S8 のテスト(search 検証を除く)と再生成差分 CI を含む既存 CI がグリーンであること。
+この issue の子 PR が単体で納めるもの: ShuttlePub/ShuttlePub の既存 S8 `searchPersonalNotes` を拡張し、任意の `author`・`q`・`limit`・`cursor` の入力、新設の結果型 `NoteSearchItem`(CW のみ表示・純粋リポストの型排除)、カーソルと検索条件の結び付け、ページ途中の変化の扱い、400/404、時間上限の部分結果(`page.truncated`)と `search_timeout`(503)のエラーを、型・生成 OpenAPI schema・`search.json` fixture・明示的な 501 route として追加し、生成 schema を更新すること。実検索は実装せず、既存 S0/S3/S8 のテスト(search 検証を除く)と再生成差分 CI を含む既存 CI がグリーンであること。
 
 ## Acceptance Criteria
 
-- 入力: `author`(actor ID URL、任意、1 人)・`q`(1〜256 文字、任意)・`limit`(1〜50)・`cursor`。`author` と `q` の両方が無い・空 `q`・範囲外・actor ID URL でない `author` は 400 `invalid_request`(details にフィールド名)。acct は受けず、`from:@user` 変換が UI/BFF の責務であることが schema 説明にある
+- 入力: `author`(actor ID URL、任意、1 人)・`q`(1〜256 文字、任意)・`limit`(1〜50)・`cursor`。`author` と `q` の両方が無い・空 `q`・範囲外・actor ID URL でない `author` は 400 `invalid_request`(details にフィールド名)。acct は受けず、`from:@user` 変換が UI/BFF の責務であることが schema 説明にあり、acct→actor ID の解決手段が既存 API に無く BFF/UI の責務(未解決は検索しない)であることが docs に明記される
 - 検索の意味: author のみ・q のみ(投稿者なし全体検索)・両方のいずれも標準構成で提供。新しい順(`created_at` 降順、同時刻は `note_id` 降順)。本文と CW が対象、引用先・返信先本文は対象外、% _ \ はリテラル。大文字小文字・複数語 AND は未決と schema 説明・docs に明記し fixture でも固定しない
 - 結果型: `NoteSearchItem` は post / reply / quote のみで純粋リポストは型として表現できない(schema・serde が拒否する fixture)。CW 付きは CW のみを返し本文を持てない。応答に隠した件数・注記・total が無い
 - 閲覧可能な投稿のみ。閲覧不可・削除済みを出さない。対象 domain 由来の投稿と、直接の引用先が対象 domain の引用は痕跡なしで除外され、対象 domain の author でも 200 空結果(未取得 actor の 404 とは別)
-- 404 not_found(未取得 author、details.field=author)、`search_timeout`(503、共通エラー形式、部分結果なし、author で絞れる旨を説明)が ErrorCode と検索応答 schema に追加され、503 fixture がある
+- 時間上限: 再開可能な進捗があれば部分結果の 200(`page.truncated=true`、items は完全な前方 prefix、`next_cursor` 必須で未走査位置から再開)、進捗が無い場合だけ `search_timeout`(503、author で絞れる旨を説明)。404 not_found(未取得 author、details.field=author)。`search_timeout` が ErrorCode と検索応答 schema に追加され、truncated 部分結果と 503 の fixture がある
 - カーソルは不透明文字列で `(created_at, note_id)` の keyset と検索条件(Profile・author・q)に結び付く。条件不一致・破損は 400(details.field=cursor)。重複を返さず、E8 revision の変更で失効しない
 - ページ途中の変化: スナップショットなし、各ページは最新状態で評価。編集は順序を動かさず(不一致になった投稿は以降出ず、一致になった古い投稿は出る)、削除・閲覧権喪失・mute/block 追加は以降のページで除外。返却済みページの取り消し・再配信はしない。fixture で示される
 - fixture と test-only 参照投影: 通常・返信・コメント付き引用あり/純粋リポストなし、閲覧不可・削除済みなし、CW のみ(本文だけに語がある場合も)、author のみ/q のみ/両方、条件なし 400、空 q 400、404、対象 domain author の 200 空、対象 domain 引用の除外、リテラル %、ページ境界とカーソル不一致 400、ページ途中の変化、timeout 503。`surfaces.json` の search 検証は新 fixture に差し替え、timeline/notifications の検証は維持
@@ -64,7 +64,7 @@ Target part: "S8 personal-domain の検索 route(searchPersonalNotes)を拡張�
 
 ## Verification
 
-- 型・serialization テスト(`NoteSearchItem` の往復、repost・CW+content の拒否、`search_timeout`)
+- 型・serialization テスト(`NoteSearchItem` の往復、repost・CW+content の拒否、`search_timeout`、truncated)
 - schema テスト(入力パラメーターの範囲、結果型の closure、503 応答、dev API を含まない)と再生成差分なし
 - `search.json` を schema と参照投影に照合
 - 全契約 route が 501 を返す route テスト、既存 S0/S3/S8 の回帰なし
@@ -94,3 +94,7 @@ Policy: `direct-main`
 Expected PR base branch: `main`
 
 Open all child PRs against `main` directly.
+
+## Revision history
+
+- 2026-11-14 (リード経由のユーザー合意、D04 UI モック v2): 時間上限到達時は部分結果の 200(page.truncated=true、next_cursor 必須)を第一案とし、再開可能な進捗が無い場合だけ search_timeout(503、0 件扱い)とする。acct→actor ID 解決は既存 API に無く BFF/UI の責務(未解決は検索しない)。次ページはスクロール自動読み込みでカーソル方式のまま。公開時の本文にあった「部分結果なし」を置き換える。
