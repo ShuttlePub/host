@@ -1,0 +1,11 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "remote-emoji-deleted-reuse-contract",
+  "role": "design",
+  "host_commit": "e6a7bfa2268a0d8e920d73de6e806a611e306eec",
+  "recorded_at": "2026-11-14T17:20:07.1520074+00:00",
+  "targets": [
+    "intents/shuttlepub/packets/candidates.md"
+  ],
+  "note": "D09 \u306B d09-q07 \u6C7A\u5B9A\u30FBissue #28/PR #29 \u306E\u6700\u7D42\u5F62(image_state \u3068 availability \u306E\u5206\u96E2\u3001\u5224\u5B9A\u9806)\u3092\u8FFD\u8A18"
+}
