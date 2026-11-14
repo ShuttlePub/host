@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:profile-federation-precutover-recovery",
+  "actor": "evorch-p4-recovery",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-14T05:01:36.3857075+00:00",
+  "base_commit": "450ca2a8403c3a8edd10f4fe48565b16a289d21d"
+}
