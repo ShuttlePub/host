@@ -17,3 +17,7 @@
 - 既定 dry-run、明示 write、操作者/理由/request ID/期待 version、transaction と競合拒否、再実行の冪等性、永続監査ログ。P4 適用済み/不整合/競合する username は拒否する。
 - 旧版相当の古い無効化 Account と欠落 Profile を実 PostgreSQL 上に作成し、診断→解消→P4 切替/全鍵生成成功を回帰する。冪等性・rollback・移管・username 予約・旧鍵/旧連合データ保持も確認する。
 - runbook の停止のみの境界を専用コマンドで解消→再診断→再実行へ更新する。手書き SQL の書込手順・本番操作は行わない。main 向け PR、Closes #issue、CI 緑、マージ禁止。
+
+## Packet revision
+
+実装時の構造確認により対象テストパスを `server/src/cutover*_tests.rs` に明確化。既存 `cutover_tests.rs` が `cutover_dormant_tests.rs` を module として読み込むため、既存の未設定復旧回帰を後者で専用コマンド方式へ置換・強化する。機能スコープは変更なし。issue #107 本文も同期する。

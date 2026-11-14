@@ -4,7 +4,7 @@ implementation_issue_packet:
   source_execution_unit: profile-federation-precutover-recovery
   domain: emumet
   target_repo: ShuttlePub/Emumet
-  target_path: "driver/src/ server/src/cutover_tests.rs docs/profile-federation-cutover.md .github/workflows/lint-and-test.yml"
+  target_path: "driver/src/ server/src/cutover*_tests.rs docs/profile-federation-cutover.md .github/workflows/lint-and-test.yml"
   target_part: "P4 を起動しない offline recovery command"
   dependencies: []
   technical_baseline:

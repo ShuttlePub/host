@@ -13,7 +13,7 @@ P4 前 daeb625^ の Account projector は deleted 行を除く lookup と tailin
 
 ## Target Repo / Path / Part
 Repository: `ShuttlePub/Emumet`
-- Target paths: driver/src/, server/src/cutover_tests.rs, docs/profile-federation-cutover.md, .github/workflows/lint-and-test.yml
+- Target paths: driver/src/, server/src/cutover*_tests.rs, docs/profile-federation-cutover.md, .github/workflows/lint-and-test.yml
 Target part: P4 を起動しない offline recovery command
 
 ## In Scope
