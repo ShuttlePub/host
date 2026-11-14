@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:note-search-api-contract",
+  "actor": "d04-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-14T04:33:07.4963672+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "d04-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-14T03:47:18.3984994+00:00",
+  "base_commit": "93589d4bd8452bf1a0686261c3276c4d0ae40bbd"
+}

@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:note-search-api-contract",
-  "actor": "d04-worker",
-  "team": "shuttlepub-main",
-  "claimed_at": "2026-11-14T03:47:18.3984994+00:00",
-  "base_commit": "44205605e2f02fc9591fb48b0cd7b2995d29a967"
-}
