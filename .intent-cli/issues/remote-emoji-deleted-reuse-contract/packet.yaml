@@ -1,0 +1,64 @@
+implementation_issue_packet:
+  issue_title: "remote-emoji-deleted-reuse-contract: 元サーバーで削除済み・画像キャッシュ期限切れの外部絵文字でも既存チップへ便乗できる(D09)よう /api/v1 契約を直す"
+  issue_kind: feature
+  source_execution_unit: remote-emoji-deleted-reuse-contract
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "docs/foundation.md, server/, openapi/shuttlepub.json"
+  target_part: "S3 quick-reaction / S8 personal-domain の外部(他サーバー)カスタム絵文字契約のうち、元サーバー削除・画像キャッシュ期限切れの扱い(画像の有無と送信可否の分離)と reaction PUT の判定順の修正(型・docs・schema・fixture・参照モデル・501 route)"
+  dependencies: [remote-emoji-reuse-api-contract, quick-reaction-api-contract, personal-domain-content-api-contract]
+  technical_baseline:
+    - "ShuttlePub main a00d234(remote-emoji-reuse-api-contract #21 を含む)の server/src/api_v1/quick_reaction.rs・personal_domain.rs・docs/foundation.md・openapi/shuttlepub.json・server/tests を直接修正する。別正本・別 route 群は作らない"
+    - "契約のみ。外部絵文字の取得・画像キャッシュ・元サーバー削除の検出・保存期間・連合は実装しない。route は引き続き明示的な 501(todo!/unimplemented! は使わない)"
+    - "EmojiRef(identity)は変更しない。ErrorCode は増やさない(emoji_usage_not_allowed / emoji_unavailable / conflict を既存のまま使う)。画像状態の enum(present/missing)・usage の enum は変えない"
+    - "ローカル(自サーバー)カスタム絵文字の unavailable(deleted/disabled)の扱いは変えない"
+  intent_references:
+    - "intents/shuttlepub/features/note-search-ui/ui-spec.md (§5 D09 差分 UI)"
+    - "intents/shuttlepub/packets/candidates.md (D09)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d09-q01〜q03、d09-q05、d09-q07-deleted-remote-emoji-reuse)"
+    - "ユーザー決定(thread-xxs52dcx): 削除済み外部絵文字の便乗は案 a「画面の仕様に合わせて API の定義を直す」(原文「a」)"
+  acceptance_criteria:
+    - "元サーバーで削除された、またはこちらの画像キャッシュが期限切れになった外部絵文字は、EmojiView で availability=available・image_state=missing・image_url 無し・shortcode あり・usage=existing_reaction_only・unavailable_reason 無しと表現される。外部絵文字(origin あり)に unavailable_reason=deleted を付けた view は check_consistency が拒否する。外部絵文字の unavailable は自サーバーが無効化した disabled のみ"
+    - "reaction PUT: その投稿に同じ絵文字の既存チップが残っている削除済み外部絵文字は 200 で選択できる(応答の view は image_state=missing、:name: 表示用 shortcode を含む)。現在の選択と同じ削除済み外部絵文字の再送は 200 no-op。既存チップが無い削除済み外部絵文字は 422 emoji_usage_not_allowed(emoji_unavailable ではない)で、現在の反応は維持される"
+    - "判定順は 1 利用可否(emoji_unavailable 422。対象はローカル絵文字の unavailable と自サーバーが無効化した外部絵文字 disabled。元サーバー削除・キャッシュ期限切れは含まない)→ 2 現在の選択と同じなら 200 no-op → 3 外部絵文字でチップ無しなら 422 emoji_usage_not_allowed → 4 外部絵文字で別の反応中なら 409 conflict → 5 選択 200。契約(docs/foundation.md・module docs・OpenAPI 説明)と fixture・参照モデルで一致する"
+    - "設定 PUT は削除済み外部絵文字を常用に加えると 422 emoji_usage_not_allowed(/favorites/{index})。S8 のチップ view も削除済み外部絵文字を available + missing で表し、チップ単位の外部印(view.origin)の保証は変わらない"
+    - "#21 の他の規則(外部は常用不可、existing_reaction_only、Unicode・ローカル絵文字は置換可、DELETE の冪等・利用可否非依存、全 route 501)が回帰しない。生成 schema(openapi/shuttlepub.json)が更新され再生成差分 CI を含む既存 CI がグリーン"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D09 節)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d09-q05、d09-q07)"
+  new_intent_needed: false
+  placement_rationale: "決定は grill d09-q07 と candidates.md D09 節に記録済み。unit 完了後は D09 節に実装結果(契約の最終形・frontends 追従)を追記する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後は D09 に本 unit の issue/PR を追記し、完了後に契約の最終形(image_state と availability の分離、判定順、frontends の pin 追従点)を記録する。D09 全体は ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "S0 の ADR(生成 schema を契約の正本とする)に従うのみで、新しい hard-to-reverse 決定はないため ADR は不要(決定は grill d09-q07 に記録済み)"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "D09 に本 unit の issue/PR と完了時の契約の最終形を追記する(ShuttlePub 側 docs/foundation.md は PR で更新)。"
+closeout_learning:
+  expected: "UI 正本と producer 契約の食い違い(削除済み外部絵文字)を frontends の独立レビューで検出した経緯と、画像の有無(image_state)と送信可否(availability)を分離した最終形を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (docs/foundation.md, server/, openapi/shuttlepub.json)"
