@@ -167,6 +167,28 @@ remove an entry only after verifying against a newer binary.
   `gh pr merge --squash` (or have the worker merge) after closeout, then run
   the squash-merge verification (state=MERGED, origin/main head = squash
   commit, `git diff <base>..origin/main --stat`).
+- **closeout must follow a verified merge (supersedes the closeout-first order above)** (verified 0.27.1, 2026-11-14): the installed
+  `intent-cli guide workflow task review-next-slice-loop --domain emumet
+  --target-repo ShuttlePub/Emumet --agent codex --frequency 20m --format
+  markdown` Host-loop continuation contract (G454/G678) / G297 says: “Only
+  when IS_MERGED == true, run `intent-cli closeout pr ... --pr-merged
+  $IS_MERGED --write`”; “closeout refuses `--pr-merged false`, so a blocked
+  merge can never record closeout.” `intent-cli guide closeout run --repo
+  ShuttlePub/Emumet --domain emumet --format markdown` Stage 1 #3 likewise
+  says to confirm the PR is merged (state: MERGED), and if not, stop and
+  report `not-yet-merged`. These installed guides take precedence over the
+  closeout-before-merge order in the G779 workaround and the “closeout pr does
+  not merge” entry above. Correct verified order:
+  `automation pr-transition --transition approved --write` →
+  `gh pr merge --squash` → verify state=MERGED and `origin/main` head equals
+  the squash commit → `closeout pr --repo <r> --pr <n> --issue <m> --domain
+  <d> --pr-merged true --write` → if needed,
+  `review closeout-plan --write-recovered-linkage` to confirm `linked_pr` →
+  claim release → `git pull --ff-only`. Demonstrated on Emumet PR #105
+  (squash `c2da7f6`, host closeout `6fdc3c0`, claim release `490cac1`). On
+  this PR, `review closeout-plan --write-recovered-linkage` uniquely resolved
+  `linked_pr` correctly; the earlier incorrect resolution on FE PR #42 was
+  in a different repo and is a separate known case.
 
 ## Wrong-host detection (G301)
 
