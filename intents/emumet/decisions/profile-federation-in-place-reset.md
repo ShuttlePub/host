@@ -106,6 +106,26 @@
 - 後片付け（2026-11-12）: worktree は削除済み、リモートブランチはホスティング側で削除済み。**残存**: ローカルブランチ `feat/profile-federation-in-place-cutover`（Emumet、head `d6684aa` = マージ済み head。実行ガードが削除を保留）と、検証用 E2E compose プロジェクト `emumet-p4e2e`（停止済み、ボリューム `emumet-p4e2e_postgres-data` / `emumet-p4e2e_rustfs-data` を含む。ユーザー判断で削除せず残す）。手動削除は `git branch -D feat/profile-federation-in-place-cutover`（Emumet）と `docker compose -p emumet-p4e2e -f <compose.yml> down -v`（compose.yml は検証時の一時ファイルで、`down -v` 相当は `docker rm` と `docker volume rm` でも可）。
 - **本番切替は運用者が別途実施（未実施）**。実施時に runbook のスモーク項目を使い、結果を本節に追記すること。
 
+## p4-q02-recovery-unit-before-cutover
+
+ユーザー決定（thread-xxs52dcx、原文「P4切り替えはbで」）: 本番切替より先に復旧専用 unit `profile-federation-precutover-recovery` を作成し、独立レビューを行う。本番切替・DB 操作はしない。この unit の PR もリード指示までマージしない。
+
+## 採用設計と根拠
+
+前提: 全既存 Profile（射影行と全イベントの和集合）を対象とし、username 未設定が残れば切替拒否、切替後に鍵のない Profile を残さない。
+
+採用: 選択肢 (3) の offline 管理経路。standalone driver binary が SQLx 接続を直接開き、AppModule/PostgresDatabase::new/migrate を呼ばず、既存 ProfileEventStore と Profile::apply で全履歴を読む。運用者が個別選択した username を旧版も理解する UsernameSet として append。行がなければ作らず、Account 状態・鍵・旧連合テーブルは不変。全既存対象・username 一回限り・一意性の不変条件を維持する。
+
+比較: (1) 完全復元コマンドや (2) projector backport は再有効化/公開状態を変える経路と旧版専用 release の保守を増やす。本件は username 設定だけで切替拒否を解消でき、全履歴の読取りで旧 tailing-window バグを回避できるため不要。読み取り専用診断は併設する。
+
+安全境界: 旧プロセス全停止/バックアップが前提。diagnose と set-username の既定 dry-run は read-only transaction。write 時は対象テーブルをロックし再検査、期待 Profile version を比較、username 形式と既存 reservation を検査。既存の username を変更/自動導出/除外しない。P4 migration 適用済み・不明な schema・復元不能履歴は fail closed。成功イベント/射影更新/専用監査行を一 transaction、request ID の同一引数再送は冪等 no-op、変更再送は拒否。operator/reason と対象/前後 version/username を保持。
+
+専用監査表はコマンドの明示 write 時に非破壊 CREATE TABLE IF NOT EXISTS で導入（同 transaction）。新 migration を通常起動へ追加して P4 を誘発しない。失敗は非ゼロとエラー出力、運用者がコマンド出力も保管する。
+
+非目標: Account 再有効化、projection 完全復元、projector backport、通常 API の権限変更、username の除外、P4 checksum 変更、汎用署名 API、本番 DB 操作、本番切替、PR マージ。
+
+packet: `.intent-cli/issues/profile-federation-precutover-recovery/`。検証・PR の事実は追記する（現時点で未実装/本番未実施）。
+
 ## Links
 
 - [ADR 0002](0002-account-address-on-emumet-domain.md) / [ADR 0003](0003-delegated-signing.md) / [ADR 0007](0007-organization-accounts.md) / [profile-actor-identity](profile-actor-identity.md)

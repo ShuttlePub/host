@@ -1,0 +1,47 @@
+implementation_issue_packet:
+  issue_title: "profile-federation-precutover-recovery: P4 前の無効化 Profile を安全に診断・username 設定"
+  issue_kind: feature
+  source_execution_unit: profile-federation-precutover-recovery
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "driver/src/ server/src/cutover_tests.rs docs/profile-federation-cutover.md .github/workflows/lint-and-test.yml"
+  target_part: "P4 を起動しない offline recovery command"
+  dependencies: []
+  technical_baseline:
+    - "Emumet origin/main c2da7f6 (#105)。P4 前 daeb625^ の find_by_id_unfiltered は deleted 行を除外し、full-history restore がない。"
+    - "FN/P1 の UsernameSet は旧版も理解し、profile_events の一回限り/username 一意 index が正本。AccountTransferred を含む全履歴で現在の所有者を判断。"
+    - "ユーザー thread-xxs52dcx: P4切り替えはbで。本番切替前に別 unit。本 unit はマージせず独立レビュー待ち。"
+  intent_references:
+    - intents/emumet/decisions/profile-federation-in-place-reset.md
+    - intents/emumet/features/profile-federation/acceptance.md
+  acceptance_criteria:
+    - "P4 migration/通常サーバーを起動しない独立コマンドで、全既存 Profile（行＋全イベント）の username・現在の所有 Account・無効化/未射影状態を読み取り専用診断する。移管後の所有者も特定する。"
+    - "運用者が個別指定した username を既存 UsernameSet イベントとして記録し、行があれば同期更新する。無効化 Account/Profile の再有効化・行復元・意図的除外・P4 検査緩和はしない。"
+    - "既定 dry-run、明示 write、操作者/理由/request ID/期待 version、transaction と競合拒否、再実行の冪等性、永続監査ログ。P4 適用済み/不整合/競合する username は拒否する。"
+    - "旧版相当の古い無効化 Account と欠落 Profile を実 PostgreSQL 上に作成し、診断→解消→P4 切替/全鍵生成成功を回帰する。冪等性・rollback・移管・username 予約・旧鍵/旧連合データ保持も確認する。"
+    - "runbook の停止のみの境界を専用コマンドで解消→再診断→再実行へ更新する。手書き SQL の書込手順・本番操作は行わない。main 向け PR、Closes #issue、CI 緑、マージ禁止。"
+intent_placement:
+  primary_intent: intents/emumet/features/profile-federation/overview.md
+  supporting_intents: []
+  new_intent_needed: false
+  placement_rationale: "全既存 Profile を対象とする切替前提の運用復旧を閉じる"
+knowledge_updates:
+  adr:
+    required: true
+    target_paths: [intents/emumet/decisions/profile-federation-in-place-reset.md]
+    decision_title: "p4-q02-recovery-unit-before-cutover"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths: [docs/profile-federation-cutover.md]
+    summary: "専用診断・個別 username 設定と再試行、監査/再実行/停止条件"
+closeout_learning:
+  expected: "採用方式・互換性・実 DB 件数・PR/CI・未マージ/本番未実施を追記"
+  write_back_required: true
+  write_back_targets: [intents/emumet/decisions/profile-federation-in-place-reset.md]
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
