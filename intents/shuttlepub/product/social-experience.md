@@ -100,11 +100,14 @@ CC0は6種のCCライセンスとは別の、法の許す範囲で著作権等�
 [grill記録](../interviews/discord-feature-grill-2026-10-15.json)の`d04-q03-author-only-search`で、キーワードなしに投稿者だけで検索でき、その投稿者の投稿を新しい順に表示する方針を採用した。
 `d04-q04-substring-keyword-match`で、キーワードは検索対象文字列の部分一致とし、日本語も文字列として部分一致させる方針を採用した。検索負荷は懸念事項として、方式設計に残す。
 `d04-q05-search-engine-availability`で、検索エンジンなしの標準構成ではキーワード検索に投稿者1人を必須とし、DB部分一致・ページング・応答時間上限を設け、投稿者なしの全体検索は提供しない方針を採用した。検索エンジンありでは同じD04検索をエンジン経由で行い、日本語部分一致にn-gram等を用いる。投稿者なしの全体キーワード検索はエンジンありの場合のみ別の後続機能とする。どちらも閲覧可能な投稿だけを新しい順に表示する。
+（この「投稿者必須・投稿者なし全体検索は提供しない」の部分は、`d04-q09-global-keyword-search-without-author`で置き換えた。標準構成でも投稿者なしのキーワードのみの検索をDB部分一致・件数／応答時間上限付きで提供する。q05のその他の構成差は維持する。）
 `d04-q06-body-and-cw-search`で、q05の本文のみというCW検索の暫定意向を置き換え、投稿本文とCWの両方を検索対象にする方針を採用した。CW付き投稿は検索結果でも畳んだまま表示し、検索エンジン有無で検索結果の意味を変えない。
 `d04-q07-exclude-pure-reposts`で、投稿者指定検索は本人の通常投稿・返信・コメント付き引用を対象とし、本人のコメントがない純粋なリポストは含めない方針を採用した。
 未取得の他鯖履歴まで網羅する保証はせず、DB index等の具体方式・応答時間上限値・編集／削除／閲覧権変更との整合は設計・検証する。
 主要な利用意図は整理済みのcandidateだが、検索契約の設計・検証待ちで実装readyではない。
 他製品のローカル限定検索等の追記を、今回の必須要件に追加しない。出典S04／候補D04。
+
+実行unit S4 `note-search-api-contract`（ShuttlePub/ShuttlePub、[ShuttlePub#22](https://github.com/ShuttlePub/ShuttlePub/issues/22)、依存S0・S8）は2026-11-14に**マージ済み**（[PR #23](https://github.com/ShuttlePub/ShuttlePub/pull/23)、squash `f470058cadfba030ac636849b12ea50233ad63bd`、独立レビュー承認・CI緑）。マージ済みS8の`searchPersonalNotes`（`GET /api/v1/profiles/{profile_nanoid}/notes/search`）をその場で拡張した**API契約のみ**で、全routeは明示的501、実検索・DB部分一致・検索エンジン連携は含まない。入力は`author`（canonical actor ID URL 1人、任意。acctは受けない。URLパーサーで https・非空ドメインホストなどを検証し、不正は400）・`q`（1〜256文字のリテラル部分一致、任意。`author`と`q`の両方なしは400）・`limit`（1〜50、既定20）・`cursor`。投稿者なしのキーワードのみの全体検索も標準構成で提供する（`d04-q09-global-keyword-search-without-author`が`d04-q05`の「標準構成では投稿者必須・全体検索は提供しない」を置き換えた。`d04-q05`のその他の構成差は維持）。`q`は本文とCWが対象（引用先・返信先の本文は対象外）、`%` `_` `\`はリテラル、新しい順（`created_at`を時刻値として降順、同時刻は`note_id`降順）、閲覧可能な投稿のみ。結果型は新設の`NoteSearchItem`（`post`/`reply`/`quote`のみで、純粋リポストは型で表現不能。CW付きは本文を返さずCWのみ）。S8のmute/block抑制は痕跡なしで検索にも適用（対象domainのauthorは200の空結果、404は未取得actorのみ）。時間上限は、再開可能な進捗があれば部分結果の200（`page.truncated=true`、`next_cursor`は必ず非空で付く。UIは「ここまでで中断しました」を出して自動読み込みを止める）、進捗が全くなければ`search_timeout`（503）。カーソルは`(created_at, note_id)`のkeysetでProfile・author・qに結び付き、不一致・破損は400。ページ途中の編集・削除・閲覧権変更・mute/block追加はスナップショットなしで次ページから反映し、返却済みの取り消しや重複はない。**未決**: 大文字小文字の同一視・複数語ANDは契約で固定しない。`from:@user`→`author`の変換とacct→actor ID解決はBFF/UIの責務（既存APIに解決手段がなく、未解決のacctは検索しない）。ui-specが要求する取得済みアカウント候補（前方一致5件）とacct解決のAPIは既存契約になく、別unitが必要。検索結果型の置換は破壊的で、S8生成schemaをSHA pinするfrontendsは新producer SHAへのpin更新が必要。実検索・負荷対策・件数／時間上限値・検索エンジン連携は後続owner（未packet化）で、I04全体は完了ではない。unit分割・到達範囲は[D04](../packets/candidates.md#d04)。
 
 ## I05
 

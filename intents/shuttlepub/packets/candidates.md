@@ -232,8 +232,9 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **検索一致語の強調とCW表示として採用済み**: `d04-q11-highlight-matches-collapse-cw`。検索結果の一致語を強調表示し、CWは畳んだまま表示する。
 - **D04検索UIモック v2 として合意済み**: `d04-q12-v2-search-ui-mock-agreement`（artifact-eee22518088f31f43b8acf2d05698b5e）。投稿者チップは検索欄内。解決できないacctは文字のまま欄下に「@… が見つかりません」と出して検索しない。時間上限時は結果を返せる場合に結果＋「ここまでで中断しました」、0件または部分結果を返せない場合は「時間内に見つかりませんでした」。`from:`変換だけでは検索せず、変換後Enterで検索。投稿者は1人で、2つ目の`from:`は1つ目を置換する。UI仕様の正本は[検索UI仕様](../features/note-search-ui/ui-spec.md)。
 - **候補の状態**: 主要な利用意図は整理済み。検索契約の設計・検証待ちで実装readyではない。
-  candidate・queue未登録・issue未公開を維持し、初回に複数投稿者指定を含めない。
+  親candidate D04全体はcandidateのまま実装readyではない。API契約unit `note-search-api-contract` は下記のとおりマージ済みで、それ以外（実検索・負荷対策・frontends UI等）は未登録・未実装。初回に複数投稿者指定を含めない。
 - **仮 slug**: `note-search-author-filter`。
+- **実行unit（2026-11-14）**: S4 `note-search-api-contract`（ShuttlePub/ShuttlePub、[ShuttlePub#22](https://github.com/ShuttlePub/ShuttlePub/issues/22)、依存S0・S8）。マージ済みS8の`searchPersonalNotes`を拡張する**API契約のみ**（全route明示501）で、[PR #23](https://github.com/ShuttlePub/ShuttlePub/pull/23)がsquash `f470058cadfba030ac636849b12ea50233ad63bd`でマージ済み、queue completed。到達範囲: 投稿者（actor ID URL）・キーワード任意の入力（投稿者なしの全体検索を含む。d04-q09がd04-q05の該当部分を置き換え）、新設結果型（純粋リポストは型で表現不能、CWはCWのみ）、カーソル、時間上限（部分結果200の`truncated`／`search_timeout`503）、ページ途中の変化の扱い。未決: 大文字小文字・複数語AND。acct→actor ID解決とアカウント候補APIはBFF/UIまたは別unit。実検索・負荷対策・件数／時間上限値・検索エンジン連携・frontends UIは後続で未packet化。D04全体は完了ではない。詳細は[I04](../product/social-experience.md#i04)。
 - **target repo 別分割**: ShuttlePub の投稿者条件付き検索契約・検索投影候補、frontends の条件入力・結果表示候補。
 - **最小受付・検証案（未実施）**: 同じ語を含む自鯖／他鯖の複数投稿者の取得済み投稿を用意し、各actorを1人指定して、そのactorの閲覧可能な投稿だけを返す。
   投稿者なしのキーワードのみ検索も標準構成で提供され、DB部分一致が件数・応答時間の上限を守ることを確認する。検索エンジンを有効にした構成では同じ条件をエンジン経由で検索する。
