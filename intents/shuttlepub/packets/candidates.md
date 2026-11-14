@@ -239,6 +239,9 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   - q14 `@user@host` の解決根拠: 自サーバーの確定 username、または検証済みの remote acct 対応のみ。表示用に導出した acct（preferred_username＋actor host、WebFinger 未検証）では解決しない。外部照会（WebFinger・actor 取得）は同期・非同期とも一切しない（[検索UI仕様 §2](../features/note-search-ui/ui-spec.md)）。
   - q15 host 省略: `from:@alice` は自サーバーの alice として扱い、直接確定できる。
   - これらを API 契約にする unit は `note-search-author-lookup-api-contract`（ShuttlePub/ShuttlePub、依存 `note-search-api-contract`。UI 先行の契約のみで、全 route 明示 501）。実処理（取得済み作者集合、Emumet からの外部取得を誘発しない read-only 連携、検証済み remote acct 対応の保存・供給）は後続 unit。外部照会ありは将来の仕様変更候補。frontends の schema pin・画面は別 unit。
+- **検索条件の URL 保持として採用済み**: `d04-q16-search-url-state`。確定した検索語と作者を URL に保持して戻る・共有で再現可能にし、検索語がブラウザ履歴に残ることを許容する。cursor・途中結果は URL に含めない。
+- **時間上限後の手動再開として採用済み**: `d04-q17-timeout-resume`。途中結果では返された `next_cursor` を使う［途中から続きを読む］を表示し、手動で再開する。自動読み込みは停止したままとする（API 契約 #23 で `truncated=true` のとき非空 `next_cursor` を保証）。
+- **プロフィールからの即時検索として採用済み**: `d04-q18-profile-entry-immediate-search`。「この人の投稿を検索」から作者チップを設定し、キーワード入力待ちにせずその人の投稿だけをすぐ検索する。
 - **候補の状態**: 主要な利用意図は整理済み。検索契約の設計・検証待ちで実装readyではない。
   親candidate D04全体はcandidateのまま実装readyではない。API契約unit `note-search-api-contract` は下記のとおりマージ済みで、それ以外（実検索・負荷対策・frontends UI等）は未登録・未実装。初回に複数投稿者指定を含めない。
 - **仮 slug**: `note-search-author-filter`。
@@ -586,6 +589,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **Profile ユーザー名 UI モック合意済み**: `d08-q17-profile-username-ui-mock-v3-agreement`。emumet-web の B v3（artifact `artifact-85133f12a28b0790bdd055775cc20a12`）の全論点を推奨案どおり採用。FN の画面実装は [profile-federation の ui-username-spec.md](../../emumet/features/profile-federation/ui-username-spec.md) を基準とし、HTML/CSS は同 feature の `mocks/` に保存する。
 - **ミュート・ブロック一覧のアカウント表示修正として採用済み**: `d08-q18-f8-account-row-identity-display`。F8 1-6 のアカウント行は actor URL のみの表示を受け入れず、Emumet mutes/blocks API・BFF・画面を修正し、アイコン・表示名・acctを表示する。修正方針の決定であり、実装完了ではない。
 - **引用投稿の直接 URL 表示として採用済み**: `d08-q19-s8-quoted-blocked-content-direct-open`。ブロック／ミュート中ドメインの投稿を引用した投稿を URL で直接開いた際、「〜中のドメインの投稿を引用しています／引用元: <domain>」と［この投稿だけ表示］を示し、一度の reveal で引用元も表示する（CW・削除・閲覧権等の他制約は維持）。合意モックは `artifact-c50d95e172f5f17dbe54f56fece45c99`。S8 契約拡張は ShuttlePub PR #25（issue #24、squash `9f9cb8d`）でマージ済み。
+- **pending／unavailable の関係一覧行として採用済み**: `d08-q20-relation-row-unresolved-display`。`target_actor` が pending／unavailable の場合も取得できている範囲で `display_name` → `preferred_username` → `acct` → actor URL の順に名前を表示し、アイコンは代替表示、状態文は出さず、解除を常に可能にする。詳細は [personal-domain-controls-ui の UI 仕様 1-6](../features/personal-domain-controls-ui/ui-spec.md)。
 - **候補の状態**: 主要な利用意図は整理済み。Profile／domain判定・表示／通知・操作認可／連合・保存／同期等の設計・検証待ちで実装readyではない。
   D08全体はcandidateのまま実装packetへ自動昇格しない（queue登録済みなのは下記「queue 登録状況」のE8・P1・P2・D8P・P3o・P3i・FNの7 unitだけ。それ以外は未登録・issue未公開）。
 - **unit 分割・依存・到達範囲（2026-11、feature 化）**: 機能正本は host の
@@ -672,6 +676,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   - 設定PUTは外部絵文字を常用に入れると422（応答にも出さない）。reaction PUTの判定順は1 利用可否（`emoji_unavailable` 422）→2 現在の選択と同じなら200 no-op→3 外部絵文字でその投稿に同じ絵文字のチップが無ければ422 `emoji_usage_not_allowed`→4 外部絵文字で別の絵文字に反応済みなら409（直接置換せず現在の反応は維持）→5 選択200。3・4は`existing_reaction_only`の絵文字のみで、Unicode・自サーバー絵文字はS3の置換のまま。自分だけが付けた外部チップをDELETEするとチップが消え、同じ絵文字の再PUTは3の422になる。D03 q09・q10は応答に現れないため追加フィールドなし。
   - 学び（closeout）: identityは`EmojiRef`不変で出自は`view`側に置く。画像状態と利用可否は独立。独立レビューの任意指摘3件（自分だけのチップ消失のfixture、`missing`時のshortcode整合、`PutReaction`の説明への例外追記）は追加commit `76e71fe`で対応した。
 - **採用済み（モック合意で補完。明示的なユーザー決定ではない）**: `d09-q05-deleted-emoji-chip-fallback`。元サーバーで削除された絵文字チップは取得失敗時と同じ `:name:` 表示にし、押して利用できる。`d09-q02`の補足であり、`d09-q03`の保存期間は未決のまま。
+- **他サーバーの画像メディア取得経路として採用済み**: `d09-q06-remote-media-fetch-path`。他サーバーのアイコン・絵文字画像は安全な自サーバー経由の配信経路があれば利用し、なければアイコンは代替表示、絵文字は `:name:` 表示とする。ブラウザから外部サーバーへ直接読み込まず、安全な配信（プロキシ）は別 unit とする。
 - **仮 slug**: `remote-emoji-reaction-reuse`。
 - **target repo 別分割**: ShuttlePub の絵文字 identity・取得 / 利用条件・連合 reaction 表現候補、
   frontends の既存リアクションからの操作候補。Emumet の配送契約変更が必要なら分割する。
