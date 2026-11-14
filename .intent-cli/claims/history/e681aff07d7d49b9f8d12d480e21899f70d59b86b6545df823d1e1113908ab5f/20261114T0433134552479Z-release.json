@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:hidden-quote-indication-contract",
+  "actor": "d04-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-14T04:33:13.4552479+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "d04-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-14T04:16:24.6117919+00:00",
+  "base_commit": "438d67e2319a9ee292c056b83328b68dd9be27c1"
+}
