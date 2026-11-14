@@ -276,3 +276,4 @@
 {"ts":"2026-11-14T08:50:29.63167+00:00","execution_unit":"note-search-author-lookup-api-contract","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/ShuttlePub#26","reason":"https://github.com/ShuttlePub/ShuttlePub/issues/26"}
 {"ts":"2026-11-14T09:21:45.1540458+00:00","execution_unit":"note-search-author-lookup-api-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":27}
 {"ts":"2026-11-14T09:21:45.1540458+00:00","execution_unit":"note-search-author-lookup-api-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":27}
+{"ts":"2026-11-14T09:31:06.2708453+00:00","execution_unit":"note-search-author-lookup-api-contract","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/ShuttlePub","pr":27}
