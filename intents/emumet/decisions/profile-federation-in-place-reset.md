@@ -126,6 +126,16 @@
 
 packet: `.intent-cli/issues/profile-federation-precutover-recovery/`。検証・PR の事実は追記する（現時点で未実装/本番未実施）。
 
+### 復旧 unit 完了（2026-11-14、issue #107 / PR #108）
+
+- **採用方式**: 独立バイナリ `profile-cutover-recovery` による読み取り専用 `diagnose` と既定 dry-run / 明示 `set-username --write`。全 Profile/Account 履歴を fold し、移管後の現在の所有者・無効化状態・行なし Profile も診断する。通常サーバー・自動 migration・projector を起動せず、既存 `UsernameSet` を追記し、存在する行の username/version のみ同期更新する。旧版の再有効化バグを修正するのではなく、再有効化/行復元そのものを不要にする。
+- **安全性**: operator/reason/request ID/期待 version、table lock と再検査、P1 一意 index。イベント・既存行・監査を同一 transaction に保存し、同一 request 再送は no-op、変更再送/古い version/予約済み username は拒否する。診断/dry-run は READ ONLY、監査表は最初の明示 write 時だけ非破壊作成。Account 状態・鍵・旧連合データ・checkpoint を変えない。FN/P1 未適用、不正/不完全履歴、行との不整合、P4 適用開始済みは fail closed。
+- **検証**: 専用ローカル PostgreSQL 16 で recovery 9（実 DB 8、純粋検証 1）+ CLI 1 + server cutover 13 + reset 7 + dormant paging 1 = **31 passed / 0 failed / 0 ignored**。古い deleted Account が旧 lookup で見えず、両 tailing 窓外・Profile 行なしの状態から、診断→無効化のまま設定→実 migration→全鍵生成→切替後の再有効化/actor 200/同じ鍵を確認。非対象表の hash 保持、移管、同時予約、read-only 接続、監査失敗 rollback、冪等再送も回帰した。workspace clippy（all targets/features、`-D warnings`）、fmt、diff check、locked release build 成功。実 CLI の空 DB 診断拒否後も public table 0（自動 migration なし）。
+- **レビュー・CI・マージ**: 独立 Reviewer `run-01m7ca0yrzdn7h9d1sax52edb3` が「承認、must なし」。public head `911a88f690e7e979494e57bc14c08122ebea051a` の **17 checks 全成功**（Rust run `43561837398`、E2E run `43561836668`、codecov 含む）を再確認し、リード指示で squash merge。`MERGED`・`origin/main` 一致を検証した squash は **`6b6f3842722a7a51aade33852520f83fdae58027`**。許可根拠はユーザーの既存マージ方針 question-38f81bb0ff33dd1082bf35e1ebbd8ece と独立レビュー後のリード指示。`closeout pr --pr-merged true` は merge 検証後に実行した（事前 closeout なし）。
+- **runbook**: `docs/profile-federation-cutover.md` §3.1 を、専用診断→所有者と恒久 username 合意→dry-run/明示 write→監査/再送→未設定/不整合ゼロを確認→別途承認された切替再試行、へ更新。手書き SQL の書込・検査緩和・Profile 除外はない。破損履歴/途中適用は自動修復せず停止する。
+- **任意事項**: Reviewer の任意指摘（dry-run 出力に request ID/予定 username を明示）は #108 に含めず、ユーザー承認済みの別 PR 候補として保持。パッチは作業用 `$TMPDIR/p4-recovery-dry-run-followup.patch`（永続成果物ではない）。
+- **本番未実施**: 本番 DB 操作・本番切替・本番サーバー起動は一切行っていない。本番切替の確認ゲートは引き続き別途必要。username は恒久設定のため所有者の合意が必要で、旧版 projector backport/破損履歴の修復は本 unit の対象外。
+
 ## Links
 
 - [ADR 0002](0002-account-address-on-emumet-domain.md) / [ADR 0003](0003-delegated-signing.md) / [ADR 0007](0007-organization-accounts.md) / [profile-actor-identity](profile-actor-identity.md)
