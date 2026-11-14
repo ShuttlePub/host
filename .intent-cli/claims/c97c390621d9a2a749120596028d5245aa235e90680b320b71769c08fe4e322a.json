@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:shuttlepub-web-personal-domain-controls-fixes",
+  "actor": "d08-worker",
+  "team": "shuttlepub-main",
+  "claimed_at": "2026-11-14T18:42:19.6903869+00:00",
+  "base_commit": "4b911686d89ea4b44536754f9a89b39c8f898917"
+}
