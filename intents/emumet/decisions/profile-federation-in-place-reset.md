@@ -136,6 +136,14 @@ packet: `.intent-cli/issues/profile-federation-precutover-recovery/`。検証・
 - **任意事項**: Reviewer の任意指摘（dry-run 出力に request ID/予定 username を明示）は #108 に含めず、ユーザー承認済みの別 PR 候補として保持。パッチは作業用 `$TMPDIR/p4-recovery-dry-run-followup.patch`（永続成果物ではない）。
 - **本番未実施**: 本番 DB 操作・本番切替・本番サーバー起動は一切行っていない。本番切替の確認ゲートは引き続き別途必要。username は恒久設定のため所有者の合意が必要で、旧版 projector backport/破損履歴の修復は本 unit の対象外。
 
+### 任意指摘の後続対応（2026-11-14、PR #109）
+
+- ユーザー本人の追加承認「PR #108 の dry-run 出力改善を別 PR で反映してよい（検証・署名付き commit・通常 push を許可）」に基づく、同じ機能の表示改善。新 issue/queue unit は作らず #107 を参照した。既存 #108 の完了記録・linked PR を変えないため、**#109 の `closeout pr` は実行せず本追記を成果記録とする**。
+- dry-run/applied/already_applied の JSON に `request_id`・`requested_username` を追加し、恒久設定する値を確認可能にした。`profile` は設定前の状態であると runbook に明記。旧版が作成した監査 result に追加項目がなくても、照合済み request から出力を補完し、過去監査やイベントを変更せず再送できる（実 PostgreSQL 回帰を追加）。
+- ローカルは recovery **10** + CLI **1** + server cutover **13** = **24 passed / 0 failed / 0 ignored**。fmt、workspace all-targets/all-features clippy `-D warnings`、diff check、locked release build 成功。PR head **`5377b0e27f67374d9664574d1098b2ab37844ce3`** の **17 checks 全成功**（Rust run `43565527995`、E2E run `43565527216`、codecov 含む）。
+- 独立 Reviewer `run-01m7cb7z65w9g5j98v1k7b58zk` は「承認、must なし」。任意の JSON 2 キー・値の直接 assertion 補強は今回は見送り（通常の derive Serialize、値・旧監査互換の回帰は成功、非ブロッカー）。リード指示で approved 遷移後に squash merge し、**`d1956ffc7fc6874668766f23805f3192cff7b4d4`** が `MERGED` / `origin/main` と一致することを検証した。本番操作・本番切替は引き続き未実施。
+- 作業用の専用ローカル DB コンテナ `emumet-p4-recovery-pg`（ID `51e2aab519b8cba429444522f4955de05f2424a253c49d949672e77f26b758b0`、localhost `15447`）は残存。ユーザーの自作テスト DB cleanup 許可後も実行審査で「コマンド自身は対象が本当にその担当者作成物かを確認しません…最終確認が必要」と停止・削除を拒否されたため、再試行・迂回せずリードへ報告した。他のコンテナには触れていない。
+
 ## Links
 
 - [ADR 0002](0002-account-address-on-emumet-domain.md) / [ADR 0003](0003-delegated-signing.md) / [ADR 0007](0007-organization-accounts.md) / [profile-actor-identity](profile-actor-identity.md)
