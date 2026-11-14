@@ -251,3 +251,5 @@
 {"ts":"2026-11-14T03:54:32.4818523+00:00","execution_unit":"profile-federation-dormant-profile-cutover","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/profile-federation-dormant-profile-cutover/"}
 {"ts":"2026-11-14T03:54:55.8987178+00:00","execution_unit":"profile-federation-dormant-profile-cutover","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#103","reason":"https://github.com/ShuttlePub/Emumet/issues/103"}
 {"ts":"2026-11-14T03:59:10.4554668+00:00","execution_unit":"profile-relation-actor-display","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#104","reason":"https://github.com/ShuttlePub/Emumet/issues/104"}
+{"ts":"2026-11-14T04:07:42.6461219+00:00","execution_unit":"remote-emoji-reuse-api-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":21}
+{"ts":"2026-11-14T04:07:42.6461219+00:00","execution_unit":"remote-emoji-reuse-api-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":21}

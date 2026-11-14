@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T03:59:10.4554668+00:00",
+  "updated_at": "2026-11-14T04:07:42.6584952+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1446,7 +1446,7 @@
     {
       "execution_unit": "remote-emoji-reuse-api-contract",
       "title": "remote-emoji-reuse-api-contract: \u4ED6\u30B5\u30FC\u30D0\u30FC\u306E\u30AB\u30B9\u30BF\u30E0\u7D75\u6587\u5B57\u3067\u4ED8\u3044\u305F\u65E2\u5B58\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3\u3078\u306E\u4FBF\u4E57(D09)\u306E /api/v1 API \u5951\u7D04",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "shuttlepub-openapi-foundation",
         "quick-reaction-api-contract",
