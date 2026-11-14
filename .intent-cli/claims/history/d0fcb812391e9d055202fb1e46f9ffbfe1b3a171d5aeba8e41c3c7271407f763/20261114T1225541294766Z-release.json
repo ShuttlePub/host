@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-web-schema-pin-2026-11",
+  "actor": "u0-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-14T12:25:54.1294766+00:00",
+  "reason": "closeout: frontends PR #48 merged (91a0476), issue #47 closed",
+  "displaced_holder": "u0-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-14T09:44:51.5463055+00:00",
+  "base_commit": "57a2878ac4731a6795adf2588d173453595e6b60"
+}
