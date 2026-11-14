@@ -262,3 +262,4 @@
 {"ts":"2026-11-14T04:52:25.443181+00:00","execution_unit":"profile-federation-dormant-profile-cutover","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":105}
 {"ts":"2026-11-14T05:05:21.3328548+00:00","execution_unit":"profile-federation-precutover-recovery","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/profile-federation-precutover-recovery/"}
 {"ts":"2026-11-14T05:05:51.3495939+00:00","execution_unit":"profile-federation-precutover-recovery","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#107","reason":"https://github.com/ShuttlePub/Emumet/issues/107"}
+{"ts":"2026-11-14T05:32:52.2469261+00:00","execution_unit":"profile-federation-precutover-recovery","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":108}
