@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-federation-precutover-recovery",
+  "actor": "evorch-p4-recovery-implementation",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-14T06:12:26.9358662+00:00",
+  "reason": "PR 108 independently approved, CI green, merged and closeout recorded; optional output improvement deferred",
+  "displaced_holder": "evorch-p4-recovery-implementation",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-14T05:07:46.5209799+00:00",
+  "base_commit": "6725d255b23d43f42981792014790e63131d94cc"
+}
