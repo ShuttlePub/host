@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-federation-dormant-profile-cutover",
+  "actor": "evorch-d08-xxs52dcx",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-14T03:56:04.9179476+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "evorch-d08-xxs52dcx",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-14T03:33:10.9414372+00:00",
+  "base_commit": "89303eb8efa5c5b9e5805415a9ec05414abc4e52"
+}
