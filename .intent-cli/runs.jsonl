@@ -289,3 +289,5 @@
 {"ts":"2026-11-14T17:18:15.353782+00:00","execution_unit":"remote-emoji-deleted-reuse-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":29}
 {"ts":"2026-11-14T17:18:15.353782+00:00","execution_unit":"remote-emoji-deleted-reuse-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":29}
 {"ts":"2026-11-14T17:18:58.0725829+00:00","execution_unit":"remote-emoji-deleted-reuse-contract","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/ShuttlePub","pr":29}
+{"ts":"2026-11-14T18:37:48.9094011+00:00","execution_unit":"shuttlepub-web-remote-emoji-reuse-ui","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":50}
+{"ts":"2026-11-14T18:37:48.9094011+00:00","execution_unit":"shuttlepub-web-remote-emoji-reuse-ui","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":50}
