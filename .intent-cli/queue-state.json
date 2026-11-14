@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T12:32:31.8159747+00:00",
+  "updated_at": "2026-11-14T16:54:55.0093942+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1656,6 +1656,32 @@
         "repo": "ShuttlePub/shuttlepub-frontends",
         "number": 49,
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/49"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "remote-emoji-deleted-reuse-contract",
+      "title": "remote-emoji-deleted-reuse-contract: \u5143\u30B5\u30FC\u30D0\u30FC\u3067\u524A\u9664\u6E08\u307F\u30FB\u753B\u50CF\u30AD\u30E3\u30C3\u30B7\u30E5\u671F\u9650\u5207\u308C\u306E\u5916\u90E8\u7D75\u6587\u5B57\u3067\u3082\u65E2\u5B58\u30C1\u30C3\u30D7\u3078\u4FBF\u4E57\u3067\u304D\u308B(D09)\u3088\u3046 /api/v1 \u5951\u7D04\u3092\u76F4\u3059",
+      "state": "queued",
+      "dependencies": [
+        "remote-emoji-reuse-api-contract",
+        "quick-reaction-api-contract",
+        "personal-domain-content-api-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/remote-emoji-deleted-reuse-contract/implementation.md",
+        "review_context": ".intent-cli/issues/remote-emoji-deleted-reuse-contract/review-context.md",
+        "yaml": ".intent-cli/issues/remote-emoji-deleted-reuse-contract/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/ShuttlePub",
+        "number": 28,
+        "url": "https://github.com/ShuttlePub/ShuttlePub/issues/28"
       },
       "worker_role": "implementation",
       "review_role": "review",
