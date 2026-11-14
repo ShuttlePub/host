@@ -1,0 +1,13 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "note-search-author-lookup-api-contract",
+  "role": "design",
+  "host_commit": "efdbad3a28e1ce8b394bfbc1042ad5ae13b53e3d",
+  "recorded_at": "2026-11-14T09:22:52.8282513+00:00",
+  "targets": [
+    "intents/shuttlepub/packets/candidates.md",
+    "intents/shuttlepub/features/note-search-ui/ui-spec.md",
+    "intents/shuttlepub/product/social-experience.md"
+  ],
+  "note": "D04/I04: d04-q13\u301Cq15 \u3092 candidates.md\u30FBui-spec.md\u30FBsocial-experience.md \u306B\u53CD\u6620 (c59a192)\u3001\u5019\u88DC\u9078\u629E\u306F actor_url \u3067\u78BA\u5B9A\u3068\u88DC\u8DB3 (efdbad3)"
+}

@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "note-search-author-lookup-api-contract",
+  "role": "design",
+  "host_commit": "efdbad3a28e1ce8b394bfbc1042ad5ae13b53e3d",
+  "recorded_at": "2026-11-14T09:23:07.1852246+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": null
+}
