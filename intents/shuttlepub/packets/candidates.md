@@ -167,6 +167,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **採用済み（`d02-q09-only-file-owner-sets-license`）**: 画像ファイルの所有者のみが許諾を設定できる。ファイル所有者が権利者本人であることは保証しない。
 - **採用済み（`d02-q10-same-bytes-per-file-license`）**: 同一bytesでも別fileなら、それぞれ別々に扱う。
 - **採用済み（`d02-q11-admin-adds-license-options`）**: 最初から管理者が独自の利用許諾を追加できるようにする。定義形式と連合表現は技術設計に残す。
+- **他 Account による同一画像 file の再利用として採用済み**: `d02-q12-other-account-file-reuse`。Booskiff PR #8 README §9 の比較で R1（所有者のみ予約・添付）を選択し、当面は他 Account による同一 file の再利用を禁止する。共有（D9）の決定後に見直す。R2（許可）・R3（複製）は今回は採用しない。
 <a id="d03"></a>
 
 ## D03 — quick-reaction
