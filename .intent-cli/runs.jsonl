@@ -277,3 +277,5 @@
 {"ts":"2026-11-14T09:21:45.1540458+00:00","execution_unit":"note-search-author-lookup-api-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":27}
 {"ts":"2026-11-14T09:21:45.1540458+00:00","execution_unit":"note-search-author-lookup-api-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":27}
 {"ts":"2026-11-14T09:31:06.2708453+00:00","execution_unit":"note-search-author-lookup-api-contract","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/ShuttlePub","pr":27}
+{"ts":"2026-11-14T10:27:01.2571422+00:00","execution_unit":"shuttlepub-web-schema-pin-2026-11","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/shuttlepub-web-schema-pin-2026-11/"}
+{"ts":"2026-11-14T10:27:16.6605155+00:00","execution_unit":"shuttlepub-web-schema-pin-2026-11","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#47","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/47"}

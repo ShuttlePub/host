@@ -1,0 +1,68 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-web-schema-pin-2026-11: shuttlepub-web の producer schema pin 更新と既存コードの互換移行 (ShuttlePub #21/#23/#25/#27・Emumet #106)"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-web-schema-pin-2026-11
+  domain: shuttlepub
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/shuttlepub-web (openapi・bff・src・test・README), apps/ui-catalog/visual/screens (引用 reveal の期待値のみ)"
+  target_part: "producer schema pin (ShuttlePub a00d234aedecb0223ba20dc8d7e9334cf9d39e83 / Emumet c4d6ea3a4f06e924e73ffa058e5ec6e2409f1e3d) への更新と、Emoji 新情報・Hidden.cause・QuotedPost・target_actor・検索契約への型/adapter/fixture の互換移行 (新画面・新表示は後続 unit)"
+  dependencies: []
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。frontends 側に親状態を作成しない"
+    - "schema 取込は F0 の方式 (producer commit のフル SHA + checksum で固定した生成 OpenAPI → TS 型 → アプリ所有 GraphQL SDL → PureScript 型、fixture は OpenAPI に照合)。schema は手編集せず `bun run openapi:sync` / `openapi:sync-scenarios` / `codegen` で再生成する。短縮 SHA で推測しない"
+    - "pin 先: ShuttlePub は #21 (外部絵文字の EmojiView origin/image_state/usage・EmojiReactionCount view)・#23 (NoteSearch)・#25 (Hidden.cause・引用先 hidden の廃止)・#27 をすべて含む main (a00d234aedecb0223ba20dc8d7e9334cf9d39e83)。Emumet は #106 (ProfileRelation.target_actor) を含む main (c4d6ea3a4f06e924e73ffa058e5ec6e2409f1e3d)"
+    - "この unit は型・adapter・fixture の追従だけ。D09 (外部絵文字の表示)・D04 (検索画面)・D08 (行表示・引用文言) の画面の見た目と新機能は後続 unit で、ここでは作らない。ただし契約変更で既存表示が壊れる箇所は最小限で追従し、PR 本文に列挙する"
+    - "型を通すための架空値・as による回避をしない。契約の項目は欠落なく保持し、欠けた応答は契約違反として扱う"
+    - "ユーザー決定済みの作業順 (準備・D09・D08・D04 の順) の準備 unit。マージは独立レビュー後にリードが指示する"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/packets/candidates.md"
+    - "intents/shuttlepub/features/quick-reaction-ui/overview.md"
+    - "intents/shuttlepub/features/personal-domain-controls-ui/overview.md"
+    - "intents/shuttlepub/features/note-search-ui/overview.md"
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md"
+  acceptance_criteria:
+    - "openapi/producer.lock.json が ShuttlePub a00d234aedecb0223ba20dc8d7e9334cf9d39e83 と Emumet c4d6ea3a4f06e924e73ffa058e5ec6e2409f1e3d のフル SHA を指し、openapi:verify が通る (vendored schema・scenario・fixture が同 commit 由来)。それぞれ PR 作成時点の最新 main であること"
+    - "EmojiView の origin / image_state / usage と EmojiReactionCount の view が REST → GraphQL (Emoji.origin/imageState/usage、PostView.reactionCounts) → PureScript (App.Emoji.Emoji、App.Post.ReactionCounts) まで欠落なく保持され、外部絵文字の 422 emoji_usage_not_allowed・409 conflict が既存のエラー経路で扱われる。画面の見た目は変えない"
+    - "Hidden.cause は hidden 専用型 (HiddenContent) で保持し、汎用の ContentControl には足さない。QuotedPost.hidden と旧 embedded-hidden 分岐を新契約に合わせて削除し、引用先が制御対象なら引用した投稿全体が cause=quote で隠れ、reveal で引用先も表示される"
+    - "Emumet の target_actor を個人 mute/block の一覧と作成応答の両方で保持し (ActorPolicy.targetActor)、欠けた応答は契約違反として拒否する。表示は変えない"
+    - "NoteSearch 契約の変更に BFF の旧 searchFor が追従し、producer fixture (hidden_quote・remote_emoji_chips・search 系・remote_* scenario) の再生が新しい意味で通る。旧仕様のテストを放置しない"
+    - "purs-tidy check、openapi:verify、codegen:check、spago build/test、bun test、tsc --noEmit、既存 E2E (cookie-isolation)・visual (shuttlepub-verify・capture) が通り、既存 CI (check/e2e/frontend-visual) がグリーン"
+    - "PR 本文に、契約変更で最小限追従した既存表示の一覧と、後続 unit への申し送り (各契約の実際の項目名・値・優先順位で計画と違った点) を載せる"
+  revision_history: []
+
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - intents/shuttlepub/packets/candidates.md
+  new_intent_needed: false
+  placement_rationale: "D09・D08・D04 の画面 unit の前提となる契約 pin 更新 (準備 unit)。新規 intent ノードは不要で、到達範囲と後続への申し送りは closeout で既存ノードに追記する"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "pin 先の完全 SHA と、各契約の実際の項目名・値・優先順位で計画と違った点 (後続 D09・D08・D04 unit への申し送り) を記録する。"
+closeout_learning:
+  expected: "pin 更新と互換移行での判断点 (Hidden.cause の専用型、引用先 hidden の廃止、外部絵文字の反応規則、target_actor の欠落拒否) と、未取込の producer fixture (note_search_author・quick_reaction/schema_cases) を後続 unit へ引き継ぐ。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/shuttlepub-web)"
