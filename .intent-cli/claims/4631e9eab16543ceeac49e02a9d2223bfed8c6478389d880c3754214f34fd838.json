@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:remote-emoji-deleted-reuse-contract",
-  "actor": "d09-contract-worker",
-  "team": "shuttlepub-main",
-  "claimed_at": "2026-11-14T16:51:15.4779725+00:00",
-  "base_commit": "38b593f46284831ccea15503428d9d75cb19a2a9"
-}

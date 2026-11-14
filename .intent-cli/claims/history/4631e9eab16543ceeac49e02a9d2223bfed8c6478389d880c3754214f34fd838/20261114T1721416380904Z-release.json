@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:remote-emoji-deleted-reuse-contract",
+  "actor": "d09-contract-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-14T17:21:41.6380904+00:00",
+  "reason": "closeout \u5B8C\u4E86(ShuttlePub PR #29 squash bd997e6)",
+  "displaced_holder": "d09-contract-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-14T16:51:15.4779725+00:00",
+  "base_commit": "7d358ce122e35757881ddb088d1359eeb499a0f8"
+}
