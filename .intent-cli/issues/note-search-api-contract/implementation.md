@@ -47,3 +47,4 @@ frontends が D04 の検索 UI(`from:@user` を `author` へ変換する BFF/UI)
 ## Revision history
 
 - 2026-11-14 (リード経由のユーザー合意、D04 UI モック v2): 時間上限到達時は部分結果の 200(page.truncated=true、next_cursor 必須)を第一案とし、再開可能な進捗が無い場合だけ search_timeout(503、0 件扱い)とする。acct→actor ID 解決は既存 API に無く BFF/UI の責務(未解決は検索しない)。次ページはスクロール自動読み込みでカーソル方式のまま。当初の公開本文にあった「部分結果は返さない」を置き換える。
+- 2026-11-14 (独立レビューの修正要求、ShuttlePub PR #23): ①truncated=true の next_cursor を schema(truncated リテラルの oneOf)と型で非空文字列必須にし、欠落・null・空文字を拒否(fixture 追加)。②author を URL パーサーで検証(https・非空ドメインホスト、userinfo/IP リテラル/fragment/バックスラッシュなし)し、https://?alice 等は 404 に進まず 400。③中断時は自動(スクロール)読み込みを止め、再開可能カーソルは明示操作での再開用に維持(UI 正本 note-search-ui ui-spec に整合)。④参照投影の順序を created_at の文字列でなく時刻値で比較(contract にも明記)。
