@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "hidden-quote-indication-contract",
+  "role": "design",
+  "host_commit": "e4130ac7ca5fd01a8f22d7314cfb72867d2d78e6",
+  "recorded_at": "2026-11-14T04:49:21.0228829+00:00",
+  "targets": [
+    "intents/shuttlepub/product/social-experience.md",
+    "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md"
+  ],
+  "note": null
+}
