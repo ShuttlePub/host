@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T08:50:29.63167+00:00",
+  "updated_at": "2026-11-14T09:21:45.1650631+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1591,7 +1591,7 @@
     {
       "execution_unit": "note-search-author-lookup-api-contract",
       "title": "note-search-author-lookup-api-contract: \u6295\u7A3F\u691C\u7D22\u306E\u4F5C\u8005\u6307\u5B9A\u88DC\u52A9 API(acct\u2192\u4F5C\u8005\u306E\u89E3\u6C7A\u30FB\u5165\u529B\u4E2D\u306E\u4F5C\u8005\u5019\u88DC\u3001D04)\u306E /api/v1 API \u5951\u7D04(UI \u5148\u884C\u30FBserver \u5C64\u306E\u307F)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "shuttlepub-openapi-foundation",
         "personal-domain-content-api-contract",
