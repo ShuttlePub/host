@@ -1,0 +1,75 @@
+implementation_issue_packet:
+  issue_title: "note-search-api-contract: 投稿者を任意指定できる投稿検索(D04、本文と CW の部分一致・投稿者なし全体検索を含む)の /api/v1 API 契約"
+  issue_kind: feature
+  source_execution_unit: note-search-api-contract
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "server/, openapi/shuttlepub.json"
+  target_part: "S8 personal-domain の検索 route(searchPersonalNotes)を拡張する、投稿者(actor ID URL)・キーワード任意の投稿検索の入力・結果型・カーソル・エラー(型・schema・fixture・501 route)"
+  dependencies: [shuttlepub-openapi-foundation, personal-domain-content-api-contract]
+  technical_baseline:
+    - "S0 の utoipa 基盤・/api/v1 共通エラー形式・生成 schema(openapi/shuttlepub.json)と、マージ済みの S8(server/src/api_v1/personal_domain.rs の searchPersonalNotes・NoteSearchResponse、server/tests/personal_domain.rs、fixtures/personal_domain/)を拡張する。別正本・別 route 群は作らない。route は同じ GET /api/v1/profiles/{profile_nanoid}/notes/search・operationId searchPersonalNotes のまま"
+    - "契約のみ。実検索・DB 部分一致・検索エンジン連携・件数/時間の実計測・実カーソル発行は実装しない。route は引き続き明示的な 501(todo!/unimplemented! は使わない)"
+    - "S8 の既存 NoteSearchResponse(items は FeedItem)は破壊的に置き換える(新設の結果型)。S8 の timeline/notifications/FeedItem は変更しない。frontends が S8 生成 schema を SHA pin で取り込んでいる場合は新 producer SHA への pin 更新が必要なことを docs に明記する"
+    - "S8 の suppress 契約(対象 domain の mute/block 由来の投稿、および直接の引用先が対象 domain の引用を、引用者のコメントごと丸ごと除外し、痕跡を残さない)は検索にもそのまま適用される。domain 判定は E8 の canonical actor ID host の完全一致(personal_domain.rs の ControlDomain 参照)"
+    - "既存 dev API(/api/notes/... 等)は legacy development API で契約対象外、生成 schema に載せない(S0 ADR)"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I04)"
+    - "intents/shuttlepub/packets/candidates.md (D04 節、共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d04-q01〜q07。d04-q05 の「標準構成は投稿者必須」は下記ユーザー決定で置き換え)"
+    - "ユーザー決定(thread-xxs52dcx 内の最新回答): 投稿者指定は任意。投稿者なしのキーワードだけの全体検索も標準構成(検索エンジンなし)で提供する(DB 部分一致、件数・応答時間の上限付き、負荷対策は技術設計)。UI 側が from:@user を投稿者指定へ変換する(BFF/UI の責務。API は author パラメータで受ける)"
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md (S0 ADR)"
+    - "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md (5-1・5-3、検索に隠した痕跡を出さない)"
+  acceptance_criteria:
+    - "検索入力: 同じ route に任意の author(canonical actor ID URL、1 人)と任意の q(1 文字以上 256 文字以下のリテラル部分一致文字列)と limit(1 以上 50 以下、既定値は契約に記す)・cursor を持つ。author と q の両方が無い場合、q が空文字の場合、q/limit が範囲外の場合、author が actor ID URL でない場合は 400 invalid_request(details にフィールド名)。author は actor ID URL だけを受け、acct(from:@user 形式)を受けない。from:@user→author の変換が UI/BFF の責務であることが schema 説明にある"
+    - "検索の意味: キーワードなしの author のみ、author なしの q のみ(投稿者なし全体検索)、両方指定のいずれも標準構成で提供する。結果は created_at 降順・同時刻は note_id 降順の新しい順。q は投稿本文と CW の両方を対象にした部分一致で、引用先・返信先の本文は対象にしない。% _ \\ 等はリテラルで検索構文を持たない。大文字小文字の同一視と複数語の AND/分割は未決であり、契約が固定せず、schema 説明と docs に未決と明記される(fixture でも固定しない)。検索エンジンの有無で結果の意味(対象・CW 扱い・順序)を変えない"
+    - "結果型は新設(NoteSearchResponse の items は NoteSearchItem)。種別は post / reply / quote(コメント付き引用)だけで、コメントなしの純粋リポストは型として表現できない(schema・serde が repost を拒否する fixture)。各 item は note_id・author(actor ID URL)・created_at・表示本体を持つ。CW 付き投稿は本文を返さず CW のみ(表示本体が text か content_warning のどちらかの閉じた sum 型で、content_warning variant は content を持てない)。検索応答には隠した件数・注記・total を持たない"
+    - "閲覧可能な投稿だけを返す: 閲覧権の無い投稿・削除済み投稿は出さない。S8 の対象 domain の mute/block 由来の投稿と、対象 domain の投稿を引用した投稿は痕跡なしで除外する。author が対象 domain の actor でも 404/403/注記ではなく、一致なしと同じ 200 空結果(未取得 actor の 404 と、suppress による空とは別)。fixture で示される"
+    - "エラー: author の actor を ShuttlePub が未取得なら 404 not_found(details.field=author)。検索の時間上限を超えたら新エラー search_timeout(503、共通エラー形式、部分結果は返さない、author で絞り込むと狭められることを説明に記す)が ErrorCode と全検索応答 schema に追加される。timeout の 503 fixture がある"
+    - "カーソル: 不透明文字列で、内部的に最後に返した (created_at, note_id) を位置とし、検索条件(Profile・author・q)に結び付く。同じ条件なら続きから、条件が異なる(author・q のいずれかを変えた、別 Profile)カーソル・壊れたカーソルは 400 invalid_request(details.field=cursor)。位置は created_at・note_id による keyset で重複を返さない。次ページは最終返却位置より古い投稿だけを返し next_cursor は後続一致が存在すると分かる場合だけ付く(空の最終ページも許容)。E8 revision の変更ではカーソルを失効させない"
+    - "ページ途中の変化の扱いが契約と fixture で決まる: 各ページはそのリクエスト時点の最新状態で評価しスナップショットを持たない。編集は created_at を変えず順序を動かさない(編集後に q へ不一致になった投稿は以降のページに出ず、一致になった古い投稿は出る)。削除・閲覧権の喪失・mute/block の追加は以降のページで除外される。既に返したページの取り消しや再配信はしない。いずれも重複を生まない"
+    - "fixture(search.json 等)と test-only 参照投影: 通常・返信・コメント付き引用を含み純粋リポストを含まない、閲覧不可・削除済みを出さない、CW 付き投稿は CW のみで本文を返さない(本文だけに語がある場合も CW のみ)、author のみ・q のみ・両方、条件なし 400、空 q 400、未取得 actor 404、対象 domain の author は 200 空、引用先が対象 domain の引用は除外、リテラル % の検索、ページ境界とカーソル不一致 400、ページ途中の編集・削除・閲覧権変更の各結果、timeout 503。S8 の surfaces.json の search 検証は新 fixture に差し替えられ、timeline/notifications の検証は維持される"
+    - "全契約 route が明示的な 501(S0 の共通エラー形式)を返し、routes! 単一登録のまま、todo!/unimplemented! を使わない。生成 schema(openapi/shuttlepub.json)は決定的に更新され S0 の再生成差分 CI がグリーン。既存 S0/S3/S8 のテストが回帰しない(search の検証以外)。S8 契約文書(server/docs/personal-domain-content-contract.md)と fixtures README が更新され、『契約のみ・未実装』が schema の説明またはテストで確認できる"
+
+# G461: optional packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D04 節・共通の分割方針)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d04-q01〜q07)"
+    - "intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md (5-1・5-3)"
+  new_intent_needed: false
+  placement_rationale: "primary intent(social-experience.md)の I04 節と candidates.md の D04 節に、本 unit の依存(S0・S8)・到達範囲(API 契約のみ)・d04-q05 の置き換え(標準構成でも投稿者なし全体検索を提供)を追記する。新規 intent ノードは不要。D04 の実検索・負荷対策・検索エンジン連携の後続 owner が ShuttlePub であることを明記する。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に note-search-api-contract の範囲だけを「queue登録済み」と記録し、I04 と D04 に unit・依存(S0・S8)・到達範囲(契約のみ)と d04-q05 の置き換えを追記する。親 candidate D04 全体を ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "S0 の ADR(生成 schema を契約の正本とする)に従うのみで、本ユニット固有の新しい hard-to-reverse 決定はないため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "検索契約の範囲(author/q 任意、結果型、カーソル、ページ途中の変化、search_timeout)、未決(大文字小文字・複数語 AND)、検証境界(schema・fixture・501・再生成差分)を I04 / D04 に記録する。"
+closeout_learning:
+  expected: "標準構成で投稿者なし全体検索を提供する決定と負荷上限の表現(limit 上限・q 長・search_timeout)、カーソルと条件の結び付け、ページ途中の変化の扱い、結果型で純粋リポストを型から排除した形、未決(大文字小文字・複数語 AND)の扱いを記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (server/, openapi/shuttlepub.json)"
