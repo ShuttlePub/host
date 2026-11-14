@@ -1,0 +1,9 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "remote-emoji-reuse-api-contract",
+  "role": "design",
+  "host_commit": "5b2c4160b24af21b618f93899a3233d760e5efcf",
+  "recorded_at": "2026-11-14T04:10:23.2039159+00:00",
+  "targets": [],
+  "note": null
+}
