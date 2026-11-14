@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "note-search-api-contract",
+  "role": "design",
+  "host_commit": "4732cee27d1f362f6f3165627db65859dc0c6836",
+  "recorded_at": "2026-11-14T07:07:00.7954247+00:00",
+  "targets": [
+    "intents/shuttlepub/product/social-experience.md",
+    "intents/shuttlepub/packets/candidates.md"
+  ],
+  "note": null
+}
