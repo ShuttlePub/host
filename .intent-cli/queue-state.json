@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T03:32:14.1583594+00:00",
+  "updated_at": "2026-11-14T03:32:53.8789455+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1432,6 +1432,11 @@
         "implementation": ".intent-cli/issues/media-metadata-contract-design/implementation.md",
         "review_context": ".intent-cli/issues/media-metadata-contract-design/review-context.md",
         "yaml": ".intent-cli/issues/media-metadata-contract-design/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Booskiff",
+        "number": 7,
+        "url": "https://github.com/ShuttlePub/Booskiff/issues/7"
       },
       "worker_role": "implementation",
       "review_role": "review",
