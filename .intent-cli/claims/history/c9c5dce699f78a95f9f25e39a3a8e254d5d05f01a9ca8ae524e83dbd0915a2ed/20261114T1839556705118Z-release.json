@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-web-remote-emoji-reuse-ui",
+  "actor": "d09-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-14T18:39:55.6705118+00:00",
+  "reason": "frontends PR #50 merged (squash 79ac678) and closeout recorded (host e3a5b2d)",
+  "displaced_holder": "d09-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-14T12:30:00.0066982+00:00",
+  "base_commit": "e3a5b2d41587834497d2e40dc6c55cc38e941998"
+}
