@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:note-search-author-lookup-api-contract",
+  "actor": "d04-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-14T09:25:06.5190343+00:00",
+  "reason": "merged PR #27, closeout recorded",
+  "displaced_holder": "d04-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-14T08:43:30.0320181+00:00",
+  "base_commit": "d7a5deb35ec31b0f14a312d74218806e1268b411"
+}
