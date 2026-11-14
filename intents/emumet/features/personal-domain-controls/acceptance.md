@@ -105,6 +105,7 @@
 - **未接続の明示**: 投稿抑制・反応拒否の実適用は ShuttlePub 後続（S8 は契約のみ・全 route 501）。設定画面の注記に加え、投稿表示面にも mock 時「投稿の非表示・操作の制限はプレビューです（サーバー未接続）」を表示。real の投稿系は NOT_IMPLEMENTED。
 - **reveal の保証**: 単一投稿 reveal はページ内限り（保存・同期しない、［隠す］・再読込・再訪・Profile 切替で隠し直す）。reveal してもブロック中の操作制限・CW・センシティブ・削除・閲覧権は解除しない。hidden 応答に本文・作者は載らない（BFF テスト）。要求番号で応答を照合し、［隠す］後・旧世代の応答を破棄。設定変更・409 回復で表示中の投稿を取り直し、取り直し中は旧 reveal（操作可否を含む）を使わず、失敗時は隠し表示＋エラー＋再試行。
 - **ui-spec との差**: 3-4（引用の隠し表示に「引用しています／引用元」を出さない、引用を reveal しても引用元は隠したまま）は S8 優先。spec どおりにするには S8 契約の拡張が必要。1-6（アカウントタブの名前・アイコン・acct）は Emumet の個別 relation 応答が actor URL のみのため actor URL 表示。通知・検索（5-2/5-3）は画面が後続 unit のため UI なし（BFF の S8 投影と fixture 検証のみ）。
+- **ユーザー決定による差分修正（D08 q18）**: ui-spec 1-6 のアカウント行は案(a)を選択。現行F8のactor URLのみ表示を採用せず、Emumet mutes/blocks API・BFF・画面を修正し、アイコン・表示名・acctを表示する。修正方針の決定であり、実装は未完了。
 - **純粋 boost の直接 URL**: boost wrapper 固有の画面・URL を作らず、元投稿 URL の通常の単一投稿 reveal に委ねる（TL では純粋 boost を全体ごと痕跡なく除く）。
 - **検証（マージ時）**: 第1段は実 Emumet E2E（ローカル、2/2 pass ×2）。第2段は spago test・bun test 187・producer S8 fixture の再生一致・shuttlepub-verify（desktop/mobile、キーボード・モーダル・inert・Profile 切替・遅延応答・2 タブ 409）・visual（新規 18 枚）、CI 全 job green。
 - **引継ぎ**: (1) 実 Emumet E2E シナリオのリポジトリ移設（`apps/shuttlepub-web/e2e`、Keto を含む compose、`e2e/emumet-revision` を Emumet main 82fa49b 以降へ）。(2) アカウントタブの actor 名等の Emumet API。(3) visual 撮影前のフォーカス待ち。(4) S8 契約拡張と ShuttlePub の実投稿制御。
