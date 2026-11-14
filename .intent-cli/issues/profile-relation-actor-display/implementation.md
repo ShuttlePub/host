@@ -7,7 +7,7 @@ D08 の ui-spec 1-6 (アカウントタブの行は「アイコン・名前・ac
 - `GET /api/v1/profiles/{profile_nanoid}/mutes`・`/blocks` の各 item (と、`POST` の 201 応答。同じ `ProfileRelationResponse`) に `target_actor` を加える: 種別 (local / remote)・actor URL・(local のとき) Profile nanoid・取得状態 `status`・`acct` (`preferredUsername@host`)・`preferred_username`・`display_name`・`icon_url`。
 - ローカル Profile が対象のときもリモートと同じ形で返す。
 - リモート actor の表示情報は、新設する永続キャッシュ `profile_remote_actor_cache` から返す。未取得・取得失敗のときは `status` で示し、画面が actor URL 表示へフォールバックできるようにする。
-- **一覧取得 (GET) の処理でリモートへ同期取得しない**。取得・更新は block/mute 作成後と、一覧応答を返した後のバックグラウンドで行う。
+- **一覧取得 (GET) の処理でリモートへ同期取得しない**。取得・更新は block/mute 作成後と、一覧応答を返した後のバックグラウンドで行う。「応答を返した後」の定義 (リード判断、PR #106 の再レビュー対応): handler が応答を確定して返し、HTTP サーバーが応答本体を最後まで取り出した (Poll::Ready(None)) か、本体を破棄した (Drop) 後。ソケット書き込み完了・クライアント受信完了との前後は保証しない (hyper は本体を poll し切ってからソケットへ flush するため、本体の層では書き込み完了を保証できない)。保証するのは、応答の確定前と本体の取り出し中に取得を始めないことで、これにより遅い peer が一覧・作成の応答を遅らせず、transaction 内で外部 I/O をせず、連発を避ける。
 
 frontends (BFF・画面) の変更は本 unit に含めない (後続の別 unit)。
 
@@ -73,7 +73,7 @@ Target part: 個別 block・mute 一覧 (と POST 応答) の `target_actor` 追
 3. **検証・正規化 (保存前)**: `preferredUsername` は空・空白・制御文字・`@`・`/` を含まない 1〜256 文字 (満たさなければ文書不正として取得失敗)。`display_name` (`name`) は制御文字を除いて前後の空白を落とし 200 文字以内に切り詰め、空なら null。`icon` は object (`url` が文字列、または `href` を持つ object)・配列 (最初の有効な要素)・文字列を受け付け、userinfo なしの絶対 http/https URL で 1024 バイト以内のものだけ `icon_url` にし、それ以外は null (取得失敗にはしない)。値は plain text で、HTML として解釈しない。
 4. **取得の起動** (いずれも API 応答の後・transaction の外。失敗は block/mute の成否・配送・API 応答に影響しない):
    - block/mute の作成が成功した後、remote 対象の actor URL を 1 件取得する。
-   - 一覧応答を組み立てるとき、remote 対象のうちキャッシュ行が無い・`next_refresh_at` が過ぎている actor URL を最大 10 件選び、応答を返した後に 1 つのバックグラウンドタスクで順に取得する (1 リクエスト 1 タスク)。一覧の処理中には一切リモートへ接続しない。
+   - 一覧応答を組み立てるとき、remote 対象のうちキャッシュ行が無い・`next_refresh_at` が過ぎている actor URL を最大 10 件選び、応答本体を取り出し終えた後 (または破棄後) に 1 つのバックグラウンドタスクで順に取得する (1 リクエスト 1 タスク)。一覧の処理中には一切リモートへ接続しない。
 5. **重複取得の防止 (リース)**: 取得の前に、DB 上で `INSERT ... ON CONFLICT DO UPDATE ... WHERE next_refresh_at <= now` により `next_refresh_at = now + 60 秒` を原子的に確保できたときだけ取得する (行が無ければ `pending` 行を作る)。複数リクエスト・複数プロセスが同じ actor URL を同時に要求しても取得は 1 回。確保できなければ何もしない。
 6. **結果の記録**: 成功 → `status=resolved`・各値・`fetched_at`・`next_refresh_at = now + 24 時間`。失敗 → 既存が resolved ならデータと status を保ったまま `next_refresh_at = now + 15 分`、そうでなければ `status=failed`・`next_refresh_at = now + 15 分`。
 7. **一覧での状態の決定**: キャッシュ行が無い・`pending` → `pending`、`failed` → `unavailable`、`resolved` → `resolved`。
@@ -108,7 +108,7 @@ Emumet の個別 block・mute 一覧 (`GET /api/v1/profiles/{profile_nanoid}/mut
 - GET の mutes / blocks (と POST 201) の各 item に `target_actor` が加わり、既存フィールドの名前・型・値は不変。既存の契約テストが変更なしで通る。
 - local 対象は kind=local・profile_id・status=resolved・acct (自サーバー host)・preferred_username・display_name・icon_url (画像が無ければ null) を返し、remote と同じ形。
 - remote 対象: 取得済みなら resolved (acct は actor URL の host)、未取得は pending、直近失敗は unavailable。取得済みの更新失敗は古い情報を resolved で返す。pending / unavailable でも `target` は返る。
-- GET の処理中にリモートへ 0 リクエスト (リクエスト数を数える偽 peer で検査)。取得は作成後と応答後のバックグラウンドで、各一覧リクエスト最大 10 件・同一 URL は同時要求でも 1 回 (リース)。成功 24 時間・失敗 15 分は再取得しない。
+- GET の処理中にリモートへ 0 リクエスト (リクエスト数を数える偽 peer で検査)。取得は作成後と応答後 (本体を取り出し終えた後か破棄後。上記の定義) のバックグラウンドで、各一覧リクエスト最大 10 件・同一 URL は同時要求でも 1 回 (リース)。成功 24 時間・失敗 15 分は再取得しない。
 - 保存前の検証・正規化 (preferredUsername・display_name・icon_url) と、文書 id 不一致・404/410・タイムアウト・不正 JSON・宛先拒否が取得失敗として記録されること。API はエラーにならない。
 - 認可は現行どおり所有者のみ (他人の Profile は 403/404、無認証は 401)。他 Profile・他 Account の設定は返らない。
 - 実 DB テスト・API テストが追加され、DATABASE_URL を設定した環境で全て通る (skip のみの成功にしない)。openapi.json は再生成され差分は加算のみ。fmt・clippy -D warnings・CI の全 job が緑。
