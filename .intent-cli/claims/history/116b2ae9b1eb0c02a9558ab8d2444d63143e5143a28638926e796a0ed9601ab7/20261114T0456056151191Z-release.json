@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:profile-federation-dormant-profile-cutover",
+  "actor": "evorch-d08-implementation",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-14T04:56:05.6151191+00:00",
+  "reason": "D08 must1 merged after independent approval and green CI: ShuttlePub/Emumet#105 squash c2da7f6a630afbd409f60035795a988717fd3055; host closeout 6fdc3c045a65f83d735bbd599f0681199f184084",
+  "displaced_holder": "evorch-d08-implementation",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-14T03:56:59.2297467+00:00",
+  "base_commit": "6fdc3c045a65f83d735bbd599f0681199f184084"
+}
