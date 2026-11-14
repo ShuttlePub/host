@@ -168,6 +168,8 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **採用済み（`d02-q10-same-bytes-per-file-license`）**: 同一bytesでも別fileなら、それぞれ別々に扱う。
 - **採用済み（`d02-q11-admin-adds-license-options`）**: 最初から管理者が独自の利用許諾を追加できるようにする。定義形式と連合表現は技術設計に残す。
 - **他 Account による同一画像 file の再利用として採用済み**: `d02-q12-other-account-file-reuse`。Booskiff PR #8 README §9 の比較で R1（所有者のみ予約・添付）を選択し、当面は他 Account による同一 file の再利用を禁止する。共有（D9）の決定後に見直す。R2（許可）・R3（複製）は今回は採用しない。
+- **契約設計の完了（2026-11-14、media-metadata-contract-design）**: D02 は、固定境界（ShuttlePub が他者向け投稿として確定する直前に予約→未公開で永続化→確定／解放の 2 相。`commit` 成功まで他者に見せない契約）・許諾の版参照（カタログ行は不変）・既存画像の移行（行なし＝未指定・未固定・revision 0、既共有は backfill で固定）・admin 独自許諾の定義形式を契約案として定めた。他 Account による同一 file の再利用はユーザー決定（原文「R1」）で当面禁止（所有者のみ予約・添付可）、共有（D9）の決定後に見直す。 Booskiff の producer 契約設計文書は [ShuttlePub/Booskiff PR #8](https://github.com/ShuttlePub/Booskiff/pull/8)（squash `5c72e5c`、issue #7）で `docs/media-metadata/` に追加済み。**設計のみで、migration・route・openapi.json・UI・ShuttlePub 側の実装は未着手**。親 candidate 全体を ready／完了にはしない。後続は同文書の分割案（許諾カタログ → メタデータ基盤 → 許諾選択 → 共有固定 → 変更フィード／タグ補完）と ShuttlePub／frontends の別 unit。
+
 <a id="d03"></a>
 
 ## D03 — quick-reaction
@@ -759,6 +761,8 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   配信済み画像のセンシティブ指定を後から変えても他鯖へ反映されない例を説明している。
   いずれも原案の背景資料であり、現行Misskeyの実測や具体的な分類・評価方式の採用根拠にはしない。
 
+- **契約設計の完了（2026-11-14、media-metadata-contract-design）**: D10 は、センシティブ分類 ID の語彙を Booskiff が正本として保持する案（ID・名称は仮、ShuttlePub の D10 契約と要合意）と、file 単位の分類を revision 付きで保存・更新する契約案を定めた。本文・投稿 CW・外部の二値指定は ShuttlePub の責務。 Booskiff の producer 契約設計文書は [ShuttlePub/Booskiff PR #8](https://github.com/ShuttlePub/Booskiff/pull/8)（squash `5c72e5c`、issue #7）で `docs/media-metadata/` に追加済み。**設計のみで、migration・route・openapi.json・UI・ShuttlePub 側の実装は未着手**。親 candidate 全体を ready／完了にはしない。後続は同文書の分割案（許諾カタログ → メタデータ基盤 → 許諾選択 → 共有固定 → 変更フィード／タグ補完）と ShuttlePub／frontends の別 unit。
+
 <a id="d11"></a>
 
 ## D11 — media-tagging
@@ -806,6 +810,8 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 - **採用済み（`d11-q02-personal-then-server-tag-suggestions`）**: 通常タグの補完候補は自分のタグを優先し、その後にサーバー全体のタグを提示する。
 - **採用済み（`d11-q03-federate-normal-tags-as-ap-extension`）**: 通常タグはActivityPub拡張として送信し、非対応側では無視される想定とする。
 - **採用済み（`d11-q04-retry-only-failed-cross-post-updates`）**: 反映に失敗した分だけ自動再試行し、成功した分は維持する。
+- **契約設計の完了（2026-11-14、media-metadata-contract-design）**: D11 は、通常タグ・分類を固定後も更新可（`expected_revision` で排他）とし、変更フィードは通知のみ・真実は一括取得、対象投稿の特定と失敗分の再試行は ShuttlePub の添付ごとの `applied_revision` とする契約案を定めた。反映範囲は**ユーザー決定（原文「D11: bで確定しよう」）で案 B（同じ Account の全 Profile の投稿）**。補完候補は自分優先＋3 人以上の異なる所有者が使う共有済みタグ、タグ正規化・上限は技術判断の推奨（要確認）。 Booskiff の producer 契約設計文書は [ShuttlePub/Booskiff PR #8](https://github.com/ShuttlePub/Booskiff/pull/8)（squash `5c72e5c`、issue #7）で `docs/media-metadata/` に追加済み。**設計のみで、migration・route・openapi.json・UI・ShuttlePub 側の実装は未着手**。親 candidate 全体を ready／完了にはしない。後続は同文書の分割案（許諾カタログ → メタデータ基盤 → 許諾選択 → 共有固定 → 変更フィード／タグ補完）と ShuttlePub／frontends の別 unit。
+
 <a id="d12"></a>
 
 ## D12 — contextual-content-guidance

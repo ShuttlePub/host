@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T07:05:01.8587969+00:00",
+  "updated_at": "2026-11-14T07:16:58.0583701+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1424,7 +1424,7 @@
     {
       "execution_unit": "media-metadata-contract-design",
       "title": "media-metadata-contract-design: \u753B\u50CF\u30E1\u30BF\u30C7\u30FC\u30BF(\u5229\u7528\u8A31\u8AFE\u30FB\u901A\u5E38\u30BF\u30B0\u30FB\u30BB\u30F3\u30B7\u30C6\u30A3\u30D6\u5206\u985E)\u306E Booskiff producer \u5951\u7D04\u8A2D\u8A08",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/booskiff/clarifications/open.md",

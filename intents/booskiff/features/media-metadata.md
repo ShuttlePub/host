@@ -40,5 +40,13 @@ Emumetのmedia-uploadはactor icon/bannerの既存範囲として扱い、完了
   共通管理画面操作・再利用初期値・管理者訂正等は別論点で、再uploadや公開URL上書きを必須方式にはしない。
   通常タグの外部表現は「未送信」か「拡張送信して非対応側が無視」か未決。D10と分類schemaを重複させない。
 
-実装仕様・優先順位は未確定、queue未登録、issue未公開。
+## 契約設計の完了（2026-11-14、media-metadata-contract-design）
+
+- **成果物**: [ShuttlePub/Booskiff PR #8](https://github.com/ShuttlePub/Booskiff/pull/8)（squash `5c72e5c`、issue #7、独立レビュー承認・CI 緑）。Booskiff の `docs/media-metadata/`（README・api・state-machine・test-vectors）。**設計のみ**で、migration・route・openapi.json・UI・ShuttlePub 側の実装は未着手。D02/D10/D11 の親 candidate 全体は ready／完了ではない。
+- **確定した契約案**: file 単位・Account 所有・revision 付き（行なし＝未指定・未固定・revision 0。移行で既存データを書き換えない）。許諾は `license_id`+`version` の版参照でカタログ行は不変（CC 8 選択肢＋管理者独自許諾）。
+  固定は ShuttlePub が他者向け投稿として確定する直前に、予約→（未公開で永続化）→確定／解放の 2 相。`commit` 成功まで他者に見せない契約。連合配送失敗は固定を解かない。固定後もタグ・分類は更新可。
+  変更フィードは通知のみ、真実は一括取得、対象特定・失敗分再試行は ShuttlePub の `applied_revision`。既存画像は backfill（既共有は未指定のまま固定、未共有だけ後設定可能）。テストベクトル 145 項目。
+- **ユーザー決定の記録**: D11 の反映範囲は案 B（同じ Account の全 Profile の投稿）。他 Account による同一 file の再利用は R1（当面禁止、所有者のみ予約・添付可。共有 D9 の決定後に見直し。grill `d02-q12-other-account-file-reuse` に記録中）。
+- **残る技術判断・合意**: T1〜T11 は設計者の推奨で未確定。センシティブ分類の語彙（ID は仮）は ShuttlePub の D10 契約と要合意。独自許諾・タグ・センシティブの連合表現、サービス JWT の発行元も他 unit と合意が要る。
+- **後続**: Booskiff の実装 unit（許諾カタログ → メタデータ基盤 → 許諾選択 → 共有固定 → 変更フィード／タグ補完）、ShuttlePub の契約・実装 unit、frontends の UI。いずれも未登録。
 [受領原文S02/S11](../../shuttlepub/drafts/discord-feature-intake-2026-10-15.md)。
