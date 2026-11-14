@@ -639,11 +639,15 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
 
 - **意図**: [I09](../product/social-experience.md#i09)。他鯖のカスタム絵文字で付いたリアクションに、同じ絵文字で便乗できる。
 - **候補の状態**: 原案の主要な利用意図は整理済み。identity・取得／利用条件・連合表現等の設計・検証待ちで実装readyではない。
-  candidate・queue未登録・issue未公開・仮slug未予約を維持する。外部絵文字の一覧／picker拡充は追加要件としない。
+  API契約unit（`remote-emoji-reuse-api-contract`）だけをqueue登録・完了した（下記）。D09全体のcandidate・取得／キャッシュ／連合の実装unitは未登録・issue未公開・仮slug未予約を維持する。外部絵文字の一覧／picker拡充は追加要件としない。
 - **外部カスタム絵文字の利用範囲として採用済み**: `d09-q01-existing-reaction-chip-only`。投稿に付いた既存リアクションのチップを押したときだけ利用でき、最近使った絵文字やpicker検索には表示しない。操作はD03 C3と同じく、他人のチップを押して同じ絵文字で反応し、未反応時のみ適用する。
 - **外部カスタム絵文字が取得できない場合として採用済み**: `d09-q02-unavailable-emoji-name-fallback`。画像を表示できない場合は代わりに`:name:`を表示し、送信は許可する。
 - **元サーバーで削除された絵文字のキャッシュとして採用済み**: `d09-q03-expire-deleted-emoji-cache`。一定期間後にこちらの保存分も削除し、以後は`:name:`を表示する。具体的な期間は未決。
 - **同名で別サーバーの絵文字の出自表示として採用済み**: `d09-q04-emoji-origin-indicator`。チップに地球マーク（外部印）を出して区別する。
+- **API契約のqueue登録・実装（実行unit `remote-emoji-reuse-api-contract`、D09の範囲のみ）**: ShuttlePub/ShuttlePub [#20](https://github.com/ShuttlePub/ShuttlePub/issues/20)、依存S0/S3/S8。[PR #21](https://github.com/ShuttlePub/ShuttlePub/pull/21)をsquashマージ済み（`cc04c03051aeb08bdb6ce22656d30f0fefbeb7b4`、queue completed）。**API契約のみ。外部絵文字の取得・画像キャッシュ・元サーバー削除の検出と保存期間・連合EmojiReactは未実装で、D09全体をready／完了にはしない**。
+  - 契約: `EmojiRef`は不変。`EmojiView`にoptionalで`origin`（外部絵文字のみ）・`image_state`（`present`／`missing`。`availability`と独立で、画像なしでもavailableなら送信可・`:name:`表示、d09-q02）・`usage`（外部は`existing_reaction_only`、d09-q01）。S8の`EmojiReactionCount`にoptionalな`view`（カスタム絵文字のチップは必須で送る）を足し、ユーザーUI決定（同名で別サーバーの絵文字の見分けは地球マーク=外部印をチップに出す、U5=c）をチップ単位の`view.origin`で保証する。新エラー`emoji_usage_not_allowed`（422）。
+  - 設定PUTは外部絵文字を常用に入れると422（応答にも出さない）。reaction PUTの判定順は1 利用可否（`emoji_unavailable` 422）→2 現在の選択と同じなら200 no-op→3 外部絵文字でその投稿に同じ絵文字のチップが無ければ422 `emoji_usage_not_allowed`→4 外部絵文字で別の絵文字に反応済みなら409（直接置換せず現在の反応は維持）→5 選択200。3・4は`existing_reaction_only`の絵文字のみで、Unicode・自サーバー絵文字はS3の置換のまま。自分だけが付けた外部チップをDELETEするとチップが消え、同じ絵文字の再PUTは3の422になる。D03 q09・q10は応答に現れないため追加フィールドなし。
+  - 学び（closeout）: identityは`EmojiRef`不変で出自は`view`側に置く。画像状態と利用可否は独立。独立レビューの任意指摘3件（自分だけのチップ消失のfixture、`missing`時のshortcode整合、`PutReaction`の説明への例外追記）は追加commit `76e71fe`で対応した。
 - **仮 slug**: `remote-emoji-reaction-reuse`。
 - **target repo 別分割**: ShuttlePub の絵文字 identity・取得 / 利用条件・連合 reaction 表現候補、
   frontends の既存リアクションからの操作候補。Emumet の配送契約変更が必要なら分割する。

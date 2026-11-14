@@ -271,6 +271,7 @@ CW・センシティブ指定の共有モデル／peer契約、既存メンシ�
 
 他サーバーのカスタム絵文字で付いた既存反応へ、同じ絵文字で便乗できるようにする。
 `d09-q01-existing-reaction-chip-only`で、投稿に付いた既存リアクションチップを押したときだけ外部カスタム絵文字を使え、最近使った絵文字やpicker検索には表示しない方針を採用した。操作はD03 C3と同じく、他人のチップを押して同じ絵文字で反応し、未反応時のみ適用する。`d09-q02-unavailable-emoji-name-fallback`で、外部絵文字を取得できない場合は画像の代わりに`:name:`を表示し、送信を許可する方針を採用した。`d09-q03-expire-deleted-emoji-cache`で、元サーバーで削除された外部絵文字の保存分も一定期間後に削除し、以後は`:name:`を表示する方針を採用した。具体的な期間、削除検出、絵文字の同一性・取得や製品間表現差は設計・検証待ちで実装readyではない。出典S09／候補D09。
+API契約（実行unit `remote-emoji-reuse-api-contract`、ShuttlePub/ShuttlePub [#20](https://github.com/ShuttlePub/ShuttlePub/issues/20)、[PR #21](https://github.com/ShuttlePub/ShuttlePub/pull/21) squash `cc04c03051aeb08bdb6ce22656d30f0fefbeb7b4`）はマージ済み。`EmojiRef`は変えず、`EmojiView`のoptionalな`origin`（出自ドメイン。外部絵文字だけが持つ）・`image_state`（`present`／`missing`、`availability`とは独立）・`usage`（`existing_reaction_only`／`anywhere`）と、S8チップ`EmojiReactionCount`のoptionalな`view`で外部絵文字を表す。UIの地球マーク（外部印）は`view.origin`の有無でチップ単位に出せる（カスタム絵文字のチップは`view`を必ず持つ）。契約のみで、外部絵文字の取得・キャッシュ・削除検出・連合EmojiReactは未実装。
 
 ## I10
 

@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:remote-emoji-reuse-api-contract",
+  "actor": "d09-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-14T04:11:43.3393397+00:00",
+  "reason": "PR #21 merged (cc04c03), closeout recorded",
+  "displaced_holder": "d09-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-12T20:59:31.2091627+00:00",
+  "base_commit": "7a9b011103d56ae48ddc993745baa340e8748a07"
+}

@@ -1,0 +1,68 @@
+implementation_issue_packet:
+  issue_title: "profile-relation-actor-display: 個別 block・mute 一覧の応答に対象 actor の表示情報 (表示名・アイコン・acct・取得状態) を追加 (D08 ui-spec 1-6)"
+  issue_kind: feature
+  source_execution_unit: profile-relation-actor-display
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "migrations, kernel/src/entity, kernel/src/repository, kernel/src/test_utils, driver/src/database/postgres, driver/src/profile_delivery, application/src/service, application/src/dto, server/src/schema, server/src/route, server/src/api, server/src/handler.rs, server/src/openapi.rs, openapi.json"
+  target_part: "GET /api/v1/profiles/{profile_nanoid}/mutes・/blocks (と POST の 201 応答) の ProfileRelationResponse に、既存フィールドを変えず加算で target_actor (kind / actor_url / profile_id / status[resolved|pending|unavailable] / acct / preferred_username / display_name / icon_url) を追加する。ローカル Profile は Profile から直接、リモート actor は新設の永続キャッシュ (profile_remote_actor_cache) から返し、一覧取得時にリモートへ同期取得しない。キャッシュは block/mute 作成後と一覧取得時 (未取得・期限切れ) にバックグラウンドで取得・更新する。認可は現行どおり所有者のみ。実 DB テストと API テスト"
+  dependencies: []
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。Emumet 側の旧 design-host 記述を根拠に child へ親状態を作成しない"
+    - "出典はユーザー決定 (thread-xxs52dcx、D08 ui-spec 1-6 の修正で『1. a』= 合意どおりアカウント行にアイコン・名前・acct を出す)。合意仕様は host intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md の 1-6、差の記録は intents/emumet/features/personal-domain-controls/acceptance.md の F8 確定『ui-spec との差』。frontends (BFF・画面) の変更は本 unit に含めず、後続の別 unit で行う"
+    - "現状 (Emumet main 8b6ceb4): ProfileRelationResponse は id / profile_id / kind / target (canonical actor URL) / created_at のみ。新モデル (profile_blocks / profile_mutes) は対象を actor URL かローカル profile_id でしか持たない。旧モデルの remote_accounts は P4 の初期化で破棄済みで、新モデルに remote actor の名前・アイコンを保存する『既存のキャッシュ』は存在しない。HttpRemoteActorResolver は actor 文書を取得して inbox だけを返し何も保存しない。よって本 unit で永続キャッシュを新設する (この調査結果を PR 本文に記録する)"
+    - "判断 (根拠付き): 一覧取得 (GET) はリモートへ同期取得しない。理由: (1) 1 ページ最大 100 件で、低速・不達の peer 1 件が一覧全体を遅延・失敗させる (2) 所有者 transaction の中で外部 I/O をしない既存規約 (『解決は関係変更の transaction の外で行う』) を守る (3) 一覧を開くだけで任意 host へ連続した外部リクエストを発生させない。代わりに、キャッシュから返し、未取得・失敗は status で返して URL 表示へフォールバックさせる。取得は block/mute 作成後と、一覧取得時に未取得・期限切れの対象があればその応答を返した後のバックグラウンド (1 リクエスト 1 タスク・最大 10 件) で行う"
+    - "取得は既存の HttpRemoteActorResolver と同じ SSRF 対策 (https のみ・許可されない宛先と redirect の拒否・タイムアウト・応答サイズ上限) と『actor 文書の id が要求した URL と完全一致』の検査を再利用する。取得の失敗は block/mute の成否や既存の配送に影響しない。キャッシュは公開されている actor 情報だけを持ち、所有者・関係の情報を持たない (Profile への外部キーなし)"
+    - "既存フィールド (id / profile_id / kind / target / created_at / next_cursor) は変更しない。加算のみで後方互換。ドメイン方針 (domain-controls) の応答は変更しない。API のパス・認可・エラー・ページングは変えない"
+    - "P4 カットオーバー関連のコード (profile-federation の切替処理・migration 20261120000002・cutover 検査) は触らない。別 Worker が profile-federation-in-place-cutover 側の修正を担当中のため、server/src/handler.rs と migrations は最小限の追加に留め、merge 時に衝突したら最新 main に取り込んで解消する"
+  intent_references:
+    - intents/emumet/features/personal-domain-controls/overview.md
+    - intents/emumet/features/personal-domain-controls/packets.md
+    - intents/emumet/features/personal-domain-controls/acceptance.md
+    - intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md
+  acceptance_criteria:
+    - "GET /api/v1/profiles/{id}/mutes と /blocks (および POST の 201 応答) の各 item に target_actor が加わる。既存フィールドの名前・型・値は不変で、既存の契約テストが変更なしで通る"
+    - "ローカル Profile が対象のとき、target_actor は kind=local・profile_id・status=resolved・acct (username@自サーバー host、port があれば含む)・preferred_username・display_name・icon_url (画像が無ければ null) を返す。リモートと同じ形"
+    - "リモート actor が対象でキャッシュに取得済みの情報があるとき、status=resolved・acct (preferredUsername@actor URL の host)・preferred_username・display_name・icon_url (無ければ null) を返す。未取得なら status=pending (acct 等は null)、直近の取得が失敗していれば status=unavailable (acct 等は null)。取得済みの情報がある対象の更新取得が失敗しても、古い情報を resolved のまま返す。pending / unavailable でも target (actor URL) は常に返り、URL 表示へフォールバックできる"
+    - "一覧取得 (GET) の処理中にリモートへ一切リクエストしない (リクエスト数を数える偽 peer で 0 件を検査)。取得は block/mute 作成後と、一覧応答を返した後のバックグラウンドで行い、未取得・期限切れの対象を各リクエスト最大 10 件まで、同じ actor URL は期限・リースにより重複して取得しない (複数同時要求でも 1 回)。成功は 24 時間、失敗は 15 分後まで再取得しない"
+    - "取得した値は検証・正規化して保存する: preferredUsername は空・空白・制御文字・@・/ を含まない 1〜256 文字 (満たさなければ取得失敗)、display_name は制御文字を除いた 200 文字以内 (空は null)、icon_url は userinfo なしの絶対 http/https URL で 1024 バイト以内 (満たさなければ null。icon は object {url}・配列・文字列を受け付ける)。actor 文書の id 不一致・404/410・タイムアウト・不正 JSON・宛先拒否は取得失敗として記録し、API をエラーにしない"
+    - "認可は現行どおり所有者のみ (他人の Profile は 403/404、無認証は 401)。他 Profile・他 Account の設定は返らない。キャッシュは対象 actor ごとの公開情報だけで、別の所有者が同じ actor を対象にしても取得は 1 回に共有されるが、返る関係は所有者の設定だけ"
+    - "実 DB テスト (キャッシュ repository の upsert・リース・同時要求の単一勝者・失敗後の古い情報保持・期限、use case の取得・検証・サニタイズ・一覧の 4 状態、route の JSON 形状・認可・後方互換・POST 応答・実 HTTP の偽 actor サーバー経由の pending → resolved の収束) が追加され、DATABASE_URL を設定した環境で全て通る。openapi.json は再生成され差分は target_actor の加算のみ。fmt・clippy -D warnings・CI の全 job が緑"
+  revision_history:
+    - "2026-11-13: D08 ui-spec 1-6 の修正 (ユーザー決定『1. a』) の Emumet 側 API unit として packet 化 (draft)。frontends の BFF・画面は後続の別 unit"
+intent_placement:
+  primary_intent: intents/emumet/features/personal-domain-controls/overview.md
+  supporting_intents:
+    - intents/emumet/features/personal-domain-controls/packets.md
+    - intents/emumet/features/personal-domain-controls/acceptance.md
+    - intents/shuttlepub/features/personal-domain-controls-ui/ui-spec.md
+  new_intent_needed: false
+  placement_rationale: "DC feature (personal-domain-controls) の個別 block・mute 一覧 API の拡張。ui-spec 1-6 との差 (acceptance.md F8『ui-spec との差』) を Emumet 側で解消する unit。仕様の方向 (アカウント行にアイコン・名前・acct) はユーザー決定済みで新 intent は不要"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/personal-domain-controls/packets.md
+    summary: "DC packets.md の queue 登録の記録に本 unit (依存なし・ui-spec 1-6 の Emumet 側) と issue / PR リンクを追記 (host 側 closeout で実施)"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - intents/emumet/features/personal-domain-controls/acceptance.md
+    summary: "acceptance.md に target_actor の確定契約 (4 状態・取得と更新の方針・同期取得しない判断の根拠・既存キャッシュが無かった事実) を追記し、F8 の『ui-spec との差』の 1-6 を『Emumet 側は解消、frontends は後続 unit』に更新 (host 側 closeout writeback)"
+closeout_learning:
+  expected: "確定した応答形状 (target_actor の各フィールドと 4 状態)、キャッシュの設計 (新設テーブル・リース・期限・サニタイズ)、同期取得しない判断、実行したテストの件数、後続 frontends unit への引継ぎ (pending の再取得・icon の直接ロード、BFF の変換)、残余リスク"
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/personal-domain-controls/acceptance.md
+    - intents/emumet/features/personal-domain-controls/packets.md
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
