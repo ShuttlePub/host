@@ -1,0 +1,72 @@
+implementation_issue_packet:
+  issue_title: "note-search-author-lookup-api-contract: 投稿検索の作者指定補助 API(acct→作者の解決・入力中の作者候補、D04)の /api/v1 API 契約(UI 先行・server 層のみ)"
+  issue_kind: feature
+  source_execution_unit: note-search-author-lookup-api-contract
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "server/, openapi/shuttlepub.json"
+  target_part: "server 層の新規 search_author モジュール: resolveNoteSearchAuthor / suggestNoteSearchAuthors の 2 operation の入力検査・型・utoipa・生成 OpenAPI・fixture・明示的 501 スタブ(kernel/application/driver/migration は変更しない)"
+  dependencies: [shuttlepub-openapi-foundation, personal-domain-content-api-contract, note-search-api-contract]
+  technical_baseline:
+    - "S0 の utoipa 基盤・/api/v1 共通エラー形式 ErrorBody/ErrorCode・生成 schema(openapi/shuttlepub.json)と、マージ済みの #23(note-search-api-contract: ActorUrl・searchPersonalNotes・search_timeout)・#21・#25 の流儀(extractor なし handler の ApiV1Error::not_implemented()、routes! 単一登録、決定的な再生成、閉じた schema)を踏襲する。別正本・別 route 群は作らない。最新 main を基点にする"
+    - "契約のみ・UI 先行。handler は常に明示的な 501(todo!/unimplemented! を使わない)で、不正入力・未認証でも 400 や成功を返さない。実処理・DB・HTTP・バックグラウンド取得・認証サービスへの依存を追加しない。外部照会(WebFinger・actor 取得)は同期・非同期とも一切しない(契約が禁止する)"
+    - "変更範囲は ShuttlePub/ShuttlePub の server 層(server/src/api_v1/search_author.rs 新設、server/src/api_v1.rs の登録と ErrorCode 追加、server/src/openapi.rs、openapi/shuttlepub.json の再生成、server テストと fixture、server 契約文書)だけ。kernel / application / driver / migration、Emumet、frontends は変更しない"
+    - "既存 searchPersonalNotes(#23)の規則は維持する: 既知 actor を author に明示指定した検索で対象 domain が mute/block のときは 404 でなく空結果の 200。本契約はそれを変えない"
+  intent_references:
+    - "intents/shuttlepub/product/social-experience.md (I04)"
+    - "intents/shuttlepub/packets/candidates.md (D04 節)"
+    - "intents/shuttlepub/features/note-search-ui/ui-spec.md (§1 候補の範囲・acct の解決根拠・host 省略の acct、§2 from:@acct の自動変換・解決できない acct)"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d04-q13-author-suggestion-scope・d04-q14-acct-resolution-basis・d04-q15-host-omitted-acct、d04-q08・d04-q12)"
+    - "ユーザー決定(thread-xxs52dcx、原文): 「@acct からその人を特定する API と、入力中のアカウント候補を出す API … この順番で進めてOK」「A,Bは推奨で」「Cはbで」"
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md (S0 ADR)"
+  acceptance_criteria:
+    - "2 operation(GET /api/v1/profiles/{profile_nanoid}/search/authors/resolve = resolveNoteSearchAuthor、GET .../search/authors/suggestions = suggestNoteSearchAuthors)が server 層の新規 search_author モジュールに routes! で単一登録され、生成 schema と契約文書で認可(bearer_auth 必須・Profile の閲覧者本人)・対象集合・非外部照会・入出力・エラーが一致する。handler は extractor なしで常に明示的な 501(不正入力・未認証でも 400 や成功を返さない)"
+    - "対象集合(d04-q13/q14、契約文書と schema 説明に明記): ShuttlePub が投稿を取得済みの作者のうち、閲覧 Profile が公開参照可能なものだけ。閲覧 Profile がミュート・ブロック中の相手(個別・ドメイン)は候補(suggestions)に出さない。Emumet の共有表示キャッシュ全件は使わない(他 Profile の block/mute 起因の取得履歴を漏らすため)。resolve の根拠は自サーバーの確定 username か検証済み remote acct 対応のみで、preferred_username と actor host から導いた WebFinger 未検証の表示用 acct では解決しない。外部照会(WebFinger・actor 取得)は同期・非同期とも一切しない。既知 actor の明示指定時の検索は #23 の規則(mute/block domain は空結果の 200)を維持"
+    - "resolve 入力: acct は query に 1 個だけ。user@host、@user@host、host 省略の user / @user(自サーバーの username として扱う、d04-q15)。先頭の @ を 1 個だけ除去し、username を小文字化せず host を推測しない。空値・複数・空白・制御文字・bidi 制御文字・URL 構文(/ \\ ? # : < > [ ] % を含む。from: 前置・acct: 前置・actor URL を含む)の混入・不正 host(DNS/IDNA 制約違反、IP 表記、末尾ドット、空ラベル、ラベル 63 / 全体 253 文字超)・@ の過不足は 400 invalid_request(details.field=acct)。正規化後 512 文字上限。host は IDNA(ASCII 化)・小文字化で正規化する"
+    - "suggestions 入力: prefix 必須・query に 1 個だけ。先頭の @ を 1 個除去した後 1〜512 文字。表示名または acct の前方一致(部分一致・正規表現・wildcard なし。% と _ はリテラル)。照合時のみ Unicode 正規化(NFKC)と小文字化を適用し、返却表記は保持。順序: acct 完全一致 → acct 前方一致 → 名前前方一致、同順位は正規化 acct・actor URL の順。actor URL で重複排除、最大 5 件、ページング・total なし。制御文字を含む・空・複数・512 文字超は 400 invalid_request(details.field=prefix)"
+    - "応答(閉じた schema): SearchAuthor{actor_url: ActorUrl(#23 の author と同じ型・制約)、acct: 先頭 @ なしの user@host(自サーバーの作者も自サーバーの host 付き)、display_name: string|null、icon_url: string|null}。ResolveAuthorResponse{profile_id: ProfileNanoid, author}。SuggestAuthorsResponse{profile_id, items: SearchAuthor[0..5]}。inbox・公開鍵・Account ID・関係状態・取得由来・キャッシュ時刻は返さない。Cache-Control: private, no-store を文書化する"
+    - "エラー(既存 ErrorBody を拡張): 400 invalid_request、401 unauthorized、403 forbidden、404 not_found(resolve で未取得・対応なしの acct は details.field=acct)、候補なしは 200 items []、409 conflict(acct 対応が複数で確定不可、先頭を勝手に採用しない、details.field=acct)、503 author_lookup_timeout / author_lookup_unavailable(内部 lookup の時間超過・利用不可で、WebFinger ではない。#23 の search_timeout とは別コード)、429 rate_limited(Retry-After ヘッダー)、500 internal、今回の実応答 501 not_implemented。エラーを候補 0 件や作者不在に変換しない。ErrorCode に rate_limited・author_lookup_timeout・author_lookup_unavailable を追加し、既存コードの意味を変えない"
+    - "テスト: (a) 純粋な入力検査関数(完全 acct、先頭 @、host 省略、host 正規化、長さ境界 512/513、空・複数・制御・bidi・URL 混入、空 prefix、Unicode 名、% と _ のリテラル) (b) 正負 schema fixture(local/remote、表示項目 null、候補 0/1/5 件、6 件・不正 actor_url・必須欠落・未知フィールドの拒否、404/409/503/429/501) (c) test-only 参照投影(前方一致・順序・重複排除・最大 5・mute/block 除外・acct 曖昧時 409・成功した actor_url を #23 の author validator が受理) (d) router/schema 単一登録・生成の決定性・既存 S0/S3/S8・検索契約の回帰なし (e) handler 常に 501 (f) DB・HTTP・バックグラウンド取得・認証サービスへの依存を追加しない"
+    - "docs/契約: server 契約文書(server/docs/note-search-author-lookup-contract.md)が対象集合・解決根拠・非外部照会・入力規則・順序・エラー・残余(実処理は後続 unit)を記載し、openapi/shuttlepub.json が決定的に再生成されて S0 の再生成差分 CI がグリーン。kernel/application/driver/migration・Emumet・frontends は変更されない"
+
+intent_placement:
+  primary_intent: intents/shuttlepub/product/social-experience.md
+  supporting_intents:
+    - "intents/shuttlepub/packets/candidates.md (D04 節)"
+    - "intents/shuttlepub/features/note-search-ui/ui-spec.md"
+    - "intents/shuttlepub/interviews/discord-feature-grill-2026-10-15.json (d04-q13〜q15)"
+  new_intent_needed: false
+  placement_rationale: "決定(d04-q13〜q15)は着手前に grill 記録・candidates.md D04・ui-spec・I04 へ反映済み(host c59a192)。完了時は I04 と D04 に unit の到達範囲(契約のみ)と残余を追記する。新規 intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "queue 登録後に note-search-author-lookup-api-contract の範囲(契約のみ・全 route 501)・依存・残余(実処理・検証済み remote acct 対応の保存と供給・frontends の schema pin と画面は後続 unit)を I04 / D04 に追記する。親 candidate D04 全体を ready/完了にしない。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "S0 の ADR(生成 schema を契約の正本とする)に従うのみで、本ユニット固有の新しい hard-to-reverse 決定は d04-q13〜q15 として grill 記録済みのため ADR は不要"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/product/social-experience.md"
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "契約の到達範囲(resolve / suggestions の入力・応答・エラー)、対象集合と非外部照会、残余(実処理・外部照会ありは将来の仕様変更候補・remote icon の直接読込による IP 漏洩は frontends の画像ポリシー)を I04 / D04 に記録する。"
+closeout_learning:
+  expected: "acct 解決の根拠(自サーバー確定 username / 検証済み remote acct 対応のみ)と非外部照会、候補の対象集合の漏洩防止(共有表示キャッシュを使わない)、host 省略は自サーバー、エラーを 0 件・不在に変換しない契約、resolve が mute/block を除外しない判断を記録する。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/product/social-experience.md"
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (server/, openapi/shuttlepub.json)"
