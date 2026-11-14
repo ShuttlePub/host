@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:shuttlepub-web-remote-emoji-reuse-ui",
+  "actor": "d09-worker",
+  "team": "shuttlepub-main",
+  "claimed_at": "2026-11-14T12:30:00.0066982+00:00",
+  "base_commit": "8cf51341abc5a44dbf3667d849ad243f3b19b1d5"
+}
