@@ -648,6 +648,7 @@ queue 未登録、issue 未公開、仮 slug 未予約。ここに書く受付�
   - 契約: `EmojiRef`は不変。`EmojiView`にoptionalで`origin`（外部絵文字のみ）・`image_state`（`present`／`missing`。`availability`と独立で、画像なしでもavailableなら送信可・`:name:`表示、d09-q02）・`usage`（外部は`existing_reaction_only`、d09-q01）。S8の`EmojiReactionCount`にoptionalな`view`（カスタム絵文字のチップは必須で送る）を足し、ユーザーUI決定（同名で別サーバーの絵文字の見分けは地球マーク=外部印をチップに出す、U5=c）をチップ単位の`view.origin`で保証する。新エラー`emoji_usage_not_allowed`（422）。
   - 設定PUTは外部絵文字を常用に入れると422（応答にも出さない）。reaction PUTの判定順は1 利用可否（`emoji_unavailable` 422）→2 現在の選択と同じなら200 no-op→3 外部絵文字でその投稿に同じ絵文字のチップが無ければ422 `emoji_usage_not_allowed`→4 外部絵文字で別の絵文字に反応済みなら409（直接置換せず現在の反応は維持）→5 選択200。3・4は`existing_reaction_only`の絵文字のみで、Unicode・自サーバー絵文字はS3の置換のまま。自分だけが付けた外部チップをDELETEするとチップが消え、同じ絵文字の再PUTは3の422になる。D03 q09・q10は応答に現れないため追加フィールドなし。
   - 学び（closeout）: identityは`EmojiRef`不変で出自は`view`側に置く。画像状態と利用可否は独立。独立レビューの任意指摘3件（自分だけのチップ消失のfixture、`missing`時のshortcode整合、`PutReaction`の説明への例外追記）は追加commit `76e71fe`で対応した。
+- **採用済み（モック合意で補完。明示的なユーザー決定ではない）**: `d09-q05-deleted-emoji-chip-fallback`。元サーバーで削除された絵文字チップは取得失敗時と同じ `:name:` 表示にし、押して利用できる。`d09-q02`の補足であり、`d09-q03`の保存期間は未決のまま。
 - **仮 slug**: `remote-emoji-reaction-reuse`。
 - **target repo 別分割**: ShuttlePub の絵文字 identity・取得 / 利用条件・連合 reaction 表現候補、
   frontends の既存リアクションからの操作候補。Emumet の配送契約変更が必要なら分割する。
