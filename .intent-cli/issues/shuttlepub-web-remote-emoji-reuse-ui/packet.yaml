@@ -1,0 +1,70 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-web-remote-emoji-reuse-ui: 他サーバー絵文字リアクションへの便乗 UI (地球マーク・:name: 代替表示・ピッカー非表示・不正 mutation の拒否、D09 画面差分)"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-web-remote-emoji-reuse-ui
+  domain: shuttlepub
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/shuttlepub-web (bff・src・test・README・bff/schema.graphql コメント), apps/ui-catalog/visual (外部絵文字チップの登録・期待値)"
+  target_part: "他サーバーのカスタム絵文字 (EmojiView.origin あり、usage=existing_reaction_only) を既存リアクションチップへの便乗だけで使える UI と、それに伴う mock・BFF・エラー経路の追従"
+  dependencies:
+    - "shuttlepub-web-schema-pin-2026-11 (frontends PR #48、producer pin ShuttlePub a00d234 / Emumet c4d6ea3 を取り込み済み)"
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。frontends 側に親状態を作成しない"
+    - "仕様の正本は host main の intents/shuttlepub/features/note-search-ui/ui-spec.md §5 (D09 差分 UI)・quick-reaction-ui/ui-spec.md・candidates.md の D09 (d09-q01〜q06)。ユーザー決定済みの作業順 (準備・D09・D08・D04) の D09 unit"
+    - "外部絵文字 (EmojiView.origin あり) は既存チップへの便乗だけ。ピッカー・お気に入り (常用)・最近使った (現状なし、新設しない) には出さない。直接 mutation されても mock が拒否する"
+    - "他サーバーの絵文字画像はブラウザから外部サーバーへ直接読み込まない (d09-q06、ユーザー決定)。自サーバー経由の安全な配信経路が既存契約にあれば使い、無ければ外部絵文字は常に :name: + 地球マークの代替表示にする。安全な配信 (プロキシ) の新設は別 unit で範囲外。どちらにしたかは根拠付きで PR 本文に書く。bff/schema.graphql の Emoji.imageUrl / RelationActor.iconUrl コメントの「ブラウザが直接読む」記述をこの方針に合わせる (RelationActor の表示変更自体は D08 unit)"
+    - "反応規則 (schema pin unit の申し送り): 422 emoji_unavailable → 同一絵文字の再送 200 no-op → 422 emoji_usage_not_allowed → 409 conflict の優先順。EMOJI_USAGE_NOT_ALLOWED を emoji_unavailable と区別し、422/501 で成功トースト・保存済み状態にしない。一人一投稿一反応・解除→選び直し・Undo・FIFO・Profile 分離を維持。同 shortcode の別 emoji は安定 ID で区別する"
+    - "高密度 UI、説明文は最小 (説明はヘルプへ)。マージは独立レビュー後にリードが指示する"
+  intent_references:
+    - "intents/shuttlepub/features/note-search-ui/ui-spec.md"
+    - "intents/shuttlepub/features/quick-reaction-ui/ui-spec.md"
+    - "intents/shuttlepub/features/quick-reaction-ui/overview.md"
+    - "intents/shuttlepub/packets/candidates.md"
+    - "intents/shuttlepub/product/social-experience.md"
+  acceptance_criteria:
+    - "他サーバーの絵文字チップに地球マーク (絵文字の直後・件数の前、11px、muted 色) が出て、同名の自サーバー絵文字のチップと並んでも区別できる。読み上げは「:name:（host） でリアクション（件数）」"
+    - "image_state=missing・元サーバーで削除済み・画像ロード失敗はいずれも同じ :name: 代替表示で押せる (壊れた画像を出さない)。local の利用不可表示は変えない"
+    - "d09-q06 に従い、他サーバーの絵文字画像をブラウザから外部サーバーへ直接読み込まない。画像経路の判断 (既存契約の自サーバー経由配信の有無) を根拠付きで PR 本文に記載し、schema.graphql のコメントを方針に合わせる"
+    - "外部絵文字はピッカー・お気に入り (常用)・最近使ったに出ない。直接 mutation (ピッカー経路・常用絵文字保存・チップ無しの反応) も mock が拒否する"
+    - "反応規則の優先順 (422 emoji_unavailable → 200 no-op → 422 emoji_usage_not_allowed → 409 conflict) を UI と mock が守り、EMOJI_USAGE_NOT_ALLOWED を emoji_unavailable と区別して扱う。422/501 で成功トースト・保存済み状態にしない"
+    - "一人一投稿一反応、解除→選び直し、Undo、FIFO、Profile 分離を維持し、外部絵文字への便乗→解除→Undo、Profile 往復、遅延応答でも壊れない。同 shortcode の別 emoji を安定 ID で区別する"
+    - "テスト追加: 通常/画像なし/削除済みの外部チップの外観と操作、picker/favorites に出ない、不正 mutation の拒否、422/501 で成功扱いしない、便乗→解除→Undo、Profile 往復、遅延応答。ui-catalog の visual 登録 (shuttlepub-verify desktop/mobile・capture) と E2E (mock・cookie-isolation) を更新する。必要なら quick_reaction/schema_cases.json の vendor を既存スクリプトで追加する"
+    - "purs-tidy check、openapi:verify、codegen:check、spago build/test、bun test、tsc --noEmit、既存 E2E・visual が通り、既存 CI (check/e2e/frontend-visual) がグリーン。real E2E は EMUMET_READ_TOKEN 未設定で skip される既知事情を PR 本文に明記する"
+  revision_history: []
+
+intent_placement:
+  primary_intent: intents/shuttlepub/features/quick-reaction-ui/overview.md
+  supporting_intents:
+    - intents/shuttlepub/features/note-search-ui/ui-spec.md
+    - intents/shuttlepub/packets/candidates.md
+  new_intent_needed: false
+  placement_rationale: "D09 の画面差分は quick-reaction-ui の拡張で、仕様は note-search-ui/ui-spec.md §5 に確定済み。新規 intent ノードは不要で、到達範囲・画像経路の判断・後続 (D08/D04) への申し送りは closeout で candidates.md に追記する"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "D09 画面差分の到達範囲、他サーバー画像の経路の判断 (d09-q06) と根拠、後続 D08/D04 unit への申し送りを記録する。"
+closeout_learning:
+  expected: "外部絵文字の画像経路の判断 (既存契約の自サーバー経由配信の有無)、便乗・不正 mutation・422/501 の扱い、D08 (RelationActor アイコンの代替表示) への申し送り。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/shuttlepub-web)"

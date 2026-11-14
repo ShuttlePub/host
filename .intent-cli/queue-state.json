@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-14T12:24:15.5754966+00:00",
+  "updated_at": "2026-11-14T12:32:31.8159747+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1633,6 +1633,30 @@
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/47"
       },
       "linked_pr": "https://github.com/ShuttlePub/shuttlepub-frontends/pull/48",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "shuttlepub-web-remote-emoji-reuse-ui",
+      "title": "shuttlepub-web-remote-emoji-reuse-ui: \u4ED6\u30B5\u30FC\u30D0\u30FC\u7D75\u6587\u5B57\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3\u3078\u306E\u4FBF\u4E57 UI (\u5730\u7403\u30DE\u30FC\u30AF\u30FB:name: \u4EE3\u66FF\u8868\u793A\u30FB\u30D4\u30C3\u30AB\u30FC\u975E\u8868\u793A\u30FB\u4E0D\u6B63 mutation \u306E\u62D2\u5426\u3001D09 \u753B\u9762\u5DEE\u5206)",
+      "state": "queued",
+      "dependencies": [
+        "shuttlepub-web-schema-pin-2026-11 (frontends PR #48\u3001producer pin ShuttlePub a00d234 / Emumet c4d6ea3 \u3092\u53D6\u308A\u8FBC\u307F\u6E08\u307F)"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/shuttlepub-web-remote-emoji-reuse-ui/implementation.md",
+        "review_context": ".intent-cli/issues/shuttlepub-web-remote-emoji-reuse-ui/review-context.md",
+        "yaml": ".intent-cli/issues/shuttlepub-web-remote-emoji-reuse-ui/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/shuttlepub-frontends",
+        "number": 49,
+        "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/49"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
