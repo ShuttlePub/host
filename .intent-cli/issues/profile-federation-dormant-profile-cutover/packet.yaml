@@ -1,0 +1,46 @@
+implementation_issue_packet:
+  issue_title: "profile-federation-dormant-profile-cutover: 無効化 Profile の切替前提検査・鍵初期化を保証"
+  issue_kind: bug
+  source_execution_unit: profile-federation-dormant-profile-cutover
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "migrations/ driver/src/database/postgres/ server/src/cutover_tests.rs docs/profile-federation-cutover.md .github/workflows/"
+  target_part: "全既存 Profile の切替安全性"
+  dependencies: []
+  technical_baseline:
+    - "最新 origin/main 8b6ceb4、P4 PR 91 squash daeb625、P1 actor は username と有効鍵必須"
+    - "ProfileEvent に Deleted はなく、Created の id/nanoid は移管後も不変。username は一回限り。鍵 FK は P4 で解除済み。"
+    - "正本は ShuttlePub/host。実装 child に parent state を作らない。"
+  intent_references:
+    - intents/emumet/decisions/profile-federation-in-place-reset.md
+    - intents/emumet/features/profile-federation/acceptance.md
+  acceptance_criteria:
+    - "無効化 Profile が username 設定済みなら、無効化状態を保ったまま切替時に鍵を生成し、再起動せず再有効化後 actor 200 と publicKey を確認できる。"
+    - "無効化 Profile の username が未設定なら P4 前に拒否し、旧連合データ・台帳・migration 状態に破壊的変更がない。復旧して再試行できる。"
+    - "既存鍵の再生成・上書き、旧鍵の変換、新しい署名 REST API、暗黙の Account 再有効化をしない。"
+    - "実 PostgreSQL テスト (DATABASE_URL 必須、skip のみ不可) と既存回帰、fmt/clippy、CI が成功する。PR は main 向け、Closes #issue を含み、マージしない。"
+intent_placement:
+  primary_intent: intents/emumet/features/profile-federation/overview.md
+  supporting_intents: []
+  new_intent_needed: false
+  placement_rationale: "既存の全 Profile 切替保証の欠落を修正する"
+knowledge_updates:
+  adr:
+    required: true
+    target_paths: [intents/emumet/decisions/profile-federation-in-place-reset.md]
+    decision_title: "無効化 Profile を含む全既存 Profile の検査・初期化"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths: [docs/profile-federation-cutover.md]
+    summary: "イベント上の全 Profile の前提検査・鍵生成と未設定 username の復旧手順"
+closeout_learning:
+  expected: "事実確認・採用対処・migration 番号・実 DB 検証・残余リスクを host に追記（履歴を書き換えない）"
+  write_back_required: true
+  write_back_targets: [intents/emumet/decisions/profile-federation-in-place-reset.md, intents/emumet/features/profile-federation/acceptance.md]
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
