@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:shuttlepub-layered-foundation",
+  "actor": "implementation",
+  "team": "shuttlepub-core",
+  "claimed_at": "2026-11-15T14:36:18.8171516+00:00",
+  "base_commit": "acd6dedadc29709abc1f410b352a63a3964889fe"
+}
