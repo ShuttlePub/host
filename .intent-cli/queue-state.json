@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-15T14:31:28.5388953+00:00",
+  "updated_at": "2026-11-15T14:35:43.3448772+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1763,6 +1763,28 @@
       },
       "worker_role": "implementation",
       "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "shuttlepub-layered-foundation",
+      "title": "shuttlepub-layered-foundation: \u65E2\u5B58\u5185\u90E8\u5B9F\u88C5\u3092\u7834\u68C4\u3057\u3001cake-pattern DI \u306E\u30EC\u30A4\u30E4\u30FC\u30C9\u69CB\u6210\u3078\u571F\u53F0\u3092\u7F6E\u304D\u63DB\u3048\u308B",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/shuttlepub-layered-foundation/implementation.md",
+        "review_context": ".intent-cli/issues/shuttlepub-layered-foundation/review-context.md",
+        "yaml": ".intent-cli/issues/shuttlepub-layered-foundation/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/ShuttlePub",
+        "number": 30,
+        "url": "https://github.com/ShuttlePub/ShuttlePub/issues/30"
+      },
+      "worker_role": "builder",
+      "review_role": "reviewer",
       "priority": "high",
       "priority_revision": 0
     }
