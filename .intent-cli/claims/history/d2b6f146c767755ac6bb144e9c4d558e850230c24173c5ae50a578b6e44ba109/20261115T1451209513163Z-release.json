@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-web-real-e2e-public-emumet",
+  "actor": "real-e2e-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-15T14:51:20.9513163+00:00",
+  "reason": "PR ShuttlePub/shuttlepub-frontends#56 \u3092\u516C\u958B\u3057 CI \u5168\u7DD1 (shuttlepub-real-e2e \u306F 5 passed)\u3002\u72EC\u7ACB\u30EC\u30D3\u30E5\u30FC\u3068\u30DE\u30FC\u30B8\u5224\u65AD\u306F\u30EA\u30FC\u30C9",
+  "displaced_holder": "real-e2e-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-15T14:29:24.5179316+00:00",
+  "base_commit": "4699942a616e10f40044e257978f1a7893f8319a"
+}
