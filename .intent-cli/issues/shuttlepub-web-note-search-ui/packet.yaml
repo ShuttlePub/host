@@ -1,0 +1,73 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-web-note-search-ui: 投稿検索 (BFF と /search 画面、from:@acct の作者チップ・無限スクロール・時間切れの続き読み) (D04)"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-web-note-search-ui
+  domain: shuttlepub
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: "apps/shuttlepub-web (bff・src・test・README・e2e・openapi の fixture vendor), apps/ui-catalog/visual (検索画面の登録・期待値)"
+  target_part: "D04 投稿検索: BFF (ShuttlePub #23 searchPersonalNotes と #27 作者 resolve/suggestions の mock・real adapter と GraphQL) と、既存 /search placeholder を置き換える検索画面 (U4a/U4b)"
+  dependencies:
+    - "ShuttlePub #23 (note search 契約) と #27 (author lookup 契約)、producer pin bd997e6 (frontends PR #48 が a00d234 まで、以後 bd997e6 を取り込み済み。fixture note_search_author/ は本 unit で vendor する)"
+    - "shuttlepub-web-personal-domain-controls-fixes (frontends PR #52、App.MuteBlock.Actor の名前規則 display_name → preferred_username → @acct → actor URL)"
+    - "shuttlepub-web-remote-emoji-reuse-ui (frontends PR #50、d09-q06 の他サーバー画像経路の判断)"
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。frontends 側に親状態を作成しない"
+    - "仕様の正本は host main の intents/shuttlepub/features/note-search-ui/ui-spec.md と mocks/index.html (合意 v2)、candidates.md D04、grill d04-q08〜q18・d09-q06。ユーザー決定済みの作業順 (準備・D09・D08・D04) の D04 unit"
+    - "ShuttlePub の検索・作者 API は契約のみで real は 501 を返す。real adapter は 501・不正な 200・通信失敗を mock の成功にフォールバックしない。mock と real は同じ型・エラー体系。作者 API の 409 (acct が複数の作者を指す) をリアクションの conflict と混同しない"
+    - "検索結果の項目は note_id/author(actor URL)/body/created_at だけ。表示名・アイコン・件数・リアクションは契約に無い。不足は不足として表示し (real)、mock の仮表示と区別する。外部 icon はブラウザで読まない (d09-q06)。名前は D08 の規則 (display_name → preferred_username → @acct → actor URL)、URL から推測しない"
+    - "選択 Profile にスコープし、BFF で本人所有・選択一致を確認する。候補選択は返却 actor_url で確定し resolve しない。手入力確定時だけ resolve する (d04-q14)。host 省略は自サーバー (EMUMET_PUBLIC_HOST、ブラウザの hostname は使わない、d04-q15)"
+    - "keydown は App.Dom.keydownAction に集約。IME 確定の Enter/スペースで検索・変換しない。遅延応答 (suggestions/resolve/検索) は新しい入力・条件・Profile を上書きしない"
+    - "URL には確定した条件 (検索語と作者の actor URL) だけを保持し、cursor・途中結果は入れない (d04-q16)。時間切れ (page.truncated) は途中結果を残し自動読み込みを止め、「途中から続きを読む」で next_cursor から手動再開 (d04-q17)。通信エラー・501 は途中結果に偽装しない"
+    - "プロフィール「…」の入口は作者だけの検索を即時実行 (q08/q18)。共用 postMenu の全投稿メニューへ無条件に入口を増やさない。mute/block 対象は件数・空き行・ハイライトに漏らさない。外部絵文字は検索候補に出さない"
+    - "高密度 UI、説明文は最小 (説明はヘルプへ)。マージは独立レビュー後にリードが指示する"
+  intent_references:
+    - "intents/shuttlepub/features/note-search-ui/ui-spec.md"
+    - "intents/shuttlepub/features/note-search-ui/overview.md"
+    - "intents/shuttlepub/packets/candidates.md"
+    - "intents/shuttlepub/product/social-experience.md"
+  acceptance_criteria:
+    - "BFF: GraphQL の検索・作者 resolve/suggestions が選択 Profile にスコープされ、本人所有・選択一致を確認する。mock と real が同じ型・エラー体系で、real の 501・不正 200・通信失敗が mock 成功にならない。作者 API の 409 がリアクションの conflict と混ざらない。契約に無いカード項目 (表示名・件数など) は不足として扱われ mock の仮表示と区別される"
+    - "検索欄: from:@user@host を作者チップに変換 (Enter は変換後に検索、スペースは変換のみ、2 つ目の from は置換、解決失敗は元テキストを残し短いエラーで検索しない、host 省略は自サーバー)。作者は最大 1、キーワードのみの全体検索も可、常設の「+投稿者」なし。候補は最大 5 で combobox/listbox のキーボード操作ができ、候補選択は actor_url で確定し resolve しない。IME 確定の Enter/スペースで誤検索・誤変換しない"
+    - "結果: 無限スクロール、本文・CW の一致を安全なテキスト要素でハイライト (HTML 直挿入なし)、CW は畳む。条件変更で cursor と世代をリセットし、多重ロード・重複追加を防ぐ。時間切れは途中結果を残し自動読み込み停止、「途中から続きを読む」で再開。追加ページ失敗は再試行。通信エラー・501 は途中結果に偽装せず、501 は短い未実装表示"
+    - "URL: 確定した検索語と作者が URL に保持され、戻る・共有・再読込で再現される (SSR→hydration を含む)。cursor・途中結果は URL に入れない。プロフィール「…」の入口は作者チップ付きで即検索 (作者のみ)"
+    - "遅延応答 (suggestions/resolve/検索) が新しい入力や Profile を上書きしない。Profile 切替で状態をリセットする。mute/block 対象が件数・空き行・ハイライトに漏れない。他サーバーの icon・絵文字を外部へ読み込まない (外部リクエスト 0)"
+    - "テスト追加: Enter/スペース/IME、from 置換、解決失敗、host 省略、候補選択で resolve 未実行、古い応答破棄、cursor 終了・重複・時間切れ・続きを読む・追加ページ失敗、日本語/絵文字/複数一致/CW/HTML 相当文字列のハイライト、URL 往復、プロフィール入口、0 件、429/503/501、desktop/mobile、SSR→hydration、Profile 切替、外部リクエスト 0。producer fixture (note_search_author、personal_domain/search*) を contract test で再生する"
+    - "purs-tidy check、openapi:verify、codegen:check、spago build/test、bun test、tsc --noEmit、ui-catalog の test/visual (shuttlepub-verify desktop/mobile・capture)、E2E (mock・cookie-isolation) が通り、既存 CI がグリーン。real E2E は EMUMET_READ_TOKEN 未設定で skip される既知事情を PR 本文に明記する"
+  revision_history: []
+
+intent_placement:
+  primary_intent: intents/shuttlepub/features/note-search-ui/overview.md
+  supporting_intents:
+    - intents/shuttlepub/features/note-search-ui/ui-spec.md
+    - intents/shuttlepub/packets/candidates.md
+  new_intent_needed: false
+  placement_rationale: "D04 の画面・BFF は note-search-ui の既存仕様 (ui-spec v2、d04-q08〜q18) の実装で、新規 intent ノードは不要。到達範囲と契約の不足 (検索カードの表示項目) は closeout で candidates.md に追記する"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "D04 実装の到達範囲、契約に無いカード項目 (表示名・件数・リアクション) の扱い、real が 501 のままである事情を記録する。"
+closeout_learning:
+  expected: "検索 BFF と画面の到達範囲、from:@ の解決規則の実装判断、時間切れの続き読み、契約に無い検索カード項目の扱い、プロフィール入口の範囲。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (apps/shuttlepub-web)"

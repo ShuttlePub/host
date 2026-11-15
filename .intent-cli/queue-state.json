@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-15T01:20:34.533857+00:00",
+  "updated_at": "2026-11-15T01:28:04.1474094+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1708,6 +1708,32 @@
         "repo": "ShuttlePub/shuttlepub-frontends",
         "number": 51,
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/51"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "shuttlepub-web-note-search-ui",
+      "title": "shuttlepub-web-note-search-ui: \u6295\u7A3F\u691C\u7D22 (BFF \u3068 /search \u753B\u9762\u3001from:@acct \u306E\u4F5C\u8005\u30C1\u30C3\u30D7\u30FB\u7121\u9650\u30B9\u30AF\u30ED\u30FC\u30EB\u30FB\u6642\u9593\u5207\u308C\u306E\u7D9A\u304D\u8AAD\u307F) (D04)",
+      "state": "queued",
+      "dependencies": [
+        "ShuttlePub #23 (note search \u5951\u7D04) \u3068 #27 (author lookup \u5951\u7D04)\u3001producer pin bd997e6 (frontends PR #48 \u304C a00d234 \u307E\u3067\u3001\u4EE5\u5F8C bd997e6 \u3092\u53D6\u308A\u8FBC\u307F\u6E08\u307F\u3002fixture note_search_author/ \u306F\u672C unit \u3067 vendor \u3059\u308B)",
+        "shuttlepub-web-personal-domain-controls-fixes (frontends PR #52\u3001App.MuteBlock.Actor \u306E\u540D\u524D\u898F\u5247 display_name \u2192 preferred_username \u2192 @acct \u2192 actor URL)",
+        "shuttlepub-web-remote-emoji-reuse-ui (frontends PR #50\u3001d09-q06 \u306E\u4ED6\u30B5\u30FC\u30D0\u30FC\u753B\u50CF\u7D4C\u8DEF\u306E\u5224\u65AD)"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/shuttlepub-web-note-search-ui/implementation.md",
+        "review_context": ".intent-cli/issues/shuttlepub-web-note-search-ui/review-context.md",
+        "yaml": ".intent-cli/issues/shuttlepub-web-note-search-ui/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/shuttlepub-frontends",
+        "number": 53,
+        "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/53"
       },
       "worker_role": "implementation",
       "review_role": "review",
