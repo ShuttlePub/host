@@ -46,9 +46,13 @@ Account / Profile / Follow の CRUD 土台と未実装の signup/login エンド
 記録では以下は ShuttlePub 本体の Non-goal として emumet / booskiff 側に
 責務が置かれている:
 
-- アカウント・署名鍵・連合中継 → Emumet
+- アカウント・署名鍵 (Identity Plane) → Emumet
 - 認証・認可基盤 → Ory (Kratos/Hydra)
 - ファイル保管 → Booskiff
+
+※ 2026-11-15 改訂 (decisions/2026-11-15-role-boundary-and-rebuild.md の
+D12-D14)。旧記述は「連合中継」も Emumet の責務としていたが誤りで、
+リレーサーバーとしての振る舞いは ShuttlePub 本体の責務 (D2・D13)。
 
 ※ 2026-08-29 grill で全面刷新 (D1) + Emumet 側先行 (D3) が決定。
 初回実行単位 `note-foundation` (decisions/2026-08-29-initial-shaping.md 参照)。

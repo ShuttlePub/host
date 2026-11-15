@@ -9,10 +9,16 @@ facets: [vocabulary]
 
 ## Mission statement
 
-ShuttlePub サービス群における SNS 本体サービス。タイムライン構築と投稿コンテンツの
-永続化を責務とし、アカウント・署名鍵・連合中継は Emumet、認証認可は Ory
-(Kratos/Hydra)、ファイル保管は Booskiff に委譲する構成が、サービス群の現行
-intent 記録 (emumet / booskiff) として確定している。
+ShuttlePub サービス群における SNS 本体サービス。リレーサーバーとしての
+振る舞い、タイムライン構築、投稿コンテンツの永続化など、SNS として成り立たせる
+部分を責務とする。大まかな指標として、水平スケーリングの効果量が大きいものを
+ShuttlePub に置く。アカウント・署名鍵などの Identity Plane は Emumet、
+認証認可は Ory (Kratos/Hydra)、ファイル保管は Booskiff に委譲する。
+
+※ 2026-11-15 改訂 (decisions/2026-11-15-role-boundary-and-rebuild.md の
+D12-D14)。旧記述は emumet intent からの転記で「連合中継は Emumet」として
+いたが、誤りとして改めた。Emumet の中で inbox / outbox といった ActivityPub の
+技術は現れるが、それはリレー機能ではない。
 
 ※ 上記はサービス群としての使命の記録。現状コードがこの構成を実現しているかは
 別途「現状コードとの対応」に観察として整理する (乖離は事実の記録であり、
@@ -22,15 +28,16 @@ intent 記録 (emumet / booskiff) として確定している。
 
 - ユーザーは Emumet アカウント (acct = Emumet ドメイン) でログインし、
   ShuttlePub 上でタイムラインを利用する (emumet intent より)。
-- 本体サービスはタイムライン構築に集中し、連合プロトコル面の複雑さは
-  Emumet に閉じ込められる (emumet intent より)。
+- 本体サービスはリレーとしての振る舞いとタイムライン構築に集中し、
+  アカウント・署名鍵など Identity に関わる複雑さは Emumet に閉じ込められる
+  (2026-11-15 D12・D13 で改訂)。
 - 投稿に添付するメディアは Booskiff 保管を前提とする (booskiff intent より)。
 
 ## Values / principles
 
-- **責務の分離**: アカウント・鍵・連合中継は Emumet、認証認可は Ory、
-  ファイルは Booskiff、タイムライン・投稿永続化は ShuttlePub 本体
-  (emumet の Values より転記)。
+- **責務の分離**: アカウント・鍵 (Identity Plane) は Emumet、認証認可は Ory、
+  ファイルは Booskiff、リレー・タイムライン・投稿永続化は ShuttlePub 本体
+  (emumet の Values からの転記を 2026-11-15 D12・D13 で改訂)。
 - **連合ファースト**: ActivityPub 仕様との整合を優先する (emumet より転記)。
 
 ## 現状コードとの対応 (2026-08-29 観察、base = d857781, 2023-04-30)
