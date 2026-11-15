@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-15T10:27:24.7833635+00:00",
+  "updated_at": "2026-11-15T14:31:14.6529774+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1736,6 +1736,26 @@
         "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/53"
       },
       "linked_pr": "https://github.com/ShuttlePub/shuttlepub-frontends/pull/54",
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "shuttlepub-web-real-e2e-public-emumet",
+      "title": "shuttlepub-web-real-e2e-public-emumet: \u5B9F Emumet \u3068\u306E real E2E \u3092 EMUMET_READ_TOKEN \u306A\u3057\u3067\u6BCE\u56DE\u5B9F\u884C\u3059\u308B (Emumet \u306F\u516C\u958B\u30EA\u30DD\u30B8\u30C8\u30EA)",
+      "state": "queued",
+      "dependencies": [
+        "ShuttlePub/Emumet \u306F\u516C\u958B\u30EA\u30DD\u30B8\u30C8\u30EA (\u30E6\u30FC\u30B6\u30FC\u304C\u78BA\u8A8D\u6E08\u307F\u3001\u672A\u30ED\u30B0\u30A4\u30F3\u3067\u8AAD\u3081\u308B)\u3002pin \u306F apps/shuttlepub-web/e2e/emumet-revision (ef82462a1ac29786701f07feed12e9efe7236f30)",
+        "frontends PR #32 (shuttlepub-web-emumet-auth\u3001\u5B9F E2E \u306E\u5C0E\u5165\u5143)"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/shuttlepub-web-real-e2e-public-emumet/implementation.md",
+        "review_context": ".intent-cli/issues/shuttlepub-web-real-e2e-public-emumet/review-context.md",
+        "yaml": ".intent-cli/issues/shuttlepub-web-real-e2e-public-emumet/packet.yaml"
+      },
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",

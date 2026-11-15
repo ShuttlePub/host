@@ -300,3 +300,4 @@
 {"ts":"2026-11-15T10:27:08.2377312+00:00","execution_unit":"shuttlepub-web-note-search-ui","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":54}
 {"ts":"2026-11-15T10:27:08.2377312+00:00","execution_unit":"shuttlepub-web-note-search-ui","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":54}
 {"ts":"2026-11-15T10:27:24.8200098+00:00","execution_unit":"shuttlepub-web-note-search-ui","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/shuttlepub-frontends","pr":54}
+{"ts":"2026-11-15T14:31:14.6817862+00:00","execution_unit":"shuttlepub-web-real-e2e-public-emumet","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/shuttlepub-web-real-e2e-public-emumet/"}

@@ -1,0 +1,64 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-web-real-e2e-public-emumet: 実 Emumet との real E2E を EMUMET_READ_TOKEN なしで毎回実行する (Emumet は公開リポジトリ)"
+  issue_kind: bug
+  source_execution_unit: shuttlepub-web-real-e2e-public-emumet
+  domain: shuttlepub
+  target_repo: ShuttlePub/shuttlepub-frontends
+  target_path: ".github/workflows/e2e.yml (shuttlepub-real-e2e ジョブ), apps/shuttlepub-web (AUTH.md の CI 記述、e2e-real.sh と e2e/ の起動不具合があれば最小限の修正)"
+  target_part: "shuttlepub-real-e2e ジョブの skip 条件 (secrets.EMUMET_READ_TOKEN) と Emumet checkout の token 指定の除去、有効化して初めて露見する CI 上の失敗の修正、e2e マトリクス real モードの実態確認"
+  dependencies:
+    - "ShuttlePub/Emumet は公開リポジトリ (ユーザーが確認済み、未ログインで読める)。pin は apps/shuttlepub-web/e2e/emumet-revision (ef82462a1ac29786701f07feed12e9efe7236f30)"
+    - "frontends PR #32 (shuttlepub-web-emumet-auth、実 E2E の導入元)"
+  technical_baseline:
+    - "durable state、packet、intent、queue の正本は ShuttlePub/host のみ。frontends 側に親状態を作成しない"
+    - "shuttlepub-real-e2e ジョブは secrets.EMUMET_READ_TOKEN が空だとテスト全体を skip し、Emumet checkout にもこの鍵を渡している。Emumet は公開なので鍵は不要。skip で『通った』ように見える状態を残さない"
+    - "このジョブは CI で一度も実行されていない。有効化して失敗した場合は同じ PR で原因を直す。直すのが難しい、または範囲が広がる場合は止めて報告する (リードが判断する)"
+    - "e2e マトリクスの real モード (booskiff-web、BOOSKIFF_READ_TOKEN) が本物の Booskiff core に繋がっているか・何を試験しているかを調べて PR 本文に報告する。変更が必要なら理由を添える (本 unit では Booskiff 側の鍵の扱いは変更しない)"
+    - "変更は e2e.yml を中心に最小限。鍵に触れている workflow 参照のスクリプト・ドキュメントの記述 (AUTH.md) も合わせて直す"
+    - "action は既存の commit SHA pin を維持する。permissions は contents: read のまま。マージは独立レビュー後にリードが指示する"
+  intent_references:
+    - "intents/shuttlepub/packets/candidates.md"
+    - "intents/shuttlepub/technology/overview.md"
+  acceptance_criteria:
+    - "shuttlepub-real-e2e ジョブが secrets.EMUMET_READ_TOKEN なしで毎回実行される (skip ステップ・EMUMET_AVAILABLE 条件・Emumet checkout の token 指定が無い)。Emumet は pin した revision を公開 checkout する"
+    - "CI 上で shuttlepub-real-e2e が実際にテストを実行し成功する (skip ではない証拠: ジョブログの Playwright 実行結果と passed 件数を PR 本文に記載)。失敗した場合の原因は同じ PR で直す。直すのが難しい・範囲が広がる場合は止めて報告する"
+    - "apps/shuttlepub-web/AUTH.md の EMUMET_READ_TOKEN・private checkout・skip の記述が実態 (公開 Emumet・毎回実行) に合う"
+    - "e2e マトリクス real モードについて、実 Booskiff core に繋がっているか・何を試験しているか・変更要否を PR 本文に報告する"
+    - "既存 CI (check・visual・cookie-isolation・e2e マトリクス) が劣化しない。PR は未マージで CI がグリーン"
+  revision_history: []
+
+intent_placement:
+  primary_intent: intents/shuttlepub/technology/overview.md
+  supporting_intents:
+    - intents/shuttlepub/packets/candidates.md
+  new_intent_needed: false
+  placement_rationale: "CI 運用の修正で新規 intent ノードは不要。candidates.md の『real E2E は EMUMET_READ_TOKEN 未設定で skip』の既知事情が解消されるため closeout で追記する"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/packets/candidates.md"
+    summary: "real E2E が鍵なしで毎回実行されるようになったこと、有効化で見つかった失敗と修正、e2e マトリクス real モードの調査結果を記録する。"
+closeout_learning:
+  expected: "実 Emumet E2E を有効化して初めて分かった失敗とその修正、e2e マトリクス real モード (Booskiff) の実態。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/packets/candidates.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/shuttlepub-frontends リポジトリ (.github/workflows/e2e.yml、apps/shuttlepub-web)"
