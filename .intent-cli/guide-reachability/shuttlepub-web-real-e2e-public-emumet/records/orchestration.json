@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "shuttlepub-web-real-e2e-public-emumet",
+  "role": "orchestration",
+  "host_commit": "42af786a1d3ed74811b9d31dbebc5e2b77711c3d",
+  "recorded_at": "2026-11-15T15:16:16.4024652+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": null
+}

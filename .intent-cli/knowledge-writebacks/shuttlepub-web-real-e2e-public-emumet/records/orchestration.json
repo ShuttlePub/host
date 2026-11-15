@@ -1,0 +1,11 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "shuttlepub-web-real-e2e-public-emumet",
+  "role": "orchestration",
+  "host_commit": "42af786a1d3ed74811b9d31dbebc5e2b77711c3d",
+  "recorded_at": "2026-11-15T15:16:16.120423+00:00",
+  "targets": [
+    "intents/shuttlepub/packets/candidates.md"
+  ],
+  "note": null
+}
