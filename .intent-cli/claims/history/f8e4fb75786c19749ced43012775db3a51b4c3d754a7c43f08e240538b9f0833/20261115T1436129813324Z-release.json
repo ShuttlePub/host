@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-layered-foundation",
+  "actor": "design",
+  "team": "shuttlepub-core",
+  "recorded_at": "2026-11-15T14:36:12.9813324+00:00",
+  "reason": "packet \u3092\u767A\u884C\u3057\u305F (issue #30)",
+  "displaced_holder": "design",
+  "displaced_team": "shuttlepub-core",
+  "displaced_claimed_at": "2026-11-15T13:45:17.5749588+00:00",
+  "base_commit": "17cbcc9f3b41ce0c3870040d86ab18c99eda141a"
+}
