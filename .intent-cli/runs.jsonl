@@ -297,3 +297,6 @@
 {"ts":"2026-11-15T01:20:34.5216588+00:00","execution_unit":"shuttlepub-web-personal-domain-controls-fixes","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":52}
 {"ts":"2026-11-15T01:27:50.2836557+00:00","execution_unit":"shuttlepub-web-note-search-ui","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/shuttlepub-web-note-search-ui/"}
 {"ts":"2026-11-15T01:28:04.1474094+00:00","execution_unit":"shuttlepub-web-note-search-ui","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#53","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/53"}
+{"ts":"2026-11-15T10:27:08.2377312+00:00","execution_unit":"shuttlepub-web-note-search-ui","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":54}
+{"ts":"2026-11-15T10:27:08.2377312+00:00","execution_unit":"shuttlepub-web-note-search-ui","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":54}
+{"ts":"2026-11-15T10:27:24.8200098+00:00","execution_unit":"shuttlepub-web-note-search-ui","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/shuttlepub-frontends","pr":54}
