@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-15T14:31:14.6529774+00:00",
+  "updated_at": "2026-11-15T14:31:28.5388953+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1755,6 +1755,11 @@
         "implementation": ".intent-cli/issues/shuttlepub-web-real-e2e-public-emumet/implementation.md",
         "review_context": ".intent-cli/issues/shuttlepub-web-real-e2e-public-emumet/review-context.md",
         "yaml": ".intent-cli/issues/shuttlepub-web-real-e2e-public-emumet/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/shuttlepub-frontends",
+        "number": 55,
+        "url": "https://github.com/ShuttlePub/shuttlepub-frontends/issues/55"
       },
       "worker_role": "implementation",
       "review_role": "review",
