@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:shuttlepub-web-real-e2e-public-emumet",
+  "actor": "real-e2e-worker",
+  "team": "shuttlepub-main",
+  "claimed_at": "2026-11-15T14:29:24.5179316+00:00",
+  "base_commit": "51d6671243a38629a9825b0b0b780fabbdd0b7f8"
+}
