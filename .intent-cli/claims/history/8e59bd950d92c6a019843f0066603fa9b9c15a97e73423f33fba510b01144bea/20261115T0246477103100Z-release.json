@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-web-note-search-ui",
+  "actor": "d04-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-15T02:46:47.71031+00:00",
+  "reason": "PR ShuttlePub/shuttlepub-frontends#54 \u3092\u516C\u958B\u3057CI\u7DD1\u3002\u72EC\u7ACB\u30EC\u30D3\u30E5\u30FC\u3068\u30DE\u30FC\u30B8\u5224\u65AD\u306F\u30EA\u30FC\u30C9",
+  "displaced_holder": "d04-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-15T01:25:54.3635553+00:00",
+  "base_commit": "51f817cf2836f479969deea563258b6867083dc8"
+}
