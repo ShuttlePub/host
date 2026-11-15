@@ -59,7 +59,11 @@ ShuttlePub は nitinol 0.7 による CQRS+ES へ乗り換える (D17)。現在�
 - サービスは `application` に置く。依存は supertrait で宣言し、処理は default メソッドに書く。`impl<T: DependOnA + DependOnB> FooService for T {}` の blanket impl と、`DependOnFooService` を対で定義する。サービスは struct もフィールドも持たない。
 - `server` の `Handler` が `driver` の実体を保持し、すべての `DependOn*` を実装する。サービスの `DependOn*Service` は `type FooService = Self` で実装する。
 - axum の state は `AppModule(Arc<Handler>)` とし、`Clone` と `Deref<Target = Handler>` を実装する。ハンドラは `State<AppModule>` を受け取り、`app.foo_service().execute(..)` の形で呼ぶ。
-- trait の非同期メソッドは `async_trait` を使わず、`fn f(&self, ..) -> impl Future<Output = ..> + Send` の形で書く。
+- trait の非同期メソッドは `async_trait` を使わない。書き方は次のとおり (stargate と同じ)。
+  - 口の trait の宣言は、`Send` を保証するために `fn f(&self, ..) -> impl Future<Output = ..> + Send` と書く。
+  - その実装 (`impl Foo for ..`) は `async fn` で書く。`impl Future` を返す関数の本体に async ブロックを書く形にはしない。`clippy::manual_async_fn` (CI では `-D warnings` で失敗する) の対象で、不要な束縛や clone を招くため。
+  - サービスの default メソッドは、宣言と本体が同じ場所にあり `Send` の保証が要るので、`impl Future<Output = ..> + Send` を返して本体を 1 つの async ブロックにする。この形は trait の default メソッドなので `clippy::manual_async_fn` の対象にならない。
+  - trait に属さない通常の関数は `async fn` で書く。
 
 ### 本ユニットで必要な口
 
