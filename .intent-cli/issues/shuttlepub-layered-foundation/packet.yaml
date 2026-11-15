@@ -1,0 +1,69 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-layered-foundation: 既存内部実装を破棄し、cake-pattern DI のレイヤード構成へ土台を置き換える"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-layered-foundation
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "kernel/, application/, driver/, server/, Cargo.toml, Cargo.lock, docs/, migrations/, docker-compose.yml, .env, .idea/, .github/workflows/lint-and-test.yml"
+  target_part: "ShuttlePub の workspace 全体 (kernel / application / driver / server) の土台。/api/v1 契約の定義と openapi/shuttlepub.json は変更対象外"
+  dependencies: []
+  technical_baseline:
+    - "既存の内部実装は破棄して置き換える。コードは引き継がず、引き継ぐのはやり方 (手順と確認項目) のみ (D15)"
+    - "基本構成は HalsekiRaika/architectured の main に倣う。server → {application, driver} → kernel の依存方向と、DependOn* trait + blanket impl による cake-pattern DI を使う (D16)"
+    - "リレー部分は HalsekiRaika/stargate を PoC として参照する。参照するのは構成と手順で、コードは移さない (D18)"
+    - "/api/v1 の契約 (openapi/shuttlepub.json) には差分を出さない。契約の定義 (server/src/api_v1*, server/src/openapi.rs, server/src/bin/openapi.rs) と契約テスト・fixture は D15 の例外として残す (D19)"
+    - "nitinol 0.7 による CQRS+ES (D17) と永続化は本ユニットに含めない。次のユニットで導入する"
+    - "作業ブランチの基点と PR の base は dev。main へは動く形になってから別途 PR で merge する"
+  intent_references:
+    - "intents/shuttlepub/decisions/2026-11-15-role-boundary-and-rebuild.md (D12-D19)"
+    - "intents/shuttlepub/decisions/2026-08-29-initial-shaping.md (D1-D4)"
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md"
+    - ".intent-cli/rulings/shuttlepub/shuttlepub-core/role-boundary-and-rebuild-2026-11-15.json"
+  acceptance_criteria:
+    - "AC1 (層の依存方向): workspace は kernel / application / driver / server の 4 crate で、Cargo の依存は application → kernel のみ、driver → kernel のみ、server → application・driver・kernel、kernel は workspace 内の crate に依存しない"
+    - "AC2 (cake-pattern DI): 外部接続の口は kernel の trait と対になる DependOn* trait で定義し、application のサービスは依存を supertrait で宣言した trait (処理は default メソッド) + blanket impl + DependOn* で提供する。server の Handler がすべての DependOn* を実装し、axum の state は AppModule(Arc<Handler>) とする。HTTP ハンドラは DependOn* のアクセサ経由でだけサービスを呼ぶ"
+    - "AC3 (旧実装の除去): 旧 Note スライス (kernel の Note 集約、application の NoteService・timeline・codec)、開発用ルート /api/notes・/api/notes/{id}/reactions・/api/timeline とそのテスト、2023 年の残骸 (migrations/、docker-compose.yml、.env、.idea/) が削除され、workspace から nitinol への依存が外れている"
+    - "AC4 (契約の維持): openapi/shuttlepub.json は基点コミットとバイト一致し、cargo run --locked -p shuttlepub-server --bin openapi で再生成しても差分が出ない。契約テスト (server/tests/openapi.rs、quick_reaction.rs、personal_domain.rs) と fixture は残り、すべて通る。これらのテストへの変更は、アプリの組み立て方の差し替えと、削除した開発用ルートに関する検証の削除に限る"
+    - "AC5 (Follow→Accept の再現): POST /inbox と GET /actor が新しい構成の上で動く。Implementation Packet の「Follow→Accept の確認項目」F1〜F12 をすべて満たし、各項目がそれぞれテストで確認されている"
+    - "AC6 (サービス単体のテスト): Follow→Accept のサービスは、kernel の口をテスト用の実装に差し替えることで、HTTP サーバーもネットワークも使わずにテストできる。そのテストが存在して通る"
+    - "AC7 (CI): .github/workflows/lint-and-test.yml が dev への push と dev 向けの PR でも実行され、既存の検査 (fmt / clippy -D warnings / test / build / git diff --check / openapi-schema) がすべて通る"
+
+# G461: packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/intent-tree/00-map.md
+  supporting_intents:
+    - "intents/shuttlepub/decisions/2026-11-15-role-boundary-and-rebuild.md"
+    - "intents/shuttlepub/technology/overview.md"
+  new_intent_needed: false
+  placement_rationale: "ドメイン形状 (00-map.md) と決定一覧 D15-D19 に対する最初の実行単位。新しい intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/intent-tree/00-map.md"
+    summary: "決定一覧 D12-D19 の存在と、置き換えの最初の単位 shuttlepub-layered-foundation の到達範囲 (土台と Follow→Accept まで。nitinol・永続化は未着手) を記録する。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/technology/overview.md"
+    summary: "2026-08-29 時点の観察のままになっている技術スタックの記述を、置き換え後の構成 (4 crate の役割、DI の形、エラーの扱い、依存の版) に更新する。"
+closeout_learning:
+  expected: "cake-pattern DI を axum へつなぐ形 (AppModule / Handler)、エラー型の層ごとの分け方、署名検証をミドルウェアに置いた場合の制約、契約テストを内部実装から切り離すために必要だった変更を記録する。次のユニット (nitinol 0.7 の導入) の前提になる。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/technology/overview.md"
+    - "intents/shuttlepub/intent-tree/00-map.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (kernel/, application/, driver/, server/)"
