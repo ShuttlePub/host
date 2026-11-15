@@ -1,0 +1,18 @@
+{
+  "schema_version": "1",
+  "entries": [
+    {
+      "domain": "shuttlepub",
+      "team": "shuttlepub-core",
+      "mode": "solo-conductor",
+      "updated_at": "2026-11-15T08:45:31.786713+00:00",
+      "transitions": [
+        {
+          "from": "delivery",
+          "to": "solo-conductor",
+          "at": "2026-11-15T08:45:31.786713+00:00"
+        }
+      ]
+    }
+  ]
+}
