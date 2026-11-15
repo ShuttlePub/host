@@ -304,3 +304,5 @@
 {"ts":"2026-11-15T14:31:28.5388953+00:00","execution_unit":"shuttlepub-web-real-e2e-public-emumet","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/shuttlepub-frontends#55","reason":"https://github.com/ShuttlePub/shuttlepub-frontends/issues/55"}
 {"ts":"2026-11-15T14:35:40.2377654+00:00","execution_unit":"shuttlepub-layered-foundation","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/shuttlepub-layered-foundation/"}
 {"ts":"2026-11-15T14:35:43.3448772+00:00","execution_unit":"shuttlepub-layered-foundation","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/ShuttlePub#30","reason":"https://github.com/ShuttlePub/ShuttlePub/issues/30"}
+{"ts":"2026-11-15T15:15:38.2379685+00:00","execution_unit":"shuttlepub-web-real-e2e-public-emumet","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":56}
+{"ts":"2026-11-15T15:15:38.2379685+00:00","execution_unit":"shuttlepub-web-real-e2e-public-emumet","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":56}
