@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-web-personal-domain-controls-fixes",
+  "actor": "d08-worker",
+  "team": "shuttlepub-main",
+  "recorded_at": "2026-11-15T01:22:03.4089887+00:00",
+  "reason": "PR #52 \u30DE\u30FC\u30B8\u30FBcloseout \u8A18\u9332\u6E08\u307F (squash a55dbab)",
+  "displaced_holder": "d08-worker",
+  "displaced_team": "shuttlepub-main",
+  "displaced_claimed_at": "2026-11-14T18:42:19.6903869+00:00",
+  "base_commit": "a30e041e9dc87ad2af030e3db91f7408abb66933"
+}
