@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:shuttlepub-web-note-search-ui",
+  "actor": "d04-worker",
+  "team": "shuttlepub-main",
+  "claimed_at": "2026-11-15T01:25:54.3635553+00:00",
+  "base_commit": "f5ac1d2cde27d9004c338fc2e6e7a49e4eaa3f6e"
+}
