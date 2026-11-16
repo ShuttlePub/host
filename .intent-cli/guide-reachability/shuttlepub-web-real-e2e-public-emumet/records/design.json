@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "shuttlepub-web-real-e2e-public-emumet",
+  "role": "design",
+  "host_commit": "42af786a1d3ed74811b9d31dbebc5e2b77711c3d",
+  "recorded_at": "2026-11-16T06:26:31.4417357+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": "guide workflow task implementation-loop \u3092 CLI \u304B\u3089\u53D6\u5F97\u3057\u3001ShuttlePub/shuttlepub-frontends \u5B9F\u88C5\u9762\u3078\u306E route \u3092\u78BA\u8A8D\u3002"
+}

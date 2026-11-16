@@ -308,3 +308,4 @@
 {"ts":"2026-11-15T15:15:38.2379685+00:00","execution_unit":"shuttlepub-web-real-e2e-public-emumet","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/shuttlepub-frontends","pr":56}
 {"ts":"2026-11-16T04:53:44.1211312+00:00","execution_unit":"shuttlepub-layered-foundation","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":31}
 {"ts":"2026-11-16T04:53:44.1211312+00:00","execution_unit":"shuttlepub-layered-foundation","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":31}
+{"ts":"2026-11-16T06:24:54.2354329+00:00","execution_unit":"shuttlepub-web-real-e2e-public-emumet","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/shuttlepub-frontends","pr":56}

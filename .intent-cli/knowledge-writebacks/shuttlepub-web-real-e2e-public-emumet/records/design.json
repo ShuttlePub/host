@@ -1,0 +1,11 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "shuttlepub-web-real-e2e-public-emumet",
+  "role": "design",
+  "host_commit": "42af786a1d3ed74811b9d31dbebc5e2b77711c3d",
+  "recorded_at": "2026-11-16T06:26:31.2334297+00:00",
+  "targets": [
+    "intents/shuttlepub/packets/candidates.md"
+  ],
+  "note": "\u5B9F Emumet real E2E \u306E\u9375\u306A\u3057CI\u5B9F\u884C\u7D50\u679C\u30FBBooskiff matrix \u306E\u8ABF\u67FB\u3092 candidates.md \u306B\u53CD\u6620\u6E08\u307F\u3002"
+}
