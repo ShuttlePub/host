@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "shuttlepub-layered-foundation",
+  "role": "architect",
+  "host_commit": "e96a90ad980a40121783a3dcd8b84681057fd937",
+  "recorded_at": "2026-11-16T04:54:14.46375+00:00",
+  "targets": [
+    "intents/shuttlepub/technology/overview.md",
+    "intents/shuttlepub/intent-tree/00-map.md"
+  ],
+  "note": null
+}
