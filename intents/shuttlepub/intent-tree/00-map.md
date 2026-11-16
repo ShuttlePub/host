@@ -19,7 +19,7 @@ identity/mission.md          使命 (サービス群記録より) + 現状コー
 product/overview.md          現状実装インベントリ (評価なし)
 technology/overview.md       現状スタック、未使用依存、設計方向 (nitinol / stargate)
 links/external.md            関連リポジトリ (nitinol, stargate, サービス群)
-decisions/                   2026-08-29 grill の決定一覧 (D1-D11)
+decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築)
 features/                    (未整理)
 clarifications/open.md       (未整理)
 interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
@@ -31,6 +31,21 @@ interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
 投稿・reply・ブースト・引用・reaction) + タイムライン投影 + stargate からの
 連合面移植 (署名モック、in-memory 永続化) + Emumet 契約書。
 受け入れ基準・検証方法は decisions D10、packet は `.intent-cli/issues/note-foundation/`。
+
+## 再構築 (D12-D19、2026-11-15〜)
+
+役割境界の訂正 (Emumet は Identity Plane、リレーサーバーとしての振る舞いは本体)
+と、内部実装の置き換えを決定した
+(`decisions/2026-11-15-role-boundary-and-rebuild.md`)。作業は `dev` で行い、
+`/api/v1` の契約は維持する (D19)。
+
+- **`shuttlepub-layered-foundation`** (完了 2026-11-16、ShuttlePub/ShuttlePub
+  PR #31、`dev` = f12933b): 4 crate のレイヤード構成と cake-pattern DI の土台、
+  新しい構成の上での Follow→Accept (`POST /inbox`・`GET /actor`)。旧 Note スライスと
+  nitinol 0.4.2 への依存は削除。到達範囲と構成は
+  [technology/overview.md](../technology/overview.md)。
+- **未着手**: nitinol 0.7 による CQRS+ES と永続化 (D17)、フォロワーの保存、
+  `/api/v1` のハンドラの実装。
 
 ## 将来 slice (依存順の目安)
 

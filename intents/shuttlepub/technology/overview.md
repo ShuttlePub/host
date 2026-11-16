@@ -1,6 +1,59 @@
 # Technology Overview
 
-## 現状スタック (2026-08-29 観察、base = d857781)
+## 現状スタック (2026-11-16、`dev` = f12933b)
+
+`shuttlepub-layered-foundation` (ShuttlePub/ShuttlePub PR #31、Issue #30) で、
+内部実装を土台から置き換えた (D15-D18)。`main` にはまだ入っていない。
+実装リポジトリ側の説明は `docs/foundation.md`。
+
+- **言語**: Rust (edition 2024、resolver 3)。クレートは kernel / application /
+  driver / server の 4 つ。
+- **層と依存方向** (D16): server → {application, driver} → kernel。
+  - kernel: エンティティと値オブジェクト、外部接続の口 (trait)、`KernelError`。
+    workspace 内の依存なし。tokio・axum・reqwest に依存せず、型を JSON の形として
+    使わない (変換は server と driver が境界で行う)。
+  - application: サービス、設定の口、`ApplicationError`。
+  - driver: 口の実装 (リモート HTTP、HTTP 署名、メモリ上の署名鍵)、設定の読み込み、
+    `DriverError`。
+  - server: `Handler` / `AppModule`、axum の router とミドルウェア、HTTP ステータス
+    への対応、`/api/v1` の契約、`main`。
+- **DI (cake pattern)**: 口は `kernel::interface` の trait と `DependOn*` の対。
+  サービスは supertrait で依存を宣言した trait (処理は default メソッド) +
+  blanket impl + `DependOn*Service` で、struct を持たない。`Handler` が driver の
+  実体を保持して全 `DependOn*` を実装し、axum の state は `AppModule(Arc<Handler>)`。
+- **非同期の書き方**: 口の宣言は `-> impl Future<Output = ..> + Send`、実装は
+  `async fn`、サービスの default メソッドは `impl Future + Send` を返す async ブロック
+  1 つ。`async_trait` は使わない (`clippy::manual_async_fn` を CI で通すため、
+  impl 側で Future を手書きしない)。
+- **エラー**: 層ごとの `thiserror` enum を `error-stack` の `Report` で運ぶ。口は
+  `KernelError` の分類で返し、HTTP ステータスへの対応は `server/src/error.rs` だけ。
+- **連合**: `POST /inbox` (Follow の受理と Accept の配送) と `GET /actor` のみ。
+  署名検証は inbox の POST ハンドラにだけ掛けたミドルウェアが口を呼ぶ。保存は
+  何もしない (フォロワーの保存、再試行、重複排除は未実装)。
+- **契約**: `/api/v1` は 15 操作すべて 501 のスタブ。`openapi/shuttlepub.json` は
+  置き換えの前後でバイト一致 (D19)。
+- **未導入**: nitinol 0.7 による CQRS+ES (D17) と永続化。旧 Note スライス
+  (nitinol 0.4.2、インメモリ) と開発用ルート `/api/notes*`・`/api/timeline` は削除し、
+  workspace に nitinol への依存はない。次の実行単位で入れる。
+- **CI**: `.github/workflows/lint-and-test.yml` が `main` と `dev` への push・PR で
+  fmt / clippy `-D warnings` / test / build / `git diff --check` / openapi-schema を実行。
+
+### 置き換えで分かったこと (closeout)
+
+- axum 0.8 の `Router::route_layer` は 405 を返す fallback にも layer を掛ける。
+  ルートに掛けた署名検証ミドルウェアが POST 以外でも走り、401 を返してリモート
+  取得まで進んだ。ミドルウェアは `post(handler).route_layer(..)` で POST ハンドラ
+  だけに掛ける。
+- 「署名を検証済みでなければ配送しない」は、server の `VerifiedFollow` 型だけが
+  守っている。`AcceptFollowService::accept` 自体は未検証の入力も受け取れるので、
+  呼び出し元を増やすときに検証の位置を見直す。
+- kernel の署名検証の口は `http::Request<Bytes>` を受け取り、`ApplicationError` は
+  `KernelError` と同じ分類の写しになっている。nitinol 導入時に見直す候補。
+- 契約テスト (`server/tests/openapi.rs`・`quick_reaction.rs`) は、アプリの組み立て
+  (`app()`) の差し替えと、削除した開発用ルートの検証 1 件の削除だけで維持できた。
+  契約の定義は内部の crate を import していないため、内部実装と切り離せている。
+
+## 旧スタック (2026-08-29 観察、base = d857781。履歴)
 
 - **言語**: Rust (edition 2021)。ワークスペース構成で、クレートは
   kernel / application / driver / server の 4 つ。
