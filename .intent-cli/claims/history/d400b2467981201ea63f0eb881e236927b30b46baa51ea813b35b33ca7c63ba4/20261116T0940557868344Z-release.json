@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-relay-follower",
+  "actor": "design",
+  "team": "shuttlepub-core",
+  "recorded_at": "2026-11-16T09:40:55.7868344+00:00",
+  "reason": "packet \u3092\u767A\u884C\u3057\u305F (issue #32)",
+  "displaced_holder": "design",
+  "displaced_team": "shuttlepub-core",
+  "displaced_claimed_at": "2026-11-16T05:03:27.8214881+00:00",
+  "base_commit": "c5a0c3fa494b0317a78ebcdd73ab368c1ff80326"
+}

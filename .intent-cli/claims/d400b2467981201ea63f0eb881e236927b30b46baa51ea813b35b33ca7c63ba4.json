@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:shuttlepub-relay-follower",
-  "actor": "design",
-  "team": "shuttlepub-core",
-  "claimed_at": "2026-11-16T05:03:27.8214881+00:00",
-  "base_commit": "866929c762e8767ba2d386403aa9ae867f08b56c"
-}
