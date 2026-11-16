@@ -1,0 +1,69 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-relay-follower: nitinol 0.7 と PostgreSQL を導入し、フォロワーを最初の集約として記録する"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-relay-follower
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "kernel/, application/, driver/, server/, Cargo.toml, Cargo.lock, docs/foundation.md, compose.yaml, .github/workflows/lint-and-test.yml"
+  target_part: "ShuttlePub の連合の受け口 (Follow→Accept) へのフォロワーの記録と、その永続化の基盤。/api/v1 契約の定義と openapi/shuttlepub.json は変更対象外"
+  dependencies: []
+  technical_baseline:
+    - "層の crate と cake-pattern DI の形は保つ。内部の切り分けは KJ法で行い、まとまりは各層の中の module にだけ適用する (D16, D20)"
+    - "まずリレーサーバーとして動くことを優先し、最初の集約はフォロワーとする (D21)"
+    - "CQRS+ES は nitinol 0.7 で行い (D17)、永続化は nitinol の PostgreSQL プロバイダを最初から使う (D22)"
+    - "/api/v1 の契約 (openapi/shuttlepub.json) には差分を出さない (D19)"
+    - "作業ブランチの基点と PR の base は dev。main へは動く形になってから別途 PR で merge する"
+  intent_references:
+    - "intents/shuttlepub/decisions/2026-11-16-relay-first-and-module-slicing.md (D20-D22)"
+    - "intents/shuttlepub/decisions/2026-11-15-role-boundary-and-rebuild.md (D12-D19)"
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md"
+    - ".intent-cli/rulings/shuttlepub/shuttlepub-core/relay-first-and-module-slicing-2026-11-16.json"
+  acceptance_criteria:
+    - "AC1 (module の切り分け): `kernel`・`application`・`driver`・`server` の各層で、連合の受け口と配送は `relay`、外部の身元は `identity` の module にまとまっている。`kernel::entities` と `kernel::interface` は残っていない。workspace は 4 crate のままで、層の依存 (application → kernel、driver → kernel、server → application・driver・kernel) は変わらない。配置の表が `docs/foundation.md` にある"
+    - "AC2 (nitinol の境界): `kernel` は nitinol の `contract` feature だけに依存し、`cargo tree -p shuttlepub-kernel -e normal` に tokio・`nitinol-runtime`・axum・reqwest・sqlx が出ない。`application` と `server` の Cargo.toml に nitinol と sqlx への依存がない。`async-trait` を使うのは `driver` の `Projector`・`TxProvider` の実装だけである"
+    - "AC3 (フォロワーの集約): フォロワーの集約が `kernel::relay` にあり、判定は純粋関数で、単体テストで確認されている (新規の Follow でイベントが 1 つ出る、すでにフォローしている actor の Follow ではイベントが出ず成功になる)。イベントの保存形式 (family・型名・JSON の形) を固定するテストがある"
+    - "AC4 (Follow→Accept への組み込み): R1〜R6 を満たし、R6 以外はそれぞれテストで確認されている。R6 は `ask_with_retry` を使っていることで満たす。記録は Accept の配送より前に行われ、検証で拒否された Follow では記録されない"
+    - "AC5 (永続化と復元): R7・R8・R10 を満たし、PostgreSQL を使うテストで確認されている。読み出しモデルの更新と offset の保存は同じトランザクションで commit される"
+    - "AC6 (起動): `SHUTTLEPUB_DATABASE_URL` を受け取り、起動時に接続とマイグレーションを行う。R9 を満たす。既存の環境変数の名前と既定値は変わらない。起動したバイナリに対するテスト (`server/tests/process.rs`) が PostgreSQL を使って通る"
+    - "AC7 (既存の挙動と契約の維持): `server/tests/federation.rs` の既存のテスト (`f01_`〜`f12_`・`order_*`・`/inbox` の 405) が、検証内容を変えずにすべて通り、PostgreSQL なしで実行できる。`openapi/shuttlepub.json` は基点とバイト一致し、再生成しても差分が出ない。契約の定義・契約テスト・fixture に差分がない"
+    - "AC8 (検査): fmt / clippy `-D warnings` / test / build / `git diff --check` / openapi-schema が、ローカルと CI (`dev` 向けの PR) の両方で通る。PostgreSQL を使うテストは、DB が使えないときに黙って通らない"
+
+# G461: packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/intent-tree/00-map.md
+  supporting_intents:
+    - "intents/shuttlepub/decisions/2026-11-16-relay-first-and-module-slicing.md"
+    - "intents/shuttlepub/technology/overview.md"
+  new_intent_needed: false
+  placement_rationale: "再構築 (D12-D22) の 2 つ目の実行単位。リレー優先 (D21) の最初の集約。新しい intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/intent-tree/00-map.md"
+    summary: "shuttlepub-relay-follower の到達範囲 (nitinol 0.7 と PostgreSQL の導入、フォロワーの記録と一覧まで。Undo と Announce の転送は未着手) を記録する。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/technology/overview.md"
+    summary: "module の配置 (relay / identity / persistence)、nitinol の境界 (kernel は contract のみ)、PostgreSQL の前提と既知の制約を反映する。"
+closeout_learning:
+  expected: "nitinol の境界の置き方、マイグレーションの同居の方法、射影の遅れと待ち方、シングルノードで動かして分かった nitinol への還元事項 (クラスタリングに必要なこと)、テストでの PostgreSQL の用意の仕方を記録する。次の単位 (Undo と Announce の転送) の前提になる。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/technology/overview.md"
+    - "intents/shuttlepub/intent-tree/00-map.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (kernel/, application/, driver/, server/)"
