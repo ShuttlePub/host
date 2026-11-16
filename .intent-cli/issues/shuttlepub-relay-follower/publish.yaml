@@ -1,0 +1,7 @@
+execution_unit: shuttlepub-relay-follower
+publish_status: issue-created
+packet_path: "/home/rechella/projects/host/.intent-cli/issues/shuttlepub-relay-follower"
+issue_body_path: "/home/rechella/projects/host/.intent-cli/issues/shuttlepub-relay-follower/github-body.md"
+created_issue_number: 32
+created_issue_url: "https://github.com/ShuttlePub/ShuttlePub/issues/32"
+published_label_name: null

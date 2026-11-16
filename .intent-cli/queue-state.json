@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-16T06:24:54.215471+00:00",
+  "updated_at": "2026-11-16T09:40:42.7195201+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1783,6 +1783,28 @@
         "repo": "ShuttlePub/ShuttlePub",
         "number": 30,
         "url": "https://github.com/ShuttlePub/ShuttlePub/issues/30"
+      },
+      "worker_role": "builder",
+      "review_role": "reviewer",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "shuttlepub-relay-follower",
+      "title": "shuttlepub-relay-follower: nitinol 0.7 \u3068 PostgreSQL \u3092\u5C0E\u5165\u3057\u3001\u30D5\u30A9\u30ED\u30EF\u30FC\u3092\u6700\u521D\u306E\u96C6\u7D04\u3068\u3057\u3066\u8A18\u9332\u3059\u308B",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/shuttlepub-relay-follower/implementation.md",
+        "review_context": ".intent-cli/issues/shuttlepub-relay-follower/review-context.md",
+        "yaml": ".intent-cli/issues/shuttlepub-relay-follower/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/ShuttlePub",
+        "number": 32,
+        "url": "https://github.com/ShuttlePub/ShuttlePub/issues/32"
       },
       "worker_role": "builder",
       "review_role": "reviewer",
