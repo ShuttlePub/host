@@ -19,7 +19,7 @@ identity/mission.md          使命 (サービス群記録より) + 現状コー
 product/overview.md          現状実装インベントリ (評価なし)
 technology/overview.md       現状スタック、未使用依存、設計方向 (nitinol / stargate)
 links/external.md            関連リポジトリ (nitinol, stargate, サービス群)
-decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築)
+decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先)
 features/                    (未整理)
 clarifications/open.md       (未整理)
 interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
