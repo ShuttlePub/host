@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-release-container",
+  "actor": "release-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-17T14:56:11.5095218+00:00",
+  "reason": "PR ShuttlePub/Emumet#111 created; implementation handed to review (merge is a separate instruction)",
+  "displaced_holder": "release-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-17T14:17:15.4858618+00:00",
+  "base_commit": "57f8fc49ce8e2017a01310ce6a1ab2e13bd2e7b6"
+}

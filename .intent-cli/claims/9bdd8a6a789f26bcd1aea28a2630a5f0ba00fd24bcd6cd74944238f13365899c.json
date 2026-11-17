@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:emumet-release-container",
-  "actor": "release-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-17T14:17:15.4858618+00:00",
-  "base_commit": "f95bc21d4b1c6b58056198a79ac754185c4ca4f9"
-}
