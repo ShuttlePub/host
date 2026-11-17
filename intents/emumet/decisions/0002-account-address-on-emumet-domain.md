@@ -41,6 +41,29 @@ ShuttlePub 全体の分散思想では、タイムライン構築は本体サー
 - (Amended 2026-08-24) フォロワー関係を Profile 単位で Emumet が永続保持する必要が
   あるため、フォロワーグラフの権威は Emumet に置く(ap-federation 参照)
 
+## Amended 2026-11-18: ホーム / 参加の link と信頼モード
+
+shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.md
+(D23・D26・D31) による追記。上の本文は当時の記録として残す。
+
+- サービス群のコンセプトを「1 つのアカウントで、たくさんの小さなタイムライン
+  (1 ShuttlePub = 1 コミュニティ) を渡り歩ける」と定めた。これに合わせ、
+  「1 Profile につき active な content link は 1 つ」を次のように読み替える:
+  - link を「ホームの link」と「参加の link」に分ける。参加の link は複数持てる。
+    登録は本人が UI の認可確認画面で行う
+  - link ごとに信頼モードを選ぶ: ① 署名のみ / ② ① + 受信の転送 /
+    ③ ② + Profile のコレクション配布
+  - ③ を持てるのは同時に 1 つで、それがホーム。上で 1 つに限った理由
+    (投稿順序・Update/Delete 所有権・inbox 転送の競合) のうち、コレクションの配布元は
+    ③ が 1 つであることで守る。投稿の Update/Delete 所有権は link ごとの名前空間で分かれる
+  - ② は複数の link が持てる。ダイレクトなどをどの link へ転送するかは
+    shuttlepub-link の設計で決める
+- Consequences の「Emumet が連合との境界 (プロキシ的役割) になる」は、
+  object / コレクションの GET の透過プロキシ (ADR 0003) と受信の転送を指すものとして読む。
+  投稿の配送とリレーは ShuttlePub の責務 (shuttlepub D12-D14・D27)。
+- 「転送プロトコルは未決定」は、専用 API (中身は AP の Activity そのまま) に決めた
+  (shuttlepub D30、C2)。
+
 ## Links
 
 - [features/post-relay](../features/post-relay/overview.md)

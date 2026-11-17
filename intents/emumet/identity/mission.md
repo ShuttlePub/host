@@ -8,8 +8,16 @@ facets: [vocabulary, invariant]
 
 ShuttlePub サービス群全体で共有されるアカウントの唯一の正本(source of truth)を
 管理し、ActivityPub 上のアカウントの住所(acct)を Emumet ドメインで提供する。
-投稿の署名鍵を預かり、連合との送受信を代理・中継することで、本体サービス
-(ShuttlePub)がタイムライン構築に集中できるようにする。
+投稿の署名鍵を預かって ShuttlePub 発の投稿に署名し、受信した Activity を
+ホームの ShuttlePub へ転送することで、本体サービス (ShuttlePub) がコミュニティ
+(タイムライン・投稿・配送) に集中できるようにする。
+
+※ 2026-11-18 改訂 (shuttlepub domain の
+decisions/2026-11-18-service-concept-and-cross-service-p0.md の D27・D30、
+2026-11-15 の D12-D14)。旧記述「連合との送受信を代理・中継する」は改めた。
+投稿の配送 (fan-out・再送) とリレーは ShuttlePub の責務で、Emumet は署名を行う
+(ADR 0003)。例外として Follow / Accept / Block などは Emumet 自身が配送する。
+サービス群全体のコンセプトは shuttlepub domain の product/service-concept.md。
 
 ## Vision
 
@@ -17,14 +25,18 @@ ShuttlePub サービス群全体で共有されるアカウントの唯一の正
   ActivityPub 連合に参加できる。
 - 外部から見たアカウントの住所は常に Emumet ドメインであり、利用する本体サービスを
   変えても住所・フォロワー関係・署名鍵は維持される。
-- 認証・認可は Ory (Kratos/Hydra) に委譲し、Emumet はアカウント管理と連合中継に
-  責務を限定する。
+- 1 つの Profile で、ホームの ShuttlePub に加えて複数のコミュニティ (ShuttlePub) に
+  参加できる。参加は本人が link と信頼モードを選んで許可する (2026-11-18 D31)。
+- Emumet だけを自分で立てて、公式の ShuttlePub に参加できる (2026-11-18 D23)。
+- 認証・認可は Ory (Kratos/Hydra) に委譲し、Emumet はアカウント管理・鍵と署名・
+  受信の転送に責務を限定する (2026-11-18 改訂。旧記述「連合中継」)。
 
 ## Values / principles
 
 - **Event Sourcing + CQRS**: アカウント系の状態変更はすべてイベントとして記録する。
-- **責務の分離**: タイムライン構築・投稿永続化は ShuttlePub 本体、認証認可は Ory、
-  アカウント・鍵・連合中継は Emumet。
+- **責務の分離**: タイムライン構築・投稿永続化・配送・リレーは ShuttlePub 本体、
+  認証認可は Ory、アカウント・鍵・署名・受信の転送は Emumet
+  (2026-11-18 改訂。旧記述「アカウント・鍵・連合中継は Emumet」)。
 - **連合ファースト**: ActivityPub 仕様との整合を優先し、分散思想とのバランスは
   転送モデル(住所=Emumet、本体=ShuttlePub)で解決する。
 - **安全性**: SSRF 対策・HTTP Signature 検証など、連合通信の安全性を手抜かない。

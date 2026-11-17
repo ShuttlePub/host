@@ -3,8 +3,11 @@
 ## これは何か
 
 Emumet は ShuttlePub のアカウント管理サービス。Event Sourcing + CQRS で構築され、
-アカウント・プロフィール・フォロー関係・署名鍵を管理し、ActivityPub 連合との
-送受信を中継する。名前は EMU (Extravehicular Mobility Unit) + Helmet 由来。
+アカウント・プロフィール・フォロー関係・署名鍵を管理し、ShuttlePub 発の投稿に
+署名し、受信した Activity をホームの ShuttlePub へ転送する。投稿の配送とリレーは
+ShuttlePub が行う (2026-11-18 改訂。旧記述「ActivityPub 連合との送受信を中継する」。
+shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.md)。
+名前は EMU (Extravehicular Mobility Unit) + Helmet 由来。
 
 ## ユーザー
 

@@ -100,6 +100,29 @@ operator のプロダクト vision(2026-08-24 確認): Emumet は Google Workspa
 - dereference の可用性は常に「Emumet AND 発行元 ShuttlePub」に依存する
 - equivocation(同一 ID に別内容)は委譲先 ShuttlePub を信頼するモデルの前提として受容
 
+## Amended 2026-11-18: reset ADR §5 との関係、バッチ化、link の分け方
+
+shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.md
+(D27・D31・D32・D33) による追記。
+
+- **reset ADR §5 との関係**: [profile-federation-in-place-reset.md](profile-federation-in-place-reset.md)
+  §5 の「汎用 Profile 署名 REST API を代替として追加しない」が禁じるのは、任意の入力に
+  署名する汎用 API。本 ADR の狭い署名 API (capability で認可し、配送先 URL と送る
+  body に対して宛先ごとに署名する) は別物で、追加してよい。
+- **バッチ化**: 1 回の呼び出しで inbox URL の並びを受け、宛先ごとの署名済みヘッダを
+  まとめて返す形を認める。「署名は配送試行・宛先ごと」「使い回し不可」は変えない
+  (Date ±300 秒の制約があるので、バッチは今から送る分だけにする)。
+  宛先は相手の sharedInbox を優先し、なければ個別の inbox とし、inbox URL で重複を除く
+  (sharedInbox を持たない実装があるため)。
+- **link**: 認可の根拠になる link は「ホーム」と「参加」に分かれ、参加の link も
+  信頼モード① (署名のみ) 以上で `sign:post` を持つ (ADR 0002 の 2026-11-18 追記)。
+  ID の名前空間は引き続き link ごと。
+- **サービス間認証**: Hydra を使っている間は DCR。Emumet は client_id と ShuttlePub の
+  origin の対応を持つ (将来 OpenID Federation へ移る際の付け替えに使う)。
+- **方針のみ・要確認**: Mastodon / Misskey 以外の実装が「署名者 = Emumet、送信元 =
+  ShuttlePub」を受理するかは未確認。ShuttlePub の実装が進み次第、連合 E2E で確かめる。
+  SLO (p99 100ms) は負荷試験で確かめる。
+
 ## Links
 
 - [features/post-relay](../features/post-relay/overview.md)

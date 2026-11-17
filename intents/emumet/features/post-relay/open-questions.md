@@ -4,14 +4,17 @@
 
 ## Open questions blocking this feature
 
-- **ShuttlePub への転送プロトコル**: HTTP webhook / キュー(rikka-mq/Redis) / gRPC 等。
-  ShuttlePub 本体側の受け口設計と合わせて決定が必要(durable queue 要件は確定済み。
-  requirements 参照)。**deferred 継続 (C2)**: 再開条件「ShuttlePub 本体実装の構想が立つ
-  こと」は未充足 (2026-08-25 operator 確認)
-- ShuttlePub から内部署名 API を呼ぶ際の認証方式(サービス間認証。
-  link capability の提示方法と一体で設計)。**deferred 継続 (C2/C3 と同条件)**
+- 転送 envelope の正確な形 (宛先 Profile・署名検証の結果・受信時刻などのフィールド) と
+  受け口のエンドポイント。ShuttlePub の受け口と合わせて実行単位の設計で決める
+- 署名 API のバッチ形の正確なリクエスト / レスポンス
 
 ## Resolved
+
+- ~~ShuttlePub への転送プロトコル~~ → **方向確定 (2026-11-18)**: 専用 API。中身は受信した
+  AP の Activity をそのまま渡し、外側に宛先などを付ける。転送先はホームと信頼モード②以上の
+  link (shuttlepub D30・D31、clarifications C2)
+- ~~ShuttlePub から内部署名 API を呼ぶ際の認証方式~~ → **確定 (2026-11-18)**: Hydra の間は
+  DCR、認可は link の capability (shuttlepub D32、ADR 0003 の 2026-11-18 追記)
 
 - ~~転送に失敗した場合の再送間隔・保管期間の具体値~~
   → **確定 (2026-08-25)**: 指数 backoff (初回30s、倍率2、上限1h、jitter 付き)。

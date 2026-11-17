@@ -10,7 +10,16 @@
 - 決定記録・Q/A: [../interview/2026-08-12-c1-c3-grill.md](../interview/2026-08-12-c1-c3-grill.md)
 - feature 側決定: [../features/media-upload/decisions.md](../features/media-upload/decisions.md)
 
-## C2 (deferred 継続): post-relay の ShuttlePub 転送プロトコル
+## C2 (方向確定 2026-11-18、詳細は実行単位の設計で): post-relay の ShuttlePub 転送プロトコル
+
+- **結論 (2026-11-18)**: 再開条件 (ShuttlePub 本体の構想) を満たしたので方向を確定した。
+  専用 API とし、中身は受信した AP の Activity をそのまま渡し、外側に宛先 Profile・
+  署名検証の結果・受信時刻などを付ける。転送先はホーム (信頼モード③) と、信頼モード②
+  以上の link。サービス間認証は Hydra の間 DCR。envelope の正確な形と、ダイレクトを
+  どの link へ転送するかは post-relay / shuttlepub-link の実行単位の設計で決める
+- 決定記録: shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.md
+  (D30・D31・D32)
+- 以下は 2026-08 時点の記録
 
 - 背景: inbox で受けた投稿を連携先 ShuttlePub へ転送する方式が未決
 - 論点: HTTP webhook / キュー(rikka-mq/Redis) / その他。ShuttlePub 本体側の受け口設計と
@@ -20,7 +29,15 @@
 - **再開条件: ShuttlePub 本体実装の構想が立った時点で再 grill する**
 - 参照: ../features/post-relay/open-questions.md
 
-## C3 (deferred 継続): shuttlepub-link の連携先認証・ multiplicity
+## C3 (方向確定 2026-11-18、詳細は実行単位の設計で): shuttlepub-link の連携先認証・ multiplicity
+
+- **結論 (2026-11-18)**: link を「ホーム」と「参加」に分ける。参加の link は複数持てる。
+  登録は本人が UI の認可確認画面で行う。link ごとに信頼モード (① 署名のみ /
+  ② + 受信の転送 / ③ + Profile のコレクション配布) を選び、③ は同時に 1 つ = ホーム。
+  認証は Hydra の間 DCR (client_id と origin の対応を Emumet が持つ)
+- 決定記録: shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.md
+  (D31・D32)、ADR 0002 / 0003 の 2026-11-18 追記
+- 以下は 2026-08 時点の記録
 
 - 背景: docs の StellarAccount 定義(access_token/refresh_token)を踏襲するか未決。
   ShuttlePub 本体側の実装状況の確認が必要

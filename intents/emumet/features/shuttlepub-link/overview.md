@@ -19,6 +19,10 @@ ShuttlePub サービスを設定してそこに自分宛ての投稿を流す」
   最低 scope は `sign:post`(署名要求 = 投稿許可)。この capability が
   署名 API の認可根拠になる(operator 判断 2026-08-24)
 - **1 Profile につき active な link は1つ**(operator 判断 2026-08-24)
+  → **2026-11-18 に読み替え**: link を「ホーム」と「参加」に分け、参加の link は複数持てる。
+  link ごとに信頼モードを選ぶ: ① 署名のみ (`sign:post`) / ② ① + 受信の転送 /
+  ③ ② + Profile のコレクション配布。③ は同時に 1 つで、それがホーム。登録は本人が
+  UI の認可確認画面で行う (ADR 0002 の 2026-11-18 追記、shuttlepub D31)
 - `link-id` は Emumet 発行の opaque ID。再利用禁止・発行時に Profile に固定。
   object ID 名前空間(`/objects/<link-id>/...`)の接頭辞でもある
 
