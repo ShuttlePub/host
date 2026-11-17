@@ -1,0 +1,74 @@
+implementation_issue_packet:
+  issue_title: "emumet-release-container: Emumet のリリース機構 (Dockerfile・/healthz・SIGTERM 対応・ファイルログ既定停止・PR smoke・CalVer タグからの GHCR 公開 CI・手順書)"
+  issue_kind: feature
+  source_execution_unit: emumet-release-container
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "Dockerfile, .dockerignore, server/src/main.rs, server/src/root_router.rs, scripts/, .github/workflows/container-ci.yml, .github/workflows/release.yml, docs/releasing.md, docs/container-runtime.md, CLAUDE.md"
+  target_part: "server 専用コンテナイメージ、起動確認用 /healthz、SIGTERM/SIGINT の graceful shutdown、EMUMET_FILE_LOG_ENABLED によるファイルログの任意化、PR のビルド+smoke CI、v* タグ (CalVer) からの GHCR 公開と GitHub Release、手順書"
+  dependencies: []
+  technical_baseline:
+    - "基準は origin/main の c4d6ea3a4f06e924e73ffa058e5ec6e2409f1e3d 以降の最新 main。PR 本文に完全な SHA を書く"
+    - "本番は未稼働。起動に必須の外部サービスは Postgres のみ (Redis は現在接続しない)。migration は server 起動時に埋め込みで自動実行される"
+    - "server/src/route/tests.rs:813-881 は main.rs を文字列として読み、tokio::spawn の不在・spawn 行数・起動順序・.route(/.nest(/.merge(/Router::new の不在を検査する。このテストは変更せずに通す (シグナルは tokio::spawn を使わず、冒頭で Signal を作って後で poll する)"
+    - "ログ初期化は .env が読まれる前 (main の先頭) に行われる。EMUMET_FILE_LOG_ENABLED はプロセスの環境変数からだけ読む (.env からは読まない)。RUST_LOG と WORKER_ID の読み方は変えない"
+    - "ruleset の設定、タグの push、GHCR への公開・公開範囲の変更はこの unit の範囲外 (マージ後にユーザーの明示許可のもとで行う)"
+  intent_references:
+    - "intents/emumet/intent-tree/00-map.md"
+    - "intents/emumet/decisions/profile-federation-in-place-reset.md"
+  acceptance_criteria:
+    - "C1: 変更は target_path の範囲に限る。k8s・本番配置・Kratos/Hydra の本番設定・frontends・共通 workflows・Cargo の version (0.1.0) は触らない"
+    - "C2: 本番コードの変更は /healthz・停止・ファイルログだけ。GET /healthz は認証不要・200・本文が ok\\n・DB/外部/鍵に触れない・openapi に載せない。server/src/route/tests.rs:813-881 を変更せずに通る"
+    - "C3: server だけを --locked --release でビルドし、test-mode なし・UID/GID 10001・秘密/ビルド道具/migration SQL/復旧 CLI/curl をイメージに含めない"
+    - "C4: target を cache mount しない。空の DB で起動後 _sqlx_migrations の件数が migrations/ の SQL 数と一致する"
+    - "C5: STOPSIGNAL SIGTERM。SIGTERM と SIGINT は同じ停止経路。handler は長い待機の前に作る。通常起動後の docker stop -t 30 が exit 0。migration は中断しない。既存の停止順序と Webhook worker の最大 20 秒待機は変えない"
+    - "C6: stdout を正とする。EMUMET_FILE_LOG_ENABLED が未設定か false ならファイルも ./logs も作らない。true のときだけ従来形式で書く。それ以外の値と、有効なのに書けない場合は起動エラー。read-only root で起動できる"
+    - "C7: 既定 UID で /run/secrets/master-key-password (0400) を OS レベルで読める。smoke がそこまで検証する"
+    - "C8: PR CI は pull_request で動き、pull_request_target・registry login・push・Release 作成をしない。権限は最小、新しい action は SHA 固定"
+    - "C9: タグは vYYYY.MM.DD か vYYYY.MM.DD.N (N は 1 以上・先頭ゼロなし)。実在する日付、未来の日付は拒否 (基準は定数 1 か所で UTC、拒否時に基準の現在日付を出す)、過去は制限なし、Cargo version と照合しない、タグの commit が origin/main に含まれる。判定不能は拒否"
+    - "C10: amd64 のみ。イメージタグは v を除いた CalVer だけ (latest なし)。smoke 済みのイメージを再ビルドせずに push。不存在が明確なら push、同じ revision なら省略、不一致と判定不能は停止。push の直前に再照会"
+    - "C11: concurrency はタグ単位で cancel-in-progress: false。タグ名は env 経由で渡す"
+    - "C12: 環境変数表はコードから抽出し、コマンド・結果・分類を PR に残す。.env.example の EXPECTED_AUDIENCE=account は変えず、CLAUDE.md の既定値の説明だけ emumet に直す。AGENTS.md の symlink を保つ"
+    - "C13: ruleset の設定・タグ push・公開範囲確認・匿名 pull はこの PR では行わず、手順書にマージ後・明示許可のもとで行うと書く"
+    - "C14: 基準は c4d6ea3 以降の main で、PR に完全な SHA を書く"
+    - "C15: smoke は専用 network・digest 固定の Postgres (postgres:16@sha256:1a6ab3f5345eb6dbe04a1349529caabdb0ab09293a09590fad07b2246bfa4b54)・named volume で作るダミー鍵を使い、自分が作った資源だけ片付け、health はホスト側から確認し、秘密を出さない。ローカルと CI で同じ script"
+    - "C16: builder の Rust は rust-toolchain.toml と同じで、不一致は PR の CI で拒否。base image は digest 固定。base は bookworm"
+    - "C17: Release の digest は registry から取る。既存の Release は一致すれば何もせず、不一致と確認不能は停止して上書きしない。段階別の復旧 (初回が判定不能で止まった場合を含む) を手順書に書く"
+    - "C18: ruleset で v* の更新と削除を禁じる手順を手順書に書く (設定自体はこの PR では行わない)"
+    - "PR CI (lint-and-test・e2e・新規 container-ci) がすべて緑で、PR は未マージ"
+
+intent_placement:
+  primary_intent: intents/emumet/intent-tree/00-map.md
+  supporting_intents:
+    - intents/emumet/decisions/profile-federation-in-place-reset.md
+  new_intent_needed: true
+  placement_rationale: "リリース・配布の運用面を扱う intent ノードがまだ無い。完了後に host 側の intents/emumet/operations/ へ release の決定 (CalVer・公開制御・タグ保護) を書き写す"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/emumet/operations/release.md"
+    summary: "CalVer の版の付け方、GHCR 公開の安全規則、タグ保護、マージ後にユーザー許可で行う工程を host の intent として記録する。"
+closeout_learning:
+  expected: "CalVer の日付基準の最終決定 (UTC / JST / UTC+1 日)、初回タグ・初回公開の結果、GHCR の package 未作成時の実応答。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/emumet/operations/release.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/Emumet の docs/releasing.md (リリース手順) と docs/container-runtime.md (コンテナの実行時設定)"
