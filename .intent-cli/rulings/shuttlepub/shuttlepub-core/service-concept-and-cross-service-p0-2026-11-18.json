@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "id": "service-concept-and-cross-service-p0-2026-11-18",
+  "domain": "shuttlepub",
+  "team": "shuttlepub-core",
+  "authority_role": "operator",
+  "scope": {
+    "target_repo": "ShuttlePub/ShuttlePub",
+    "kind": "repository",
+    "execution_units": []
+  },
+  "decision": "D23: サービス群のコンセプトは「1 つの Emumet アカウントで、たくさんの小さなタイムラインを渡り歩ける Fediverse」と部分的なセルフホスト。D24: ShuttlePub は 1 サーバー = 1 コミュニティで、中に細かいコミュニティ TL は作らない (ユーザーのリスト TL は許容)。D25: コミュニティの actor は ShuttlePub のシステム actor。D26: Profile ごとにホームの ShuttlePub を 1 つ持ち、ホーム TL を構築する。D27: 投稿の actor は Emumet の Profile、署名は Emumet、配送は ShuttlePub (Follow/Accept/Block は Emumet が配送)。D28: 公開範囲は 公開/未収載/フォロワー/ダイレクト + コミュニティ内。コミュニティ内は ShuttlePub の中で完結し、ID は最初から Emumet の link 名前空間で振る。D29: ShuttlePub はコミュニティそのもので、リレーは部品の 1 つ。D30: Emumet → ShuttlePub の内向き転送は専用 API で、中身は AP の Activity そのまま。D31: link はホーム/参加に分け、参加は複数・本人が UI で登録、信頼モード ①署名のみ ②+受信の転送 ③+コレクション配布 (③は同時に 1 つ = ホーム)。D32: サービス間認証は Hydra の間 DCR、client_id と origin の対応を持つ。D33: reset ADR §5 が禁じるのは汎用署名 API で ADR 0003 の狭い API は別物、署名 API のバッチ化 (inbox URL の並び) を認める。D34: 投稿作成・コミュニティ TL・公開範囲は P2 で /api/v1 に足し、契約差分は frontends の schema pin 更新を前提に main へ merge してよい。D35: 連合 E2E は専用 repo、イメージ公開は P1、dev からも SHA と dev タグで公開する。",
+  "rationale": "2026-11-17〜18 に operator と Excalidraw 上で議論して確定した。発端は operator の問題提起「ShuttlePub がただのリレーサーバーと化している。CQRS+ES・スケールの構想が死にかけているのはコンセプトがふわっとしているからでは」。コンセプトの軸は operator 回答「Emumet をベースに Misskey の channel のような小さなタイムラインを ShuttlePub 側の分離によって多数持て、コミュニティの往来を単一のアカウントで達成できる。Emumet だけセルフホストして公式の ShuttlePub に参加できるのはここでないとできない」による。D24-D35 は各論点への operator の選択とキャンバス上のコメント (付箋含む) による。",
+  "evidence_refs": [
+    "intents/shuttlepub/decisions/2026-11-18-service-concept-and-cross-service-p0.md",
+    "intents/shuttlepub/product/service-concept.md",
+    "intents/shuttlepub/packets/roadmap-2026-11-18.md"
+  ],
+  "recorded_at": "2026-11-17T15:51:45Z",
+  "expires_at": null,
+  "supersedes": []
+}

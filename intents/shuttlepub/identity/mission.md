@@ -9,11 +9,16 @@ facets: [vocabulary]
 
 ## Mission statement
 
-ShuttlePub サービス群における SNS 本体サービス。リレーサーバーとしての
-振る舞い、タイムライン構築、投稿コンテンツの永続化など、SNS として成り立たせる
-部分を責務とする。大まかな指標として、水平スケーリングの効果量が大きいものを
-ShuttlePub に置く。アカウント・署名鍵などの Identity Plane は Emumet、
-認証認可は Ory (Kratos/Hydra)、ファイル保管は Booskiff に委譲する。
+ShuttlePub サービス群における SNS 本体サービスで、**コミュニティそのもの**。
+1 サーバー = 1 コミュニティ (小さなタイムライン) として、コミュニティ TL・ホーム TL の
+構築、投稿と反応の永続化、配送、連合の受け口 (リレー) など、SNS として成り立たせる
+部分を責務とする。リレーはその部品の 1 つで、正体ではない。大まかな指標として、
+水平スケーリングの効果量が大きいものを ShuttlePub に置く。アカウント・署名鍵などの
+Identity Plane は Emumet、認証認可は Ory (Kratos/Hydra)、ファイル保管は Booskiff に
+委譲する。サービス群全体のコンセプトは [../product/service-concept.md](../product/service-concept.md)。
+
+※ 2026-11-18 改訂 (decisions/2026-11-18-service-concept-and-cross-service-p0.md の
+D23-D29)。「コミュニティそのもの」という位置付けを加えた。
 
 ※ 2026-11-15 改訂 (decisions/2026-11-15-role-boundary-and-rebuild.md の
 D12-D14)。旧記述は emumet intent からの転記で「連合中継は Emumet」として
@@ -28,9 +33,14 @@ D12-D14)。旧記述は emumet intent からの転記で「連合中継は Emume
 
 - ユーザーは Emumet アカウント (acct = Emumet ドメイン) でログインし、
   ShuttlePub 上でタイムラインを利用する (emumet intent より)。
-- 本体サービスはリレーとしての振る舞いとタイムライン構築に集中し、
+- 1 つの Emumet アカウントで、たくさんの小さなタイムライン (ShuttlePub) を渡り歩ける。
+  Profile ごとにホームの ShuttlePub を 1 つ持ち、ほかのコミュニティには参加する
+  (2026-11-18 D23・D24・D26)。
+- 部分的にセルフホストできる。例えば Emumet だけを自分で立てて、公式の ShuttlePub に
+  参加できる (2026-11-18 D23)。
+- 本体サービスはコミュニティ (タイムライン・投稿・配送) に集中し、
   アカウント・署名鍵など Identity に関わる複雑さは Emumet に閉じ込められる
-  (2026-11-15 D12・D13 で改訂)。
+  (2026-11-15 D12・D13 で改訂、2026-11-18 D29 で更新)。
 - 投稿に添付するメディアは Booskiff 保管を前提とする (booskiff intent より)。
 
 ## Values / principles
@@ -39,6 +49,10 @@ D12-D14)。旧記述は emumet intent からの転記で「連合中継は Emume
   ファイルは Booskiff、リレー・タイムライン・投稿永続化は ShuttlePub 本体
   (emumet の Values からの転記を 2026-11-15 D12・D13 で改訂)。
 - **連合ファースト**: ActivityPub 仕様との整合を優先する (emumet より転記)。
+- **イベントとしての AP**: AP のペイロードはイベントそのものなので CQRS+ES で受け、
+  同じイベントからコミュニティ TL・ホーム TL・検索・通知を射影する (2026-11-18 D29)。
+- **小さくも大きくも動く**: 小さなコミュニティを気軽に立てられ、公式の大きな TL にも
+  耐えられる同じソフトウェアにする (2026-11-18 D29)。
 
 ## 現状コードとの対応 (2026-08-29 観察、base = d857781, 2023-04-30)
 

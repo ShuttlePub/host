@@ -19,7 +19,9 @@ identity/mission.md          使命 (サービス群記録より) + 現状コー
 product/overview.md          現状実装インベントリ (評価なし)
 technology/overview.md       現状スタック、未使用依存、設計方向 (nitinol / stargate)
 links/external.md            関連リポジトリ (nitinol, stargate, サービス群)
-decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先)
+product/service-concept.md   サービス群全体のコンセプト (2026-11-18)
+packets/roadmap-2026-11-18.md  サービス群の実装ロードマップ (P0-P4)
+decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提)
 features/                    (未整理)
 clarifications/open.md       (未整理)
 interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
@@ -46,6 +48,22 @@ interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
   [technology/overview.md](../technology/overview.md)。
 - **未着手**: nitinol 0.7 による CQRS+ES と永続化 (D17)、フォロワーの保存、
   `/api/v1` のハンドラの実装。
+
+## サービス群のコンセプトとロードマップ (D23-D35、2026-11-18)
+
+「1 つのアカウントで、たくさんの小さなタイムラインを渡り歩ける Fediverse」を
+サービス群のコンセプトとし、ShuttlePub を「コミュニティそのもの (1 サーバー =
+1 コミュニティ)」と位置付けた。あわせて Emumet との前提 (内向き転送の専用 API、
+ホーム / 参加の link と信頼モード、DCR、署名 API のバッチ化、契約の merge 方針、
+連合 E2E) を決めた。
+
+- 決定: [decisions/2026-11-18-service-concept-and-cross-service-p0.md](../decisions/2026-11-18-service-concept-and-cross-service-p0.md)
+- コンセプト: [product/service-concept.md](../product/service-concept.md)
+- ロードマップ: [packets/roadmap-2026-11-18.md](../packets/roadmap-2026-11-18.md)
+  (P0 前提 → P1 連合の土台 → P2 投稿とコミュニティ TL → P3 フォロワーへ届ける・
+  ホーム TL → P4 反応・制御・メディア・運用)
+
+下の「将来 slice」は 2026-08-29 時点の目安で、順序はロードマップが新しい。
 
 ## 将来 slice (依存順の目安)
 
