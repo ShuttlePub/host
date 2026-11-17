@@ -1,0 +1,7 @@
+execution_unit: emumet-release-container
+publish_status: issue-created
+packet_path: "/var/tmp/evo-1000-1b531f2b/thread-xxs52dcx/host-release/.intent-cli/issues/emumet-release-container"
+issue_body_path: "/var/tmp/evo-1000-1b531f2b/thread-xxs52dcx/host-release/.intent-cli/issues/emumet-release-container/github-body.md"
+created_issue_number: 110
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/110"
+published_label_name: null

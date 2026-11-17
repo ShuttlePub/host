@@ -312,3 +312,4 @@
 {"ts":"2026-11-16T09:40:39.7206567+00:00","execution_unit":"shuttlepub-relay-follower","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/shuttlepub-relay-follower/"}
 {"ts":"2026-11-16T09:40:42.7195201+00:00","execution_unit":"shuttlepub-relay-follower","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/ShuttlePub#32","reason":"https://github.com/ShuttlePub/ShuttlePub/issues/32"}
 {"ts":"2026-11-17T14:19:06.9738277+00:00","execution_unit":"emumet-release-container","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/emumet-release-container/"}
+{"ts":"2026-11-17T14:19:19.6247922+00:00","execution_unit":"emumet-release-container","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#110","reason":"https://github.com/ShuttlePub/Emumet/issues/110"}
