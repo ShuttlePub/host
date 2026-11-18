@@ -30,7 +30,7 @@ Emumet・Booskiff と合わせて動かすための前提 (ロードマップの
 |---|------|------|------|
 | D30 | Emumet → ShuttlePub の内向き転送 (emumet C2) | 専用 API とする (Emumet が受けたものをホームへ回すのは AP のサーバー間配送の範囲外。FEP-ef61 も対象が違う)。中身は受信した AP の Activity をそのまま渡し、外側に宛先 Profile・署名検証の結果・受信時刻などを付ける。再送の値は 2026-08-25 の決定 (初回 30 秒・倍率 2・上限 1 時間・72 時間で打ち切り) を使う | 確定 |
 | D31 | link の分け方 (emumet C3) | link を「ホームの link」と「参加の link」に分ける。参加の link は複数持てる。登録は本人が UI から行う (認可の確認画面)。link ごとに信頼モードを選ぶ: ① 署名のみ、② ① + 受信の転送、③ ② + Profile のコレクション配布。③ を持てるのは同時に 1 つで、それがホーム。② は複数の link が持てる。ダイレクトをどの link へ転送するかは shuttlepub-link の設計で決める | 確定 |
-| D32 | サービス間認証 | Hydra を使っている間は Dynamic Client Registration (DCR)。Emumet は client_id と ShuttlePub の origin の対応を持つ。将来 Stellar を Hydra の上に載せて OpenID Federation を使うときは、client_id が Entity ID (URL) に変わるので、この対応を使って付け替える | 確定 |
+| D32 | サービス間認証 | Hydra を使っている間は Dynamic Client Registration (DCR)。Emumet は client_id と ShuttlePub の origin の対応を持つ。将来 Stellar を Hydra の上に載せて OpenID Federation を使うときは、client_id が Entity ID (URL) に変わるので、この対応を使って付け替える | 確定 (対応表の担当は [D36-D41](2026-11-18-p1-first-and-stellar-carve-out.md) で未決に戻した) |
 | D33 | 署名 API | emumet の reset ADR §5 が禁じるのは「汎用の Profile 署名 API」で、ADR 0003 の狭い署名 API (capability で認可し、宛先ごとに署名する) は別物として扱う。さらにバッチ化を認める: 1 回の呼び出しで inbox URL の並びを受け、宛先ごとの署名済みヘッダをまとめて返す。宛先は相手の sharedInbox を優先し、なければ個別の inbox とし、inbox URL で重複を除く (sharedInbox を持たない実装があるため) | 確定 |
 | D34 | `/api/v1` 契約の追加と merge | 投稿作成・コミュニティ TL・公開範囲は P2 の実行単位で `/api/v1` に足す。dev で契約に差分が出ても、frontends の schema pin を更新する前提で main に merge してよい (D19 の未決を解消) | 確定 |
 | D35 | 連合 E2E とイメージ公開 | 連合 E2E (Emumet・ShuttlePub・相手の実装をまとめて動かすテスト) は専用の repo に置く。各サービスのイメージ公開は P1 で整える。リリース用の main とは別に dev からもイメージを公開し、タグは「コミット SHA」と「dev」の 2 つとする。PR での E2E は SHA で固定し、定期実行は dev の最新を使う | 確定 |

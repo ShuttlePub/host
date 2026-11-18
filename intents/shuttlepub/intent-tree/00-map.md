@@ -21,7 +21,7 @@ technology/overview.md       現状スタック、未使用依存、設計方向
 links/external.md            関連リポジトリ (nitinol, stargate, サービス群)
 product/service-concept.md   サービス群全体のコンセプト (2026-11-18)
 packets/roadmap-2026-11-18.md  サービス群の実装ロードマップ (P0-P4)
-decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提)
+decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提、D36-D41: 2026-11-18 P1 の連携を先に通し、その後 Stellar を切り出す)
 features/                    (未整理)
 clarifications/open.md       (未整理)
 interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
@@ -62,6 +62,16 @@ interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
 - ロードマップ: [packets/roadmap-2026-11-18.md](../packets/roadmap-2026-11-18.md)
   (P0 前提 → P1 連合の土台 → P2 投稿とコミュニティ TL → P3 フォロワーへ届ける・
   ホーム TL → P4 反応・制御・メディア・運用)
+
+## P1 を先に通し、その後 Stellar を切り出す (D36-D41、2026-11-18)
+
+現行の Ory 構成のまま、外部から届いた Activity を Emumet が受信して Profile の
+アタッチ先の ShuttlePub へ転送し、重複を除いて保存するところまで (P1) を先に通す。
+その後、Stellar を Ory の上に載る薄い認証サービスとして切り出す。ShuttlePub は
+リレー用 inbox と転送用の専用 API の両方を持つ。リリース前に QA の工程を置く。
+転送時の認証方式、Ory 停止中に保証する範囲、D32 の対応表の担当は未決。
+
+- 決定: [decisions/2026-11-18-p1-first-and-stellar-carve-out.md](../decisions/2026-11-18-p1-first-and-stellar-carve-out.md)
 
 下の「将来 slice」は 2026-08-29 時点の目安で、順序はロードマップが新しい。
 

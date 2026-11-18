@@ -31,10 +31,11 @@ Emumet・Booskiff の mission はここを参照する。
 
 | サービス | 役割 | 持つもの |
 |---|---|---|
-| Emumet | Identity Plane | アカウントの正本、acct (= Emumet ドメイン)、Profile (= AP actor)、署名鍵、フォロワーグラフ、link (ShuttlePub への許可) |
-| ShuttlePub | コミュニティそのもの | コミュニティ TL・ホーム TL、投稿と反応の永続化、配送 (fan-out・再送)、連合の受け口 (リレー)、検索・通知 |
+| Emumet | Identity Plane | アカウントの正本、acct (= Emumet ドメイン)、Profile (= AP actor)、署名鍵、フォロワーグラフ、link (Profile のアタッチ先) |
+| ShuttlePub | コミュニティそのもの | コミュニティ TL・ホーム TL、投稿と反応の永続化、配送 (fan-out・再送)、連合先に公開するリレー用 inbox と Emumet からの転送を受ける専用 API (D39)、検索・通知 |
 | Booskiff | ドライブ | ファイル (画像中心)、課金 (サービス群で唯一の課金ポイント) |
 | Ory (Kratos / Hydra) | 認証・認可 | ログイン、OAuth2 / OIDC、サービス間のクライアント登録 (DCR) |
+| Stellar (P1 の後に切り出す、D37) | 薄い認証サービス | Ory の上に載る。初期スコープの候補はログイン・同意のコールバックと DCR の受付 |
 | shuttlepub-frontends | 画面 | shuttlepub-web (SNS)、emumet-web (アカウント管理) |
 
 ## 投稿の流れ
@@ -51,7 +52,10 @@ Emumet・Booskiff の mission はここを参照する。
 
 ## link と信頼モード
 
-Profile は ShuttlePub ごとに link (Emumet が発行する許可) を持つ。
+link は「Profile のアタッチ先」(Profile がどの ShuttlePub サーバーにアタッチしているか)
+を表す (説明の言葉は当面これに揃える、D40)。別のサーバーを閲覧しても link は変わらない。
+ShuttlePub のドメインが変わる場合は、新しいサーバーとして扱う。
+Profile は ShuttlePub ごとに link を持ち、Emumet が発行する。
 登録は本人が UI の認可確認画面で行い、link ごとに信頼モードを選ぶ。
 
 | モード | できること | 数 |

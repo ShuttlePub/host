@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "id": "p1-first-and-stellar-carve-out-2026-11-18",
+  "domain": "shuttlepub",
+  "team": "shuttlepub-core",
+  "authority_role": "operator",
+  "scope": {
+    "target_repo": "ShuttlePub/ShuttlePub",
+    "kind": "repository",
+    "execution_units": []
+  },
+  "decision": "D36: ShuttlePub を優先し、現行の Ory 構成のまま、外部 AP サーバーから届いた Activity を Emumet が受信し、Profile のアタッチ先の ShuttlePub へ転送し、重複を除いて保存するところまで (P1) を先に通す。Stellar の切り出しはその後。D37: Stellar は Ory の上に載る薄い認証サービスとして切り出す。初期スコープの候補はログイン・同意のコールバックと DCR の受付で、機能追加は最小限。D38: 今の実装でログイン・同意とクライアント登録 (DCR) の境界を分け、あとで Stellar へ移せるようにする。D39: ShuttlePub は連合先に公開するリレー用 inbox と、Emumet からの転送を受ける専用 API の両方を持つ。D40: ShuttlePub のドメインが変わる場合は新しいサーバーとして扱う。link の説明は当面「Profile のアタッチ先」で揃える。D41: リリース前に QA の工程を設け、適用対象の FEP との整合と他の AP 実装との相互運用を確かめる。未決: 転送時の認証方式、Ory 停止中に保証する範囲、D32 の対応表の担当 (D32 の「Emumet が持つ」は未決に戻す)、Stellar の配置、ログイン主体と Account の対応、OIDF の trust anchor、Stellar を切り出すタイミング。",
+  "rationale": "2026-11-18 に operator と Excalidraw 上および会議で議論して確定した。発端は operator の提起「Ory を将来は Stellar に持たせ、Emumet はそれを利用する形にしたい」。operator は会議の決定として、まず ShuttlePub を優先して現行の Ory 構成で P1 の連携を通し、その後 Stellar を薄い認証サービスとして切り出すこと、今の実装でログイン・同意と DCR の境界を分けること、ShuttlePub がリレー用 inbox と転送用の専用 API を両方持つこと、ドメイン変更は新規サーバー扱いで link の説明は「Profile のアタッチ先」に揃えること、リリース前の QA で FEP 整合と他実装との相互運用を確かめることを示した。転送時の認証方式、Ory 停止中に保証する範囲、D32 の対応表の担当は、今回の決定に含めず未決として残すよう operator が指示した。",
+  "evidence_refs": [
+    "intents/shuttlepub/decisions/2026-11-18-p1-first-and-stellar-carve-out.md",
+    "intents/shuttlepub/packets/roadmap-2026-11-18.md",
+    "intents/emumet/decisions/0001-stellar-frozen-ory-authz.md"
+  ],
+  "recorded_at": "2026-11-18T14:48:02Z",
+  "expires_at": null,
+  "supersedes": []
+}
