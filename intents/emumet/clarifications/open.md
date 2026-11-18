@@ -19,6 +19,10 @@
   どの link へ転送するかは post-relay / shuttlepub-link の実行単位の設計で決める
 - 決定記録: shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.md
   (D30・D31・D32)
+- **追記 (2026-11-18、D36-D41)**: 「サービス間認証は Hydra の間 DCR」は ShuttlePub → Emumet
+  の向きの話。Emumet → ShuttlePub の転送リクエストの認証方式と、Ory の停止中に保証する
+  範囲は未決 (候補: Emumet の鍵で署名し ShuttlePub が検証する)。転送の受け口は
+  ShuttlePub のリレー用 inbox とは別の専用 API (D39)。P1 で現行の Ory 構成のまま通す (D36)
 - 以下は 2026-08 時点の記録
 
 - 背景: inbox で受けた投稿を連携先 ShuttlePub へ転送する方式が未決
@@ -37,6 +41,9 @@
   認証は Hydra の間 DCR (client_id と origin の対応を Emumet が持つ)
 - 決定記録: shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.md
   (D31・D32)、ADR 0002 / 0003 の 2026-11-18 追記
+- **追記 (2026-11-18、D36-D41)**: client_id と origin の対応表の担当 (Emumet か Stellar か)
+  は未決に戻した。link の説明は当面「Profile のアタッチ先」で揃え、ShuttlePub の
+  ドメインが変わる場合は新しいサーバーとして扱う (D40)
 - 以下は 2026-08 時点の記録
 
 - 背景: docs の StellarAccount 定義(access_token/refresh_token)を踏襲するか未決。

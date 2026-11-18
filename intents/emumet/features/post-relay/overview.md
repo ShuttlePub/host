@@ -18,7 +18,10 @@ operator vision に基づく薄型境界):
   配送リクエストに、Emumet が保持する秘密鍵で代理署名する(内部署名 API)。
   **リモート inbox への配送自体は ShuttlePub が行う**
 - **内向き**: inbox で Create/Note 等を受信し、その Profile の連携先 ShuttlePub
-  サーバーへ転送する(転送先は Stellar ではなく ShuttlePub 本体。features/shuttlepub-link 参照)
+  サーバーへ転送する(転送先は Stellar ではなく ShuttlePub 本体。features/shuttlepub-link 参照)。
+  2026-11-18 (shuttlepub D36・D39): 転送先は Profile のアタッチ先の ShuttlePub で、
+  ShuttlePub のリレー用 inbox とは別の、Emumet からの転送を受ける専用 API に送る。
+  ShuttlePub は重複を除いて保存する。これをロードマップの P1 として現行の Ory 構成で先に通す
 - **配布**: 投稿コンテンツは Emumet に保存しない。Emumet ドメインの object/outbox URL
   への GET は、発行元 ShuttlePub への透過リバースプロキシで応答する
 

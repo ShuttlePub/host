@@ -119,6 +119,7 @@ shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.
   ID の名前空間は引き続き link ごと。
 - **サービス間認証**: Hydra を使っている間は DCR。Emumet は client_id と ShuttlePub の
   origin の対応を持つ (将来 OpenID Federation へ移る際の付け替えに使う)。
+  → 同日の shuttlepub D36-D41 で、対応表を Emumet と Stellar のどちらが持つかは未決に戻した。
 - **方針のみ・要確認**: Mastodon / Misskey 以外の実装が「署名者 = Emumet、送信元 =
   ShuttlePub」を受理するかは未確認。ShuttlePub の実装が進み次第、連合 E2E で確かめる。
   SLO (p99 100ms) は負荷試験で確かめる。

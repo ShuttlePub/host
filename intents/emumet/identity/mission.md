@@ -44,7 +44,12 @@ decisions/2026-11-18-service-concept-and-cross-service-p0.md の D27・D30、
 ## Glossary
 
 - **ShuttlePub(本体)**: タイムラインを構築する SNS 本体サービス。Emumet と連携する。
-- **Stellar**: 認可サーバーになる予定だったサービス。現在凍結。責務は Emumet と Ory に分散。
+- **Stellar**: 認可サーバーになる予定だったサービス。凍結し、責務は Emumet と Ory に分散した。
+  2026-11-18 に、ShuttlePub との連携 (P1) が通った後、Ory の上に載る薄い認証サービス
+  (ログイン・同意のコールバックと DCR の受付が初期候補) として切り出す方向に改めた
+  (ADR 0001 の追記、shuttlepub D36-D38)。
+- **link**: Profile のアタッチ先 (Profile がどの ShuttlePub サーバーにアタッチしているか)。
+  説明の言葉は当面これに揃える (shuttlepub D40)。
 - **Ory (Kratos/Hydra)**: 認証(Kratos)と OAuth2/OIDC 認可(Hydra)の外部サービス。
 - **連携先 ShuttlePub サービス**: アカウントごとに設定する、自分宛て投稿の転送先。
 - **代理署名**: ShuttlePub 発の投稿に対し、Emumet が保持する秘密鍵で HTTP Signature を付与すること。

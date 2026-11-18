@@ -23,6 +23,9 @@ ShuttlePub サービスを設定してそこに自分宛ての投稿を流す」
   link ごとに信頼モードを選ぶ: ① 署名のみ (`sign:post`) / ② ① + 受信の転送 /
   ③ ② + Profile のコレクション配布。③ は同時に 1 つで、それがホーム。登録は本人が
   UI の認可確認画面で行う (ADR 0002 の 2026-11-18 追記、shuttlepub D31)
+- **2026-11-18 (shuttlepub D40)**: link の説明は当面「Profile のアタッチ先」(Profile が
+  どの ShuttlePub サーバーにアタッチしているか) で揃える。別のサーバーを閲覧しても
+  link は変わらない。ShuttlePub のドメインが変わる場合は、新しいサーバーとして扱う
 - `link-id` は Emumet 発行の opaque ID。再利用禁止・発行時に Profile に固定。
   object ID 名前空間(`/objects/<link-id>/...`)の接頭辞でもある
 
