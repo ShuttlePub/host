@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-17T14:19:19.6247922+00:00",
+  "updated_at": "2026-11-18T03:44:12.6693334+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1814,7 +1814,7 @@
     {
       "execution_unit": "emumet-release-container",
       "title": "emumet-release-container: Emumet \u306E\u30EA\u30EA\u30FC\u30B9\u6A5F\u69CB (Dockerfile\u30FB/healthz\u30FBSIGTERM \u5BFE\u5FDC\u30FB\u30D5\u30A1\u30A4\u30EB\u30ED\u30B0\u65E2\u5B9A\u505C\u6B62\u30FBPR smoke\u30FBCalVer \u30BF\u30B0\u304B\u3089\u306E GHCR \u516C\u958B CI\u30FB\u624B\u9806\u66F8)",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
@@ -1828,6 +1828,7 @@
         "number": 110,
         "url": "https://github.com/ShuttlePub/Emumet/issues/110"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/111",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
