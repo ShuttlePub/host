@@ -30,6 +30,15 @@ ShuttlePub が扱う問題領域を決めた。
 | D49 | nitinol の使い方 | nitinol の System は driver で構築して包まず、AppHandler が EventSourceSystem をそのまま持つ。書き込み側の仕事は「Activity を出来事として受け入れる (検証し、重複を除く)」で、タイムラインはすべて Projector が導く。マイグレーションは sqlx が用意している Migrator の例どおりに組む。外への配送 (Accept など) は出来事への反応として行う。nitinol は 0.8.0 を使う (nitinol-sqlx 0.7.0 が自分のマイグレーションを `nitinol_migrations` に記録するので、アプリケーションは `sqlx::migrate!()` をそのまま使える) | 方針 |
 | D50 | port 層 | 層に `port` を足す (D16 の 4 crate を 5 crate にする)。集約の知識 (識別子など) は要るが、実体のほとんどが外部サービスであるものの口を置く。リモートの inbox への配送、リモート actor の取得、後には Emumet への署名依頼とアタッチの照会が入る。実装は driver が持ち、DI で渡す。出来事への反応 (Accept の配送など) は application に置く。saga は application 層の知識として扱い、反応の部品は Projector と同じ形で出来事を受け取って、port を呼ぶ | 確定 |
 
+D49 への補足 (2026-11-20、operator): AppHandler にストアの型引数を付けない。付けると axum 側に
+ストアの種類が出る。本番の AppHandler は nitinol の PostgreSQL プロバイダに固定する。検証で
+`InMemoryStore` を使いたい場合は専用の Handler を用意し、AppHandler を初期化するときに
+feature flag で切り替える。`shuttlepub-producer-intake` の packet は当初「ストアの違いは
+型引数で表す」としていたので、この補足に合わせて直した。
+
+D50 への補足 (2026-11-20、operator): `port` には抽象 (trait と `DependOn*`) だけを置き、
+具象実装はすべて driver にまとめる。以後の packet と task の本文に明記する。
+
 ## KJ法で得たまとまり (2026-11-20 時点、D47)
 
 | まとまり | 入れた出来事 | 集約・射影の候補 |
