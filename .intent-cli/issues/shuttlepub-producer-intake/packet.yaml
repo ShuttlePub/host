@@ -1,0 +1,71 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-producer-intake: nitinol 0.8 で供給元の受け入れと、届いた投稿の記録を行う"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-producer-intake
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "kernel/, port/, application/, driver/, server/, Cargo.toml, Cargo.lock, docs/foundation.md, compose.yaml, scripts/ci/structural-checks.sh, .github/workflows/lint-and-test.yml"
+  target_part: "ShuttlePub のリレー用 inbox (Follow と Create) と、供給元・投稿の集約、Accept の配送、永続化の基盤。/api/v1 契約の定義と openapi/shuttlepub.json は変更対象外"
+  dependencies: []
+  technical_baseline:
+    - "扱う問題は「Producer から送られた Activity を元にタイムラインが構築されること」で、永続化はその過程の一部 (D42)。本 issue は 3 つの Producer のうち、連合を申し込んできた外のサービスを扱う (D43, D44, D48)"
+    - "層は kernel / port / application / driver / server の 5 crate とし、cake-pattern DI の形は保つ (D16, D50)。内部の切り分けは KJ法のまとまりで行い、各層の中の module にだけ適用する (D20, D47)"
+    - "CQRS+ES は nitinol 0.8.0 で行い、永続化は nitinol の PostgreSQL プロバイダを使う (D17, D22, D49)。nitinol の System は包まず、AppHandler が EventSourceSystem を直接持つ (D49)"
+    - "外への配送は出来事への反応として application に置き、外部サービスへの口は port に置く (D49, D50)"
+    - "/api/v1 の契約 (openapi/shuttlepub.json) には差分を出さない (D19, D34)"
+    - "作業ブランチの基点と PR の base は dev。main へは動く形になってから別途 PR で merge する"
+  intent_references:
+    - "intents/shuttlepub/decisions/2026-11-20-problem-domain-and-producers.md (D42-D50)"
+    - "intents/shuttlepub/decisions/2026-11-18-service-concept-and-cross-service-p0.md (D23-D35)"
+    - "intents/shuttlepub/decisions/2026-11-16-relay-first-and-module-slicing.md (D20-D22)"
+    - "intents/shuttlepub/decisions/2026-11-15-role-boundary-and-rebuild.md (D12-D19)"
+    - "intents/shuttlepub/decisions/generated-openapi-contract.md"
+  acceptance_criteria:
+    - "AC1 (層と module): workspace は kernel・port・application・driver・server の 5 crate で、workspace 内の依存は「層と依存」の表のとおり。各層の module は community・producer・intake・note・delivery のまとまりで切られ、`kernel::entities` と `kernel::interface` は残っていない。配置の表が `docs/foundation.md` にあり、`scripts/ci/structural-checks.sh` が 5 crate を検査して通る"
+    - "AC2 (nitinol の境界): nitinol は 0.8.0。`kernel` は `contract` feature だけに依存し、`cargo tree -p shuttlepub-kernel -e normal` に tokio・`nitinol-runtime`・axum・reqwest・sqlx が出ない。`server` の Handler は `EventSourceSystem<St>` をフィールドとして直接持ち、nitinol の System を包む自前の型はない。`application` は axum・reqwest・sqlx に依存しない"
+    - "AC3 (集約): 供給元の集約と投稿の集約が `kernel` にあり、判定は純粋関数で、Design notes の表のとおりに振る舞うことが単体テストで確認されている。イベントの保存形式 (family・型名・JSON の形) を固定するテストがある"
+    - "AC4 (Follow と Accept): R1〜R5・R9 を満たし、それぞれテストで確認されている。Follow への応答は Accept の配送を待たない。Accept の配送は application にある反応の部品が port の口を通して行う"
+    - "AC5 (投稿の受け入れ): N1〜N9 を満たし、それぞれテストで確認されている。拒否した場合と公開でない場合に何も記録されないことも確認されている"
+    - "AC6 (永続化と起動): `SHUTTLEPUB_DATABASE_URL` を受け取り、起動時に接続と `PostgresEventStore::migrate` を行う。`Migrator` を手で組み立てていない。R6〜R8 を満たし、PostgreSQL を使うテストで確認されている。`POST /inbox` から PostgreSQL のイベントまでを通すテストが R1 と N1 について 1 件ずつある。既存の環境変数の名前と既定値は変わらない"
+    - "AC7 (既存の挙動と契約の維持): `server/tests/federation.rs` の既存のテストが、Design notes に書いた 2 種類の変更を除いて検証内容を変えずに通り、PostgreSQL なしで実行できる。`openapi/shuttlepub.json` は基点とバイト一致し、再生成しても差分が出ない。契約の定義・契約テスト・fixture に差分がない"
+    - "AC8 (検査): fmt / clippy `-D warnings` / test / build / `git diff --check` / structural-checks / openapi-schema が、ローカルと CI (`dev` 向けの PR) の両方で通る。PostgreSQL を使うテストは、DB が使えないときに黙って通らない"
+
+# G461: packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/intent-tree/00-map.md
+  supporting_intents:
+    - "intents/shuttlepub/decisions/2026-11-20-problem-domain-and-producers.md"
+    - "intents/shuttlepub/technology/overview.md"
+  new_intent_needed: false
+  placement_rationale: "問題領域の決定 (D42-D50) の後の最初の実行単位。retired にした shuttlepub-relay-follower を作り直す。新しい intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/intent-tree/00-map.md"
+    summary: "shuttlepub-producer-intake の到達範囲 (nitinol 0.8 と PostgreSQL の導入、供給元の受け入れ、Accept の配送、届いた投稿の記録まで。タイムラインの Projector・Undo・転送は未着手) を記録する。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/technology/overview.md"
+    summary: "層 (5 crate)、module の配置、nitinol の使い方 (kernel は contract、AppHandler が EventSourceSystem を持つ、出来事への反応)、PostgreSQL の前提と既知の制約を反映する。"
+closeout_learning:
+  expected: "nitinol の境界の置き方、出来事への反応を Projector の形で書いたときの挙動 (遅れ、重複、失敗の扱い)、シングルノードで動かして分かった nitinol への還元事項 (クラスタリングに必要なこと)、テストでの PostgreSQL の用意の仕方を記録する。次の単位 (タイムラインの Projector、Emumet からの転送の受け口) の前提になる。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/technology/overview.md"
+    - "intents/shuttlepub/intent-tree/00-map.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (kernel/, port/, application/, driver/, server/)"

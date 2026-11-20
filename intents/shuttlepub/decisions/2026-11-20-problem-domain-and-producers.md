@@ -1,4 +1,4 @@
-# 2026-11-20 ShuttlePub の問題領域と 3 つの Producer (D42-D49)
+# 2026-11-20 ShuttlePub の問題領域と 3 つの Producer (D42-D50)
 
 2026-11-19〜20 に operator と設計席 (本 domain の solo-conductor) の間で確定した決定。
 [2026-11-18-p1-first-and-stellar-carve-out.md](2026-11-18-p1-first-and-stellar-carve-out.md)
@@ -28,6 +28,7 @@ ShuttlePub が扱う問題領域を決めた。
 | D47 | KJ法のまとまり | 3 つの Producer から起きる出来事を書き出して、まとめ直した。D20 の表 (2026-11-16 時点の A〜G) を下の表で置き換える。切り分け方そのもの (D20) と層の crate (D16) は維持する | 確定 |
 | D48 | 最初の実行単位 | 「② の Producer を受け入れ、そこから届いた公開投稿を重複を除いて出来事として記録する」までを 1 つの単位にする。供給元の受け入れ → Accept の配送 (出来事への反応) → Activity の受け入れと重複の除去 → 投稿のイベントと通し、Emumet に依存しない。Global TL の読み出しと API は後のフェーズに置く (ロードマップの P2 以降)。`shuttlepub-relay-follower` (#32) は retired にし、PR #33 は merge せずに閉じた (2026-11-20)。新しい実行単位で作り直す | 方針 |
 | D49 | nitinol の使い方 | nitinol の System は driver で構築して包まず、AppHandler が EventSourceSystem をそのまま持つ。書き込み側の仕事は「Activity を出来事として受け入れる (検証し、重複を除く)」で、タイムラインはすべて Projector が導く。マイグレーションは sqlx が用意している Migrator の例どおりに組む。外への配送 (Accept など) は出来事への反応として行う。nitinol は 0.8.0 を使う (nitinol-sqlx 0.7.0 が自分のマイグレーションを `nitinol_migrations` に記録するので、アプリケーションは `sqlx::migrate!()` をそのまま使える) | 方針 |
+| D50 | port 層 | 層に `port` を足す (D16 の 4 crate を 5 crate にする)。集約の知識 (識別子など) は要るが、実体のほとんどが外部サービスであるものの口を置く。リモートの inbox への配送、リモート actor の取得、後には Emumet への署名依頼とアタッチの照会が入る。実装は driver が持ち、DI で渡す。出来事への反応 (Accept の配送など) は application に置く。saga は application 層の知識として扱い、反応の部品は Projector と同じ形で出来事を受け取って、port を呼ぶ | 確定 |
 
 ## KJ法で得たまとまり (2026-11-20 時点、D47)
 
@@ -68,6 +69,8 @@ D20 の表との違い:
 
 ## 過去の決定との関係
 
+- **D16** (4 crate の層): `port` を足して 5 crate にする (D50)。依存の向きは
+  application → port → kernel、driver → port・kernel、server → すべて。
 - **D20** (KJ法による切り分け): 切り分け方は維持。2026-11-16 時点の表は D47 で置き換えた。
 - **D21** (リレーとして動くことを優先、最初の集約はフォロワー): リレーの受け口から
   始める順序は維持。最初の単位は D48 のとおり、受けた投稿がタイムラインに並ぶところまでを

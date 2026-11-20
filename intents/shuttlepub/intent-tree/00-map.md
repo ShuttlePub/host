@@ -21,7 +21,7 @@ technology/overview.md       現状スタック、未使用依存、設計方向
 links/external.md            関連リポジトリ (nitinol, stargate, サービス群)
 product/service-concept.md   サービス群全体のコンセプト (2026-11-18)
 packets/roadmap-2026-11-18.md  サービス群の実装ロードマップ (P0-P4)
-decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提、D36-D41: 2026-11-18 P1 の連携を先に通し、その後 Stellar を切り出す、D42-D49: 2026-11-20 問題領域と 3 つの Producer)
+decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提、D36-D41: 2026-11-18 P1 の連携を先に通し、その後 Stellar を切り出す、D42-D50: 2026-11-20 問題領域と 3 つの Producer・port 層)
 features/                    (未整理)
 clarifications/open.md       (未整理)
 interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
@@ -73,13 +73,14 @@ interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
 
 - 決定: [decisions/2026-11-18-p1-first-and-stellar-carve-out.md](../decisions/2026-11-18-p1-first-and-stellar-carve-out.md)
 
-## 問題領域と 3 つの Producer (D42-D49、2026-11-20)
+## 問題領域と 3 つの Producer (D42-D50、2026-11-20)
 
 ShuttlePub が扱う問題を「Producer から送られた Activity を元に、タイムラインが構築される
 こと」と定めた。Producer は、① 利用者の投稿、② 連合を申し込んできた外のサービス
 (リレー用 inbox)、③ Emumet からの転送の 3 つ。リレーは多数の投稿を受けるための仕組みで、
 Follow は Producer ② が増える出来事として扱う。タイムラインは Local TL・Global TL・
 ホーム TL と呼び、Projector で導く。KJ法のまとまりは D47 の表に置き換えた。
+外部サービスが実体であるものの口を置く `port` 層を足す (D50)。
 `shuttlepub-relay-follower` (#32) は retired にし、PR #33 は merge せずに閉じた (2026-11-20)。
 供給元の受け入れと届いた投稿の受け入れを、新しい実行単位で作り直す。Global TL は後のフェーズ。
 
