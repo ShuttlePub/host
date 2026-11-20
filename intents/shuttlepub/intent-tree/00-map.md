@@ -80,8 +80,8 @@ ShuttlePub が扱う問題を「Producer から送られた Activity を元に�
 (リレー用 inbox)、③ Emumet からの転送の 3 つ。リレーは多数の投稿を受けるための仕組みで、
 Follow は Producer ② が増える出来事として扱う。タイムラインは Local TL・Global TL・
 ホーム TL と呼び、Projector で導く。KJ法のまとまりは D47 の表に置き換えた。
-`shuttlepub-relay-follower` (#32、PR #33 未 merge) は、受けた投稿が Global TL に並ぶ
-ところまでを通す形に作り直す方針で、PR #33 の扱いは未決。
+`shuttlepub-relay-follower` (#32) は retired にし、PR #33 は merge せずに閉じた (2026-11-20)。
+供給元の受け入れと届いた投稿の受け入れを、新しい実行単位で作り直す。Global TL は後のフェーズ。
 
 - 決定: [decisions/2026-11-20-problem-domain-and-producers.md](../decisions/2026-11-20-problem-domain-and-producers.md)
 

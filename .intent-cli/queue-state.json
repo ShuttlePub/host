@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-18T03:44:12.6693334+00:00",
+  "updated_at": "2026-11-20T08:51:42.9084738+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1792,7 +1792,7 @@
     {
       "execution_unit": "shuttlepub-relay-follower",
       "title": "shuttlepub-relay-follower: nitinol 0.7 \u3068 PostgreSQL \u3092\u5C0E\u5165\u3057\u3001\u30D5\u30A9\u30ED\u30EF\u30FC\u3092\u6700\u521D\u306E\u96C6\u7D04\u3068\u3057\u3066\u8A18\u9332\u3059\u308B",
-      "state": "queued",
+      "state": "retired",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/shuttlepub/clarifications/open.md",

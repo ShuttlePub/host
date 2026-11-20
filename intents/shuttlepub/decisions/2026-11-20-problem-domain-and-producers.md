@@ -26,8 +26,8 @@ ShuttlePub が扱う問題領域を決めた。
 | D45 | タイムラインの呼び方と流れ先 | 「コミュニティ TL」ではなく Local Timeline (Local TL) と呼ぶ。① の投稿は Local TL に流す。外から届いたただの Note は Global Timeline (Global TL) に流す。cc 付き、つまり返信などは、文脈を保つために Local TL に流してよい。③ で届いた Profile 宛てのものはホーム TL・通知に流す (D26) | 方針 (Global TL の扱いは実行単位の設計で確かめる) |
 | D46 | アタッチの正本 | Profile がこのサーバーにアタッチしているか (link) は Emumet が持つ。ShuttlePub は自分のモデルとして記録せず、リクエストに付いてくる情報 (投稿時の認可、転送の envelope の宛先 Profile) か、Emumet への問い合わせで知る | 確定 |
 | D47 | KJ法のまとまり | 3 つの Producer から起きる出来事を書き出して、まとめ直した。D20 の表 (2026-11-16 時点の A〜G) を下の表で置き換える。切り分け方そのもの (D20) と層の crate (D16) は維持する | 確定 |
-| D48 | 最初の実行単位 | 「② の Producer から届いた公開投稿が Global TL に並ぶ」までを 1 つの単位にする。供給元の受け入れ → Activity の受け入れと重複の除去 → 投稿のイベント → Projector による Global TL と一本通し、Emumet に依存しない。`shuttlepub-relay-follower` (#32) はこの形に作り直す | 方針 (PR #33 の扱いは未決) |
-| D49 | nitinol の使い方 | nitinol の System は driver で構築して包まず、AppHandler が EventSourceSystem をそのまま持つ。書き込み側の仕事は「Activity を出来事として受け入れる (検証し、重複を除く)」で、タイムラインはすべて Projector が導く。マイグレーションは sqlx が用意している Migrator の例どおりに組む。外への配送 (Accept など) は出来事への反応として行う | 方針 |
+| D48 | 最初の実行単位 | 「② の Producer を受け入れ、そこから届いた公開投稿を重複を除いて出来事として記録する」までを 1 つの単位にする。供給元の受け入れ → Accept の配送 (出来事への反応) → Activity の受け入れと重複の除去 → 投稿のイベントと通し、Emumet に依存しない。Global TL の読み出しと API は後のフェーズに置く (ロードマップの P2 以降)。`shuttlepub-relay-follower` (#32) は retired にし、PR #33 は merge せずに閉じた (2026-11-20)。新しい実行単位で作り直す | 方針 |
+| D49 | nitinol の使い方 | nitinol の System は driver で構築して包まず、AppHandler が EventSourceSystem をそのまま持つ。書き込み側の仕事は「Activity を出来事として受け入れる (検証し、重複を除く)」で、タイムラインはすべて Projector が導く。マイグレーションは sqlx が用意している Migrator の例どおりに組む。外への配送 (Accept など) は出来事への反応として行う。nitinol は 0.8.0 を使う (nitinol-sqlx 0.7.0 が自分のマイグレーションを `nitinol_migrations` に記録するので、アプリケーションは `sqlx::migrate!()` をそのまま使える) | 方針 |
 
 ## KJ法で得たまとまり (2026-11-20 時点、D47)
 
@@ -57,7 +57,6 @@ D20 の表との違い:
 
 ## 今回の決定に含めないもの (未決)
 
-- **PR #33 の扱い**。設計席の案は、閉じて packet を作り直す。operator の指示を待つ。
 - **アタッチを問い合わせる口**。Emumet の `GET /api/v1/profiles/{profile_nanoid}`
   (ShuttlePub/Emumet 1259c73 の `server/src/route/profile_relationship.rs`) は、
   認可が Profile の現在の所有者の bearer token、キーが nanoid、応答に link を含まない。
@@ -66,10 +65,6 @@ D20 の表との違い:
   ② で届いた返信など。Emumet 側 (shuttlepub-link) への要望として扱う。
 - **Global TL に流す範囲** (D45)。
 - **重複の除去をどの集約が受け持つか**。候補は投稿の集約。実行単位の設計で確かめる。
-- **nitinol-sqlx とマイグレーション表**。nitinol-sqlx 0.6.1 は既定の `_sqlx_migrations` に
-  バージョン 1〜4 を記録するので、アプリケーションが同じ表へ `sqlx::migrate!()` を
-  そのまま使うと衝突する (PR #33 のレビューで確認)。D49 の「例どおり」を満たす方法
-  (nitinol-sqlx 側での対応を含む) は未決。
 
 ## 過去の決定との関係
 
