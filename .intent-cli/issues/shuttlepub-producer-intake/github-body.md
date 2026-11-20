@@ -224,7 +224,7 @@ Create:
 - AC5 (投稿の受け入れ): N1〜N9 を満たし、それぞれテストで確認されている。拒否した場合と公開でない場合に何も記録されないことも確認されている
 - AC6 (永続化と起動): `SHUTTLEPUB_DATABASE_URL` を受け取り、起動時に接続と `PostgresEventStore::migrate` を行う。`Migrator` を手で組み立てていない。R6〜R8 を満たし、PostgreSQL を使うテストで確認されている。`POST /inbox` から PostgreSQL のイベントまでを通すテストが R1 と N1 について 1 件ずつある。既存の環境変数の名前と既定値は変わらない
 - AC7 (既存の挙動と契約の維持): `server/tests/federation.rs` の既存のテストが、Design notes に書いた 2 種類の変更を除いて検証内容を変えずに、PostgreSQL を使う組み立てで通る。`openapi/shuttlepub.json` は基点とバイト一致し、再生成しても差分が出ない。契約の定義・契約テスト・fixture に差分がない
-- AC8 (検査): fmt / clippy `-D warnings` / test / build / `git diff --check` / structural-checks / openapi-schema が、ローカルと CI (`dev` 向けの PR) の両方で通る。PostgreSQL を使うテストは、DB が使えないときに黙って通らない
+- AC8 (検査): fmt / clippy `-D warnings` / test / build / `git diff --check` / structural-checks / openapi-schema が、ローカルで通る。CI (`dev` 向けの PR) での結果は、この実行単位の workflow の完了条件に含めず、PR の作成後に依頼者が確認する。PostgreSQL を使うテストは、DB が使えないときに黙って通らない
 
 ## Verification
 
