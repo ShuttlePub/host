@@ -22,7 +22,7 @@ ShuttlePub が扱う問題は「Producer から送られた Activity を元に�
 - `POST /inbox` で Follow に加えて Create (Note) を受け付ける
 - Accept の配送を、出来事への反応として `application` に置く
 - PostgreSQL への接続 (`SHUTTLEPUB_DATABASE_URL`)、nitinol のマイグレーション、起動と終了の手順
-- テスト (集約の単体、`InMemoryStore` を使う application・server のテスト、PostgreSQL を使う結合、起動したバイナリ) と、開発用の `compose.yaml`
+- テスト (集約の単体、`InMemoryStore` を使う application のテスト、PostgreSQL を使う server のテスト、起動したバイナリ) と、開発用の `compose.yaml`
 - `docs/foundation.md` と `scripts/ci/structural-checks.sh` の更新
 
 ## Out of scope
