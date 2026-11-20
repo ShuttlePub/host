@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-20T08:51:42.9084738+00:00",
+  "updated_at": "2026-11-20T09:05:24.816281+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1831,6 +1831,23 @@
       "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/111",
       "worker_role": "implementation",
       "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "shuttlepub-producer-intake",
+      "title": "shuttlepub-producer-intake: nitinol 0.8 \u3067\u4F9B\u7D66\u5143\u306E\u53D7\u3051\u5165\u308C\u3068\u3001\u5C4A\u3044\u305F\u6295\u7A3F\u306E\u8A18\u9332\u3092\u884C\u3046",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/shuttlepub/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/shuttlepub-producer-intake/implementation.md",
+        "review_context": ".intent-cli/issues/shuttlepub-producer-intake/review-context.md",
+        "yaml": ".intent-cli/issues/shuttlepub-producer-intake/packet.yaml"
+      },
+      "worker_role": "builder",
+      "review_role": "reviewer",
       "priority": "high",
       "priority_revision": 0
     }
