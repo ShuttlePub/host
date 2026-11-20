@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:shuttlepub-producer-intake",
+  "actor": "implementation",
+  "team": "shuttlepub-core",
+  "claimed_at": "2026-11-20T09:06:02.9170438+00:00",
+  "base_commit": "02c88a23fa1edf183160cf1a4641254a6a0939de"
+}
