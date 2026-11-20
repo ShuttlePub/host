@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:shuttlepub-producer-intake",
+  "actor": "design",
+  "team": "shuttlepub-core",
+  "recorded_at": "2026-11-20T09:05:57.3177556+00:00",
+  "reason": "design complete, handing to implementation",
+  "displaced_holder": "design",
+  "displaced_team": "shuttlepub-core",
+  "displaced_claimed_at": "2026-11-20T09:04:34.6106084+00:00",
+  "base_commit": "c421596ef2f6f83640ab47d083519cc8dbc01f70"
+}
