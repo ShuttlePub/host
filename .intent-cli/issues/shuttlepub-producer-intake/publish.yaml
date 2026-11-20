@@ -1,0 +1,7 @@
+execution_unit: shuttlepub-producer-intake
+publish_status: issue-created
+packet_path: "/home/rechella/projects/host/.intent-cli/issues/shuttlepub-producer-intake"
+issue_body_path: "/home/rechella/projects/host/.intent-cli/issues/shuttlepub-producer-intake/github-body.md"
+created_issue_number: 34
+created_issue_url: "https://github.com/ShuttlePub/ShuttlePub/issues/34"
+published_label_name: null
