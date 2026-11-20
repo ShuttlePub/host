@@ -8,6 +8,11 @@ facets: [vocabulary, invariant]
 サービス群全体のコンセプトを記録する場所がなかったため、`shuttlepub` ドメインに置く。
 Emumet・Booskiff の mission はここを参照する。
 
+2026-11-20 追記 (decisions/2026-11-20-problem-domain-and-producers.md の D42-D49):
+ShuttlePub の問題領域を「Producer から送られた Activity を元にタイムラインを構築すること」と
+定めた。下の「コミュニティ TL」は Local TL と呼ぶ (D45)。外から届いたただの Note は
+Global TL に流す方針。
+
 ## 一文で
 
 **1 つのアカウントで、たくさんの小さなタイムラインを渡り歩ける Fediverse。**

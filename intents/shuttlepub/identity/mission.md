@@ -17,6 +17,11 @@ ShuttlePub サービス群における SNS 本体サービスで、**コミュ�
 Identity Plane は Emumet、認証認可は Ory (Kratos/Hydra)、ファイル保管は Booskiff に
 委譲する。サービス群全体のコンセプトは [../product/service-concept.md](../product/service-concept.md)。
 
+※ 2026-11-20 追記 (decisions/2026-11-20-problem-domain-and-producers.md の D42-D45)。
+扱う問題領域は「Producer (利用者の投稿、連合を申し込んできた外のサービス、Emumet からの
+転送) から送られた Activity を元に、タイムラインが構築されること」。永続化はその過程の
+一部。リレーは多数の投稿を受けるための仕組み。「コミュニティ TL」は Local TL と呼ぶ。
+
 ※ 2026-11-18 改訂 (decisions/2026-11-18-service-concept-and-cross-service-p0.md の
 D23-D29)。「コミュニティそのもの」という位置付けを加えた。
 
