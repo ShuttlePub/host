@@ -95,7 +95,7 @@ Target part: "ShuttlePub のリレー用 inbox (Follow と Create) と、供給�
 - `port` に置くのは、リモートの inbox への配送と、リモート actor の取得の 2 つ。基点の `kernel::interface` にあるもののうち、この 2 つを移す。自身の actor の提供と HTTP 署名の検証は外部サービスではないので、`port` に置かない。
 - `kernel` は tokio・`nitinol-runtime`・axum・reqwest・sqlx に依存しない。`application` は axum・reqwest・sqlx に依存しない。
 - `scripts/ci/structural-checks.sh` を 5 crate と上の依存に合わせる。検査を弱めない。
-- nitinol の System を自前の型で包まない。`server` の AppHandler が `EventSourceSystem` をフィールドとして直接持ち、`application` は cake-pattern (`DependOn*`) でそれを受け取って `AggregateProxy` に `ask` する。AppHandler と axum の state・router・ルートの関数には、ストアの型引数を付けない (ストアの種類を axum 側に出さない)。本番の AppHandler は `PostgresStore` に固定する。検証用に `InMemoryStore` を使う専用の Handler を `server` に置き、`server` の feature `in-memory` で、AppHandler を初期化するときにどちらを使うかを切り替える。既定 (feature なし) は PostgreSQL。Accept の配送の起動も同じ feature で切り替え、2 つの公開関数を並べない。
+- nitinol の System を自前の型で包まない。`server` の AppHandler が `EventSourceSystem<PostgresStore>` をフィールドとして直接持ち、`application` は cake-pattern (`DependOn*`) でそれを受け取って `AggregateProxy` に `ask` する。AppHandler と axum の state・router・ルートの関数には、ストアの型引数を付けない (ストアの種類を axum 側に出さない)。ストアを切り替える feature も、`server` 用の検証用 Handler も作らない。`application` は `DependOn*` を通してストアに依らない形のままにし、そのテストだけが `InMemoryStore` を使う。Accept の配送の起動は PostgreSQL のトランザクションを使う 1 つだけにする。
 
 ### module の切り分け (D20, D47)
 
@@ -190,7 +190,7 @@ Create:
 - PostgreSQL を使わずに確認できるものは、使わずに確認する。
   - 集約の判定 (`decide`・`apply`) は `kernel` の単体テスト。
   - ユースケースと反応は、`InMemoryStore` と偽の `port` を使う `application` のテスト。
-  - `server/tests/federation.rs` など PostgreSQL を使わない `server` のテストは、feature `in-memory` を有効にして検証用の Handler で組み立て、PostgreSQL なしで通す。PostgreSQL を使うテストと起動したバイナリのテストは、feature なしで通す。2 つは同時に成り立たない構成なので `--all-features` は使わず、検査は両方の構成で実行する。テストがどちらの構成のものかは `required-features` か `cfg` で表し、対象外の構成で黙って 0 件にならないことを確かめる。
+  - 層ごとに使うストアを決める。`kernel` は純粋関数のテストでストアを使わない。`application` は `InMemoryStore` と偽の `port` で組み立て、PostgreSQL を使わない。`port` は抽象だけなのでテストを持たない。`driver` は nitinol のストアに触れないが、外部 I/O を伴うテストでストアが要る場合は PostgreSQL を使う。`server` のテストは、`server/tests/federation.rs` を含めてすべて PostgreSQL (testcontainers、テストのバイナリごとに 1 つを共有) で組み立て、`InMemoryStore` を使わない。契約テスト (`server/tests/personal_domain.rs`、`quick_reaction.rs`、`openapi.rs`) は検証内容を変えず、組み立ての変更だけにとどめる。
 - PostgreSQL を使うテストは、環境変数 `SHUTTLEPUB_TEST_DATABASE_URL` があればその DB を使い、なければ testcontainers で PostgreSQL を起動する。どちらも使えない場合は、テストを黙って通さずに失敗させる。コンテナはテストごとに起動せず、テストのバイナリごとに 1 つを共有し、テスト同士は schema か database で分ける。
 - PostgreSQL を使って確認するもの: R6〜R8、および HTTP の `POST /inbox` から PostgreSQL のイベントまでを通す確認 (R1 と N1 を少なくとも 1 件ずつ)。
 - `server/tests/federation.rs` の既存のテストは、次の 2 つを除いて検証内容を変えない。
@@ -218,20 +218,19 @@ Create:
 ## Acceptance Criteria
 
 - AC1 (層と module): workspace は kernel・port・application・driver・server の 5 crate で、workspace 内の依存は「層と依存」の表のとおり。各層の module は community・producer・intake・note・delivery のまとまりで切られ、`kernel::entities` と `kernel::interface` は残っていない。配置の表が `docs/foundation.md` にあり、`scripts/ci/structural-checks.sh` が 5 crate を検査して通る
-- AC2 (nitinol の境界): nitinol は 0.8.0。`kernel` は `contract` feature だけに依存し、`cargo tree -p shuttlepub-kernel -e normal` に tokio・`nitinol-runtime`・axum・reqwest・sqlx が出ない。`server` の AppHandler は `EventSourceSystem` をフィールドとして直接持ち、nitinol の System を包む自前の型はない。AppHandler・axum の state・router・ルートの関数にストアの型引数がなく、`InMemoryStore` は feature `in-memory` を有効にしたときだけ検証用の Handler として組み込まれる。`application` は axum・reqwest・sqlx に依存しない
+- AC2 (nitinol の境界): nitinol は 0.8.0。`kernel` は `contract` feature だけに依存し、`cargo tree -p shuttlepub-kernel -e normal` に tokio・`nitinol-runtime`・axum・reqwest・sqlx が出ない。`server` の AppHandler は `EventSourceSystem<PostgresStore>` をフィールドとして直接持ち、nitinol の System を包む自前の型はない。AppHandler・axum の state・router・ルートの関数にストアの型引数がなく、ストアを切り替える feature もない。`InMemoryStore` を使うのは `application` のテストだけで、`server` (テストを含む) には現れない。`application` は axum・reqwest・sqlx に依存しない
 - AC3 (集約): 供給元の集約と投稿の集約が `kernel` にあり、判定は純粋関数で、Design notes の表のとおりに振る舞うことが単体テストで確認されている。イベントの保存形式 (family・型名・JSON の形) を固定するテストがある
 - AC4 (Follow と Accept): R1〜R5・R9 を満たし、それぞれテストで確認されている。Follow への応答は Accept の配送を待たない。Accept の配送は application にある反応の部品が port の口を通して行う
 - AC5 (投稿の受け入れ): N1〜N9 を満たし、それぞれテストで確認されている。拒否した場合と公開でない場合に何も記録されないことも確認されている
 - AC6 (永続化と起動): `SHUTTLEPUB_DATABASE_URL` を受け取り、起動時に接続と `PostgresEventStore::migrate` を行う。`Migrator` を手で組み立てていない。R6〜R8 を満たし、PostgreSQL を使うテストで確認されている。`POST /inbox` から PostgreSQL のイベントまでを通すテストが R1 と N1 について 1 件ずつある。既存の環境変数の名前と既定値は変わらない
-- AC7 (既存の挙動と契約の維持): `server/tests/federation.rs` の既存のテストが、Design notes に書いた 2 種類の変更を除いて検証内容を変えずに通り、feature `in-memory` を有効にすれば PostgreSQL なしで実行できる。`openapi/shuttlepub.json` は基点とバイト一致し、再生成しても差分が出ない。契約の定義・契約テスト・fixture に差分がない
+- AC7 (既存の挙動と契約の維持): `server/tests/federation.rs` の既存のテストが、Design notes に書いた 2 種類の変更を除いて検証内容を変えずに、PostgreSQL を使う組み立てで通る。`openapi/shuttlepub.json` は基点とバイト一致し、再生成しても差分が出ない。契約の定義・契約テスト・fixture に差分がない
 - AC8 (検査): fmt / clippy `-D warnings` / test / build / `git diff --check` / structural-checks / openapi-schema が、ローカルと CI (`dev` 向けの PR) の両方で通る。PostgreSQL を使うテストは、DB が使えないときに黙って通らない
 
 ## Verification
 
 - `cargo fmt --all -- --check`
-- `cargo clippy --workspace --all-targets --locked -- -D warnings` と、同じコマンドに `--features server/in-memory` を付けたもの (feature の指定の書き方は workspace の構成に合わせる)
-- `cargo test --workspace --locked` (Docker か `SHUTTLEPUB_TEST_DATABASE_URL` が使える環境で) と、`--features server/in-memory` を付けたもの (PostgreSQL なしで通る)
-- CI (`.github/workflows/lint-and-test.yml`) と `docs/foundation.md` の検査コマンドも、この 2 つの構成に合わせる
+- `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`
+- `cargo test --workspace --all-features --locked` (Docker か `SHUTTLEPUB_TEST_DATABASE_URL` が使える環境で。`server` のテストはすべて PostgreSQL が要る)
 - `cargo build --workspace --locked`
 - `git diff --check`
 - `scripts/ci/structural-checks.sh` が通る

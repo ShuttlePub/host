@@ -32,9 +32,12 @@ ShuttlePub が扱う問題領域を決めた。
 
 D49 への補足 (2026-11-20、operator): AppHandler にストアの型引数を付けない。付けると axum 側に
 ストアの種類が出る。本番の AppHandler は nitinol の PostgreSQL プロバイダに固定する。検証で
-`InMemoryStore` を使いたい場合は専用の Handler を用意し、AppHandler を初期化するときに
-feature flag で切り替える。`shuttlepub-producer-intake` の packet は当初「ストアの違いは
-型引数で表す」としていたので、この補足に合わせて直した。
+ストアは層ごとに決める。`kernel` と `application` はインフラを使わないので、テストでは
+`InMemoryStore` まで (`kernel` は純粋関数なのでストア自体が要らない)。`port`・`driver`・
+`server` をテストするときは PostgreSQL を使う。feature flag で `server` のストアを切り替える
+案は採らなかった。品質ゲートが `--all-features` で動くため、排他的な feature では PostgreSQL 側が
+検査されなくなる。`shuttlepub-producer-intake` の packet は当初「ストアの違いは型引数で表す」と
+していたので、この補足に合わせて直した。
 
 D50 への補足 (2026-11-20、operator): `port` には抽象 (trait と `DependOn*`) だけを置き、
 具象実装はすべて driver にまとめる。以後の packet と task の本文に明記する。

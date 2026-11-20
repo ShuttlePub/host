@@ -22,12 +22,12 @@ implementation_issue_packet:
     - "intents/shuttlepub/decisions/generated-openapi-contract.md"
   acceptance_criteria:
     - "AC1 (層と module): workspace は kernel・port・application・driver・server の 5 crate で、workspace 内の依存は「層と依存」の表のとおり。各層の module は community・producer・intake・note・delivery のまとまりで切られ、`kernel::entities` と `kernel::interface` は残っていない。配置の表が `docs/foundation.md` にあり、`scripts/ci/structural-checks.sh` が 5 crate を検査して通る"
-    - "AC2 (nitinol の境界): nitinol は 0.8.0。`kernel` は `contract` feature だけに依存し、`cargo tree -p shuttlepub-kernel -e normal` に tokio・`nitinol-runtime`・axum・reqwest・sqlx が出ない。`server` の AppHandler は `EventSourceSystem` をフィールドとして直接持ち、nitinol の System を包む自前の型はない。AppHandler・axum の state・router・ルートの関数にストアの型引数がなく、`InMemoryStore` は feature `in-memory` を有効にしたときだけ検証用の Handler として組み込まれる。`application` は axum・reqwest・sqlx に依存しない"
+    - "AC2 (nitinol の境界): nitinol は 0.8.0。`kernel` は `contract` feature だけに依存し、`cargo tree -p shuttlepub-kernel -e normal` に tokio・`nitinol-runtime`・axum・reqwest・sqlx が出ない。`server` の AppHandler は `EventSourceSystem<PostgresStore>` をフィールドとして直接持ち、nitinol の System を包む自前の型はない。AppHandler・axum の state・router・ルートの関数にストアの型引数がなく、ストアを切り替える feature もない。`InMemoryStore` を使うのは `application` のテストだけで、`server` (テストを含む) には現れない。`application` は axum・reqwest・sqlx に依存しない"
     - "AC3 (集約): 供給元の集約と投稿の集約が `kernel` にあり、判定は純粋関数で、Design notes の表のとおりに振る舞うことが単体テストで確認されている。イベントの保存形式 (family・型名・JSON の形) を固定するテストがある"
     - "AC4 (Follow と Accept): R1〜R5・R9 を満たし、それぞれテストで確認されている。Follow への応答は Accept の配送を待たない。Accept の配送は application にある反応の部品が port の口を通して行う"
     - "AC5 (投稿の受け入れ): N1〜N9 を満たし、それぞれテストで確認されている。拒否した場合と公開でない場合に何も記録されないことも確認されている"
     - "AC6 (永続化と起動): `SHUTTLEPUB_DATABASE_URL` を受け取り、起動時に接続と `PostgresEventStore::migrate` を行う。`Migrator` を手で組み立てていない。R6〜R8 を満たし、PostgreSQL を使うテストで確認されている。`POST /inbox` から PostgreSQL のイベントまでを通すテストが R1 と N1 について 1 件ずつある。既存の環境変数の名前と既定値は変わらない"
-    - "AC7 (既存の挙動と契約の維持): `server/tests/federation.rs` の既存のテストが、Design notes に書いた 2 種類の変更を除いて検証内容を変えずに通り、feature `in-memory` を有効にすれば PostgreSQL なしで実行できる。`openapi/shuttlepub.json` は基点とバイト一致し、再生成しても差分が出ない。契約の定義・契約テスト・fixture に差分がない"
+    - "AC7 (既存の挙動と契約の維持): `server/tests/federation.rs` の既存のテストが、Design notes に書いた 2 種類の変更を除いて検証内容を変えずに、PostgreSQL を使う組み立てで通る。`openapi/shuttlepub.json` は基点とバイト一致し、再生成しても差分が出ない。契約の定義・契約テスト・fixture に差分がない"
     - "AC8 (検査): fmt / clippy `-D warnings` / test / build / `git diff --check` / structural-checks / openapi-schema が、ローカルと CI (`dev` 向けの PR) の両方で通る。PostgreSQL を使うテストは、DB が使えないときに黙って通らない"
 
 # G461: packet-time intent-maintenance metadata.
