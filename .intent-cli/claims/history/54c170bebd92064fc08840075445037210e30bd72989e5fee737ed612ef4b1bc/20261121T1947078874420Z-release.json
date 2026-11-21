@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-profile-inbox-relay",
+  "actor": "codex-i1-profile-inbox-relay",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-21T19:47:07.887442+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "codex-i1-profile-inbox-relay",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T19:33:36.244491+00:00",
+  "base_commit": "a2b3fd885af6e7d37e86a020fd098b3f4893869b"
+}
