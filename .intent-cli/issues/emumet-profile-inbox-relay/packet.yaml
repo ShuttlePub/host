@@ -1,0 +1,86 @@
+implementation_issue_packet:
+  issue_title: "emumet-profile-inbox-relay: Profile inbox relay intake"
+  issue_kind: feature
+  source_execution_unit: emumet-profile-inbox-relay
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/, application/, driver/, server/, migrations/, openapi.json"
+  target_part: "Connect the existing Profile inbox to Q1's durable post-relay admission path, classify Activities under the canonical contract, and measure bounded intake."
+  dependencies:
+    - emumet-p1-relay-contract
+    - emumet-instance-identity
+    - emumet-home-link
+    - emumet-post-relay-storage
+    - emumet-post-relay-delivery
+  technical_baseline:
+    - "Implement against the latest ShuttlePub/Emumet main at implementation start and record the actual full 40-character base SHA in the child PR. The approved plan inspected 1259c731af496bb09ae11286a9b869b132a88f4d; this is historical context, not the implementation base."
+    - "The canonical contract is host intents/shuttlepub/contracts/emumet-post-relay/, v1 revision 3, including its inbox-reading fixtures. Emumet docs/contracts is a pinned snapshot, not an independent source."
+    - "Use the approved P1 implementation plan, third edition: §3.1-3.2, §4, §6.4, §6.6, §7.3 (I1 intake measurement), §8 I1, §9, §10.3, and §11.1. Apply DC-01/02/04/07/08/16/19."
+    - "C0 is issue #114 / merged PR #115; K1 is issue #116 / merged PR #119; L1 is issue #117 / merged PR #120. Q1 is issue #121 / merged PR #122 and supplies durable admission, quota, and cancellation ports. S1 is issue #123 and its delivery PR is in progress. I1 preparation follows Q1; I1 must not merge or enable inbox forwarding until S1 is merged."
+    - "Use additive migration timestamp 20261122000500. Do not renumber or modify prior migrations."
+    - "S1's §7.3 delivery measurements are targets, not established results or unconditional SLOs. If S1 misses its target, wait for the lead's decision before merging I1 or enabling forwarding. I1 separately measures linked/unlinked intake, concentrated/distributed Profile load, and shared quota/hour-bucket contention against the plan's 100 requests/second intake target."
+    - "Do not modify or include ory/hydra/hydra.yml."
+  intent_references:
+    - "intents/shuttlepub/contracts/emumet-post-relay/v1.md (canonical v1 revision 3)"
+    - "intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md (D61-D67; D63 routing decision)"
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/decisions.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md"
+    - "Approved P1 implementation plan, third edition, run run-01m7yc2nagh0z7g2jh14g6qb8x"
+  intent_reference_paths:
+    - "intents/shuttlepub/contracts/emumet-post-relay/v1.md"
+    - "intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md"
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/decisions.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md"
+  acceptance_criteria:
+    - "I1-1 Preserve existing inbox signature authentication and return the key/owner actually used for verification as bounded evidence. Read the raw body without requiring a typed Activity model; never relax signer-to-actor checks or fetch external JSON-LD contexts."
+    - "I1-2 Implement the contract v1 revision 3 §8 entry checks and extraction limits. Accept the documented Activity JSON media types/parameters and representation variants; enforce body, JSON depth/node, duplicate-key, actor, id, and type bounds. Forwarded envelope metadata must satisfy the contract schema."
+    - "I1-3 Do not add an Activity-type allowlist. Follow and Block themselves continue through existing relation processing and are not forwarded. Undo/Accept/Reject are excluded only when every reference is certainly a stored or embedded Follow/Block; unknown URLs, absent object, empty arrays, and arrays containing any unknown reference forward the whole body. Do not fetch object URLs or treat the early-Undo guard as proof of a stored Follow. Two or more recognized relation terms in type are 400 ambiguous_relation with no relation changes; extension-type co-annotation alone neither rejects nor excludes."
+    - "I1-4 Preserve existing Follow/Block processing, signer verification, domain-block behavior, and early-Undo protection. In the same transaction, persist the receive record, any required early-Undo guard, Q1 admission/job or body-free unlinked aggregate, and required capacity/rate reservation. Commit before returning 202. A Duplicate result alone never suppresses forwarding."
+    - "I1-5 Inject failure after receive-record/early-Undo work and before queue admission: the transaction rolls back; a retry can enqueue. A pre-existing receive record without a relay job does not suppress enqueue. If the committed response is lost, duplicate delivery may occur but the relay is not silently lost. Same-Activity delivery to distinct Profiles remains independent."
+    - "I1-6 Use Q1's admission ports and shared PostgreSQL quota/rate state; do not introduce a parallel or process-local queue/rate limiter. Return 429 with Retry-After for Profile limit exhaustion, 503 with Retry-After for global/audit/physical-capacity unavailable or unknown, retryable 5xx on storage failure, and 202 only after durable commit. Keep route, media-type, error, and OpenAPI behavior aligned."
+    - "I1-7 Forward Create, Update, Delete, Like, Announce, and extension types as the contract directs, preserving original raw Activity bytes. Cover to/cc strings, actor objects, absent Activity id, application/ld+json, object arrays, and contract inbox-reading fixtures. Never invent an Activity id. Unlinked reception stores no body or remote-selected identifiers."
+    - "I1-8 Do not emit body, signing/private key material, Cookie, authorization headers, or peer response bodies in logs, audit records, metrics, or error responses. Use fixed labels; do not label by Activity id, receipt, or actor."
+    - "I1-9 Measure I1's signature/read/admission transaction and time to 202 for linked and unlinked traffic, one Profile concentrated and multiple Profiles distributed, with Q1 shared-quota and hourly-bucket contention included. Record environment, concurrency, requests/second, CPU/RSS, and DB/connection/lock waits. Compare with §7.3's 100 requests/second intake target without calling it a production SLO. If S1's delivery target is unmet, do not merge/enable I1 until the lead decides."
+    - "I1-10 Verify the contract fixtures, real-DB transaction rollback/retry and concurrent admission, shared quotas/rate limits, existing relation/domain-block regressions, migration on empty and populated databases, generated OpenAPI, relevant format/lint/build/tests, and git diff --check. Required DB tests are not passing when skipped."
+    - "I1-11 No ShuttlePub production receiver, P2 link-state validation, K2 key rotation/revocation, new Activity-type allowlist, existing Profile-delivery policy change, Ory/Hydra change, unapproved contract revision, or activation before S1 merge is included."
+
+intent_placement:
+  primary_intent: intents/emumet/features/post-relay/overview.md
+  supporting_intents:
+    - intents/emumet/features/post-relay/decisions.md
+    - intents/emumet/features/post-relay/acceptance.md
+  new_intent_needed: false
+  placement_rationale: "I1 connects the already approved Profile inbox path to the existing post-relay contract and queue; it extends the existing feature intent rather than creating a new node."
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/post-relay/decisions.md
+      - intents/emumet/features/post-relay/acceptance.md
+    summary: "At closeout, record actual inbox classification/atomicity behavior, contract/D63 conformance, measured linked/unlinked intake and quota contention, and the lead's decision if the §7.3 target or S1 prerequisite blocks activation."
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - docs/post-relay-operations.md
+    summary: "Record the inbox acceptance/response boundary, Q1 capacity/rate behavior, measured intake and deployment limitations, and the S1 merge/performance gate. If the merged S1 documentation uses another path, record the actual path in the closeout evidence."
+closeout_learning:
+  expected: "Write back actual I1 routing, atomic admission and performance results, D63 handling, and whether S1's merge and measured-target decision permitted activation."
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/post-relay/decisions.md
+    - intents/emumet/features/post-relay/acceptance.md
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []

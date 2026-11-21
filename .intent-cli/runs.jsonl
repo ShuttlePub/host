@@ -348,3 +348,4 @@
 {"ts":"2026-11-21T19:15:36.4772059+00:00","execution_unit":"emumet-post-relay-storage","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":122}
 {"ts":"2026-11-21T19:15:36.4772059+00:00","execution_unit":"emumet-post-relay-storage","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":122}
 {"ts":"2026-11-21T19:16:06.6030429+00:00","execution_unit":"emumet-post-relay-storage","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":122}
+{"ts":"2026-11-21T19:42:39.5530769+00:00","execution_unit":"emumet-profile-inbox-relay","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/emumet-profile-inbox-relay/"}

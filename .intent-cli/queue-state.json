@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T19:16:06.5826483+00:00",
+  "updated_at": "2026-11-21T19:42:39.5303201+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1999,6 +1999,29 @@
         "repo": "ShuttlePub/Emumet",
         "number": 123,
         "url": "https://github.com/ShuttlePub/Emumet/issues/123"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "emumet-profile-inbox-relay",
+      "title": "emumet-profile-inbox-relay: Profile inbox relay intake",
+      "state": "queued",
+      "dependencies": [
+        "emumet-p1-relay-contract",
+        "emumet-instance-identity",
+        "emumet-home-link",
+        "emumet-post-relay-storage",
+        "emumet-post-relay-delivery"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/emumet-profile-inbox-relay/implementation.md",
+        "review_context": ".intent-cli/issues/emumet-profile-inbox-relay/review-context.md",
+        "yaml": ".intent-cli/issues/emumet-profile-inbox-relay/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",
