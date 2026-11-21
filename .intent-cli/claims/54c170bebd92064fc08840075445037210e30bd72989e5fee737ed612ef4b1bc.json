@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:emumet-profile-inbox-relay",
+  "actor": "codex-i1",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-21T19:48:40.1835107+00:00",
+  "base_commit": "7d511d8f3ef25dd02ab304ba9556862c16a57099"
+}
