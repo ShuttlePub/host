@@ -33,3 +33,7 @@
 - Closeout learning: 境界の module 名と配置、独立性の確認方法、既存テストを無変更で通せたか、Stellar へ移すときに残る結合。`write_back_required: false`。
 
 - Guide reachability (G645): この slice は運用者・role 向けの新しい surface を追加しない (`no_role_facing_surface: true`)。
+
+## Revision history
+
+- 2026-11-21 (issue #112 公開後の訂正): A1-3 と関連記述 (github-body.md の Current Observed State / A1-2 / A1-3 / A1-4、review-context.md、packet.yaml) で、Kratos whoami の通信失敗・5xx を「502 で reject にしない」としていたのは誤り。現行コード (`login.rs` の `verify_kratos_session` の失敗を `Err(_)` で受ける分岐) は、これらも Hydra login reject (`login_required`) + 302 にし、502 になるのは Hydra の失敗だけ。D52 (挙動不変) により現行コードを正として本文を直し、issue 本文を `gh issue edit --body-file` で同期した。

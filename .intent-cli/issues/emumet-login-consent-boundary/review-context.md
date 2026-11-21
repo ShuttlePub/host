@@ -24,7 +24,7 @@ Flag findings if the implementation:
 
 ## Packet-specific review points
 
-- 外から見える挙動の不変 (A1-1〜A1-3): URL・302 の Location・JSON・scope・audience・remember・email claim・subject・Kratos セッション Cookie だけを渡すこと・Kratos 検証失敗→Hydra login reject (login_required)・Kratos 通信失敗/5xx→502 (reject にしない)・scope 超過→400。
+- 外から見える挙動の不変 (A1-1〜A1-3): URL・302 の Location・JSON・scope・audience・remember・email claim・subject・Kratos セッション Cookie だけを渡すこと・Kratos 検証の失敗 (Cookie なし・401・inactive・通信失敗・5xx・本文の不正のすべて)→Hydra login reject (login_required)+302 (502 にしない)・502 は Hydra の失敗だけ・scope 超過→400。
 - 既存の route テスト (route/oauth2/login.rs・consent.rs の mod tests、route/tests.rs) のテスト関数本体と期待値が変更されていないこと。変更があれば PR 本文の理由を確認する。
 - 境界 (A1-5・A1-9): kernel/application/driver の login/consent の型・port・service・client が Account・Profile・link・AuthAccount・DB に依存していないこと。route が入出力の変換だけで、`OAuth2Api` が生の hydra/kratos client を返していないこと。utoipa 型が server の外に出ていないこと。
 - 本体に残すもの (A1-6): JWT 検証・JWKS・Account/Profile/link・KratosRegistrationFlowDirectory・登録ゲートが移動・変更されていないこと。
