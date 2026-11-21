@@ -1,0 +1,7 @@
+execution_unit: emumet-profile-inbox-relay
+publish_status: issue-created
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/emumet-profile-inbox-relay"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/emumet-profile-inbox-relay/github-body.md"
+created_issue_number: 124
+created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/124"
+published_label_name: null
