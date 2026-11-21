@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-home-link",
+  "actor": "codex-l1-home-link",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-21T15:02:30.4128058+00:00",
+  "reason": "PR #120 approved, all 20 checks passed, squash-merged and host closeout/linkage recorded",
+  "displaced_holder": "codex-l1-home-link",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T08:46:25.3422771+00:00",
+  "base_commit": "31fed6cc91da002dc081efaf02746145acdc5ad6"
+}

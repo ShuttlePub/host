@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:emumet-home-link",
-  "actor": "codex-l1-home-link",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-21T08:46:25.3422771+00:00",
-  "base_commit": "06d9e1f0de7d5979c75f0bc9fdfd5c23ac0e417a"
-}
