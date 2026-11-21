@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T08:18:00.8896714+00:00",
+  "updated_at": "2026-11-21T09:26:28.2815982+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1882,7 +1882,7 @@
     {
       "execution_unit": "emumet-p1-relay-contract",
       "title": "emumet-p1-relay-contract: \u5185\u5411\u304D\u8EE2\u9001\u306E\u5951\u7D04 v1 \u306E\u5199\u3057 (schema\u30FBfixture\u30FB\u7F72\u540D\u30D9\u30AF\u30C8\u30EB) \u3068\u3001\u305D\u308C\u3092\u691C\u8A3C\u3059\u308B CI \u30C6\u30B9\u30C8\u3092\u7F6E\u304F",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",

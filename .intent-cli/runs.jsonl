@@ -332,3 +332,5 @@
 {"ts":"2026-11-21T08:11:36.664113+00:00","execution_unit":"emumet-instance-identity","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#116","reason":"https://github.com/ShuttlePub/Emumet/issues/116"}
 {"ts":"2026-11-21T08:17:14.9782173+00:00","execution_unit":"emumet-home-link","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/emumet-home-link/"}
 {"ts":"2026-11-21T08:18:00.8896714+00:00","execution_unit":"emumet-home-link","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#117","reason":"https://github.com/ShuttlePub/Emumet/issues/117"}
+{"ts":"2026-11-21T09:26:28.2717802+00:00","execution_unit":"emumet-p1-relay-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":115}
+{"ts":"2026-11-21T09:26:28.2717802+00:00","execution_unit":"emumet-p1-relay-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":115}
