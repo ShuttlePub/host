@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-login-consent-boundary",
+  "actor": "a1-packet-drafter",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-21T06:52:39.1354051+00:00",
+  "reason": "hand off after publish (issue #112 published; packet drafted by a1-packet-drafter)",
+  "displaced_holder": "a1-packet-drafter",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T06:48:19.7310096+00:00",
+  "base_commit": "124ce25a294e194bb1fe88f5290c9aded670858a"
+}

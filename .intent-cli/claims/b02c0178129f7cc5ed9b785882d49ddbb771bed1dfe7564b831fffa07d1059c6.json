@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:emumet-login-consent-boundary",
-  "actor": "a1-packet-drafter",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-21T06:48:19.7310096+00:00",
-  "base_commit": "45aae32da898f373a5577d939ad26b65f4030fa9"
-}
