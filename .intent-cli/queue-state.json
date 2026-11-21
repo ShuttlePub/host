@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T10:12:12.4744735+00:00",
+  "updated_at": "2026-11-21T15:01:15.7117507+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1930,7 +1930,7 @@
     {
       "execution_unit": "emumet-home-link",
       "title": "emumet-home-link: \u6240\u6709\u8005 link \u7BA1\u7406\u3068 lifecycle \u9023\u643A",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "emumet-p1-relay-contract"
       ],

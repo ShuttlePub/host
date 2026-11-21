@@ -340,3 +340,5 @@
 {"ts":"2026-11-21T10:11:57.7664108+00:00","execution_unit":"emumet-instance-identity","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":119}
 {"ts":"2026-11-21T10:11:57.7664108+00:00","execution_unit":"emumet-instance-identity","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":119}
 {"ts":"2026-11-21T10:12:12.5036607+00:00","execution_unit":"emumet-instance-identity","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":119}
+{"ts":"2026-11-21T15:01:15.6948+00:00","execution_unit":"emumet-home-link","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":120}
+{"ts":"2026-11-21T15:01:15.6948+00:00","execution_unit":"emumet-home-link","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":120}
