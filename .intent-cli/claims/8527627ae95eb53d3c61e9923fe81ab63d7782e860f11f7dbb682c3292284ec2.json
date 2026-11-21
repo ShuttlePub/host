@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:emumet-instance-identity",
-  "actor": "k1-relay-packet-drafter",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-21T08:07:10.482136+00:00",
-  "base_commit": "893117c52be544284fe34ce8f8fbe50fad545659"
-}

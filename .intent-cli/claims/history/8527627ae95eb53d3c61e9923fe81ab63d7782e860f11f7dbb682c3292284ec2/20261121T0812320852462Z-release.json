@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-instance-identity",
+  "actor": "k1-relay-packet-drafter",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-21T08:12:32.0852462+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "k1-relay-packet-drafter",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T08:07:10.482136+00:00",
+  "base_commit": "c8aacce301462b7b48994a8902721a2652a31456"
+}
