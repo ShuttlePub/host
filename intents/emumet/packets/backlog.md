@@ -146,6 +146,21 @@ packet 起こしは `architecture-foundation` から。
   規約 (削除済み親 Account の fresh materialization skip) を確立。seq index 追加 +
   e2e TRUNCATE に projection_checkpoints 追加。確定値は ADR 0006 決定3/6/9 に writeback 済み
 
+## 候補（P1 の後で検討）
+
+### `account-deactivation-grace-and-purge`
+
+- **状態**: 候補（P1 の後で検討）
+- **出どころ・提案（ユーザー）**: 退会直後は物理削除せず論理削除にし、約 1 か月の猶予期間後にバッチで物理削除する。
+- **現状（Emumet main `1259c731` の調査）**:
+  - `DELETE /api/v1/accounts/{account_id}` は `Deactivated` イベントを保存する（`server/src/route/account/client.rs:295-328`、`application/src/service/account/deactivate.rs:35-68`）。
+  - Account projector は猶予なしに Profile と Metadata の read model 行を削除する（`application/src/projection/account_projector.rs:154-175`）。Profile 行の削除に伴い `profile_follows` / `profile_blocks` / `profile_mutes` / `profile_delivery_jobs` なども `ON DELETE CASCADE` で消え、reactivate しても戻らない（`docs/profile-federation-cutover.md:26`、`account_projector.rs:176-194`）。
+  - 残るものは、イベント履歴、`profile_signing_keys`（FK を外して Profile 行の削除後も保持、`migrations/20261121000001_profile_signing_keys_survive_deactivation.sql:1-14`）、`auth_emumet_accounts` の紐付け（`account_projector.rs:195-196`）、`deleted_at` 付きの Account 行（`account_projector.rs:154-157`）。イベント履歴の保持は `intents/emumet/decisions/profile-federation-in-place-reset.md:86` にも記録されている。
+  - `POST /api/v1/accounts/{id}/reactivate` に期限判定はなく、削除済み Account を取得して `deleted_at` の有無だけを検査する（`application/src/service/account/reactivate.rs:33-75`）。Profile はイベント履歴全体から再 materialize される（`application/src/projection/account_projector.rs:202-208,272-300`）。
+  - 猶予期限後の purge バッチや恒久削除経路は確認できない（Profile の恒久削除経路には明示的な鍵削除が必要: `intents/emumet/decisions/profile-federation-in-place-reset.md:89,104`、`intents/emumet/decisions/profile-actor-identity.md:50`）。退会中の actor と WebFinger は 404（`server/src/route/activitypub/profile_actor.rs:34-40,60-71`、`intents/emumet/decisions/profile-federation-in-place-reset.md:90`）。Delete(Actor) を連合へ送る経路は、この調査では確認できなかった。
+- **問題**: 復元できる Profile・鍵は期限なく残る一方、復元できないフォロー関係などは退会時に即時削除される。
+- **検討する論点**: 猶予期間の長さ、猶予中の連合での見え方（404 / 410）と Delete(Actor) の送信時点、猶予中に関係を保持して reactivate 時に戻すか、期限後に完全削除する対象（鍵・イベント・メディア・Kratos identity）、イベントソーシングでの完全削除方法。P1 では退会イベントでホームの link を解除し自動では復活させない方針のため、post-relay の隔離データとの整合も確認する（P1 の link 契約: `intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md:35`、転送 envelope: 同 `:33`）。
+
 ## Deferred(open question 解消が先)
 
 | feature | ブロッカー |
