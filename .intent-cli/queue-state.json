@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T10:05:03.3559336+00:00",
+  "updated_at": "2026-11-21T10:12:12.4744735+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1905,7 +1905,7 @@
     {
       "execution_unit": "emumet-instance-identity",
       "title": "emumet-instance-identity: instance actor \u3068\u6697\u53F7\u5316\u7F72\u540D\u9375\u306E\u751F\u6210\u30FB\u516C\u958B",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "emumet-p1-relay-contract"
       ],
@@ -1921,6 +1921,7 @@
         "number": 116,
         "url": "https://github.com/ShuttlePub/Emumet/issues/116"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/119",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
