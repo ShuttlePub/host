@@ -335,3 +335,4 @@
 {"ts":"2026-11-21T09:26:28.2717802+00:00","execution_unit":"emumet-p1-relay-contract","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":115}
 {"ts":"2026-11-21T09:26:28.2717802+00:00","execution_unit":"emumet-p1-relay-contract","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":115}
 {"ts":"2026-11-21T09:26:52.7942148+00:00","execution_unit":"emumet-p1-relay-contract","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":115}
+{"ts":"2026-11-21T10:02:05.7180634+00:00","execution_unit":"emumet-post-relay-storage","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/emumet-post-relay-storage/"}

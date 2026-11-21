@@ -1,0 +1,83 @@
+implementation_issue_packet:
+  issue_title: "emumet-post-relay-storage: durable relay queue, lifecycle cancellation, quotas, and recovery state"
+  issue_kind: feature
+  source_execution_unit: emumet-post-relay-storage
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/, application/, driver/, server/, migrations/"
+  target_part: "P1 post-relay durable storage, transactional admission/capacity reservations, lease/fencing state, link-cancellation integration, shared admission limits, and operator capacity reporting"
+  dependencies:
+    - emumet-p1-relay-contract
+    - emumet-home-link
+  technical_baseline:
+    - "Implement against the latest ShuttlePub/Emumet main at start and record its full 40-character base SHA in the child PR. The approved plan's inspected baseline was 1259c731af496bb09ae11286a9b869b132a88f4d; this is not a substitute for fetching the actual implementation base."
+    - "The canonical contract is host intents/shuttlepub/contracts/emumet-post-relay/: Emumet post-relay v1 revision 3. The Emumet-side docs/contracts snapshot is a pinned copy, not an independent source. Apply DC-01/02/05/06/07/10/15/16/18/19."
+    - "The approved P1 plan is the third edition, §4.3, §5.4, §6, §8 Q1, §9, §10, and §11.1. Its durable decisions are D61-D67 in intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md."
+    - "L1 is execution unit emumet-home-link / ShuttlePub/Emumet issue #117; its PR #120 is currently unmerged. Q1 must use kernel::interfaces::home_link::LinkCancellationParticipant and driver PostgresLinkCancellation, which is currently a no-op but is called inside the same transaction on all three unlink paths. Q1 is blocked until L1 is merged."
+    - "C0 (emumet-p1-relay-contract, ShuttlePub/Emumet issue #114) defines the shared envelope and retry/retention contract. K1 (issue #116) is independent of Q1. Do not implement the inbox integration (I1), delivery sender (S1), or ShuttlePub production receiver."
+    - "Reserve the additive Emumet migration timestamp 20261122000300 for this unit; do not renumber or modify existing migrations."
+    - "The initial capacity limits and timeouts in the approved plan are design targets, not measured results. Q1 must record its real-database measurements and the selected cancellation/deletion strategy."
+  intent_references:
+    - "intents/shuttlepub/contracts/emumet-post-relay/ (canonical v1 revision 3)"
+    - "intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md (D51-D67)"
+    - "intents/shuttlepub/packets/roadmap-2026-11-18.md (Emumet P1 dependency order)"
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/decisions.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md (30-day quarantine exception)"
+  acceptance_criteria:
+    - "Q1-1 Provide the dedicated post-relay storage model and ports for envelope/job/attempt, quota and capacity reservation, shared admission rate limits, leases/fencing, terminal transitions, cancellation, retention/purge, and operator recovery data. Keep post-relay tables and policy separate from existing Profile delivery."
+    - "Q1-2 Enqueue, required receipt/undo-defense records supplied by the caller, job or body-free unlinked aggregate, all capacity reservations, and any reserved terminal-audit capacity can participate in one database transaction. No inbox route is activated in Q1; I1 owns that integration."
+    - "Q1-3 Accepted job bodies share the single §6.4 common job-plus-quarantine budget: 100,000 jobs/quarantined envelopes and 20 GiB globally; 2,000 and 512 MiB per Profile. Moving a job to quarantine does not double-count or increase the reservation. Both row and logical-byte limits are enforced under concurrent admission, and already accepted bodies are not automatically discarded early to make room."
+    - "Q1-4 Reserve future quarantine, up to 16 bounded attempt records, and one bounded terminal summary at admission. Successful and cancelled jobs remove job/attempt rows and release unused reservations; permanent failure and 72-hour expiry move the unchanged envelope to quarantine for 30 days and retain one bounded body-free summary for the same period. Preserve the §6.3 rules for audit, unlinked aggregates, and operator-action retention."
+    - "Q1-5 Implement the contract's retry classifications and bounded exponential backoff/jitter, the fixed 72-hour deadline, bounded attempts, claim/lease/fencing state, and stale-token protection. A stale worker cannot alter terminal data, capacity accounting, or restore deleted bodies. A send authorization is represented durably at the §5.4 boundary; no HTTP sender is added."
+    - "Q1-6 Integrate cancellation through L1's LinkCancellationParticipant in the same transaction used by all three unlink paths (owner unlink API, Account deactivation command/event, Account projector). Cancel new/retry authorization and delete both queued and quarantined bodies while releasing logical capacity; a body cannot return through a stale worker or relink. Preserve L1's gate and lock ordering."
+    - "Q1-7 At the start of Q1, use a real PostgreSQL database to measure cancellation of one Profile at the full 2,000-item/512-MiB limit and Account deactivation for an Account with multiple Profiles. Record setup, Profile count, row/byte counts, statement and total transaction times, and whether each fits the §5.4 3-second statement / 5-second transaction budgets. If physical deletion does not fit, use a bounded-batch physical purge after atomically invalidating the link, prohibiting new send/retry authorization, and logically releasing capacity; prove after unlink that no send or redelivery occurs and that DC-06/DC-16 still hold. Document which strategy was selected."
+    - "Q1-8 Bound unlinked aggregation independently from job/quarantine reservations, or establish its safe cap using a documented calculation that includes Profile population. Demonstrate that exhausting the unlinked-aggregate budget does not prevent admission for a linked Profile; do not return 202 if the aggregate cannot be recorded."
+    - "Q1-9 Implement shared PostgreSQL admission rate limiting and reservations across multiple processes, with Profile limits returning 429 plus Retry-After and global, audit-capacity, physical-capacity, or unknown/stale-capacity limits returning 503 plus Retry-After. Do not add per-rejected-request audit rows."
+    - "Q1-10 Add an operator-only server subcommand (for example `capacity report`) that writes physical DB-volume capacity state (available bytes, available ratio, and sample time) for shared admission checks. Do not add an HTTP management API or apply a migration from this subcommand. Refuse writes when the database schema version is incompatible. Missing or stale capacity information is not healthy. T1 owns the capacity-information provider in compose/E2E test environments."
+    - "Q1-11 Use additive migration 20261122000300 and test it against an empty database and the supported pre-change schema. Do not lose queued bodies in rollback/recovery; database tests required by this unit run against a real database and are not skipped."
+    - "Q1-12 Use injected time/randomness to exercise 72-hour expiry, 30-day quarantine/audit expiry, purge, and bounded recovery without wall-clock waiting. Verify observed counters/metrics for jobs, quarantine, reservations, audit, oldest receipt, purge, capacity state, throttling, and fixed success/cancellation totals without payloads, secrets, receipt IDs, or arbitrary actor values in logs/metric labels."
+    - "Q1-13 Record measurements and tests showing successful-delivery retention does not grow rows in proportion to successful delivery count, attempts disappear with success/cancellation, unlinked aggregates are bounded, reservation/counter inconsistencies and retention failures are observable, and parallel admission never exceeds limits."
+    - "Q1-14 No inbox route/acceptance activation, HTTP admin API, delivery sender/worker, S1 recovery CLI, ShuttlePub receiver, P2 behavior, unrelated Profile-delivery policy change, or contract revision is included. Only the capacity-report operator subcommand is added as a new operator entry point."
+
+intent_placement:
+  primary_intent: intents/emumet/features/post-relay/overview.md
+  supporting_intents:
+    - intents/emumet/features/post-relay/decisions.md
+    - intents/emumet/features/post-relay/acceptance.md
+    - intents/emumet/decisions/0003-delegated-signing.md
+  new_intent_needed: false
+  placement_rationale: "Q1 implements durable storage and bounded recovery for the existing post-relay feature; the envelope, lifecycle, retention exception, and P1 scope are already established by the canonical contract and approved plan."
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/post-relay/decisions.md
+      - intents/emumet/features/post-relay/acceptance.md
+    summary: "At closeout, record the measured cancellation strategy/timings, unlinked-aggregate budget isolation, and the implemented shared capacity/admission constraints against the approved Q1 plan."
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - docs/post-relay-operations.md
+    summary: "Document the operator capacity-report command and its schema-version/freshness behavior; T1 supplies the compose/E2E capacity provider and owns the integrated operational procedure."
+closeout_learning:
+  expected: "Write back the real-database full-capacity cancellation measurements and chosen deletion strategy, the bounded unlinked aggregate calculation, and the capacity-report/schema/freshness interface."
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/post-relay/decisions.md
+    - intents/emumet/features/post-relay/acceptance.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: "server --help / `capacity report --help`"
+      role: operations
+      target_surface: "server capacity report: publish fresh physical DB-capacity state to shared relay admission"

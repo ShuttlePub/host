@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T09:26:52.763862+00:00",
+  "updated_at": "2026-11-21T10:02:05.6927082+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1944,6 +1944,26 @@
         "repo": "ShuttlePub/Emumet",
         "number": 117,
         "url": "https://github.com/ShuttlePub/Emumet/issues/117"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "emumet-post-relay-storage",
+      "title": "emumet-post-relay-storage: durable relay queue, lifecycle cancellation, quotas, and recovery state",
+      "state": "queued",
+      "dependencies": [
+        "emumet-p1-relay-contract",
+        "emumet-home-link"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/emumet-post-relay-storage/implementation.md",
+        "review_context": ".intent-cli/issues/emumet-post-relay-storage/review-context.md",
+        "yaml": ".intent-cli/issues/emumet-post-relay-storage/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",
