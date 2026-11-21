@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-instance-identity",
+  "actor": "worker-k1-instance-identity",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-21T10:12:28.58051+00:00",
+  "reason": "K1 merged (PR #119) and closeout recorded",
+  "displaced_holder": "worker-k1-instance-identity",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T08:46:30.8865277+00:00",
+  "base_commit": "8cfa515a7d8ea9d56af256e9812186d6ec06d2cb"
+}
