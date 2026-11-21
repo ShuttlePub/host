@@ -57,6 +57,7 @@ const addUrl = (def, value, valid, note) => {
 };
 const R = 'https://remote.example';
 for (const v of [`${R}/users/bob`, 'http://remote.example/u', R, `${R}:8443/u`, 'https://Remote.Example/u', `${R}#frag`, `${R}?x=1`, `${R}:65535/u`, 'https://a.b-c.example/u', `${R}/users/bob#main-key`]) addUrl('remote_url', v, true);
+for (const v of ['https://xn--r8jz45g.example/users/bob', 'http://xn--n3h.example', 'https://a--b.example/u', 'https://xn--r8jz45g.xn--zckzah/u']) addUrl('remote_url', v, true, 'Punycode / consecutive hyphens inside a label');
 addUrl('remote_url', `${R}/` + 'a'.repeat(K.URL_MAX - R.length - 1), true, `exactly URL_MAX (${K.URL_MAX}) characters`);
 addUrl('remote_url', `${R}/` + 'a'.repeat(K.URL_MAX - R.length), false, `URL_MAX + 1 characters`);
 for (const [v, n] of [
@@ -64,14 +65,14 @@ for (const [v, n] of [
   ['https://user@remote.example/u', 'userinfo'], ['https://user:pw@remote.example/', 'userinfo'], ['https://[::1]/u', 'IPv6 literal'],
   [`${R}:0/u`, 'port 0'], [`${R}:65536/u`, 'port above 65535'], [`${R}:08080/u`, 'leading zero in the port'], [`${R}:/u`, 'empty port'],
   [`${R}:443x/u`, 'port with a letter'], ['https://remote..example/u', 'empty label'], ['https://-remote.example/u', 'leading hyphen'],
-  ['https://remote.example./u', 'trailing dot'], ['ftp://remote.example/u', 'scheme'], [`${R}/with space`, 'space'], [`${R}/\u00fc`, 'non-ASCII path'],
+  ['https://remote.example./u', 'trailing dot'], ['https://a-.example/u', 'label ends with a hyphen'], ['https://a.-b.example/u', 'label starts with a hyphen'], ['https://a--.example/u', 'label ends with hyphens'], ['ftp://remote.example/u', 'scheme'], [`${R}/with space`, 'space'], [`${R}/\u00fc`, 'non-ASCII path'],
   ['https://r\u00e9mote.example/u', 'non-ASCII host'], ['//remote.example/u', 'no scheme'], ['remote.example/u', 'no scheme'],
 ]) addUrl('remote_url', v, false, n);
-for (const v of ['https://emumet.example/ap/profiles/p1nano', 'https://emumet.example:8443/ap/x']) addUrl('emumet_url', v, true);
+for (const v of ['https://emumet.example/ap/profiles/p1nano', 'https://emumet.example:8443/ap/x', 'https://xn--emumet-9d0b.example/ap/profiles/p1nano']) addUrl('emumet_url', v, true);
 for (const [v, n] of [['https://emumet.example', 'no path'], ['http://emumet.example/x', 'http'], ['https://Emumet.example/x', 'uppercase host'], ['https://#/x', 'empty authority'], ['https://user@emumet.example/x', 'userinfo'], ['https://emumet.example:99999/x', 'port']]) addUrl('emumet_url', v, false, n);
-for (const v of ['https://home.example', 'https://home.example:8443']) addUrl('origin', v, true);
+for (const v of ['https://home.example', 'https://home.example:8443', 'https://xn--home-7qa.example']) addUrl('origin', v, true);
 for (const [v, n] of [['https://home.example:443', 'default port'], ['https://home.example/', 'path'], ['https://home.example:0', 'port 0'], ['https://HOME.example', 'uppercase'], ['http://home.example', 'http'], ['https://home.example:99999', 'port']]) addUrl('origin', v, false, n);
-for (const v of ['https://emumet.example/ap/instance', 'https://emumet.example:8443/ap/instance']) addUrl('instance_actor', v, true);
+for (const v of ['https://emumet.example/ap/instance', 'https://emumet.example:8443/ap/instance', 'https://xn--emumet-9d0b.example/ap/instance']) addUrl('instance_actor', v, true);
 for (const [v, n] of [['https://emumet.example/ap/other', 'other path'], ['https://emumet.example/ap/instance/', 'trailing slash'], ['http://emumet.example/ap/instance', 'http']]) addUrl('instance_actor', v, false, n);
 
 writeJson(fx('formats', 'field-formats.json'), {
@@ -86,6 +87,26 @@ const SECRET_NAMES = new Set(['authorization', 'proxy-authorization', 'cookie', 
 const isSecret = (n) => SECRET_NAMES.has(n) || ['token', 'secret', 'api-key', 'apikey', 'password'].some((w) => n.includes(w));
 const printable = (v) => /^[\x20-\x7e]*$/.test(v);
 
+// RFC 8941 sf-string starting at v[i] === '"': returns [unescaped value, index after the closing quote] or null.
+function readSfString(v, i) {
+  let out = '';
+  i++;
+  while (i < v.length) {
+    const ch = v[i];
+    if (ch === '\\') {
+      if (i + 1 >= v.length) return null;
+      out += v[i + 1];
+      i += 2;
+    } else if (ch === '"') {
+      return [out, i + 1];
+    } else {
+      out += ch;
+      i++;
+    }
+  }
+  return null;
+}
+
 function coveredNames(fields) {
   const names = [];
   for (const f of fields.filter((x) => x.name === 'signature')) {
@@ -96,18 +117,20 @@ function coveredNames(fields) {
     const v = f.value;
     let i = 0;
     while (i < v.length) {
+      if (v[i] === '"') { const r = readSfString(v, i); i = r ? r[1] : v.length; continue; }
       if (v[i] !== '(') { i++; continue; }
       i++;
       for (;;) {
         while (i < v.length && v[i] === ' ') i++;
         if (i >= v.length || v[i] === ')') { i++; break; }
         if (v[i] !== '"') { i++; continue; }
-        const end = v.indexOf('"', i + 1);
-        if (end < 0) { i = v.length; break; }
-        names.push(v.slice(i + 1, end).toLowerCase());
-        i = end + 1;
-        let inQ = false;
-        while (i < v.length && (inQ || (v[i] !== ' ' && v[i] !== ')'))) { if (v[i] === '"') inQ = !inQ; i++; }
+        const r = readSfString(v, i);
+        if (!r) { i = v.length; break; }
+        names.push(r[0].toLowerCase());
+        i = r[1];
+        while (i < v.length && v[i] !== ' ' && v[i] !== ')') {
+          if (v[i] === '"') { const q = readSfString(v, i); i = q ? q[1] : v.length; } else i++;
+        }
       }
     }
   }
@@ -187,6 +210,16 @@ addEv('rfc9421-components', 'Signature-Input components (covered-component param
   { name: 'Content-Digest', value: 'sha-256=:abc=:' }, { name: 'Date', value: 'Sat, 21 Nov 2026 08:59:40 GMT' }, { name: 'X-Extra', value: 'v' },
   { name: 'Host', value: 'emumet.example' }, { name: 'Content-Length', value: '42' },
 ], (e) => { if (names(e) !== 'signature,signature-input,content-digest,x-extra,date,host,content-length') throw new Error('9421 ' + names(e)); });
+addEv('rfc9421-escaped-quote-in-parameter', 'A component parameter value holds an escaped quote and a space. The escaped quote does not end the string, so the next covered component, cookie, is found: it is secret-bearing, so it is omitted and counted.', [
+  { name: 'Signature', value: 'sig1=:AAAA:' },
+  { name: 'Signature-Input', value: 'sig1=("@query-param";name="a\\" b" "cookie" "host");created=1700000000' },
+  { name: 'Cookie', value: 'session=1' }, { name: 'Host', value: 'emumet.example' },
+], (e) => { if (names(e) !== 'signature,signature-input,host' || e.omitted_header_names.join() !== 'cookie' || e.omitted_header_count !== 1 || e.evidence_complete) throw new Error('escaped param ' + JSON.stringify(e)); });
+addEv('rfc9421-escaped-backslash-and-parens-in-parameter', 'A parameter value with an escaped backslash and parentheses does not confuse the parser: the covered x-extra is kept and nothing is omitted.', [
+  { name: 'Signature', value: 'sig1=:AAAA:' },
+  { name: 'Signature-Input', value: 'sig1=("@method";tag="x\\\\(y)" "x-extra");keyid="k(1)"' },
+  { name: 'X-Extra', value: 'v' },
+], (e) => { if (names(e) !== 'signature,signature-input,x-extra' || e.omitted_header_count !== 0) throw new Error('escaped backslash ' + JSON.stringify(e)); });
 addEv('pseudo-components-are-skipped', '(request-target), (created) and @method are not header fields: not kept, not omitted.', [
   { name: 'Signature', value: sigV('(request-target) (created) @method host') }, { name: 'Host', value: 'emumet.example' },
 ], (e) => { if (names(e) !== 'signature,host' || e.omitted_header_count !== 0) throw new Error('pseudo'); });

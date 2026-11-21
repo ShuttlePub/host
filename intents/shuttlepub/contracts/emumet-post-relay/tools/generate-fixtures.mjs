@@ -364,6 +364,17 @@ p1('p1-reject-schema-empty-authority', 'activity.actor is "https://#": a URL wit
 p1('p1-reject-schema-userinfo-in-url', 'verification.key_id carries userinfo in its authority.',
   rej(400, 'schema_violation'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1K', mutate: (e) => { e.verification.key_id = 'https://user@remote.example/users/bob#main-key'; } });
 
+{
+  const PUNY_ACTOR = 'https://xn--r8jz45g.example/users/bob';
+  const body = '{"@context":"https://www.w3.org/ns/activitystreams","id":"https://xn--r8jz45g.example/users/bob/statuses/1/activity","type":"Create","actor":"' + PUNY_ACTOR + '","object":{"type":"Note","content":"hi"}}';
+  p1('p1-ok-punycode-actor', 'The remote actor, Activity id and key owner are on a Punycode (xn--) host: consecutive hyphens inside a DNS label are valid.',
+    ok202, { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1M', activityBody: body, activityId: 'https://xn--r8jz45g.example/users/bob/statuses/1/activity', mutate: (e) => {
+      e.activity.actor = PUNY_ACTOR;
+      e.verification.signer_actor = PUNY_ACTOR;
+      e.verification.key_id = PUNY_ACTOR + '#main-key';
+    } });
+}
+
 p1('p1-ok-leap-day-timestamps', 'received_at and verified_at on 2024-02-29 (a real leap day) are accepted; the age of received_at is irrelevant.',
   ok202, { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1L', mutate: (e) => { e.received_at = '2024-02-29T10:00:00Z'; e.verification.verified_at = '2024-02-29T10:00:01.123456789Z'; } });
 

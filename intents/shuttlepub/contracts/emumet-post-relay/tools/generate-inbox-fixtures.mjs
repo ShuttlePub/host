@@ -103,6 +103,9 @@ const K = JSON.parse(fs.readFileSync(path.join(root, 'v1.constants.json'), 'utf8
 const urlOf = (n) => 'https://remote.example/' + 'a'.repeat(n - 'https://remote.example/'.length);
 const lit = (o) => `{${CTX},${o.id === undefined ? '' : `"id":${JSON.stringify(o.id)},`}"type":${o.type ?? '"Create"'},"actor":${o.actor === undefined ? JSON.stringify(BOB) : o.actor}${o.extra ?? ''}}`;
 add('forward-actor-exactly-url-max', 'actor of exactly URL_MAX characters is accepted and forwarded.', lit({ id: 'https://remote.example/a/1', actor: JSON.stringify(urlOf(K.URL_MAX)) }), fwd('https://remote.example/a/1', urlOf(K.URL_MAX)));
+add('forward-actor-and-id-on-a-punycode-host', 'A Punycode (xn--) host has consecutive hyphens inside a label: actor and id are valid and forwarded.', lit({ id: 'https://xn--r8jz45g.example/users/bob/statuses/1/activity', actor: '"https://xn--r8jz45g.example/users/bob"' }), fwd('https://xn--r8jz45g.example/users/bob/statuses/1/activity', 'https://xn--r8jz45g.example/users/bob'));
+add('reject-actor-label-ends-with-hyphen', 'A DNS label may not end with a hyphen.', lit({ actor: '"https://a-.example/users/bob"' }), rej(400, 'invalid_actor'));
+add('forward-id-label-starts-with-hyphen-becomes-null', 'A DNS label may not start with a hyphen: the id is null.', lit({ id: 'https://a.-b.example/a/1' }), fwd(null));
 add('forward-id-exactly-url-max', 'An Activity id of exactly URL_MAX characters is forwarded as it is.', lit({ id: urlOf(K.URL_MAX) }), fwd(urlOf(K.URL_MAX)));
 add('forward-id-too-long-becomes-null', 'An Activity id of URL_MAX + 1 characters cannot be carried by the envelope: activity_id is null and the body is still forwarded.', lit({ id: urlOf(K.URL_MAX + 1) }), fwd(null));
 add('forward-id-not-a-url-becomes-null', 'An id that is not a URL (spaces): null, still forwarded.', lit({ id: 'not a url' }), fwd(null));
