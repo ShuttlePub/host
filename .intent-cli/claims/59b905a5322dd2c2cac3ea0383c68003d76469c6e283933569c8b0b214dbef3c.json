@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:emumet-home-link",
+  "actor": "l1-relay-packet-drafter",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-21T08:12:49.2736662+00:00",
+  "base_commit": "eb15c0e183b465b35505dd68cc5c4c198b026477"
+}
