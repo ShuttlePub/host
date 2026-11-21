@@ -1,4 +1,4 @@
-# emumet-post-relay 契約 (v1, revision 2)
+# emumet-post-relay 契約 (v1, revision 3)
 
 Emumet が Profile の inbox で受けた Activity を、ホーム link の ShuttlePub へ転送するときの契約。
 **この directory が正本** (D61)。Emumet 側 (`ShuttlePub/Emumet` の `docs/contracts/post-relay-v1*`) は、
