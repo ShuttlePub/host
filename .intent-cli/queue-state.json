@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T21:54:10.3264148+00:00",
+  "updated_at": "2026-11-21T21:55:30.210218+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -2049,6 +2049,11 @@
         "implementation": ".intent-cli/issues/emumet-relay-ory-independent-runtime/implementation.md",
         "review_context": ".intent-cli/issues/emumet-relay-ory-independent-runtime/review-context.md",
         "yaml": ".intent-cli/issues/emumet-relay-ory-independent-runtime/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 127,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/127"
       },
       "worker_role": "implementation",
       "review_role": "review",
