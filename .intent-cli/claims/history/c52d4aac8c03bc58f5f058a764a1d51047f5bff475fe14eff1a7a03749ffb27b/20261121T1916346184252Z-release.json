@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-post-relay-storage",
+  "actor": "codex-q1-storage",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-21T19:16:34.6184252+00:00",
+  "reason": "PR #122 merged as 7efe25c7b5e5237d4246e74b7c50903996040b14; Q1 closeout and linkage recorded",
+  "displaced_holder": "codex-q1-storage",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T15:07:21.0230782+00:00",
+  "base_commit": "581b876643358b362dfb84a54c3f57dfb4774cc8"
+}
