@@ -1,0 +1,104 @@
+{
+  "domain": "emumet",
+  "disclaimer": "Lexical scaffolding only \u2014 not semantic verification. Findings guide human/reviewer judgment; this command never blocks and false negatives are expected.",
+  "no_facet_data": false,
+  "terms": [
+    {
+      "term": "main",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "ShuttlePub",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "KiB",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "MiB",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "authorized_at",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "send_deadline",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "WORKER_ID",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "PostgreSQL",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "direct-main",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "emumet-instance-identity",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "emumet-home-link",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "emumet-post-relay-storage",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "GiB",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "server",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    },
+    {
+      "term": "quarantine_expires_at",
+      "related_nodes": [],
+      "collisions": [],
+      "unmatched": true
+    }
+  ],
+  "coverage": {
+    "nodes": [],
+    "gap": true,
+    "scope_status": "valid-non-empty",
+    "scope_warnings": []
+  },
+  "warnings": []
+}

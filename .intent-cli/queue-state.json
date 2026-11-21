@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T15:01:54.2117238+00:00",
+  "updated_at": "2026-11-21T17:09:05.9912922+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1971,6 +1971,28 @@
         "repo": "ShuttlePub/Emumet",
         "number": 121,
         "url": "https://github.com/ShuttlePub/Emumet/issues/121"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "emumet-post-relay-delivery",
+      "title": "emumet-post-relay-delivery: signed delivery worker and operator recovery",
+      "state": "queued",
+      "dependencies": [
+        "emumet-p1-relay-contract",
+        "emumet-instance-identity",
+        "emumet-home-link",
+        "emumet-post-relay-storage"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/emumet-post-relay-delivery/implementation.md",
+        "review_context": ".intent-cli/issues/emumet-post-relay-delivery/review-context.md",
+        "yaml": ".intent-cli/issues/emumet-post-relay-delivery/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",

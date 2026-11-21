@@ -1,0 +1,84 @@
+implementation_issue_packet:
+  issue_title: "emumet-post-relay-delivery: signed delivery worker and operator recovery"
+  issue_kind: feature
+  source_execution_unit: emumet-post-relay-delivery
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/, application/, driver/, server/, migrations/"
+  target_part: "P1 post-relay signed delivery, bounded worker, instance-key cache use, operator redelivery/discard commands, emergency-stop controls, and measured delivery performance"
+  dependencies:
+    - emumet-p1-relay-contract
+    - emumet-instance-identity
+    - emumet-home-link
+    - emumet-post-relay-storage
+  technical_baseline:
+    - "Implement against the latest ShuttlePub/Emumet main at implementation start and record its actual full 40-character base SHA in the child PR. The approved plan inspected 1259c731af496bb09ae11286a9b869b132a88f4d; this is historical context, not the implementation base."
+    - "Canonical contract: host intents/shuttlepub/contracts/emumet-post-relay/, v1 revision 3. Emumet docs/contracts is a pinned snapshot, not an independent source. Apply DC-01/03/04/05/06/10/11/12/16/18/19."
+    - "Approved plan: third edition, §3.2, §5.2, §5.4, §6.2-6.3, §6.6, §7, §8 S1, §9, §10.3, and §11.1. The final design constraints are DC-01/03/04/05/06/10/11/12/16/18/19."
+    - "Dependencies: K1 emumet-instance-identity (issue #116, merged PR #119) provides instance keys and a cache of parsed signing handles; L1 emumet-home-link (issue #117, merged PR #120) provides lifecycle gates and common lock order; Q1 emumet-post-relay-storage (issue #121, PR #122 under review) provides claim/authorize/record/finish and related queue ports. Start implementation only after required dependency changes are present on Emumet main."
+    - "Use additive migration timestamp 20261122000400; do not renumber or modify existing migrations."
+    - "The initial capacity, timeout, and throughput values in the plan are targets to measure, not established production SLOs. S1 begins with the §7.3 baseline measurement; report unmet targets to the lead and request a decision before I1 is enabled."
+  intent_references:
+    - "intents/shuttlepub/contracts/emumet-post-relay/ (canonical v1 revision 3)"
+    - "intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md (D51-D67)"
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/decisions.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md (limited 30-day quarantine exception)"
+    - "Approved P1 implementation plan, third edition: S1 scope and sections listed in technical_baseline"
+  acceptance_criteria:
+    - "S1-1 At S1 start, measure serial-one-worker and bounded-parallel delivery against a local real HTTP mock for approximately 64 KiB and approximately 1.34 MiB envelopes. Record hardware, release build, DB placement, TLS, throughput, CPU/RSS, KDF/signature time, DB/connection/lock wait, HTTP/queue wait, and unlink/deactivation/projector durations. If §7.3 targets are missed, report to the lead and obtain a decision before I1 activation; do not claim unmeasured values as results or SLOs."
+    - "S1-2 Implement the sender using Q1 claim/authorize/record/finish ports and L1's gate/lock order. A durable send-authorization commit is the send-start boundary. Persist attempt, lease/fencing token, link ID/generation, authorized_at, absolute send_deadline, and shared concurrency lease. No send occurs if authorization commit outcome is unknown."
+    - "S1-3 Enforce send_deadline=min(authorized_at+10 seconds, received_at+72 hours) for automatic delivery and min(authorized_at+10 seconds, quarantine_expires_at) for operator redelivery. Include all post-authorization waiting, DNS, connect, TLS, send, and response wait in the same absolute deadline; do not restart the budget after delay or process restart."
+    - "S1-4 Perform HTTP without a transaction, DB connection, row lock, or advisory lock. Validate eligibility and current owner/link/generation before authorization. An unlink/deactivation committed first prevents later authorization. Authorization committed first may finish only within its fixed deadline; it cannot make cancellation wait for an HTTP response. Stale workers cannot restore deleted bodies or modify terminal state/capacity."
+    - "S1-5 Send the immutable stored envelope bytes. Recompute only outer Date and Cavage signature per attempt using the Emumet instance signing key and cached parsed handle from K1; do not use the remote Activity signature or Profile key, reserialize the envelope, or run KDF once per delivery."
+    - "S1-6 Follow the contract classifications: 2xx succeeds; 401/408/429/5xx and network/DNS/timeout/transient signing failures retry; other 4xx, 3xx, invalid URL and SSRF violations fail permanently (never follow redirects). Retry uses min(30s*2^(failure_count-1), 1h), equal jitter at 50-100%, and valid Retry-After as a bounded lower bound. The receive deadline remains fixed at 72 hours."
+    - "S1-7 Use one bounded worker pool with initial targets of 16 global concurrent sends and 4 per origin, enforced by a shared lease/concurrency mechanism across processes and operator redelivery. Prevent a slow origin from starving healthy origins; provide origin/Profile fairness and avoid starving near-deadline jobs. HTTP-in-flight DB connections remain zero."
+    - "S1-8 Add release-server operator subcommands for receipt-scoped one-time redelivery, Profile-scoped bounded-batch redelivery, receipt-scoped explicit discard, Profile-scoped explicit discard, and dry-run inspection of target count/bytes/expiry/state. Each explicit redelivery sends each selected envelope at most once, preserves envelope/receipt/destination and the original terminal expiry, and rechecks owner, link/generation, allowlist and expiry. Success deletes the body; failure returns it to quarantine without extending its expiry. No home reassignment, body edit, or relink revival. Discard is separate, requires dry-run, explicit confirmation, operator and reason, and is never automatic under capacity pressure. Audit operator, operation/batch, Profile/link, selection boundary, time, reason, counts and result for 30 days without payloads."
+    - "S1-9 Provide a server-only command surface that does not apply migrations and refuses to run when the schema version is incompatible. Require a WORKER_ID distinct from the running server for generated IDs, or use an equally safe distinct ID scheme. Do not initialize Ory, the normal listener, S3, or other unrelated application services for operator commands; keep no-argument server startup and cargo run -p server behavior intact."
+    - "S1-10 Provide an independent setting to disable only the post-relay sending worker while continuing inbox reception (for example, an environment variable). Document it as an emergency stop, distinguish it from stopping the whole server or blocking egress, state that already authorized/forwarded bytes cannot be revoked, and warn that continued reception during sender stop consumes quota."
+    - "S1-11 Apply SSRF protections: HTTPS only, redirect refusal, DNS/address validation with connection pinned to validated addresses, and rejection of internal addresses even when allowlisted. Test-only exceptions exist only under cfg(test)/test-mode. An origin removed from allowlist is a deadline-bounded policy hold, not an immediate revocation guarantee."
+    - "S1-12 Implement operator redelivery/discard and automated worker behavior without violating terminal retention: successful/cancelled deliveries leave no per-delivery terminal row; permanent failures and 72-hour timeouts retain unchanged envelope quarantine and one body-free summary for 30 days from the logical terminal time. The 72-hour terminal time is received_at+72h; permanent failure time is the observation time of the failing attempt. Purge delay does not extend expiry, and manual redelivery never crosses quarantine_expires_at."
+    - "S1-13 Verify real-DB race points P0-P4 plus unlink gate/commit stop points for all three L1 unlink paths, both automatic and operator delivery: no authorization after unlink; authorized-before-unlink only within deadline; deadline-expired task does not send; HTTP wait never blocks unlink/deactivation/projector; stale results do not resurrect body/job/capacity. Verify worker stop/restart, lease reclaim, and competing operator actions."
+    - "S1-14 Verify release-image operator commands run without source/Cargo and without starting Ory/listeners/unneeded services; verify incompatible schema refusal and distinct worker identity. Verify sender-only disable keeps reception available and quota behavior is observable."
+    - "S1-15 No inbox parsing or activation (I1), ShuttlePub production receiver, P2 link-state checks, K2 key rotation/revocation, Ory/Hydra configuration change, existing Profile-delivery policy change, or contract revision is included."
+  intent_placement:
+    primary_intent: intents/emumet/features/post-relay/overview.md
+    supporting_intents:
+      - intents/emumet/features/post-relay/decisions.md
+      - intents/emumet/features/post-relay/acceptance.md
+      - intents/emumet/decisions/0003-delegated-signing.md
+    new_intent_needed: false
+    placement_rationale: "S1 implements the already approved post-relay sender and operator recovery surface; no new intent node is needed, but measured delivery results and operational limits must be written back to the existing feature intent."
+  knowledge_updates:
+    intent_tree:
+      required: true
+      target_paths:
+        - intents/emumet/features/post-relay/decisions.md
+        - intents/emumet/features/post-relay/acceptance.md
+      summary: "At closeout, record baseline and target measurements, final worker/deadline/concurrency settings, operator recovery and sender-only stop behavior, schema/worker-ID guard, and the operational decision for any unmet throughput target."
+    adr:
+      required: false
+      target_paths: []
+      decision_title: ""
+    diagram:
+      required: false
+      target_paths: []
+      diagram_type: none
+    docs:
+      required: true
+      target_paths:
+        - docs/post-relay-operations.md
+      summary: "Document operator redelivery/discard, expiry-preserving behavior, schema and worker identity requirements, sender-only emergency stop versus full server/egress stop, quota growth while reception continues, and monitoring/measurement results."
+  closeout_learning:
+    expected: "Write back measured baseline/throughput and contention results, final bounded worker settings, sender-stop and quota implications, operator recovery semantics and expiry behavior, and any decision needed before I1 activation."
+    write_back_required: true
+    write_back_targets:
+      - intents/emumet/features/post-relay/decisions.md
+      - intents/emumet/features/post-relay/acceptance.md
+  guide_reachability:
+    no_role_facing_surface: false
+    routes:
+      - guide_surface: "server --help / operator post-relay recovery subcommand --help"
+        role: operations
+        target_surface: "Receipt/Profile redelivery and explicit discard, dry-run review, sender-only emergency stop, and operational expiry/quota guidance"
