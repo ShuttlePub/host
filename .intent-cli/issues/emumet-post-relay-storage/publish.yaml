@@ -1,7 +1,8 @@
 execution_unit: emumet-post-relay-storage
 publish_status: issue-created
-packet_path: "/var/tmp/evo-1000-1b531f2b/lane-thread-run-01m7ydq8c3059xhkwd7wjj4625/q1-post-relay-publish/.intent-cli/issues/emumet-post-relay-storage"
-issue_body_path: "/var/tmp/evo-1000-1b531f2b/lane-thread-run-01m7ydq8c3059xhkwd7wjj4625/q1-post-relay-publish/.intent-cli/issues/emumet-post-relay-storage/github-body.md"
+packet_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/emumet-post-relay-storage"
+issue_body_path: "/home/turtton/Documents/ShuttlePub/host/.intent-cli/issues/emumet-post-relay-storage/github-body.md"
 created_issue_number: 121
 created_issue_url: "https://github.com/ShuttlePub/Emumet/issues/121"
 published_label_name: null
+lifecycle_state: "published"
