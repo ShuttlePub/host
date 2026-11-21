@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:emumet-instance-identity",
+  "actor": "worker-k1-instance-identity",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-21T08:46:30.8865277+00:00",
+  "base_commit": "562e295f75ddfcb52921e735c2b718148a4185b6"
+}
