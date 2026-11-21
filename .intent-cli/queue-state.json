@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T07:07:19.1587718+00:00",
+  "updated_at": "2026-11-21T07:35:11.4415924+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1859,7 +1859,7 @@
     {
       "execution_unit": "emumet-login-consent-boundary",
       "title": "emumet-login-consent-boundary: login/consent \u3092 Hydra/Kratos \u9023\u643A\u3054\u3068\u72EC\u7ACB\u3057\u305F\u5883\u754C\u3078\u5206\u96E2\u3059\u308B",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [],
       "blocked_by": [],
       "clarification_return_path": "intents/emumet/clarifications/open.md",
@@ -1873,6 +1873,7 @@
         "number": 112,
         "url": "https://github.com/ShuttlePub/Emumet/issues/112"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/113",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
