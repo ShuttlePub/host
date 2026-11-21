@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-post-relay-storage",
+  "actor": "q1-post-relay-packet-drafter",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-21T10:07:49.0271737+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "q1-post-relay-packet-drafter",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T09:56:02.3280625+00:00",
+  "base_commit": "a61b9e2bfbd0a8a27ddcf883fd2e46c0c95ae277"
+}
