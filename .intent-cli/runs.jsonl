@@ -345,3 +345,6 @@
 {"ts":"2026-11-21T15:01:54.2360658+00:00","execution_unit":"emumet-home-link","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":120}
 {"ts":"2026-11-21T17:09:06.013883+00:00","execution_unit":"emumet-post-relay-delivery","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/emumet-post-relay-delivery/"}
 {"ts":"2026-11-21T17:16:58.9587711+00:00","execution_unit":"emumet-post-relay-delivery","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#123","reason":"https://github.com/ShuttlePub/Emumet/issues/123"}
+{"ts":"2026-11-21T19:15:36.4772059+00:00","execution_unit":"emumet-post-relay-storage","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":122}
+{"ts":"2026-11-21T19:15:36.4772059+00:00","execution_unit":"emumet-post-relay-storage","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":122}
+{"ts":"2026-11-21T19:16:06.6030429+00:00","execution_unit":"emumet-post-relay-storage","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":122}

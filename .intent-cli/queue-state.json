@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T17:16:58.9587711+00:00",
+  "updated_at": "2026-11-21T19:16:06.5826483+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1955,7 +1955,7 @@
     {
       "execution_unit": "emumet-post-relay-storage",
       "title": "emumet-post-relay-storage: durable relay queue, lifecycle cancellation, quotas, and recovery state",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "emumet-p1-relay-contract",
         "emumet-home-link"
@@ -1972,6 +1972,7 @@
         "number": 121,
         "url": "https://github.com/ShuttlePub/Emumet/issues/121"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/122",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
