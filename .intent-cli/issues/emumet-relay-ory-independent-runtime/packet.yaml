@@ -1,0 +1,74 @@
+implementation_issue_packet:
+  issue_title: "emumet-relay-ory-independent-runtime: Ory-independent relay runtime and bounded shutdown"
+  issue_kind: feature
+  source_execution_unit: emumet-relay-ory-independent-runtime
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "server/, application/, driver/, tests/, config/"
+  target_part: "Integrate A1 and S1 runtime wiring so Ory/JWKS outages do not block independent listener and relay startup, while shutdown and worker recovery remain bounded."
+  dependencies:
+    - emumet-instance-identity
+    - emumet-login-consent-boundary
+    - emumet-post-relay-delivery
+    - emumet-profile-inbox-relay
+  technical_baseline:
+    - "Implement against the latest ShuttlePub/Emumet main when implementation starts; record the actual full 40-character base SHA in the child PR. The approved plan's inspected SHA is historical context, not the implementation base."
+    - "Apply the approved P1 implementation plan, third edition: §2, §8 B1, §9, §10.2-10.3, §11.1 cases 12 and 20, and final design constraints DC-01/04/14/15."
+    - "A1 login/consent boundary is merged in PR #113 (squash 29337f7). B1 must preserve A1's externally observable behavior and keep unrelated A1 refactoring out of the startup change."
+    - "S1 (PR #125) supplies the relay sender/worker, operator subcommand, and send-stop configuration. I1 (PR #126) supplies inbox intake with POST_RELAY_INBOX_ENABLED defaulting to false. Begin B1 implementation only after S1 and I1 have merged; B1 integrates their wiring and does not replace their ownership."
+    - "When Ory or JWKS is unavailable, listener, instance document, inbox reception, and relay operation must remain available where their own dependencies are healthy. Requests requiring JWT authentication remain fail-closed if a usable JWKS is unavailable."
+    - "Bound both JWKS discovery and retrieval waits so a refused connection or a peer that stops responding cannot hold cold start indefinitely. Preserve cached and uncached JWKS authentication behavior without weakening validation."
+    - "Use S1's claim, lease/fencing, stop and send-deadline semantics. On shutdown stop new claims, drain only within a bounded interval, and allow forced termination to recover through lease expiry/fencing; do not create a parallel queue or alter delivery policy."
+    - "No database migration is expected for runtime wiring. If a schema change proves necessary, use additive migration timestamp 20261122000600 and verify both empty and populated databases; do not rewrite prior migrations."
+    - "Do not modify or include ory/hydra/hydra.yml."
+  intent_references:
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+    - "Approved P1 implementation plan, third edition, thread-rd4012ty run run-01m7yc2nagh0z7g2jh14g6qb8x"
+    - "Final B1 design constraints DC-01/04/14/15, thread-rd4012ty run run-01m7yd22411cm1n36mybvg0xcv"
+  intent_reference_paths:
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+  acceptance_criteria:
+    - "B1-1 Bound JWKS discovery and fetch/connect operations by a finite configured timeout. A refused connection and a server that accepts but never responds both return control within the configured bound; neither can indefinitely block cold start or listener availability."
+    - "B1-2 Decouple listener and relay startup from Ory/JWKS availability. With Ory absent, the service can start and serve the instance document, accept inbox traffic when I1 is enabled, and run S1 relay delivery when its own dependencies are healthy."
+    - "B1-3 Keep JWT-protected APIs fail-closed when no usable JWKS is available: missing, timed-out, or failed JWKS acquisition never permits an unauthenticated or unverifiable request. Successful cached and uncached JWKS paths continue to enforce the existing validation rules."
+    - "B1-4 Integrate startup ordering for listener, instance identity, I1 inbox, and S1 worker without making unrelated A1 login/consent refactoring or changing A1's externally observable URLs, responses, scopes, cookies, or error behavior."
+    - "B1-5 On SIGTERM, stop accepting new worker claims and perform a bounded drain of in-flight relay work. Shutdown completes within its configured bound even if an outbound peer does not respond; it does not wait indefinitely for Ory or network I/O."
+    - "B1-6 After forced termination, an abandoned lease becomes recoverable under S1's lease/fencing semantics; a restarted worker can reclaim eligible work without permanent loss or stale-worker mutation. Cover termination before and after a claim/send authorization boundary."
+    - "B1-7 Preserve S1's send-stop configuration and I1's POST_RELAY_INBOX_ENABLED default false. Do not start relay work when configured stopped or enable inbox forwarding by default."
+    - "B1-8 No unrelated delivery policy, existing Profile delivery, Ory/Hydra configuration, authentication validation, or accepted migration is changed. If a migration is required, it is additive at 20261122000600."
+    - "B1-9 Verify empty and populated database startup/migration compatibility as applicable; required database tests do not pass when skipped."
+  intent_placement:
+    primary_intent: intents/emumet/features/post-relay/overview.md
+    supporting_intents:
+      - intents/emumet/features/post-relay/acceptance.md
+    new_intent_needed: false
+    placement_rationale: "B1 completes the approved post-relay runtime integration and Ory-independent availability behavior; it does not establish a separate feature."
+  knowledge_updates:
+    intent_tree:
+      required: true
+      target_paths:
+        - intents/emumet/features/post-relay/acceptance.md
+      summary: "At closeout, record actual startup dependency boundaries, bounded JWKS behavior, cached/uncached authentication results, and shutdown/drain/lease-recovery behavior."
+    adr:
+      required: false
+      target_paths: []
+      decision_title: ""
+    diagram:
+      required: false
+      target_paths: []
+      diagram_type: none
+    docs:
+      required: true
+      target_paths:
+        - docs/post-relay-operations.md
+      summary: "Document Ory-independent startup, fail-closed JWT behavior during JWKS failure, worker stop/drain bounds, and forced-termination lease recovery; cite the actual runtime-document path if the merged predecessors establish another location."
+  closeout_learning:
+    expected: "Write back the measured JWKS timeout behavior, Ory-outage availability, A1 regression results, SIGTERM drain bound, forced-termination lease recovery, and actual migration compatibility result."
+    write_back_required: true
+    write_back_targets:
+      - intents/emumet/features/post-relay/acceptance.md
+  guide_reachability:
+    no_role_facing_surface: true
+    routes: []
