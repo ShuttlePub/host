@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:emumet-post-relay-delivery",
+  "actor": "codex-s1-delivery",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-21T19:16:29.8872856+00:00",
+  "base_commit": "e2e7dce6256236351e9ae47c1ab99118a960c3a3"
+}
