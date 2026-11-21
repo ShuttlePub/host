@@ -1,0 +1,67 @@
+implementation_issue_packet:
+  issue_title: "emumet-login-consent-boundary: login/consent を Hydra/Kratos 連携ごと独立した境界へ分離する"
+  issue_kind: feature
+  source_execution_unit: emumet-login-consent-boundary
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/src/ (login/consent の境界型と port), application/src/service/login_consent/, driver/src/ (Hydra 管理 API・Kratos session の client), server/src/route/oauth2/, server/src/api/oauth2.rs, server/src/handler.rs, server/src/hydra.rs, server/src/kratos.rs, CLAUDE.md"
+  target_part: "GET /oauth2/login・GET/POST /oauth2/consent と Hydra/Kratos 連携を、kernel (境界型と port)・application (service/login_consent)・driver (Hydra 管理 API と Kratos session の client) に分け、server の route を入出力の変換だけにして OAuth2Api をユースケースだけの公開にする。外から見える挙動は変えない"
+  dependencies: []
+  technical_baseline:
+    - "基準は origin/main の 1259c731af496bb09ae11286a9b869b132a88f4d 以降の最新 main。PR 本文に完全な SHA を書く"
+    - "現状は server/src/route/oauth2/{login,consent}.rs が Hydra 管理 API (server/src/hydra.rs の HydraAdminClient) と Kratos whoami (server/src/kratos.rs の KratosClient) を直接呼び、分岐・scope 検証・Kratos Cookie の絞り込み・id_token の email 付与も route 内にある。OAuth2Api (server/src/api/oauth2.rs) は hydra_admin_client() と kratos_client() の生の client を返している"
+    - "既存の route テストは route/oauth2/login.rs (4 件)・route/oauth2/consent.rs (6 件) の mod tests と route/tests.rs。wiremock で Hydra/Kratos を模し、AppModule::new_for_oauth2_test (handler.rs) と route/oauth2/mod.rs の test_support::build_app 経由で動く。これらは変更せずに通す"
+    - "層は kernel → application → server、kernel → driver → server (CLAUDE.md の Architecture)。Facade (server/src/api/) は DependOn* を実装せず、route は生の port に触れない。この規約に従う"
+    - "OpenAPI は utoipa が生成し、CI の openapi-check が openapi.json の差分を拒否する。ToSchema の型と #[utoipa::path] は server に残し、kernel/application/driver に utoipa を持ち込まない"
+    - "server/src/route/tests.rs は main.rs などを文字列として検査するテストを持つ。main.rs・root_router.rs の構造を変えない (必要な変更は AppModule の組み立てだけ)"
+    - "DB を使わないユースケースのテストは、port を差し替える fake で書く。Hydra/Kratos の HTTP は driver の client のテストで wiremock を使う"
+  intent_references:
+    - "intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md"
+    - "intents/shuttlepub/decisions/2026-11-18-p1-first-and-stellar-carve-out.md"
+    - "intents/emumet/decisions/0001-stellar-frozen-ory-authz.md"
+    - "intents/emumet/intent-tree/00-map.md"
+  acceptance_criteria:
+    - "A1-1 外から見える挙動を変えない: GET /oauth2/login、GET /oauth2/consent、POST /oauth2/consent の URL・メソッド・HTTP ステータス・302 の Location・JSON 本文 (action: redirect / show_consent)・grant する scope・audience・remember (true) と remember_for (3600 秒)・id_token の email claim (email scope を grant したときだけ・Hydra の context にある email のみ)・login の subject (skip 時は Hydra の subject、通常は Kratos の identity id)・login の context.email が、すべて現在と同じ"
+    - "A1-2 Cookie: Kratos へ渡すのは ory_kratos_session=... の Cookie だけ。それ以外の Cookie は Kratos に渡さない。Cookie ヘッダ自体がない・ory_kratos_session がない・whoami が 401 または active でない場合は Hydra の login reject (error=login_required) にして、その redirect_to へ 302 する (現状と同じ)"
+    - "A1-3 エラー: Kratos whoami の通信失敗・5xx は 502 (reject にしない)。Hydra の取得・accept・reject の失敗は 502。POST /oauth2/consent で要求されていない scope を grant しようとしたら 400。拒否 (accept=false) は consent_denied で reject。これらの対応を変えない"
+    - "A1-4 テスト: 既存の route テスト (route/oauth2/login.rs・consent.rs の mod tests と route/tests.rs) を、テスト関数本体と期待値を変更せずに通す (test_support など配線の補助を調整する必要が出た場合は理由を PR 本文に書き、アサーションは変えない)。追加するもの: (a) DB を使わず port を fake に差し替えた service/login_consent のユースケーステスト (login の skip・有効セッション・Cookie なし・無効セッション・email なし、consent の skip・client skip・表示・accept・scope 超過・reject、build_consent_session の email 付与条件)、(b) driver の Hydra 管理 API client と Kratos session client の、Ory のエラー別のテスト (Hydra の 4xx/5xx、Kratos の 401・inactive・5xx・本文の不正・通信失敗など) と、それがユースケースの結果 (reject か 502 か) にどう届くかの確認"
+    - "A1-5 境界: kernel に challenge・consent request・検証済み session (identity id と email) などの境界型と、Hydra 管理 API 用・Kratos session 用の port を置く。application に service/login_consent (分岐・scope 検証・Cookie の絞り込み・結果の生成。結果は『redirect する先』『同意画面を出す』『scope 不正』『上流の失敗』などの型で返す) を置く。driver に Hydra 管理 API と Kratos session の client を置く。server の route は HTTP の入出力の変換 (クエリ・Cookie ヘッダ・JSON の受け取りと、結果から 302/JSON/ステータスへの変換) だけにし、OAuth2Api はユースケースだけを公開する (生の hydra/kratos client を返す accessor を残さない)"
+    - "A1-6 本体に残すもの: JWT の検証・JWKS のキャッシュ・Account/Profile/link は Emumet 本体に残し移さない。KratosRegistrationFlowDirectory と登録ゲート (registration_gate・registration_protection) は login/consent の境界へ移さない (kratos.rs に同居している場合は、registration 側を触らずに login/consent 用の client だけを driver に移す)"
+    - "A1-7 追加しないもの: DCR (動的クライアント登録)・client_id と origin の対応表・新しい永続化・新しい環境変数 (HYDRA_ADMIN_URL・KRATOS_PUBLIC_URL の読み方は変えない)・新しい route・OpenAPI の変更。DB マイグレーションは追加しない。ログの文言の変更は許すが、秘密 (Cookie・challenge 以外のトークン) を新たに出さない"
+    - "A1-8 生成物と CI: openapi.json の差分なし (cargo test -p server write_openapi_spec_to_file -- --ignored の後に git diff --exit-code openapi.json)。CI (lint-and-test の fmt・clippy・test・openapi-check と e2e) がすべて緑"
+    - "A1-9 境界の独立性: 将来 Stellar に移せるよう、login/consent の kernel 型・port・application service・driver client は、Account・Profile・link・AuthAccount・DB の型や port に依存しない (依存してよいのは kernel の共通 error 型などの基盤だけ)。この依存方向をコードで確認し、確認方法 (例: 依存 import の grep) を PR 本文に残す"
+    - "A1-10 範囲: C0 など他の P1 単位に依存せず、他の単位の範囲 (K1・L1・Q1・S1・I1・B1・T1) を実装しない。変更は target_path の範囲に限り、k8s・Ory の設定ファイル・frontends・共通 workflows は触らない"
+    - "PR CI がすべて緑で、PR は未マージ (マージは親の指示で行う)"
+
+intent_placement:
+  primary_intent: intents/emumet/intent-tree/00-map.md
+  supporting_intents:
+    - intents/emumet/decisions/0001-stellar-frozen-ory-authz.md
+    - intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md
+  new_intent_needed: false
+  placement_rationale: "D52 / D38 で決めた境界規則 (認証のまとまりには Hydra/Kratos 連携・/oauth2/login・/oauth2/consent を置く。JWT 検証・Account/Profile/link は本体に残す) をコード上の構造にする作業で、新しい決定はない。完了後に、実装した境界の場所 (kernel/application/driver の module 名) を intent-tree 側へ書き写す必要があれば closeout で扱う"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "CLAUDE.md (Emumet)"
+    summary: "Emumet の CLAUDE.md の Architecture / Auth Architecture / Server DI Architecture のうち、OAuth2 Login/Consent Provider と OAuth2Api (hydra_admin_client()・kratos_client() を返す記述) を新しい境界の構造に合わせて直す。"
+closeout_learning:
+  expected: "login/consent の境界の module 名と配置、境界の独立性をどう確認したか、既存テストを無変更で通せたか (配線補助を直した場合はその内容)、将来 Stellar へ移すときに残る結合 (AppModule の配線など)。"
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []

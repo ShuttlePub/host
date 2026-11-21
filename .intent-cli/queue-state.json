@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-20T09:05:36.6795733+00:00",
+  "updated_at": "2026-11-21T06:51:31.6610356+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1853,6 +1853,23 @@
       },
       "worker_role": "builder",
       "review_role": "reviewer",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "emumet-login-consent-boundary",
+      "title": "emumet-login-consent-boundary: login/consent \u3092 Hydra/Kratos \u9023\u643A\u3054\u3068\u72EC\u7ACB\u3057\u305F\u5883\u754C\u3078\u5206\u96E2\u3059\u308B",
+      "state": "queued",
+      "dependencies": [],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/emumet-login-consent-boundary/implementation.md",
+        "review_context": ".intent-cli/issues/emumet-login-consent-boundary/review-context.md",
+        "yaml": ".intent-cli/issues/emumet-login-consent-boundary/packet.yaml"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
       "priority": "high",
       "priority_revision": 0
     }
