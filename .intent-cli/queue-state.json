@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T08:11:36.664113+00:00",
+  "updated_at": "2026-11-21T08:17:14.9571571+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1919,6 +1919,25 @@
         "repo": "ShuttlePub/Emumet",
         "number": 116,
         "url": "https://github.com/ShuttlePub/Emumet/issues/116"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "emumet-home-link",
+      "title": "emumet-home-link: \u6240\u6709\u8005 link \u7BA1\u7406\u3068 lifecycle \u9023\u643A",
+      "state": "queued",
+      "dependencies": [
+        "emumet-p1-relay-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/emumet-home-link/implementation.md",
+        "review_context": ".intent-cli/issues/emumet-home-link/review-context.md",
+        "yaml": ".intent-cli/issues/emumet-home-link/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",

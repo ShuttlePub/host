@@ -1,0 +1,84 @@
+implementation_issue_packet:
+  issue_title: "emumet-home-link: 所有者 link 管理と lifecycle 連携"
+  issue_kind: feature
+  source_execution_unit: emumet-home-link
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/, application/, driver/, server/, migrations/"
+  target_part: "Home link の永続モデル・登録/解除 API・所有権移管・Account lifecycle gate と、unlink API / Account deactivation event / projector の整合"
+  dependencies:
+    - emumet-p1-relay-contract
+  technical_baseline:
+    - "実装開始時に ShuttlePub/Emumet の main を取得し、PR本文に使用した完全な40桁SHAを記録する。承認計画で確認した基準は 1259c731af496bb09ae11286a9b869b132a88f4d。"
+    - "契約正本は host commit cc19ad0887409601999e66b3f00fb8d0735ebfc3 の intents/shuttlepub/contracts/emumet-post-relay/ (emumet-post-relay v1 revision 1)。ShuttlePub/Emumet 側の docs/contracts は写しであり、独立して変更しない。"
+    - "適用する設計制約は DC-01/06/09/10/11/15。C0 (emumet-p1-relay-contract, issue #114) に依存する。K1 (emumet-instance-identity, issue #116) とは独立しており、この単位の依存にはしない。"
+    - "DC-09 の3 mode と Profile ごとの link invariant、DC-10 の移管・停止/BAN・退会・再有効化・stale event semantics、DC-06 の lock order、DC-11 の origin validation をそのまま守る。"
+  intent_references:
+    - "intents/shuttlepub/contracts/emumet-post-relay/ (host canonical contract; commit cc19ad0887409601999e66b3f00fb8d0735ebfc3)"
+    - "intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md (P1 approved plan and DC-01/06/09/10/11/15)"
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/decisions.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md"
+  acceptance_criteria:
+    - "L1-1 The persisted home-link model records the owning Account/Profile, normalized origin, DC-09 mode, lifecycle state, and a monotonically changing/non-reused generation or equivalent version. Database constraints and/or serialization enforce the DC-09 per-Profile active-link limit under concurrent registrations."
+    - "L1-2 Authenticated registration/list/unlink operations are scoped to the current owner and enforce DC-09's three modes. An old owner cannot list, alter, or unlink a link after transfer. Transfer retains link ID, origin, and generation while changing the authoritative owner; it does not create a second link."
+    - "L1-3 Origin eligibility is checked on registration and every relevant revalidation: HTTPS only, exact normalized origin matching the configured allowlist, no wildcard/subdomain expansion unless explicitly listed, reject redirects, pin DNS resolution for the operation, and reject private/non-public addresses. Eligibility/allowlist exclusion holds a link rather than silently treating it as a user unlink."
+    - "L1-4 Account lifecycle ownership state has one explicit authoritative write-side source. Registration, transfer, unlink, lifecycle mutation, and send-authorization checks read/modify that source while holding the shared Account gate; a lagging projector/read model is not used as authority. Document the source and prove the gate prevents stale status from authorizing or restoring a link."
+    - "L1-5 User unlink, Account deactivation event handling, and projector processing use the same gate and documented DC-06 lock order as link mutation/authorization. A committed unlink/deactivation prevents new send authorization; work authorized before the unlink commit may finish, matching the contract."
+    - "L1-6 When an Account deactivation is applied, links for every Profile owned by that Account are unbound in the same transaction as the lifecycle mutation, not merely those discoverable through deletion of one Profile row. The projector's gate-bearing transaction is bounded to one Account and performs no network or other external service call while the gate/transaction is held."
+    - "L1-7 A link does not revive on Account reactivation, projector replay, or a stale earlier deactivation event. A newer link created after reactivation remains intact when an older event is replayed. The link/ownership ledger survives Profile row deletion without an FK cascade erasing required lifecycle or audit state."
+    - "L1-8 DC-10 transfer, owner stop/BAN hold, deactivation, and reactivation semantics are covered: transfer retains ID/origin/generation; hold does not reset deadlines; deactivation atomically ends sending; and reactivation requires explicit new registration rather than restoring the prior link."
+    - "L1-9 All code paths that acquire the lifecycle gate use the same lock order. Configure bounded lock/statement/transaction waits only for the transactions that hold this gate; do not introduce a global database timeout or change unrelated transactions. No external call occurs inside the critical section."
+    - "L1-10 Real-database tests using separate connections/processes cover concurrent registration, transfer/unlink/deactivation races, authorization immediately before/after unlink commit, projector replay/stale events, multiple Profiles per Account, and same-batch deactivate/reactivate. Tests assert no duplicate active link, stale authorization, resurrection, or lost new link; tests are not skipped."
+    - "L1-11 Migrations are additive and tested against an empty database and the supported pre-change schema; migration rollback compatibility is assessed, and no existing Profile actor/key behavior regresses."
+    - "L1-12 This unit provides the link/lifecycle interface for Q1 but does not implement the durable delivery queue, quarantine/retry worker, ShuttlePub receiver, P2 behavior, or production protocol beyond the canonical C0 contract."
+
+# G461: optional packet-time intent-maintenance metadata. OPTIONAL and
+# backward-compatible — packets that omit this whole block stay valid.
+# Fill it in or explicitly decline each part while the design context is
+# fresh; `improve` (G456 / G460) is the later safety net, not a substitute.
+intent_placement:
+  primary_intent: intents/emumet/features/post-relay/overview.md
+  supporting_intents:
+    - intents/emumet/features/post-relay/decisions.md
+    - intents/emumet/features/post-relay/acceptance.md
+    - intents/emumet/decisions/0003-delegated-signing.md
+  new_intent_needed: false
+  placement_rationale: "L1 is the home-link/lifecycle slice of the existing post-relay feature; its contract and approved P1 design decisions are already canonical on the host."
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "契約正本はhostのemumet-post-relay v1を維持し、別コピーや独自仕様を追加しない。必要な実装運用/API文書はcloseoutで既存feature docsとの整合を確認する。"
+closeout_learning:
+  expected: "Record the authoritative owner lifecycle state source, gate/lock ordering and bounded transaction behavior, plus any multi-Profile or event-replay constraint discovered."
+  write_back_required: false
+  write_back_targets: []
+# G645/G661: guide reachability is explicit and checked at closeout.
+# Uncomment and complete EXACTLY ONE accepted form. Leaving this
+# commented is visibly undeclared; the scaffold never guesses that
+# a new slice has no role-facing surface.
+#
+# Route form:
+# guide_reachability:
+#   no_role_facing_surface: false
+#   routes:
+#     - guide_surface: guide workflow task implementation-loop
+#       role: implementation
+#       target_surface: <role-facing-surface>
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
