@@ -136,10 +136,14 @@ function outerRequest(bodyBuf, o = {}) {
   const host = o.host ?? 'home.example';
   const digest = o.digest ?? 'SHA-256=' + b64(sha256(o.digestOf ?? bodyBuf));
   const listed = o.signedHeaders ?? '(request-target) host date digest';
+  const method = o.method ?? 'POST';
+  const target = o.target ?? TARGET;
+  const signMethod = (o.signMethod ?? method).toLowerCase();
+  const signTarget = o.signTarget ?? target;
   const lines = [];
   const vals = { host, date, digest };
   for (const h of listed.split(' ')) {
-    lines.push(h === '(request-target)' ? `(request-target): post ${TARGET}` : `${h}: ${vals[h]}`);
+    lines.push(h === '(request-target)' ? `(request-target): ${signMethod} ${signTarget}` : `${h}: ${vals[h]}`);
   }
   const signingString = lines.join('\n');
   const sig = crypto.sign('sha256', Buffer.from(signingString), (o.signWith ? keys[o.signWith] : k).privateKey);
@@ -148,7 +152,7 @@ function outerRequest(bodyBuf, o = {}) {
   if (!o.noSignature) {
     headers.signature = `keyId="${keyId}",algorithm="rsa-sha256",headers="${listed}",signature="${b64(sig)}"`;
   }
-  return { request: { method: 'POST', target: TARGET, headers, body: bodyBuf.toString('utf8') }, signingString };
+  return { request: { method, target, headers, body: bodyBuf.toString('utf8') }, signingString };
 }
 
 const baseReceiver = {
@@ -330,6 +334,39 @@ p1('p1-reject-schema-bad-base64', 'activity.raw_body is not canonical padded sta
 p1('p1-reject-schema-bad-origin', 'recipient.origin carries a path and the default port.',
   rej(400, 'schema_violation'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B0E', mutate: (e) => { e.recipient.origin = 'https://home.example:443/x'; } });
 
+p1('p1-reject-method-get', 'The request is a GET (the signature was made for POST). Only POST is accepted.',
+  rej(405, 'method_not_allowed'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1A' }, { method: 'GET', signMethod: 'POST' });
+
+p1('p1-reject-target-other-path', 'Correctly signed for /internal/v1/emumet/other, but the endpoint is /internal/v1/emumet/activities.',
+  rej(404, 'not_found'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1B' }, { target: '/internal/v1/emumet/other' });
+
+p1('p1-reject-target-with-query', 'The request target carries a query string (correctly signed for it). The target must be exactly the endpoint path.',
+  rej(404, 'not_found'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1C' }, { target: '/internal/v1/emumet/activities?x=1' });
+
+p1('p1-reject-signature-for-other-target', 'Sent to the right target, but the signature covers a different request target. The receiver builds the signing string from the real target.',
+  rej(401, 'signature_invalid'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1D' }, { signTarget: '/internal/v1/emumet/other' });
+
+p1('p1-reject-signature-for-other-method', 'Sent as POST, but the signature was made over (request-target): get. The receiver builds the signing string from the real method.',
+  rej(401, 'signature_invalid'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1E' }, { signMethod: 'GET' });
+
+p1('p1-reject-schema-month-out-of-range', 'received_at is 2026-99-99T99:99:99Z: the ranges of month, day, hour, minute and second are part of the schema pattern.',
+  rej(400, 'schema_violation'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1F', mutate: (e) => { e.received_at = '2026-99-99T99:99:99Z'; } });
+
+p1('p1-reject-schema-impossible-received-at', 'received_at is 2026-02-30T10:00:00Z: well-formed, but the day does not exist. Checked outside the schema (v1.md 4.4 item 5).',
+  rej(400, 'schema_violation'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1G', mutate: (e) => { e.received_at = '2026-02-30T10:00:00Z'; } });
+
+p1('p1-reject-schema-impossible-verified-at', 'verification.verified_at is 2026-02-29T10:00:00Z: 2026 is not a leap year.',
+  rej(400, 'schema_violation'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1H', mutate: (e) => { e.verification.verified_at = '2026-02-29T10:00:00Z'; } });
+
+p1('p1-reject-schema-empty-authority', 'activity.actor is "https://#": a URL without an authority.',
+  rej(400, 'schema_violation'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1J', mutate: (e) => { e.activity.actor = 'https://#'; } });
+
+p1('p1-reject-schema-userinfo-in-url', 'verification.key_id carries userinfo in its authority.',
+  rej(400, 'schema_violation'), { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1K', mutate: (e) => { e.verification.key_id = 'https://user@remote.example/users/bob#main-key'; } });
+
+p1('p1-ok-leap-day-timestamps', 'received_at and verified_at on 2024-02-29 (a real leap day) are accepted; the age of received_at is irrelevant.',
+  ok202, { receipt_id: 'rcpt_01JD8Q2M7K4N5V6W9X0Y1Z2B1L', mutate: (e) => { e.received_at = '2024-02-29T10:00:00Z'; e.verification.verified_at = '2024-02-29T10:00:01.123456789Z'; } });
+
 {
   // Envelope larger than 2 MiB: a synthetic body, rejected on size before any signature work.
   const synth = { kind: 'repeat', unit: 'x', bytes: 2097153 };
@@ -455,6 +492,21 @@ p2('p2-reject-link-other-profile', 'Ledger: the link belongs to another Profile.
     signing_string: w.signingString, signature_header: w.request.headers.signature,
     expect: 'signature_invalid',
   });
+  const vecFor = (id, description, oo, expect) => {
+    const x = outerRequest(body, { dateMs: nowMs - 1000, ...oo });
+    vectors.push({
+      id, description,
+      key_id: keys['emumet-a-instance-active'].keyId,
+      public_key_file: keys['emumet-a-instance-active'].file,
+      method: 'POST', target: TARGET, host: 'home.example', date: x.request.headers.date,
+      body: body.toString('utf8'), body_sha256_base64: b64(sha256(body)),
+      digest_header: x.request.headers.digest, signed_headers: '(request-target) host date digest',
+      signing_string: x.signingString, signature_header: x.request.headers.signature,
+      expect,
+    });
+  };
+  vecFor('vector-signed-for-other-target', 'Negative vector: signed over (request-target): post /internal/v1/emumet/other while the request goes to the endpoint. The signing string rebuilt from method and target differs.', { signTarget: '/internal/v1/emumet/other' }, 'signing_string_mismatch');
+  vecFor('vector-signed-for-other-method', 'Negative vector: signed over (request-target): get while the request is a POST.', { signMethod: 'GET' }, 'signing_string_mismatch');
   void o;
   writeJson(fx('signature-vectors.json'), {
     note: 'Outer-signature vectors. Cavage draft, rsa-sha256 (RSASSA-PKCS1-v1_5, SHA-256), RSA-2048. Signing string lines are joined with LF and have no trailing LF. Receiver clock for these vectors is irrelevant (Date skew is covered by the p1 cases).',

@@ -98,8 +98,32 @@ add('reject-content-type-json', 'application/json is not accepted on the inbox.'
 add('reject-content-type-other-profile', 'application/ld+json with a profile other than ActivityStreams.', act('"Create"'), rej(400, 'invalid_content_type'), { ct: 'application/ld+json; profile="https://example.org/other"' });
 add('reject-content-type-unknown-parameter', 'application/activity+json with a parameter other than charset=utf-8.', act('"Create"'), rej(400, 'invalid_content_type'), { ct: 'application/activity+json; foo=bar' });
 
+// ---- extraction limits (v1.md 8.2) ------------------------------------------------------------------
+const K = JSON.parse(fs.readFileSync(path.join(root, 'v1.constants.json'), 'utf8')).constants;
+const urlOf = (n) => 'https://remote.example/' + 'a'.repeat(n - 'https://remote.example/'.length);
+const lit = (o) => `{${CTX},${o.id === undefined ? '' : `"id":${JSON.stringify(o.id)},`}"type":${o.type ?? '"Create"'},"actor":${o.actor === undefined ? JSON.stringify(BOB) : o.actor}${o.extra ?? ''}}`;
+add('forward-actor-exactly-url-max', 'actor of exactly URL_MAX characters is accepted and forwarded.', lit({ id: 'https://remote.example/a/1', actor: JSON.stringify(urlOf(K.URL_MAX)) }), fwd('https://remote.example/a/1', urlOf(K.URL_MAX)));
+add('forward-id-exactly-url-max', 'An Activity id of exactly URL_MAX characters is forwarded as it is.', lit({ id: urlOf(K.URL_MAX) }), fwd(urlOf(K.URL_MAX)));
+add('forward-id-too-long-becomes-null', 'An Activity id of URL_MAX + 1 characters cannot be carried by the envelope: activity_id is null and the body is still forwarded.', lit({ id: urlOf(K.URL_MAX + 1) }), fwd(null));
+add('forward-id-not-a-url-becomes-null', 'An id that is not a URL (spaces): null, still forwarded.', lit({ id: 'not a url' }), fwd(null));
+add('forward-id-empty-string-becomes-null', 'An empty id string: null.', lit({ id: '' }), fwd(null));
+add('forward-id-with-userinfo-becomes-null', 'An id with userinfo in its authority is not a valid envelope URL: null.', lit({ id: 'https://user@remote.example/a/1' }), fwd(null));
+add('forward-id-non-ascii-becomes-null', 'An id with a non-ASCII character is not representable in the envelope: null.', lit({ id: 'https://remote.example/\u00fc' }), fwd(null));
+add('forward-id-empty-authority-becomes-null', 'An id like "https://#": null.', lit({ id: 'https://#' }), fwd(null));
+add('forward-type-string-exactly-max', 'A type string of exactly TYPE_STRING_MAX characters is accepted.', lit({ id: 'https://remote.example/a/1', type: JSON.stringify('https://example.org/ns#' + 'T'.repeat(K.TYPE_STRING_MAX - 'https://example.org/ns#'.length)) }), fwd('https://remote.example/a/1'));
+add('reject-type-string-too-long', 'A type string of TYPE_STRING_MAX + 1 characters.', lit({ id: 'https://remote.example/a/1', type: JSON.stringify('https://example.org/ns#' + 'T'.repeat(K.TYPE_STRING_MAX + 1 - 'https://example.org/ns#'.length)) }), rej(400, 'invalid_type'));
+add('reject-type-array-element-too-long', 'One element of a type array is too long.', lit({ id: 'https://remote.example/a/1', type: JSON.stringify(['Create', 'https://example.org/ns#' + 'T'.repeat(K.TYPE_STRING_MAX)]) }), rej(400, 'invalid_type'));
+add('reject-actor-too-long', 'actor of URL_MAX + 1 characters.', lit({ id: 'https://remote.example/a/1', actor: JSON.stringify(urlOf(K.URL_MAX + 1)) }), rej(400, 'invalid_actor'));
+add('reject-actor-object-id-too-long', 'actor as an object whose id is URL_MAX + 1 characters.', lit({ id: 'https://remote.example/a/1', actor: JSON.stringify({ id: urlOf(K.URL_MAX + 1), type: 'Person' }) }), rej(400, 'invalid_actor'));
+add('reject-actor-not-a-url', 'actor is a plain word, not a URL.', lit({ actor: '"bob"' }), rej(400, 'invalid_actor'));
+add('reject-actor-empty-authority', 'actor is "https://#".', lit({ actor: '"https://#"' }), rej(400, 'invalid_actor'));
+add('reject-actor-with-userinfo', 'actor with userinfo.', lit({ actor: '"https://user@remote.example/users/bob"' }), rej(400, 'invalid_actor'));
+add('reject-actor-non-ascii', 'actor with a non-ASCII character.', lit({ actor: '"https://remote.example/users/b\u00f6b"' }), rej(400, 'invalid_actor'));
+add('reject-follow-with-unusable-actor', 'The actor rule applies to every body, also to a Follow.', lit({ id: KNOWN_FOLLOW, type: '"Follow"', actor: '"bob"', extra: ',"object":"https://emumet.example/ap/profiles/p1nano"' }), rej(400, 'invalid_actor'));
+add('reject-actor-ambiguity-wins-over-format', 'Two different actors, one of them not a URL: ambiguity is reported first.', lit({ actor: JSON.stringify([BOB, 'bob']) }), rej(400, 'actor_missing_or_ambiguous'));
+
 const doc = {
-  note: 'Inbox reading fixtures (v1.md "Reading an inbox Activity"). `body` is the exact request body text; `body_synthetic` is built by the harness: padding = {"type":"Create","actor":"https://remote.example/users/bob","pad":"aaa..."} of exactly `bytes` bytes; nested_depth = {"type":"Create","actor":"https://remote.example/users/bob","x":[[...[]...]]} whose JSON container depth is exactly `depth` (the root object is depth 1); node_count = {"type":"Create","actor":"https://remote.example/users/bob","x":[0,0,...]} with exactly `nodes` JSON values in total. known_relation_ids are the ids of Follow/Block activities already stored for the Profile; prior_undo_markers are ids that only exist as early-Undo guard markers.',
+  note: 'Inbox reading fixtures (v1.md "Reading an inbox Activity"). `body` is the exact request body text; `body_synthetic` is built by the harness: padding = {"type":"Create","actor":"https://remote.example/users/bob","pad":"aaa..."} of exactly `bytes` bytes; nested_depth = {"type":"Create","actor":"https://remote.example/users/bob","x":[[...[]...]]} whose JSON container depth is exactly `depth` (the root object is depth 1); node_count = {"type":"Create","actor":"https://remote.example/users/bob","x":[0,0,...]} with exactly `nodes` JSON values in total. Reasons 400 invalid_actor and the length limits of actor, id and type are v1.md 8.2. known_relation_ids are the ids of Follow/Block activities already stored for the Profile; prior_undo_markers are ids that only exist as early-Undo guard markers.',
   cases,
 };
 fs.writeFileSync(path.join(root, 'fixtures/inbox/activity-reading.json'), JSON.stringify(doc, null, 2) + '\n');

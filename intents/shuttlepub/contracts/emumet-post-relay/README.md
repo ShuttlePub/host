@@ -1,4 +1,4 @@
-# emumet-post-relay 契約 (v1, revision 1)
+# emumet-post-relay 契約 (v1, revision 2)
 
 Emumet が Profile の inbox で受けた Activity を、ホーム link の ShuttlePub へ転送するときの契約。
 **この directory が正本** (D61)。Emumet 側 (`ShuttlePub/Emumet` の `docs/contracts/post-relay-v1*`) は、
@@ -29,5 +29,5 @@ inbox の読み取り。契約を変えるときは、この directory を変え
 
 ## 決定との対応
 
-D61 (置き場所)・D62 (解除と送信開始)・D63 (除外条件)・D64 (30 日隔離)・D65 (移管・再有効化)・D66 (P1/P2)
+D61 (置き場所)・D62 (解除と送信開始)・D63 (除外条件)・D64 (30 日隔離)・D65 (移管・再有効化)・D66 (P1/P2)・D67 (revision 2 のレビュー反映)
 — [../../decisions/2026-11-21-emumet-p1-open-items.md](../../decisions/2026-11-21-emumet-p1-open-items.md)。

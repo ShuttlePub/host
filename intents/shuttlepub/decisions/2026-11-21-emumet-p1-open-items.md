@@ -59,7 +59,7 @@ P1 以降の実行単位を進めるうえで整理が必要だった Emumet 側
 - **ロードマップ** ([../packets/roadmap-2026-11-18.md](../packets/roadmap-2026-11-18.md)): 先頭の追記欄と P0〜P4 の該当箇所に D51-D60 を反映した。
 - **Emumet backlog** ([../../emumet/packets/backlog.md](../../emumet/packets/backlog.md)): `account-unban-reactivate` の引き継ぎ事項に D60 (救済しない) を追記した。
 
-## 追記 (2026-11-21): P1 実装計画 (第 3 版) で確定した事項 (D61-D66)
+## 追記 (2026-11-21): P1 実装計画 (第 3 版) で確定した事項 (D61-D67)
 
 Emumet の P1 実装計画 (C0・K1・L1・Q1・S1・I1・A1・B1・T1 の 9 単位) の承認にあたり、operator が決めたこと、
 その決定から導かれる契約上の規則を記録する。D54 の文言は変えず、下の D63 で除外条件を明確にする。
@@ -68,11 +68,12 @@ Emumet の P1 実装計画 (C0・K1・L1・Q1・S1・I1・A1・B1・T1 の 9 単
 | # | 決定 | 内容 | 根拠 | 状態 |
 |---|------|------|------|------|
 | D61 | 転送契約の正本の置き場所 | 内向き転送の契約 (文書・JSON Schema・fixture・署名ベクトル) の正本は host の `intents/shuttlepub/contracts/emumet-post-relay/` に 1 つだけ置く。Emumet 側 (`docs/contracts/post-relay-v1*`) は host の commit・版・checksum を明記した写しで、独立に編集しない。他 domain (emumet) は参照するだけ。置き場所は `intent-cli guide host-ownership` (design は `intents/<domain>/**` に書ける) と `intent lint-layout` (新しい警告なし) で確認した | 計画 §10.1、`intent-cli guide host-ownership`、`intent-cli intent lint-layout --domain shuttlepub` | 確定 |
-| D62 | link 解除と送信開始の境界 (ユーザー決定①、案 A) | link 解除が確定した後は、新しい送信も再送も許可しない。直前に送り始めたものは受け手に届いてよい。「送り始めた」とは、job への送信許可の commit を指す。許可時刻からの絶対期限 (初期値 10 秒、自動配送は受信から 72 時間・人手再配送は隔離期限を超えない) で打ち切り、HTTP 送信中は DB の transaction・接続・lock を持たない。解除の経路は所有者の解除 API・退会・Account projector の 3 つで、共通の lock 順序に従う | ユーザー決定①、計画 §5.4 (N2) | 確定 |
+| D62 | link 解除と送信開始の境界 (ユーザー決定①、案 A) | link 解除が確定した後は、新しい送信も再送も許可しない。直前に送り始めたものは受け手に届いてよい。「送り始めた」かどうかの境界は、job への送信許可の commit である (commit 前なら解除が勝ち、送らない。commit 後は届いてよい)。期限の起点は commit 時刻ではなく、最終許可更新時の DB 時刻 `authorized_at` で、commit に掛かる時間も 10 秒の枠に含み、commit 後に取り直さない (レビュー指摘で明記、v1.md §9 revision 2)。期限は `authorized_at` からの絶対期限 (初期値 10 秒、自動配送は受信から 72 時間・人手再配送は隔離期限を超えない) で、commit の成否が不明なら送らず、HTTP 送信中は DB の transaction・接続・lock を持たない。解除の経路は所有者の解除 API・退会・Account projector の 3 つで、共通の lock 順序に従う | ユーザー決定①、計画 §5.4 (N2) | 確定 |
 | D63 | D54 の「Follow 系と Block 系以外は全部渡す」の除外条件 (ユーザー決定②) | 転送から除外するのは Follow・Block 自体と、**既知の** Follow・Block を確実に参照する Undo・Accept・Reject だけ。参照先が分からない Undo・Accept・Reject (URL だけで未知、object なし、空配列、未知が混ざる配列) は転送する。判定のために object の URL を取得しない。先行 Undo の仮記録は Follow の存在の証拠にしない。`type` が配列のときは、Follow・Block・Undo・Accept・Reject のうち 2 種類以上を含めば 400 で関係を変えず、拡張 type の併記だけでは拒否も除外もしない。判定の詳細は契約の §8 | ユーザー決定②、D54、計画 §4 | 確定 |
 | D64 | 恒久失敗と 72 時間打ち切りの 30 日隔離 (ユーザー決定③。ADR 0003 の限定例外) | 恒久失敗と、受信から 72 時間の打ち切りだけ、元の envelope を終端から 30 日間隔離し、本文なしの要約 1 件を同じ 30 日残す。運営者は同じ envelope・receipt・宛先のまま人手で再配送できる (外側の Date と署名だけ作り直す)。成功と取消では job・試行履歴・本文を消し、配送ごとの行を残さない。隔離した本文は投稿の保存・検索・通常の配信に使わない。ADR 0003 の「投稿コンテンツは Emumet に保存しない」は、この隔離を限定例外として維持する (ADR 0003 に追記) | ユーザー決定③、post-relay decisions (2026-08-25) の 72 時間・30 日、計画 §6.3 | 確定 |
 | D65 | 移管と退会後の再有効化 (ユーザー決定④⑤) | Profile の移管では link を引き継ぐ (link ID・origin・generation は変えず、以後は新しい所有者だけが操作する)。退会後に再有効化しても link は自動で復活させない。退会は物理削除ではなく退会のイベント・状態遷移で link を失効させ、generation を増やす。再登録は本人が行い、新しい link ID になる。停止・BAN は link を保ったまま送信を保留し、72 時間・30 日の期限は延ばさない | ユーザー決定④⑤、計画 §5.3 | 確定 |
 | D66 | P1 の受け手の検証と P2 の分離 | P1 の受け手は link の台帳を持たない。設定済みの Emumet を信頼し、link ID と generation をその申告として扱う。P1 では generation の新旧判定をせず、古い generation を拒否する fixture も作らない。Profile・link・generation・有効性の照合は、信頼できる link 状態を取得できる P2 以降に回し、その fixture は事前状態を明記して P1 から分ける。`received_at` の古さだけでは拒否しない (人手再配送で最大約 33 日前になる) | 計画 §3.3 (N1)、D51・D56 | 確定 |
+| D67 | 契約 v1 revision 2: C0 レビューで固めた規則 | (1) 外側署名の対象は実際の method と target から組み立て、`POST` と `/internal/v1/emumet/activities` (query なし) 以外は 405 `method_not_allowed`・404 `not_found` で拒否する。(2) `received_at`・`verified_at` は暦として存在する日時 (範囲は schema、月ごとの日数・閏年は schema の外で `schema_violation`)、URL は authority を host[:port] に限る (userinfo・IPv6 リテラル・空 authority・不正な port は拒否)。(3) inbox から取り出す actor・Activity ID は `URL_MAX` (2048) 文字以下かつ envelope の URL 形式を満たすこと。actor が満たさなければ 400 `invalid_actor` (Follow/Block を含む全 body に適用)、Activity ID が満たさなければ拒否せず null にして転送する。type の各文字列は `TYPE_STRING_MAX` (512) 文字以下で、超えれば 400 `invalid_type`。(4) ヘッダ証拠の省略は、候補の重複排除・予算に省略名の長さを含める手順・件数の上限 (`OMITTED_COUNT_MAX` 1024) まで含めて、入力と出力の fixture で定める。定数 `OMITTED_COUNT_MAX`・`TYPE_STRING_MAX` を追加し、契約を revision 2 とする | C0 (emumet-p1-relay-contract) の承認レビュー指摘 must 1〜4 と任意 5。(3) の actor 規則を全 body に適用する点と `TYPE_STRING_MAX` の値 (512) は C0 担当の判断で、レビューで異論があれば直す | 確定 (契約 revision 2) |
 
 ### 今回の決定に含めないもの
 

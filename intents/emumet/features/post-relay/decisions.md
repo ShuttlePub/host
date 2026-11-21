@@ -41,7 +41,7 @@
 - 転送 envelope・外側署名・受け手の検証手順・inbox の読み取りと振り分けは、契約
   [../../../shuttlepub/contracts/emumet-post-relay/v1.md](../../../shuttlepub/contracts/emumet-post-relay/v1.md)
   (正本は host の 1 つ。Emumet の `docs/contracts/` は写し) で定めた。決定の記録は shuttlepub の
-  [D61-D66](../../../shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md)。
+  [D61-D67](../../../shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md)。
 - link 解除確定後は新しい送信・再送を許可しない (直前に許可したものは届いてよい)。参照先が不明な
   Undo / Accept / Reject は転送する。恒久失敗と 72 時間打ち切りだけ 30 日隔離して人手再配送できる
   (ADR 0003 の限定例外)。移管で link を引き継ぎ、退会後の再有効化で link は自動復活しない。
