@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T08:10:01.6396742+00:00",
+  "updated_at": "2026-11-21T08:11:36.664113+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1914,6 +1914,11 @@
         "implementation": ".intent-cli/issues/emumet-instance-identity/implementation.md",
         "review_context": ".intent-cli/issues/emumet-instance-identity/review-context.md",
         "yaml": ".intent-cli/issues/emumet-instance-identity/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 116,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/116"
       },
       "worker_role": "implementation",
       "review_role": "review",

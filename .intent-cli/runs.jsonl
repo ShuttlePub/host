@@ -329,3 +329,4 @@
 {"ts":"2026-11-21T07:35:02.7643845+00:00","execution_unit":"emumet-login-consent-boundary","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/Emumet","pr":113}
 {"ts":"2026-11-21T07:35:11.462262+00:00","execution_unit":"emumet-login-consent-boundary","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":113}
 {"ts":"2026-11-21T08:10:01.6614462+00:00","execution_unit":"emumet-instance-identity","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/emumet-instance-identity/"}
+{"ts":"2026-11-21T08:11:36.664113+00:00","execution_unit":"emumet-instance-identity","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#116","reason":"https://github.com/ShuttlePub/Emumet/issues/116"}
