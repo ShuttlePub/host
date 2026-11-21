@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:emumet-p1-relay-contract",
+  "actor": "c0-relay-contract-worker",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-21T06:51:43.9296216+00:00",
+  "base_commit": "feaf2d42cab53da115555d434288ce2b6c86dd99"
+}
