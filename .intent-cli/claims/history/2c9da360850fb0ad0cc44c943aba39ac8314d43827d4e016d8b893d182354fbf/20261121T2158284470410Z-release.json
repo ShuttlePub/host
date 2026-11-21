@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-relay-ory-independent-runtime",
+  "actor": "codex-b1",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-21T21:58:28.447041+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "codex-b1",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T21:50:51.3009862+00:00",
+  "base_commit": "12047518f66b129982328244719669158de20186"
+}
