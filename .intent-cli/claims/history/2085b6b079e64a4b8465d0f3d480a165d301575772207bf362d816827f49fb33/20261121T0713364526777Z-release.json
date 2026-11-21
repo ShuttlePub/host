@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-p1-relay-contract",
+  "actor": "c0-relay-contract-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-21T07:13:36.4526777+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "c0-relay-contract-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T06:51:43.9296216+00:00",
+  "base_commit": "48ac4ad81a4dcd8485ecea27f2eff821ed99f9b0"
+}
