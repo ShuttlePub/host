@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "scope": "execution-unit:emumet-post-relay-storage",
+  "actor": "codex-q1-storage",
+  "team": "emumet-main",
+  "claimed_at": "2026-11-21T15:07:21.0230782+00:00",
+  "base_commit": "f4e0c67deacfd2e3cf1572dca5d5dd0f45cc00ff"
+}
