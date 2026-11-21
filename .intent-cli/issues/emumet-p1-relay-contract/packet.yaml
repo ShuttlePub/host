@@ -1,0 +1,67 @@
+implementation_issue_packet:
+  issue_title: "emumet-p1-relay-contract: 内向き転送の契約 v1 の写し (schema・fixture・署名ベクトル) と、それを検証する CI テストを置く"
+  issue_kind: feature
+  source_execution_unit: emumet-p1-relay-contract
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "docs/contracts/ (post-relay-v1.md, post-relay-v1.schema.json, post-relay-v1.constants.json, post-relay-v1-fixtures/, post-relay-v1.snapshot.json, README.md), server/tests/post_relay_contract.rs, server/Cargo.toml (dev-dependency), Cargo.lock"
+  target_part: "host が正本として持つ Emumet 内向き転送の契約 v1 (envelope・外側署名・受け手の検証・inbox の読み取りと振り分け・定数・fixture) を、host の commit・版・checksum を明記した写しとして docs/contracts/ に置き、写しの一致と、schema・fixture・署名ベクトル・参照実装による P1 検証を CI で確かめる。実装コード (鍵・link・キュー・inbox の変更) は含まない"
+  dependencies: []
+  technical_baseline:
+    - "基準は origin/main の 1259c731af496bb09ae11286a9b869b132a88f4d 以降の最新 main。PR 本文に完全な SHA を書く"
+    - "契約の正本は host (ShuttlePub/host) の intents/shuttlepub/contracts/emumet-post-relay/ に 1 つだけある。写しの元にする host の commit は cc19ad0887409601999e66b3f00fb8d0735ebfc3 (契約のファイルはこの commit 以降、別の commit で変えない限り同じ)。Emumet 側は独立に編集しない"
+    - "CI の Check (server) は cargo fmt --check・cargo clippy --all-targets -- -D warnings・cargo build・cargo test を server で実行する。追加するテストはこれで走る。DB・Ory・ネットワークを使わない"
+    - "テストの追加依存は server の dev-dependency に jsonschema (default-features = false) だけ。rsa・sha2・base64・httpdate・serde_json は server が既に持つ"
+    - "ローカルでは openssl の dev パッケージが要るため、nix develop (リポジトリの flake) の中で cargo を実行する"
+    - "Emumet 本体チェックアウトの未コミット変更 (ory/hydra/hydra.yml) は変更しない・PR に含めない。作業は専用の worktree で行う"
+  intent_references:
+    - "intents/shuttlepub/contracts/emumet-post-relay/v1.md"
+    - "intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md (D54, D61-D66)"
+    - "intents/emumet/decisions/0003-delegated-signing.md (2026-11-21 追記)"
+    - "intents/emumet/features/post-relay/decisions.md"
+  acceptance_criteria:
+    - "C0-1 写し: docs/contracts/ に post-relay-v1.md・post-relay-v1.schema.json・post-relay-v1.constants.json・post-relay-v1-fixtures/ (host の fixtures/ 全体)・post-relay-v1.snapshot.json・README.md がある。写しの各ファイルは host の対応するファイルとバイト一致し、PR 本文にその確認方法と結果を書く。post-relay-v1.snapshot.json は host リポジトリ名・host commit (40 桁)・契約名と版 (emumet-post-relay v1 revision 1)・全ファイルの host 上のパスと SHA-256 を持つ。README.md は『独立に編集しない。host の正本を変えてから写し直す』を述べる"
+    - "C0-2 テストの対象と実行: server/tests/post_relay_contract.rs が CI の Check (server) の cargo test で走る。DB・Ory・ネットワークを使わず、skip や #[ignore] を使わない。確認する内容は C0-3〜C0-8"
+    - "C0-3 写しの一致: snapshot.json に書かれた全ファイルの SHA-256 を再計算して一致する。docs/contracts/ にある snapshot.json と README.md 以外のファイルがすべて snapshot.json に載っている。host_commit は 40 桁の 16 進数"
+    - "C0-4 定数の一致: v1.md の定数の表・v1.constants.json・v1.schema.json の上限 (raw_body、header の数と長さ、省略名の数、origin・URL・request_target の長さ、link_generation の上限、version) が一致する。fixture の境界の例 (envelope 2 MiB+1、Date 許容差 300 秒と 301 秒、inbox の深さ 32/33・要素数 100000/100001・本文 1 MiB/1 MiB+1・type 配列 16/17) が定数から導かれる値と一致する"
+    - "C0-5 schema: schema 自体が検証でき、P1 の正常な envelope が通り、不正な envelope (必須欄の欠落・未知の欄・不正な Base64・不正な origin・evidence の不整合) が通らない。元本文ちょうど 1 MiB が通り、Base64 の 1 グループ超過が通らない。保存する元ヘッダの合計がちょうど 16 KiB なら通り、1 バイト超えると拒否される"
+    - "C0-6 P1 検証が link 台帳なしで実行できる: テスト内の参照受け手 (v1.md §7 の手順 0〜7) が、link 台帳を入力に持たないまま、P1 の fixture (正常 9 件・拒否 22 件以上) のすべてについて期待する status・reason・再送の分類を再現する。P1 の fixture に『古い generation の拒否』や link 状態に依存する理由がない。約 33 日前の received_at と新しい外側 Date の組が受理される。P2 の fixture は事前状態 (link 台帳) を明記して p2/ に分離され、P1 の参照受け手は P2 の envelope を受理する (P2 の規則が P1 に混ざっていない)"
+    - "C0-7 署名と再送: 外側署名のベクトル (正常 3 件、Digest 不一致、別の鍵) が、Digest・署名対象文字列・RSA-2048/SHA-256 の署名で検証される。同じ envelope の再送 3 回 (初回・1 時間後の自動再送・約 33 日後の人手再配送) で、本文と Digest は同一で、Date と Signature だけが違い、期待どおりに受理される。envelope に保存した元の署名が、envelope 内の証拠だけで再検証できる。fixture に秘密鍵が含まれない"
+    - "C0-8 inbox の読み取り: 65 件の fixture (転送・除外・拒否) が、テスト内の参照読み取り (v1.md §8) の結果と一致する。全階層の重複キー (unescape 後を含む)・type 配列・ID なし・MIME・不明参照の Undo/Accept/Reject の転送・既知参照だけの除外・先行 Undo の仮記録を証拠にしないことを含む"
+    - "C0-9 範囲: 変更は target_path の範囲に限る。実装コード (server/src・kernel・application・driver)・migration・OpenAPI (openapi.json)・CI の workflow・ory/hydra/hydra.yml を変更しない。Cargo.toml の変更は server の dev-dependency への jsonschema の追加だけ。Cargo.lock はそれに伴う更新に限り、PR 本文に Cargo.lock の差分の内訳 (追加された crate と、依存解決で上がった既存 crate) を書く"
+    - "C0-10 CI: PR の CI (lint-and-test の Check kernel/application/server・Check driver・各 DB job・openapi-check・coverage、container-ci、e2e のうち PR で走るもの) がすべて緑。PR は未マージ (マージは親の指示で行う)。PR 本文に、基準の完全な SHA、host commit、写しの一致の確認結果、実行したテストの結果、未検証の範囲を書く"
+
+# G461: packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/contracts/emumet-post-relay/README.md
+  supporting_intents:
+    - intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md
+    - intents/emumet/features/post-relay/decisions.md
+    - intents/emumet/decisions/0003-delegated-signing.md
+  new_intent_needed: false
+  placement_rationale: "契約の正本と決定 D61-D66 は host に記録済み (host commit cc19ad0)。この単位は Emumet 側の写しとその検証だけで、新しい intent ノードは要らない。"
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: "ADR 0003 への限定例外の追記は host commit cc19ad0 で記録済み"
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "docs/contracts/ (Emumet)"
+    summary: "契約の写しを Emumet の docs/contracts/ に置く (この PR で)。"
+closeout_learning:
+  expected: "写しの検証をテストにしたことで見つかった契約の曖昧さ (あれば)、fixture を再生成したときの運用 (鍵が変わる)、後続単位 (K1・L1・Q1・S1・I1・T1) が契約のどの節と fixture を使ったか。"
+  write_back_required: false
+  write_back_targets: []
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
