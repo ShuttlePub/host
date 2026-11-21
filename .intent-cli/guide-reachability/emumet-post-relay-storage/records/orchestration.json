@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "emumet-post-relay-storage",
+  "role": "orchestration",
+  "host_commit": "8700496165dfbfbdb2626b2a65634f462fc0f256",
+  "recorded_at": "2026-11-21T19:23:12.616075+00:00",
+  "guide_surfaces": [
+    "server --help / \u0060capacity report --help\u0060"
+  ],
+  "roles": [
+    "operations"
+  ],
+  "note": "Mechanically confirmed both server help routes execute without normal startup and point to capacity report/schema/freshness documentation; parent-approved equivalent docs location is explicit in host evidence."
+}

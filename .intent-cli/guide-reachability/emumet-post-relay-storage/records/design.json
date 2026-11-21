@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "emumet-post-relay-storage",
+  "role": "design",
+  "host_commit": "8700496165dfbfbdb2626b2a65634f462fc0f256",
+  "recorded_at": "2026-11-21T19:23:12.3602996+00:00",
+  "guide_surfaces": [
+    "server --help / \u0060capacity report --help\u0060"
+  ],
+  "roles": [
+    "operations"
+  ],
+  "note": "Verified the merged tree and executed server --help and server capacity report --help; both route operations to the shipped capacity report and docs/post-relay-storage.md. Declared operations document is deferred to S1/T1 as accepted by parent."
+}

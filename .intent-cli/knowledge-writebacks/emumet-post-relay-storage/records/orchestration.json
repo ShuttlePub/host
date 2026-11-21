@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "emumet-post-relay-storage",
+  "role": "orchestration",
+  "host_commit": "e2e7dce6256236351e9ae47c1ab99118a960c3a3",
+  "recorded_at": "2026-11-21T19:23:12.4930081+00:00",
+  "targets": [
+    ".intent-cli/queue-state.json",
+    ".intent-cli/runs.jsonl"
+  ],
+  "note": "Verified PR122 merged as 7efe25c7b5e5237d4246e74b7c50903996040b14, recorded queue/runs closeout and unique linked_pr recovery; claim released separately as e3fc7c833c579d3f59b637d38a5fa746f61780ee."
+}

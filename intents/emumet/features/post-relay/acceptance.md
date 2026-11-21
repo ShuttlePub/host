@@ -6,6 +6,7 @@
 
 - [ ] _[Criterion 1]_
 - [ ] _[Criterion 2]_
+
 ## Q1 — durable storage 完了根拠 (2026-11-21)
 
 対象は [Emumet PR #122](https://github.com/ShuttlePub/Emumet/pull/122)、squash
