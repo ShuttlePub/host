@@ -1,4 +1,4 @@
-# emumet-profile-inbox-relay
+# emumet-profile-inbox-relay: Profile inbox relay intake
 
 ## Goal
 
