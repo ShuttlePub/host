@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T07:35:11.4415924+00:00",
+  "updated_at": "2026-11-21T08:10:01.6396742+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1895,6 +1895,25 @@
         "repo": "ShuttlePub/Emumet",
         "number": 114,
         "url": "https://github.com/ShuttlePub/Emumet/issues/114"
+      },
+      "worker_role": "implementation",
+      "review_role": "review",
+      "priority": "high",
+      "priority_revision": 0
+    },
+    {
+      "execution_unit": "emumet-instance-identity",
+      "title": "emumet-instance-identity: instance actor \u3068\u6697\u53F7\u5316\u7F72\u540D\u9375\u306E\u751F\u6210\u30FB\u516C\u958B",
+      "state": "queued",
+      "dependencies": [
+        "emumet-p1-relay-contract"
+      ],
+      "blocked_by": [],
+      "clarification_return_path": "intents/emumet/clarifications/open.md",
+      "packet_paths": {
+        "implementation": ".intent-cli/issues/emumet-instance-identity/implementation.md",
+        "review_context": ".intent-cli/issues/emumet-instance-identity/review-context.md",
+        "yaml": ".intent-cli/issues/emumet-instance-identity/packet.yaml"
       },
       "worker_role": "implementation",
       "review_role": "review",

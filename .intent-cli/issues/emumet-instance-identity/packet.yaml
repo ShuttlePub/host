@@ -1,0 +1,79 @@
+implementation_issue_packet:
+  issue_title: "emumet-instance-identity: instance actor と暗号化署名鍵の生成・公開"
+  issue_kind: feature
+  source_execution_unit: emumet-instance-identity
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "kernel/, application/, driver/, server/, migrations/"
+  target_part: "Emumet instance actor と instance signing key の永続化・provisioning・公開。Profile actor/key とは分離し、鍵のrotate/revoke操作は含めない"
+  dependencies:
+    - emumet-p1-relay-contract
+  technical_baseline:
+    - "実装開始時に ShuttlePub/Emumet の main を取得し、PR本文に使用した完全な40桁SHAを記録する。承認計画で確認した基準は 1259c731af496bb09ae11286a9b869b132a88f4d。"
+    - "契約正本は host commit cc19ad0887409601999e66b3f00fb8d0735ebfc3 の intents/shuttlepub/contracts/emumet-post-relay/ (emumet-post-relay v1 revision 1)。受け手の署名検証と公開鍵表現はこの契約に合わせる。"
+    - "適用する設計制約は DC-01/03/12/15。instance actor URL は設定済み PUBLIC_BASE_URL から生成し、鍵・鍵ID・公開鍵リストの意味は Profile identity/key と分離する。"
+    - "C0 (emumet-p1-relay-contract, ShuttlePub/Emumet issue #114) が契約・schema・fixture の先行単位。K1 と L1 はともに C0 に依存し、K1 と L1 の間に依存はない。"
+  intent_references:
+    - "intents/shuttlepub/contracts/emumet-post-relay/ (host canonical contract; commit cc19ad0887409601999e66b3f00fb8d0735ebfc3)"
+    - "intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md (D51, D61-D66)"
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/decisions.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+    - "intents/emumet/decisions/0003-delegated-signing.md"
+  acceptance_criteria:
+    - "K1-1 Concurrent provisioning on an empty database leaves exactly one instance identity and exactly one active instance signing key; database constraints and/or serialization protect this invariant across processes."
+    - "K1-2 The anonymous instance actor document is GET {PUBLIC_BASE_URL}/ap/instance, has the same configured URL as its id, uses type Application, and publishes public keys using a representation that supports multiple keys. URLs derive from configured PUBLIC_BASE_URL, never an inbound Host header."
+    - "K1-3 Instance signing material is encrypted at rest using the existing crypto boundary, stored separately from Profile keys, and is never returned in the actor document, API response, normal DTO, or logs. keyId uses a non-reusable opaque identifier; identity and key are stable across restart."
+    - "K1-4 Decryption failure, corrupted stored material, or a configured public-origin mismatch fails closed and is reported; startup/provisioning does not treat the condition as an absent key and silently generate a replacement."
+    - "K1-5 The delivery-facing signing-key access path does not perform KDF decryption for each delivery: parsed keys are cached only in process with a bounded maximum of 2 entries and a 15-minute TTL (single-flight on a cache miss); secret material is not written to disk or logs."
+    - "K1-6 Existing Profile actor documents, Profile keys, and their signing behavior pass regression tests unchanged; the instance key is never substituted for a Profile key."
+    - "K1-7 No key rotation/revocation operation, P2 behavior, ShuttlePub production receiver, or post-relay delivery worker is added in this unit."
+    - "K1-8 Any required schema change is additive. Migration and database tests cover an empty database and the supported pre-change schema; database tests are not skipped, and rollback compatibility is assessed before relying on the migration."
+
+# G461: optional packet-time intent-maintenance metadata. OPTIONAL and
+# backward-compatible — packets that omit this whole block stay valid.
+# Fill it in or explicitly decline each part while the design context is
+# fresh; `improve` (G456 / G460) is the later safety net, not a substitute.
+intent_placement:
+  primary_intent: intents/emumet/features/post-relay/overview.md
+  supporting_intents:
+    - intents/emumet/features/post-relay/decisions.md
+    - intents/emumet/features/post-relay/acceptance.md
+    - intents/emumet/decisions/0003-delegated-signing.md
+  new_intent_needed: false
+  placement_rationale: "K1 is an implementation slice of the existing post-relay feature; the shared envelope/signature contract and decisions are already canonical on the host."
+knowledge_updates:
+  intent_tree:
+    required: false
+    target_paths: []
+    summary: ""
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: false
+    target_paths: []
+    summary: "The host post-relay v1 contract remains the single contract source; do not copy or independently revise it in this slice."
+closeout_learning:
+  expected: "Record any provisioning/concurrency or encrypted-key persistence constraint discovered, and confirm that the instance actor/key path remains separate from Profile signing."
+  write_back_required: false
+  write_back_targets: []
+# G645/G661: guide reachability is explicit and checked at closeout.
+# Uncomment and complete EXACTLY ONE accepted form. Leaving this
+# commented is visibly undeclared; the scaffold never guesses that
+# a new slice has no role-facing surface.
+#
+# Route form:
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
+#
+# Explicit no-surface form:
+# guide_reachability:
+#   no_role_facing_surface: true
+#   routes: []
