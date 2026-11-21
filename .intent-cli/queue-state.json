@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-21T10:02:05.6927082+00:00",
+  "updated_at": "2026-11-21T10:05:03.3559336+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -1964,6 +1964,11 @@
         "implementation": ".intent-cli/issues/emumet-post-relay-storage/implementation.md",
         "review_context": ".intent-cli/issues/emumet-post-relay-storage/review-context.md",
         "yaml": ".intent-cli/issues/emumet-post-relay-storage/packet.yaml"
+      },
+      "linked_issue": {
+        "repo": "ShuttlePub/Emumet",
+        "number": 121,
+        "url": "https://github.com/ShuttlePub/Emumet/issues/121"
       },
       "worker_role": "implementation",
       "review_role": "review",
