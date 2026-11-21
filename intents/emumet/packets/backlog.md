@@ -74,7 +74,7 @@ packet 起こしは `architecture-foundation` から。
   (b) Rejected の HTTP mapping は既存共有 ErrorStatus マッピングの 422 を維持
   (packet の 400 記載は「既存 admin ルート準拠」の原則に従い不採用)。
   引き継ぎ事項: 本修正以前に unlink 済みの deactivated account は復帰不可。
-  救済が必要なら Created event からの backfill を別途判断
+  救済が必要なら Created event からの backfill を別途判断 → 本番未稼働で救う対象の実データがないため救済しない ([shuttlepub D60](../../shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md))
 - `media-upload` — issue #43 / PR #44 マージ済み(2026-08-19)。画像アップロード API +
   S3 互換ストレージ連携 (開発: RustFS) + Actor icon/image 反映 + Update(Person) 配送。
   knowledge writeback は required:false のため本 backlog への反映のみ
