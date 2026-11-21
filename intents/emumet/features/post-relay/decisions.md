@@ -35,3 +35,14 @@
 > 転送プロトコル・サービス間認証(旧 Q1/Q2)は deferred 継続。
 > 再開条件「ShuttlePub 本体実装の構想が立つこと」が未充足
 > (2026-08-25 operator 確認。[../../clarifications/open.md](../../clarifications/open.md) C2/C3 参照)
+
+### 2026-11-21: P1 実装計画での確定事項 (旧「転送 envelope の正確な形」ほか)
+
+- 転送 envelope・外側署名・受け手の検証手順・inbox の読み取りと振り分けは、契約
+  [../../../shuttlepub/contracts/emumet-post-relay/v1.md](../../../shuttlepub/contracts/emumet-post-relay/v1.md)
+  (正本は host の 1 つ。Emumet の `docs/contracts/` は写し) で定めた。決定の記録は shuttlepub の
+  [D61-D66](../../../shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md)。
+- link 解除確定後は新しい送信・再送を許可しない (直前に許可したものは届いてよい)。参照先が不明な
+  Undo / Accept / Reject は転送する。恒久失敗と 72 時間打ち切りだけ 30 日隔離して人手再配送できる
+  (ADR 0003 の限定例外)。移管で link を引き継ぎ、退会後の再有効化で link は自動復活しない。
+- 2026-08-25 の「監査記録は 30 日保管」は、本文の 30 日隔離を含む形に具体化した。

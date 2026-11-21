@@ -21,6 +21,7 @@ technology/overview.md       現状スタック、未使用依存、設計方向
 links/external.md            関連リポジトリ (nitinol, stargate, サービス群)
 product/service-concept.md   サービス群全体のコンセプト (2026-11-18)
 packets/roadmap-2026-11-18.md  サービス群の実装ロードマップ (P0-P4)
+contracts/emumet-post-relay/ Emumet 内向き転送の契約 v1 (正本。D61)
 decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提、D36-D41: 2026-11-18 P1 の連携を先に通し、その後 Stellar を切り出す、D42-D50: 2026-11-20 問題領域と 3 つの Producer・port 層)
 features/                    (未整理)
 clarifications/open.md       (未整理)

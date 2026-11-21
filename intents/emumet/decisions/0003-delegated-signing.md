@@ -129,3 +129,18 @@ shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.
 - [features/post-relay](../features/post-relay/overview.md)
 - [features/shuttlepub-link](../features/shuttlepub-link/overview.md)
 - [0002](0002-account-address-on-emumet-domain.md)
+
+## Amended 2026-11-21: 内向き転送の一時保管 (限定例外)
+
+shuttlepub domain の decisions/2026-11-21-emumet-p1-open-items.md (D61-D66) と、契約
+`intents/shuttlepub/contracts/emumet-post-relay/v1.md` による追記。
+
+- 「投稿コンテンツは Emumet に保存しない」は、外向きの配布 (object / outbox のプロキシ) について維持する。
+- **限定例外 (operator 判断 2026-11-21)**: 内向き転送の**恒久失敗**と、受信から **72 時間の打ち切り**だけ、
+  受信した元の Activity (envelope の raw bytes) を終端から **30 日間**、復旧用に隔離して保持する。
+  運営者が同じ envelope・receipt・宛先のまま人手で再配送できる。本文なしの要約 1 件も同じ 30 日残す。
+- 成功と取消 (link 解除・退会) では、job・試行履歴・本文を消し、配送ごとの行を残さない。link 解除・退会では
+  隔離中の本文も消す。
+- 隔離した本文は投稿の保存・検索・通常の配信に使わない。受付済みの本文を、新着の受付のために 30 日より前に
+  自動で破棄しない (容量が足りないときは新着を拒否する)。
+- 2026-08-25 の「72h で打ち切り、監査記録は 30 日保管」は、監査記録に加えて本文もこの例外で 30 日保持する形に具体化する。
