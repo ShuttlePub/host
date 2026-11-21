@@ -324,3 +324,4 @@
 {"ts":"2026-11-21T06:51:31.681217+00:00","execution_unit":"emumet-login-consent-boundary","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/emumet-login-consent-boundary/"}
 {"ts":"2026-11-21T06:52:10.1157553+00:00","execution_unit":"emumet-login-consent-boundary","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#112","reason":"https://github.com/ShuttlePub/Emumet/issues/112"}
 {"ts":"2026-11-21T07:05:55.3956903+00:00","execution_unit":"emumet-p1-relay-contract","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/emumet-p1-relay-contract/"}
+{"ts":"2026-11-21T07:07:19.1587718+00:00","execution_unit":"emumet-p1-relay-contract","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/Emumet#114","reason":"https://github.com/ShuttlePub/Emumet/issues/114"}
