@@ -50,35 +50,38 @@ implementation_issue_packet:
       - intents/emumet/decisions/0003-delegated-signing.md
     new_intent_needed: false
     placement_rationale: "S1 implements the already approved post-relay sender and operator recovery surface; no new intent node is needed, but measured delivery results and operational limits must be written back to the existing feature intent."
-  knowledge_updates:
-    intent_tree:
-      required: true
-      target_paths:
-        - intents/emumet/features/post-relay/decisions.md
-        - intents/emumet/features/post-relay/acceptance.md
-      summary: "At closeout, record baseline and target measurements, final worker/deadline/concurrency settings, operator recovery and sender-only stop behavior, schema/worker-ID guard, and the operational decision for any unmet throughput target."
-    adr:
-      required: false
-      target_paths: []
-      decision_title: ""
-    diagram:
-      required: false
-      target_paths: []
-      diagram_type: none
-    docs:
-      required: true
-      target_paths:
-        - docs/post-relay-operations.md
-      summary: "Document operator redelivery/discard, expiry-preserving behavior, schema and worker identity requirements, sender-only emergency stop versus full server/egress stop, quota growth while reception continues, and monitoring/measurement results."
-  closeout_learning:
-    expected: "Write back measured baseline/throughput and contention results, final bounded worker settings, sender-stop and quota implications, operator recovery semantics and expiry behavior, and any decision needed before I1 activation."
-    write_back_required: true
-    write_back_targets:
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
       - intents/emumet/features/post-relay/decisions.md
       - intents/emumet/features/post-relay/acceptance.md
-  guide_reachability:
-    no_role_facing_surface: false
-    routes:
-      - guide_surface: "server --help / operator post-relay recovery subcommand --help"
-        role: operations
-        target_surface: "Receipt/Profile redelivery and explicit discard, dry-run review, sender-only emergency stop, and operational expiry/quota guidance"
+    summary: "At closeout, record baseline and target measurements, final worker/deadline/concurrency settings, operator recovery and sender-only stop behavior, schema/worker-ID guard, and the operational decision for any unmet throughput target."
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - docs/post-relay-operations.md
+    summary: "Document operator redelivery/discard, expiry-preserving behavior, schema and worker identity requirements, sender-only emergency stop versus full server/egress stop, quota growth while reception continues, and monitoring/measurement results."
+closeout_learning:
+  expected: "Write back measured baseline/throughput and contention results, final bounded worker settings, sender-stop and quota implications, operator recovery semantics and expiry behavior, and any decision needed before I1 activation."
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/post-relay/decisions.md
+    - intents/emumet/features/post-relay/acceptance.md
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: "server --help / operator post-relay recovery subcommand --help"
+      role: operations
+      target_surface: "Receipt/Profile redelivery and explicit discard, dry-run review, sender-only emergency stop, and operational expiry/quota guidance"
+revision_history:
+  - date: "2026-11-22"
+    note: "Mechanical schema normalization: CLI 0.27.1 does not read knowledge_updates, closeout_learning or guide_reachability beneath implementation_issue_packet. Moved these three declarations to the YAML root without changing their values, scope, requirements or targets. Authorized by parent answer question-1d9caeb02200d437d046e9f49fbe6f66. The already-closed GitHub issue body is unchanged. The original publication used the nested structure."
