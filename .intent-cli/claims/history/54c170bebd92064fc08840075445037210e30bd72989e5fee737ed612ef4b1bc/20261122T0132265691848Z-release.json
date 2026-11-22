@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-profile-inbox-relay",
+  "actor": "codex-i1",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-22T01:32:26.5691848+00:00",
+  "reason": "I1 merged (PR #126, squash b054788) and closeout recorded",
+  "displaced_holder": "codex-i1",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T19:48:40.1835107+00:00",
+  "base_commit": "5fc4eb0061770a82924e6908fd64ea56adb4cd37"
+}
