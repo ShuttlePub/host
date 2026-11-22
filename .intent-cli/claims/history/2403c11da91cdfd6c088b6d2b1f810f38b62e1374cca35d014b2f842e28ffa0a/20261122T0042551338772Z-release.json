@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-post-relay-delivery",
+  "actor": "codex-s1-delivery",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-22T00:42:55.1338772+00:00",
+  "reason": "Hand off after independently approved PR125 merge e26fcede, verified host closeout/linkage, required knowledge writeback and guide evidence.",
+  "displaced_holder": "codex-s1-delivery",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-21T19:16:29.8872856+00:00",
+  "base_commit": "a81214cb3eb179d52c4793982219dddba72b9533"
+}
