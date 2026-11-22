@@ -1,6 +1,79 @@
 # Technology Overview
 
-## 現状スタック (2026-11-16、`dev` = f12933b)
+## 現状スタック (2026-11-23、`dev` = efb5bfc)
+
+`shuttlepub-producer-intake` (ShuttlePub/ShuttlePub PR #35、Issue #34) で、nitinol 0.8 による
+CQRS+ES と PostgreSQL への永続化を入れた (D17・D22・D49・D50)。`main` にはまだ入っていない。
+実装リポジトリ側の説明は `docs/foundation.md`。下の「2026-11-16 時点」の記述のうち、
+この節と食い違う部分 (4 crate、保存なし、nitinol 未導入) はこの節が新しい。
+
+**D70 との関係**: この単位は Producer ② (リレー用 inbox) の受け入れとして作ったが、merge の前日に
+D70 でリレーが初期の範囲から外れた。operator の判断 (2026-11-23) で、土台を `dev` に入れてから
+直す方針とした。次の単位 (Emumet からの転送の受け口) で、下の「初期には使わない部分」を外す。
+
+- **層** (D16・D50): kernel / port / application / driver / server の 5 crate。
+  workspace 内の依存は server → {application, driver} → {port} → kernel。
+  - kernel: 集約と値オブジェクト、判定の純粋関数。nitinol は `contract` feature だけ。
+    tokio・`nitinol-runtime`・axum・reqwest・sqlx に依存しない。ストアを使わない。
+  - port: 外部サービスが実体であるものの口。trait と `DependOn*` だけを置き、具象は driver
+    (D50 の補足)。依存は kernel と `error-stack` だけ。
+  - application: ユースケースと、出来事への反応 (Projector)。nitinol は `eventsource`。
+    テストは `InMemoryStore`。
+  - driver: port の実装 (リモート HTTP、HTTP 署名、配送)、設定の読み込み。
+  - server: `Handler` / `AppModule`、axum、`/api/v1` の契約、起動。nitinol は
+    `eventsource` と `postgres`。テストは PostgreSQL だけを使う。
+- **module** (D20・D47): 各層を community・producer・intake・note・delivery のまとまりで切る。
+  `kernel::entities` と `kernel::interface` はなくした。配置の表は `docs/foundation.md`。
+- **nitinol の境界** (D49): `Handler` が `EventSourceSystem<PostgresStore>` をフィールドとして
+  直接持つ。System を包む自前の型、ストアの型引数、ストアを切り替える feature はない
+  (品質ゲートが `--all-features` で動くので、排他的な feature は検査できない)。
+- **永続化**: `SHUTTLEPUB_DATABASE_URL` を受け取り、起動時に接続と
+  `PostgresEventStore::migrate` を行う。`Migrator` は手で組み立てない。
+- **残る部分**: 上の層・module・nitinol の境界・永続化、まとまり「受け入れ」(署名の検証と
+  重複の除去)、投稿の集約 (同じ投稿が 2 度届いても出来事は 1 つ)、`GET /actor`
+  (D70 で system.actor に改名する予定)、テストの PostgreSQL の用意。
+- **初期には使わない部分 (D70)**: `POST /inbox` での Follow の受付、供給元 (Producer) の集約、
+  Accept の配送 (`application` の `AcceptDelivery` と `port::delivery`)、リレー用 inbox での
+  Create の受け入れ。
+- **契約**: `/api/v1` は 15 操作すべて 501 のスタブのまま。`openapi/shuttlepub.json` は
+  バイト一致 (D19)。
+- **CI**: fmt / clippy `-D warnings` / test / build / `git diff --check` / structural-checks
+  (5 crate) / openapi-schema。
+
+### nitinol 0.8 を入れて分かったこと (closeout、PR #35)
+
+- **出来事への反応を Projector で書く**: Accept の配送は、`FederationAccepted` を見る Projector
+  (`with_tx_provider`、`catchup_from_global`) にした。Follow への応答は配送を待たない。
+  確定はバッチ単位で、1 件ごとではない。失敗は 250 ms 間隔で再試行し、間隔を広げない。
+  時間を置いた再試行と配送キューは未着手。
+- **idle timeout**: nitinol-runtime には `IdleTimeout` (`Inherit`・`Persistent`・`After`) があり、
+  `ProcessSystemBuilder::with_default_idle_timeout` で全体の既定を置ける。ShuttlePub は
+  `ProcessSystem::new()` を使っていて既定がないので、投稿 1 件ごとに起動した集約が止まらない。
+  既定を足すだけだと Projector のプロセスにも効く (どちらも `Inherit`)。`AggregateProps`・
+  `ProjectorProps` からは idle timeout を指定できない。nitinol への還元事項の候補は、
+  Projector を `Persistent` にするか、この 2 つから指定できるようにするか。Projector が
+  無通信で止まるかは未確認。
+- **テストの PostgreSQL**: testcontainers のコンテナをプロセスごとに 1 つ共有する作りにしたが、
+  品質ゲートの `cargo nextest` はテスト 1 件ごとにプロセスを分けるので、コンテナも 1 件ごとに
+  起動する。ローカルの品質ゲートは約 11 分、CI の `cargo test` は約 4 分。中断するとコンテナが
+  残ることがあり、テスト用のデータベースも消していない。プロセスをまたいで共有する形に直す。
+- **公開の判定**: Create の `to`・`cc` だけを見ている。Create が公開宛てで Note が
+  フォロワー宛てのとき「公開」と記録される。D69 の未決 (Global TL に入れる範囲) と合わせて、
+  受け口の単位で決める。
+- **そのほか (レビューの低い指摘)**: Create のユースケースのテストが `application` にない。
+  `structural-checks.sh` が `port` の外部依存を検査していない。長い Note の ID は 500 になる見込み。
+  拒否テストの「Accept が届いていない」の確認は、配送を非同期にしたので意味を失った。
+- **シングルノードの前提**: 複数プロセスへの備えは入れていない。クラスタリングに必要なことは、
+  ③ の受け口を動かしてから nitinol へ還元する。
+
+### 進め方で分かったこと (closeout、PR #35)
+
+- TAKT に渡す受け入れ基準には、PR を作る前に確かめられるものだけを書く。「CI で通る」を
+  完了条件に入れたため、PR の前に動く最終確認が判定できず、計画の段階へ差し戻された。
+- PR の本文に Issue を閉じる参照がなく、`intent-cli closeout pr` の自動の紐付けが効かなかった。
+  `--issue 34` を付けて closeout した。
+
+## 2026-11-16 時点のスタック (`dev` = f12933b。履歴)
 
 `shuttlepub-layered-foundation` (ShuttlePub/ShuttlePub PR #31、Issue #30) で、
 内部実装を土台から置き換えた (D15-D18)。`main` にはまだ入っていない。

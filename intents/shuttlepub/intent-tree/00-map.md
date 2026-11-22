@@ -22,7 +22,7 @@ links/external.md            関連リポジトリ (nitinol, stargate, サービ
 product/service-concept.md   サービス群全体のコンセプト (2026-11-18)
 packets/roadmap-2026-11-18.md  サービス群の実装ロードマップ (P0-P4)
 contracts/emumet-post-relay/ Emumet 内向き転送の契約 v1 (正本。D61)
-decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提、D36-D41: 2026-11-18 P1 の連携を先に通し、その後 Stellar を切り出す、D42-D50: 2026-11-20 問題領域と 3 つの Producer・port 層)
+decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提、D36-D41: 2026-11-18 P1 の連携を先に通し、その後 Stellar を切り出す、D42-D50: 2026-11-20 問題領域と 3 つの Producer・port 層、D51-D68: 2026-11-21 Emumet の P1 以降の未決事項と転送の契約、D69-D71: 2026-11-22 TL の流れ先・リレーを初期の範囲から外す・Shared Inbox と link の許可)
 features/                    (未整理)
 clarifications/open.md       (未整理)
 interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
@@ -86,6 +86,30 @@ Follow は Producer ② が増える出来事として扱う。タイムライ�
 供給元の受け入れと届いた投稿の受け入れを、新しい実行単位で作り直す。Global TL は後のフェーズ。
 
 - 決定: [decisions/2026-11-20-problem-domain-and-producers.md](../decisions/2026-11-20-problem-domain-and-producers.md)
+- **`shuttlepub-producer-intake`** (完了 2026-11-23、ShuttlePub/ShuttlePub PR #35、Issue #34、
+  `dev` = efb5bfc): 5 crate (port 層を追加)、nitinol 0.8 と PostgreSQL の導入、供給元の受け入れ
+  (Follow の記録)、Accept の配送 (出来事への反応)、届いた公開投稿の記録まで。到達範囲と
+  分かったことは [technology/overview.md](../technology/overview.md)。
+  タイムラインの Projector・Undo・転送の受け口は未着手。
+
+## リレーを初期の範囲から外す (D69-D71、2026-11-22)
+
+Local TL はこの ShuttlePub の投稿だけ、Global TL は受け取った公開投稿とした (D69)。リレー
+(外部からの取り込みと再配信) を初期の範囲から外し、P1 の最初の単位を Emumet からの転送
+(Producer ③) の受け口に改めた (D70)。Emumet は Shared Inbox を持ち、送り先の ShuttlePub ごとに
+本体 1 件と宛先の Profile 一覧をまとめて送る。link の信頼モードは署名・受け取り・コレクションの
+別々の許可にした (D71)。
+
+- 決定: [D69](../decisions/2026-11-22-timeline-routing.md)、
+  [D70](../decisions/2026-11-22-initial-scope-without-relay.md)、
+  [D71](../decisions/2026-11-22-shared-inbox-and-link-permissions.md)
+- **`shuttlepub-producer-intake` との関係**: D70 の記録の時点で、この単位は Issue #34 として発行済みで
+  PR #35 がレビューを終えていた (D70 の「packet は queued (未公開) のまま」は queue-state の表示で、
+  実際の状態とずれていた)。operator の判断 (2026-11-23) で、PR #35 を `dev` に merge してから直す。
+  層・nitinol・PostgreSQL・まとまり「受け入れ」・投稿の集約は ③ の受け口で使う。Follow の受付・
+  供給元の集約・Accept の配送・リレー用 inbox での Create の受け入れは、次の単位で外す。
+- **次の単位**: Emumet からの転送の受け口 (`POST /internal/v1/emumet/activities`)。D71 で転送の契約を
+  改める (v1 の revision か v2 か未決) ので、その形が決まってから packet にする。
 
 下の「将来 slice」は 2026-08-29 時点の目安で、順序はロードマップが新しい。
 
