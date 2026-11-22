@@ -1,8 +1,0 @@
-{
-  "schema_version": "1",
-  "scope": "execution-unit:emumet-post-relay-e2e",
-  "actor": "emumet-t1-worker",
-  "team": "emumet-main",
-  "claimed_at": "2026-11-22T05:25:30.977164+00:00",
-  "base_commit": "a7f128fc977100393dd199782bbed82090eb409e"
-}

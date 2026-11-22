@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-post-relay-e2e",
+  "actor": "emumet-t1-worker",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-22T14:11:58.7407051+00:00",
+  "reason": "T1 PR #130 (#128) merged and verified at 439f7470990afbb79f286824fd59bb2b413a943a; host closeout, recovered linkage, and required knowledge writebacks are committed and pushed.",
+  "displaced_holder": "emumet-t1-worker",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-22T05:25:30.977164+00:00",
+  "base_commit": "54e83efaaa1aac7f0a39ecaeb7c1385f827fd6ab"
+}
