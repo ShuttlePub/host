@@ -1,0 +1,73 @@
+implementation_issue_packet:
+  issue_title: "emumet-post-relay-e2e: End-to-end relay verification and operations alarms"
+  issue_kind: feature
+  source_execution_unit: emumet-post-relay-e2e
+  domain: emumet
+  target_repo: ShuttlePub/Emumet
+  target_path: "server/tests/e2e_post_relay.rs, server/tests/, scripts/, .github/workflows/, docs/post-relay-operations.md"
+  target_part: "Add the P1 post-relay real-Ory E2E harness, required failure/operations coverage, physical-capacity reporting source, release-image operator verification, and operating guidance."
+  dependencies:
+    - emumet-p1-relay-contract
+    - emumet-instance-identity
+    - emumet-home-link
+    - emumet-post-relay-storage
+    - emumet-post-relay-delivery
+    - emumet-profile-inbox-relay
+    - emumet-relay-ory-independent-runtime
+  technical_baseline:
+    - "Use the approved Emumet P1 implementation plan, third edition: §6.6, §8 T1 purpose/ownership/completion, §9, §10, and all of §11 including mandatory §11.1 cases 1-30 and §11.2."
+    - "Use final design constraints DC-01 through DC-19, especially DC-03/04/16/17/18/19. P1 trusts the configured Emumet sender's link_id and link_generation claims; the mock receiver must not implement a link-state ledger."
+    - "C0, K1, L1, Q1 and S1 are merged. I1 is PR #126 and B1 is issue #127, pending merge at packet creation. T1 support code may be prepared earlier, but run the acceptance suite only after I1 and B1 are integrated; inspect latest main and record its full base SHA."
+    - "Use real Kratos and Hydra for E2E authentication and link registration. Build the tested application/release image from source; do not depend on a published dev image, publish to GHCR, create image tags, or create a release."
+    - "T1 owns the physical-capacity information source used by test compose/E2E. Report the PostgreSQL data/WAL/tablespace volume or equivalent DB capacity measurement through the existing `server ... capacity report` operator subcommand at least every 30 seconds; the 90-second freshness limit is fail-closed. Never substitute free space in the Emumet container for DB physical capacity."
+    - "Verify the release-image operator subcommand while a normal delivery worker is running. Rotation E2E is excluded."
+    - "Do not modify `ory/hydra/hydra.yml`, earlier migrations, or parent host state from the child repository."
+  intent_references:
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+    - "Approved P1 implementation plan, third edition, thread-rd4012ty run run-01m7yc2nagh0z7g2jh14g6qb8x"
+    - "Final design constraints DC-01 through DC-19, thread-rd4012ty run run-01m7yd22411cm1n36mybvg0xcv"
+  intent_reference_paths:
+    - "intents/emumet/features/post-relay/overview.md"
+    - "intents/emumet/features/post-relay/acceptance.md"
+  acceptance_criteria:
+    - "T1-1 Run E2E authentication and link registration against real Kratos and Hydra, then exercise signed inbox receipt through delivery to a mock receiver."
+    - "T1-2 Cover every mandatory §11.1 case (1-30), including the real Ory, raw-byte, P1 no-link-state receiver, failure-injection, lifecycle, capacity, recovery and release-image cases."
+    - "T1-3 Supply physical PostgreSQL capacity to `server ... capacity report` from the compose/E2E environment at least every 30 seconds; prove the 90-second freshness boundary and fail-closed behavior when missing, stale or below threshold."
+    - "T1-4 Exercise the release-image operator command while a normal delivery worker is active, without publishing a dev image, GHCR artifact, tag or release; rotation E2E is not included."
+    - "T1-5 Verify §11.2 regressions, source-built E2E, environment-recorded performance/volume checks, and operational alerts/runbooks. Required DB checks may not be counted as passing when skipped."
+    - "T1-6 Preserve DC-01 through DC-19 and existing Profile delivery/authentication behavior; do not modify `ory/hydra/hydra.yml`."
+intent_placement:
+  primary_intent: intents/emumet/features/post-relay/overview.md
+  supporting_intents:
+    - intents/emumet/features/post-relay/acceptance.md
+  new_intent_needed: false
+  placement_rationale: "T1 verifies and operationalizes the approved post-relay P1 contract; it does not establish a separate feature."
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - intents/emumet/features/post-relay/acceptance.md
+    summary: "At closeout, record the actual T1 E2E cases, outcomes, capacity source/freshness behavior, alert and release-image evidence, and any verified gap without treating it as P1 production certification."
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - docs/post-relay-operations.md
+    summary: "Document the test/deployment physical-capacity supplier, 30-second reporting and 90-second freshness limit, alert triage and recovery; preserve measured versus unmeasured performance and image-test boundaries."
+closeout_learning:
+  expected: "Write back the exact mandatory E2E coverage, real Kratos/Hydra and source-built image results, capacity supplier and freshness/threshold behavior, alarm/recovery evidence, concurrent release-image operator result, performance environment/results, and any excluded or failed cases."
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/post-relay/acceptance.md
+    - docs/post-relay-operations.md
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
