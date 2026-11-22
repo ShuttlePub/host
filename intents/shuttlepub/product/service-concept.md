@@ -12,6 +12,8 @@ Emumet・Booskiff の mission はここを参照する。
 ShuttlePub の問題領域を「Producer から送られた Activity を元にタイムラインを構築すること」と
 定めた。下の「コミュニティ TL」は Local TL と呼ぶ (D45)。外から届いたただの Note は
 Global TL に流す方針。
+2026-11-22 追記 (D69): Local TL に並ぶのはこの ShuttlePub から投稿されたものだけ。外部から届いた
+返信は Local TL に足さず、公開なら Global TL に入る。
 
 ## 一文で
 

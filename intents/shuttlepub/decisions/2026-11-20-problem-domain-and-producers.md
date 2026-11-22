@@ -42,6 +42,11 @@ D49 への補足 (2026-11-20、operator): AppHandler にストアの型引数を
 D50 への補足 (2026-11-20、operator): `port` には抽象 (trait と `DependOn*`) だけを置き、
 具象実装はすべて driver にまとめる。以後の packet と task の本文に明記する。
 
+D45 への補足 (2026-11-22): 「cc 付き、つまり返信などは、文脈を保つために Local TL に流してよい」は
+D69 ([2026-11-22-timeline-routing.md](2026-11-22-timeline-routing.md)) で置き換えた。Local TL に
+並ぶのはこの ShuttlePub から投稿されたものだけで、外部から届いた返信は足さない。Global TL は
+受け取った公開投稿をまとめて見せる。
+
 ## KJ法で得たまとまり (2026-11-20 時点、D47)
 
 | まとまり | 入れた出来事 | 集約・射影の候補 |
