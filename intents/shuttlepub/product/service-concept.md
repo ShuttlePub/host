@@ -14,6 +14,11 @@ ShuttlePub の問題領域を「Producer から送られた Activity を元に�
 Global TL に流す方針。
 2026-11-22 追記 (D69): Local TL に並ぶのはこの ShuttlePub から投稿されたものだけ。外部から届いた
 返信は Local TL に足さず、公開なら Global TL に入る。
+2026-11-22 追記 (D71、decisions/2026-11-22-shared-inbox-and-link-permissions.md): 下の「ホームは 1 つ」と
+「link と信頼モード」の表は改めた。「ホーム」という言葉は使わず (ホーム TL は固有名詞として残す)、
+信頼モード ①②③ の段階を、署名・受け取り (外部の Activity の転送)・コレクション (outbox の参照先と
+ダイレクトの転送先、Profile ごとに 1 つ) の別々の許可にした。Emumet は Shared Inbox を持ち、送り先の
+ShuttlePub ごとに本体 1 件と宛先の Profile 一覧をまとめて転送する。
 
 ## 一文で
 

@@ -68,3 +68,5 @@ Emumet・Booskiff と合わせて動かすための前提 (ロードマップの
 - **emumet C2 / C3**: 再開条件 (ShuttlePub 本体の構想が立つこと) を満たしたので、
   方向を D30・D31 で確定した。詳細 (envelope の形、ダイレクトの振り分けなど) は
   post-relay / shuttlepub-link の実行単位の設計で決める。
+
+D26・D31 への補足 (2026-11-22): D71 ([2026-11-22-shared-inbox-and-link-permissions.md](2026-11-22-shared-inbox-and-link-permissions.md)) で、信頼モード ①②③ の段階をやめ、署名・受け取り・コレクションの別々の許可にした。「ホーム」という言葉は使わない (ホーム TL は固有名詞として残す)。

@@ -68,3 +68,13 @@ shuttlepub domain の decisions/2026-11-18-service-concept-and-cross-service-p0.
 
 - [features/post-relay](../features/post-relay/overview.md)
 - [interview 2026-07-22](../interview/2026-07-22-initial-shaping.md)
+
+## Amended 2026-11-22: link の許可を分ける
+
+shuttlepub domain の decisions/2026-11-22-shared-inbox-and-link-permissions.md (D71) による追記。
+
+- 上の 2026-11-18 追記の信頼モード ①②③ (段階) をやめ、署名・受け取り (外部の Activity の転送)・
+  コレクション (outbox の参照先とダイレクトの転送先) を別々の許可にする。コレクションは Profile ごとに
+  1 つの ShuttlePub だけが持てる。「ホームの link」「参加の link」という言い方はやめる。
+- link を解除しても、ID の名前空間と透過プロキシは続ける (止めるのは署名と転送)。
+- Emumet は Shared Inbox を公開し、Profile ごとの inbox も残す。

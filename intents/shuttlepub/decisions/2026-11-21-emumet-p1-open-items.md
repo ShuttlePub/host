@@ -113,3 +113,5 @@ I1 を実装したレーンが既定オフを追加し、親が確認しない�
   [acceptance](../../emumet/features/post-relay/acceptance.md) の I1 の記述に、D68 を参照する追記を加えた (過去の記録は書き換えていない)。
 
 Emumet・ShuttlePub のコードリポジトリ内の文書 (`docs/post-relay-inbox-intake.md` など) と I1 の PR 説明にある「安全弁」の説明の訂正は、この記録の対象外で、別に指示する。
+
+D54・D55・D56・D66 への補足 (2026-11-22): D71 ([2026-11-22-shared-inbox-and-link-permissions.md](2026-11-22-shared-inbox-and-link-permissions.md)) で、転送を「送り先の ShuttlePub ごとに本体 1 件と宛先一覧 (Profile の actor URL だけ)」に改め (P1 のうちに契約を改める)、link の信頼モードを署名・受け取り・コレクションの別々の許可に置き換えた。D55 の P2 の確認事項には「受け取りを許可されたら、その Profile 宛ての転送はすべて対象」と答えた。
