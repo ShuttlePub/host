@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-22T01:30:51.9556188+00:00",
+  "updated_at": "2026-11-22T05:18:13.4378716+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -2038,7 +2038,7 @@
     {
       "execution_unit": "emumet-relay-ory-independent-runtime",
       "title": "emumet-relay-ory-independent-runtime: Ory-independent relay runtime and bounded shutdown",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "emumet-instance-identity",
         "emumet-login-consent-boundary",
@@ -2057,6 +2057,7 @@
         "number": 127,
         "url": "https://github.com/ShuttlePub/Emumet/issues/127"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/129",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
