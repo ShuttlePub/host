@@ -96,3 +96,27 @@ T1 の監視統合や実 TLS/本番 SLO の認定ではない。詳細条件と�
   benchmark は別途明示実行、最終承認 head の CI は 21 件すべて SUCCESS。再レビュー must なし。
 - [x] PR は MERGED、issue #123 は CLOSED、host queue/runs は `completed`、linkage は CLI で PR #125 に回復。
   host に child submodule / .gitmodules はなく pointer sync は該当しない (closeout-plan の既定候補パスを作成しない)。
+
+## I1 — Profile inbox relay intake 完了根拠 (2026-11-22)
+
+対象は [Emumet PR #126](https://github.com/ShuttlePub/Emumet/pull/126)、再レビュー承認 head
+`7a273a25a2a5c0cdeacc0253788a8d48a7552f3b`、S1 上 rebase 後の最終 head
+`cb1494841e7cf16ba5d632148ea269bb29d1c671`、squash `b054788aa253ad99ea3c49c12f239e9baf5bba1c`。
+これは受付経路の実装完了であり、`POST_RELAY_INBOX_ENABLED` の有効化・T1 の監視供給・実 TLS/本番 SLO の認定ではない。
+詳細は [decisions.md](decisions.md) の I1 結果。
+
+- [x] `POST_RELAY_INBOX_ENABLED` 既定 false、`true` のみ有効、不正値/非正規 origin は起動失敗。off では job/未リンク集計を作らず
+  既存 Follow・early-Undo 防御は継続。off は新規受付のみ停止で S1 の緊急停止ではない。
+- [x] 1 MiB 本文/2048 target/MIME、生 byte の署名検証 (検証結果の key/owner を使用)、重複 key・深さ・node 上限を実装。
+  C0 fixture 全件で production reader/evidence builder を検証 (`post_relay_contract`)。
+- [x] D63: Follow/Block 除外、Undo/Accept/Reject は全参照が確実な Follow/Block のときだけ除外、欠落/空/混在/不明は全文転送。
+  guard marker 非証拠 (`observed_relation`、populated backfill 試験)、Duplicate は転送を抑止しない。
+- [x] 転送 2048 / 旧関係 1024 の分離: 1025–2048 ID は envelope に保持、>2048 は null、旧関係変更は skip、実検証 owner を維持。
+  外側 Undo ID が長い場合も guard を同 transaction で残す。DB 制約/index は無変更。
+- [x] 1 Q1 transaction の原子性 (receipt/guard 後の SQL 障害で全 rollback、過負荷・最後の quota slot・同一 hour bucket 競合)、
+  202 は commit 後。`profile_relay_tests` を含む workspace を DATABASE_URL 付きで skip なしに実行。
+- [x] 受付計測: 4,096 件 202、429/503 なし、202 p99 ≤140.22 ms、RSS ≤51.2 MiB、intake pool ≤4。bounded probe であり SLO ではない。
+- [x] rebase 後 (S1 e26fced 上) の fmt、workspace/all-targets clippy (`-D warnings`)、openapi.json 再生成 (差分なし)、
+  新鮮な PostgreSQL DB の `cargo test --workspace` は失敗 0 (application 374、driver 474、kernel 277、server 281 ほか)、CI 19 件すべて SUCCESS。
+  migration 順序は S1 `20261122000400` → I1 `20261122000500`。
+- [x] PR は MERGED、issue #124 は CLOSED、host queue/runs は `completed`、linkage は CLI で PR #126 に回復。

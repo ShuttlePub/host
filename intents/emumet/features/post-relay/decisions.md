@@ -163,3 +163,50 @@
   operations の監視説明だけで新しい wait 内訳を代用せず、この追加文書も参照する。
   guide_reachability 宣言の抽象的な recovery subcommand は実際には `server post-relay --help` であり、
   実行して preview/redeliver/discard/status と operations 文書への経路を確認した。
+
+### 2026-11-22: I1 Profile inbox relay intake の実装結果と closeout
+
+- 根拠: [Emumet PR #126](https://github.com/ShuttlePub/Emumet/pull/126)、独立再レビュー承認 head
+  `7a273a25a2a5c0cdeacc0253788a8d48a7552f3b` (must なし)、S1 (squash `e26fcede`) の上へ
+  rebase した最終 head `cb1494841e7cf16ba5d632148ea269bb29d1c671`、squash
+  `b054788aa253ad99ea3c49c12f239e9baf5bba1c`。rebase は docs/DI/観測 tracing の機械的統合のみで
+  I1/S1 のロジックは変更していない (下記「docs 実記録先」参照)。merge 直前 CI は 19/19 SUCCESS。
+  S1 の処理量計測は目標すべて達成済みで、S1 merge 後の merge はユーザー包括許可
+  (question-2b6c8e26aadec7ce5067c6f25433c6a6) による。**merge は inbox 転送の有効化ではない。**
+- **有効化 gate**: `POST_RELAY_INBOX_ENABLED` は既定 false。リテラル `true` のみ有効、他の値は起動失敗。
+  有効化には正規化済み HTTPS `PUBLIC_BASE_URL` origin が必須。未設定のまま誤って先行 deploy しても
+  転送 job も未リンク集計も作られず、既存 Follow 処理と early-Undo 防御は継続する。false への切替は
+  新規受付のみに効き、受理済み job/再試行/承認済み送信は止めない (S1 の緊急停止ではない)。
+  有効化前に additive migration 適用、S1 配送/maintenance の deploy、DB ボリュームの最新容量 sample、
+  `POST_RELAY_ALLOWED_ORIGINS`、instance 鍵、owner 承認済み home link を揃える。有効化自体は別の deploy 判断。
+- **URL 上限の分離 (転送 2048 / 旧関係 1024)**: 転送契約の actor・Activity ID・鍵 ID・実検証 owner は URL_MAX=2048。
+  旧 social-graph の型/DB 制約は 1024 byte のまま変更しない。1024 超は旧関係の変更/receipt を行わずに転送だけ継続し
+  (400 にも他人名義の関係作成にもしない)、1025–2048 の Activity ID は envelope でそのまま、2048 超は null。
+  envelope の owner は常に実検証 owner (body actor へ置換しない)。外側 Undo ID が旧 receipt に収まらない場合も
+  内側 Follow 参照を捨てず、外側 receipt だけ省略して同一 Q1 transaction で receiver-scoped early-Undo guard を残す。
+- **既知参照の判定 (D63)**: Follow/Block 自体は転送除外。Undo/Accept/Reject は非空の参照が**すべて**
+  埋め込みまたは保存済みの Follow/Block と確実に分かるときだけ除外し、欠落/空/混在/不明は本文全体を転送。
+  保存済み証拠は受信 Profile + Activity ID を signer 横断で引き、他 signer に関係変更権限は与えない。
+  guard marker は証拠ではない: 既存 relation receipt に `observed_relation` を追加 (migration
+  `20261122000500`, additive・backfill 付き)、実際に認証済み Follow/Block を受けたときだけ立て、元 type
+  UndoFollow のまま purge/復活しない。既存の自ローカル Follow generation も確実な参照。Duplicate は関係変更を
+  抑止するだけで転送受付は抑止しない。再送で別 receipt/envelope になり得る (at-least-once)。
+- **受付の原子性**: 1 MiB 本文/2048 target/MIME 検査 → 生 byte に対する署名検証 (その検証が返した key/owner/
+  scheme/time を使い 2 回目の鍵取得なし) → 重複 key・深さ32・node 10万拒否 → Q1 の 1 transaction で
+  Account/Profile/関係/link gate・owner 再確認・quota/rate 予約・不変 job bytes または body なし hourly 集計。
+  失敗/過負荷は全 rollback、202 は commit 後。独立 intake pool (最大4、lazy、同 DB、migration 再実行なし)で
+  共有 API/projector pool の余力を守る。envelope は生 byte の Base64 を再 serialize せず 1 回だけ生成し S1 が同 bytes を使う。
+- **受付計測**: Ryzen 9 7900、receiver と PostgreSQL 17 (fsync/synchronous_commit/full_page_writes on) を
+  同じ論理 4 CPU に固定、release、本番 Axum handler・実 RSA 検証・実 PostgreSQL、1024 件/条件、16 件 burst/160 ms
+  (100 req/s 提示)、48 KiB 本文 (envelope 約 66 KiB)、{リンク/未リンク}×{1/8 Profile}。4,096 件すべて 202、
+  429/503 なし、予約整合は各条件後 true。202 p99 は 43.72/140.22/55.99/45.42 ms (未リンク1/未リンク8/リンク1/リンク8)、
+  p95 は 32.88/51.05/47.21/37.61 ms、CPU 1.72–1.95 s、RSS peak 48.9–51.2 MiB、intake pool 使用は上限 4。
+  限界: 各条件約 10 秒、cgroup 8 GiB/4 vCPU VM ではない、TCP/TLS/遠隔鍵取得なし (鍵は fixture cache)、
+  最大 throughput・最大本文・10 分継続・長時間 RSS・WAL/vacuum は未測定、本番 SLO ではない。lock wait は
+  約 10 ms sampling で完全な lock 時間ではなく、tx begin 計測は pool 待ち+BEGIN の上界。
+- **docs 実記録先**: packet 宣言の `docs/post-relay-operations.md` は S1 が先に同名で作成したため、I1 の受付境界/
+  gate/URL 分離は同じ merge で新規 `docs/post-relay-inbox-intake.md` に置き、計測は
+  `docs/post-relay-intake-measurement.md`。S1 の operations 文書は変更しない。rebase 時の追加差分は
+  intake 文書の「S1 merge 前は merge/有効化しない」注意を「S1 merge 済み・有効化は別判断」に更新したことと
+  measurement 文書内の参照名の修正、`driver` の `Transaction::begin` 後への debug tracing (`transaction_begin_us`、
+  S1 の connection_wait 計測と併存) の統合のみ。packet 自体は書き換えない。
