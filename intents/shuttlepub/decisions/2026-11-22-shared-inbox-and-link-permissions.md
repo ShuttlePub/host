@@ -89,6 +89,21 @@ ShuttlePub の体験面を話す中で、Emumet が外部の Activity をどこ�
 - 振り分けは Emumet が `to` / `cc` に Public があるかで行う (宛先の割り出し (2) と同じ場所)。
 - 未決の「複数のサーバーへ届くことの見せ方」で問題になるのは、c2 を許可したサーバーだけになる。
 
+## 補足: 許可の名前 (2026-11-22、暫定)
+
+b・c・c2・d という呼び方をやめ、`<resource>:<権限名>` の形で呼ぶ。区切りは `.` (`:` を 2 段にしない)。
+OAuth の scope は仕様に合わせて別に決めたいので、この名前は暫定とする。既存の link capability の scope
+`sign:post` (ADR 0003、Emumet の post-relay・shuttlepub-link の要件) は、scope を決めるまで変えない。
+
+| この文書の呼び方 | 名前 (暫定) | 内容 |
+|---|---|---|
+| b | `emumet:sign` | 署名 |
+| c | `emumet:receive.inbox` | 受け取り (公開・未収載) |
+| c2 | `emumet:receive.inbox.private` | 受け取り (非公開、任意。`emumet:receive.inbox` が前提) |
+| d | `emumet:forward.outbox` | コレクション (outbox の参照先とダイレクトの転送先。Profile ごとに 1 つ、`emumet:sign` が前提) |
+
+上の本文と補足の b・c・c2・d は、この表の名前に読み替える。
+
 ## 過去の決定との関係
 
 - **D26** (ホーム): 「ホーム」の言葉をやめる (7)。ホーム TL を作るのは c を許可されたサーバー、自分宛ての
