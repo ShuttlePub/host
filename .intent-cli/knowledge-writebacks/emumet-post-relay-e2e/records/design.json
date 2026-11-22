@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "emumet-post-relay-e2e",
+  "role": "design",
+  "host_commit": "d0f9de735bd003c3d3e475f4af908071dc7b9f7f",
+  "recorded_at": "2026-11-22T14:11:14.3153486+00:00",
+  "targets": [
+    "intents/emumet/features/post-relay/acceptance.md",
+    "docs/post-relay-operations.md"
+  ],
+  "note": "T1 intent_tree/closeout_learning recorded in acceptance.md; required child operations guide exists in merged Emumet PR #130 at 439f7470990afbb79f286824fd59bb2b413a943a. Coverage includes \u00A711.1 30 cases, real Ory/source-built local release image, capacity supplier and refusal-reason alarms, \u00A711.2 measurements/limits, unplanned additions, and remaining issues."
+}

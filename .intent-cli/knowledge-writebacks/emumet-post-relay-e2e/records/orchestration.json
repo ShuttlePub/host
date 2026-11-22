@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "emumet-post-relay-e2e",
+  "role": "orchestration",
+  "host_commit": "d2e03a4c0e69f7ea423d322773780cbbca842ffc",
+  "recorded_at": "2026-11-22T14:11:14.4698195+00:00",
+  "targets": [
+    ".intent-cli/queue-state.json",
+    ".intent-cli/runs.jsonl"
+  ],
+  "note": "PR #130 is verified MERGED as 439f7470990afbb79f286824fd59bb2b413a943a, origin/main matched; closeout set queue completed and issue #128 closed; linked_pr recovered to PR #130 via GitHub closing reference. Claim release remains the final attributed boundary."
+}
