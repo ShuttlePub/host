@@ -1,0 +1,13 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "emumet-relay-ory-independent-runtime",
+  "role": "design",
+  "host_commit": "5cccfee2a133bef828423a1a52088a6b301ed5c1",
+  "recorded_at": "2026-11-22T05:22:48.3617046+00:00",
+  "targets": [
+    "intents/emumet/features/post-relay/decisions.md",
+    "intents/emumet/features/post-relay/acceptance.md",
+    "docs/post-relay-operations.md"
+  ],
+  "note": "B1 intent_tree and closeout_learning recorded, including finite asynchronous JWKS, fail-closed cached/uncached auth, startup order, single absolute drain/runtime teardown deadline, measured DNS regression, lease recovery, and explicitly reported implementation specifics. Required docs are in merged child 5b0b7b53718cb5181e903efb46515404e2346fe9, not a host docs path. Packet declarations normalized without changing values."
+}

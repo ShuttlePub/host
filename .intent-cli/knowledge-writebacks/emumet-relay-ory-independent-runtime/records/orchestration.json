@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "emumet-relay-ory-independent-runtime",
+  "role": "orchestration",
+  "host_commit": "bea8f7e48802ed84aa2070c35b7878f3af505356",
+  "recorded_at": "2026-11-22T05:22:48.5148166+00:00",
+  "targets": [
+    ".intent-cli/queue-state.json",
+    ".intent-cli/runs.jsonl"
+  ],
+  "note": "Verified PR129 MERGED as 5b0b7b53718cb5181e903efb46515404e2346fe9 and origin/main exact match after independent re-review and all 21 CI checks successful. Recorded completed queue/runs and linked_pr recovery to PR129/issue127. Design evidence is recorded separately; claim release is the final boundary."
+}
