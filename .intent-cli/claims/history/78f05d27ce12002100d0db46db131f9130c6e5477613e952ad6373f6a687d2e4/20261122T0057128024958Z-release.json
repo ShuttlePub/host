@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-post-relay-e2e",
+  "actor": "codex",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-22T00:57:12.8024958+00:00",
+  "reason": "hand off after publish",
+  "displaced_holder": "codex",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-22T00:47:15.9377006+00:00",
+  "base_commit": "78eaaf600efa4179da738f529bdfff032b53c5b4"
+}
