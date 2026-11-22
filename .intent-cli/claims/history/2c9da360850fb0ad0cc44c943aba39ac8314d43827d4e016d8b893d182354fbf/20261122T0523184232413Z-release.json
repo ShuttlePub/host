@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "operation": "release",
+  "scope": "execution-unit:emumet-relay-ory-independent-runtime",
+  "actor": "codex-b1-runtime",
+  "team": "emumet-main",
+  "recorded_at": "2026-11-22T05:23:18.4232413+00:00",
+  "reason": "B1 PR #129 merged after independent approval and green CI; host closeout and required design/orchestration knowledge evidence committed and pushed",
+  "displaced_holder": "codex-b1-runtime",
+  "displaced_team": "emumet-main",
+  "displaced_claimed_at": "2026-11-22T01:34:19.2184164+00:00",
+  "base_commit": "37c3998382661f322b12ea6a5d2771e6fd495c9e"
+}
