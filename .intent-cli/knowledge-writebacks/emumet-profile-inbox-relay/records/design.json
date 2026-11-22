@@ -1,0 +1,13 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "emumet-profile-inbox-relay",
+  "role": "design",
+  "host_commit": "2cf2029b8bebf34202eaef5bc7dd850d99d9b069",
+  "recorded_at": "2026-11-22T01:32:09.967802+00:00",
+  "targets": [
+    "intents/emumet/features/post-relay/decisions.md",
+    "intents/emumet/features/post-relay/acceptance.md",
+    "docs/post-relay-inbox-intake.md"
+  ],
+  "note": "I1 intent_tree and closeout_learning written back. Declared docs/post-relay-operations.md already existed from S1 (e26fcede); I1 docs actually live in the merged Emumet repo at b054788aa253ad99ea3c49c12f239e9baf5bba1c as docs/post-relay-inbox-intake.md and docs/post-relay-intake-measurement.md (not host paths). No packet/target/limit change."
+}
