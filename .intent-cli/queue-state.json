@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated_at": "2026-11-22T05:18:13.4378716+00:00",
+  "updated_at": "2026-11-22T14:02:45.4239607+00:00",
   "items": [
     {
       "execution_unit": "unfollow-api",
@@ -2066,7 +2066,7 @@
     {
       "execution_unit": "emumet-post-relay-e2e",
       "title": "emumet-post-relay-e2e: End-to-end relay verification and operations alarms",
-      "state": "queued",
+      "state": "completed",
       "dependencies": [
         "emumet-p1-relay-contract",
         "emumet-instance-identity",
@@ -2088,6 +2088,7 @@
         "number": 128,
         "url": "https://github.com/ShuttlePub/Emumet/issues/128"
       },
+      "linked_pr": "https://github.com/ShuttlePub/Emumet/pull/130",
       "worker_role": "implementation",
       "review_role": "review",
       "priority": "high",
