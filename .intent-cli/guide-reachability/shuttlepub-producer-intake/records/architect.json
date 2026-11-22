@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "shuttlepub-producer-intake",
+  "role": "architect",
+  "host_commit": "a34ea207ac9595ff85c813aaf7c717cf37a3b93e",
+  "recorded_at": "2026-11-22T16:20:49.0625057+00:00",
+  "guide_surfaces": [
+    "guide workflow task implementation-loop"
+  ],
+  "roles": [
+    "implementation"
+  ],
+  "note": null
+}
