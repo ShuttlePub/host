@@ -120,3 +120,8 @@ T1 の監視統合や実 TLS/本番 SLO の認定ではない。詳細条件と�
   新鮮な PostgreSQL DB の `cargo test --workspace` は失敗 0 (application 374、driver 474、kernel 277、server 281 ほか)、CI 19 件すべて SUCCESS。
   migration 順序は S1 `20261122000400` → I1 `20261122000500`。
 - [x] PR は MERGED、issue #124 は CLOSED、host queue/runs は `completed`、linkage は CLI で PR #126 に回復。
+
+> 2026-11-22 訂正注記 (D68): 上の I1 の `POST_RELAY_INBOX_ENABLED` 既定 false は「運用上の安全弁」ではなく、
+> 転送先の ShuttlePub の受け口がまだないための措置である。オンにする条件と時期 (初回リリース時に受け口がそろっていればその時点、
+> そろっていなければ受け口の完成時) は [D68](../../../shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md) を参照。
+> 有効化は T1 までの未達事項ではなく、ShuttlePub の受け口の完了条件と Emumet の初回リリースの完了条件に入っている。

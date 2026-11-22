@@ -210,3 +210,18 @@
   intake 文書の「S1 merge 前は merge/有効化しない」注意を「S1 merge 済み・有効化は別判断」に更新したことと
   measurement 文書内の参照名の修正、`driver` の `Transaction::begin` 後への debug tracing (`transaction_begin_us`、
   S1 の connection_wait 計測と併存) の統合のみ。packet 自体は書き換えない。
+
+### 2026-11-22: `POST_RELAY_INBOX_ENABLED` が既定オフである理由の訂正と、オンにする時期 (D68)
+
+上の I1 結果の「有効化 gate」の節は、`POST_RELAY_INBOX_ENABLED` を誤った先行 deploy への備えとして読める。
+I1 の PR 説明などにあった「運用上の安全弁」という説明は誤りだったので訂正する (上の記録は書き換えない)。
+正しくは [D68](../../../shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md) のとおり:
+
+- 既定オフの理由は、転送先の ShuttlePub の受け口 (`POST /internal/v1/emumet/activities`) がまだないこと。
+  オンにしても送信が失敗し、隔離に溜まるだけになる。
+- 計画で決めていたのは「S1 より前に I1 をマージ・有効化しない」という順番だけで、既定オフは計画になく、
+  I1 のレーンが追加したものを親が確認しないまま受け入れていた。
+- オンにする条件: ShuttlePub の受け口の実装とデプロイ、準備 (HTTPS の `PUBLIC_BASE_URL`、サーバー鍵、許可 origin、
+  承認済みのホームの link、容量の確認)、連合 E2E が通っていること。
+- オンにする時期: Emumet の初回リリースの時点で受け口がそろっていればその時点。そろっていなければ受け口の完成時。
+  どちらの場合も、ShuttlePub の受け口の完了条件と Emumet の初回リリース (`emumet-first-release`) の完了条件に入れてある。

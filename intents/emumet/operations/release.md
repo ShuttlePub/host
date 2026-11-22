@@ -22,6 +22,10 @@ state that the child repo cannot know.
 ## Not done / pending (each needs the user's explicit approval)
 
 1. Push the first `v*` tag (runs `release.yml`: validate → gate → build → publish/verify → release).
+   (2026-11-22, D68: at this release, either set Emumet's `POST_RELAY_INBOX_ENABLED=true` if ShuttlePub's
+   forwarding receiver is in place, or state in the release notes that it stays off and why. See
+   `intents/emumet/packets/backlog.md` `emumet-first-release` and
+   `intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md` D68.)
 2. Change the new GHCR package from private to public, then verify an anonymous pull by tag and digest.
 
 ## Facts and unobserved behaviour

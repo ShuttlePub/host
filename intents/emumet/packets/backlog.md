@@ -161,6 +161,26 @@ packet 起こしは `architecture-foundation` から。
 - **問題**: 復元できる Profile・鍵は期限なく残る一方、復元できないフォロー関係などは退会時に即時削除される。
 - **検討する論点**: 猶予期間の長さ、猶予中の連合での見え方（404 / 410）と Delete(Actor) の送信時点、猶予中に関係を保持して reactivate 時に戻すか、期限後に完全削除する対象（鍵・イベント・メディア・Kratos identity）、イベントソーシングでの完全削除方法。P1 では退会イベントでホームの link を解除し自動では復活させない方針のため、post-relay の隔離データとの整合も確認する（P1 の link 契約: `intents/shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md:35`、転送 envelope: 同 `:33`）。
 
+## 初回リリース (publish 対象外の運用作業)
+
+### `emumet-first-release`
+
+- **状態**: 未着手。`emumet-release-container` (#110、完了) が作ったリリース機構を使い、初めて `v*` タグを push する作業。
+  タグの push と GHCR の公開範囲の変更は、それぞれユーザーの明示許可が要る ([operations/release.md](../operations/release.md) の「Not done / pending」)。
+  packet は作らない (Emumet のコード変更を伴わない運用作業のため)。コード変更が必要になったら別の packet にする。
+- **範囲**: 初回の `v*` タグ (CalVer) の push と GHCR への公開、GHCR パッケージの公開範囲の変更と匿名 pull の確認、
+  D53 の `dev` ブランチ新設と dev イメージ公開の開始 (初回リリースと同時)。
+- **完了条件 (D68 を含む)**:
+  - 上の範囲の作業が、ユーザーの明示許可のもとで行われ、結果が [operations/release.md](../operations/release.md) に記録されている。
+  - **`POST_RELAY_INBOX_ENABLED` の扱い (D68、[決定](../../shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md))**:
+    リリースの時点で ShuttlePub の転送の受け口がそろっていれば、`POST_RELAY_INBOX_ENABLED=true` にする
+    (オンにする条件: 受け口の実装とデプロイ、`PUBLIC_BASE_URL`・サーバー鍵・許可 origin・承認済みのホームの link・容量の確認、
+    連合 E2E が通っていること)。そろっていなければ、`POST_RELAY_INBOX_ENABLED` がオフのままであることと、その理由
+    (ShuttlePub の受け口がまだなく、オンにしても送信が失敗して隔離に溜まるだけになる) を、リリースノート
+    (GitHub Release の本文) に書く。どちらの場合も、この項目の完了時にどちらだったかを記録する。
+    オフのまま出した場合は、受け口の完了時にオンにする作業が roadmap の「転送の受け口」の完了条件に残る。
+- **依存**: `emumet-release-container` (完了)。D68 の判断には、ShuttlePub の転送の受け口 (roadmap P1) の状況の確認が要る。
+
 ## Deferred(open question 解消が先)
 
 | feature | ブロッカー |

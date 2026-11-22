@@ -79,3 +79,37 @@ Emumet の P1 実装計画 (C0・K1・L1・Q1・S1・I1・A1・B1・T1 の 9 単
 
 - **退会後の猶予期間と物理削除** (ユーザー決定⑥): 別の課題として `intents/emumet/packets/backlog.md` に残している。link の失効は猶予や物理削除を待たない (D65)。
 - **K2** (instance 鍵のローテーション・失効の操作)、P2 の link 状態同期、DCR、dev イメージ公開。
+
+## 追記 (2026-11-22): Emumet の `POST_RELAY_INBOX_ENABLED` の扱い (D68)
+
+I1 ([Emumet PR #126](https://github.com/ShuttlePub/Emumet/pull/126)) が追加した `POST_RELAY_INBOX_ENABLED` (既定オフ) について、
+operator が 2026-11-22 に決めたこと。operator が選んだのは「既定オフのまま残し、理由を正しく書き直し、オンにする時期を決定として記録する」(案 A)。
+
+| # | 決定 | 内容 | 根拠 | 状態 |
+|---|------|------|------|------|
+| D68 | Emumet の `POST_RELAY_INBOX_ENABLED` は既定オフのまま、ShuttlePub の受け口がそろったらオンにする | Emumet の `POST_RELAY_INBOX_ENABLED` は既定オフ (未設定なら false) のままとする。**オフにしている理由は、転送先の ShuttlePub 側の受け口 (`POST /internal/v1/emumet/activities` の受信・検証・重複除去・保存) がまだないこと。** オンにしても送信が失敗し、隔離に溜まるだけになる。「運用上の安全弁」ではない。I1 のときの「安全弁」という説明は誤りだったので、ここで訂正する。**オンにする条件**は次のすべてがそろうこと: (1) ShuttlePub 側の受け口が実装され、デプロイされている。(2) 次の準備ができている: HTTPS の `PUBLIC_BASE_URL`、サーバー鍵、転送先として許可する origin、承認済みのホームの link、容量の確認 (詳しくは Emumet の `docs/post-relay-inbox-intake.md`)。(3) 両者をつないだ連合 E2E が通っている。**オンにする時期**: Emumet の初回リリースの時点で受け口がそろっていれば、その時点でオンにする。そろっていなければ、受け口が完成したときにオンにする。どちらの場合も、オンにする作業は「ShuttlePub の受け口の完了」と「Emumet の初回リリース」の両方の完了条件に入れる (下の「完了条件に入れた場所」)。 | ユーザー決定 (2026-11-22、案 A)、D51・D54・D64、I1 (PR #126) | 確定 |
+
+### 設定の詳細
+
+- 環境変数で、起動時にだけ読まれる (Emumet `server/src/handler.rs:122-127`)。
+- 送信側の `POST_RELAY_SENDER_ENABLED` (既定はオン) とは別のスイッチである。
+- オフの間は、Create・Like・Announce などに 202 を返し、転送せずに捨てる。
+
+### 経緯
+
+計画 (P1 実装計画 第 3 版) で決めていたのは「S1 より前に I1 をマージ・有効化しない」という順番だけで、既定をオフにすることは計画になかった。
+I1 を実装したレーンが既定オフを追加し、親が確認しないまま受け入れていた。operator が 2026-11-22 にこれに気づき、案 A を選んだ。
+このため、オフにしている理由の記述を「受け口がまだないから」に直し、オンにする作業が誰の完了条件にも入っていなかった点を、下の場所に入れて塞いだ。
+
+### 完了条件に入れた場所 (対応漏れの防止)
+
+- **ShuttlePub の受け口**: [roadmap](../packets/roadmap-2026-11-18.md) の P1「[SP] 転送の受け口」に完了条件として追記した。
+  ShuttlePub 側に受け口の packet はまだなく、ShuttlePub の backlog も存在しないため、roadmap の該当項目を正本にした。
+  packet 化するときは、この完了条件を acceptance criteria にそのまま写す。
+- **Emumet の初回リリース**: [Emumet backlog](../../emumet/packets/backlog.md) に項目 `emumet-first-release` (publish 対象外の運用作業) を新設して追記した。
+  [release 運用の記録](../../emumet/operations/release.md) の「Not done / pending」にも参照を加えた。
+- **連合 E2E**: roadmap の P1「[新 repo] 連合 E2E」に D68 への参照を加えた (オンにする条件 (3) を満たす項目)。
+- **Emumet 側の記述の訂正注記**: [post-relay の decisions](../../emumet/features/post-relay/decisions.md) と
+  [acceptance](../../emumet/features/post-relay/acceptance.md) の I1 の記述に、D68 を参照する追記を加えた (過去の記録は書き換えていない)。
+
+Emumet・ShuttlePub のコードリポジトリ内の文書 (`docs/post-relay-inbox-intake.md` など) と I1 の PR 説明にある「安全弁」の説明の訂正は、この記録の対象外で、別に指示する。
