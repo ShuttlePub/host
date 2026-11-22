@@ -47,6 +47,10 @@ D69 ([2026-11-22-timeline-routing.md](2026-11-22-timeline-routing.md)) で置き
 並ぶのはこの ShuttlePub から投稿されたものだけで、外部から届いた返信は足さない。Global TL は
 受け取った公開投稿をまとめて見せる。
 
+D43 ②・D44・D48 への補足 (2026-11-22): D70 ([2026-11-22-initial-scope-without-relay.md](2026-11-22-initial-scope-without-relay.md))
+で、Producer ② (取り込み) とリレーの再配信を初期の範囲から外し、P1 の最初の実行単位を ③ の転送の受け口に改めた。
+Global TL は初期から ③ で転送された公開投稿で構成する。
+
 ## KJ法で得たまとまり (2026-11-20 時点、D47)
 
 | まとまり | 入れた出来事 | 集約・射影の候補 |

@@ -36,3 +36,6 @@ G は kernel の口として置く。現在の `kernel::entities` / `kernel::int
 - **D16** (4 crate の層): 維持。D20 は層の中の分け方を定める。
 - **D13** (リレーサーバーとしての振る舞いは本体): D21 はその実装順を定める。
 - 2026-11-15 の「未決」のうち「永続化先」は D22 で解消。
+
+D21 への補足 (2026-11-22): D70 ([2026-11-22-initial-scope-without-relay.md](2026-11-22-initial-scope-without-relay.md)) で置き換えた。
+リレーサーバーとしての機能は初期の範囲に含めず、P1 は Emumet からの転送 (Producer ③) の受け口から始める。
