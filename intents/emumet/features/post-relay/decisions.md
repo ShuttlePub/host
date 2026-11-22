@@ -99,3 +99,67 @@
   schema/freshness の要求が記録されており、closeout 時の design 確認で同等内容の記録先として認めた。
   宣言パスとの差は証跡に残す。計画 §10.1 の `docs/post-relay-operations.md` は S1/T1 で作成予定で、
   capacity report の運用手順はそちらへ集約する。packet 自体は書き換えない。
+
+### 2026-11-22: S1 signed delivery / operator recovery の実装結果と closeout
+
+- 根拠: [Emumet PR #125](https://github.com/ShuttlePub/Emumet/pull/125)、再レビュー承認 head
+  `1895554930fb2e9c7f33b742aa1ca6488265f56e`、squash
+  `e26fcede7d3d1f6936c821cb668f9a6f262688cd`。must なし、merge 直前 CI は 21/21 SUCCESS。
+  S1 の完了であり、I1 の inbox 受付有効化、T1 の監視供給、本番負荷 SLO の認定ではない。
+- **送信境界・固定上限**: 送信開始は許可 transaction の commit 応答確認。commit 成否不明は送らない。
+  自動は min(authorized_at＋10 s, received_at＋72 h)、人手は min(authorized_at＋10 s, 元の隔離期限)。
+  許可前の単調時計 marker から pool/lock/commit 時間を保守的に消費し、DNS/TLS/HTTP/応答まで
+  同じ絶対期限を使う。HTTP 中の DB 接続/transaction/行・advisory lock は 0。再起動で許可を再利用しない。
+  全プロセス・人手で共有 global 16 / origin 4 枠、準備中 lease も占有数に含め、process 内 DB phase は 4。
+  lease は 30 s、stale token/attempt/link generation で本文・quota を復活させない。
+- **scheduler lock と R1/R2**: official claim は `post_relay_schedule` の SHARE ROW EXCLUSIVE table lock
+  で短い snapshot/update を直列化する独立 transaction。上位 lifecycle gate を取得しない。
+  期限 1 分以内の優先を origin 内順位付け・候補削減より前にも適用し、通常の Profile rotation / origin 公平性を維持。
+  claim 専用の transaction-local lock timeout 2 s / statement 3 s / idle-in-transaction 5 s と、
+  commit を含む transaction 全体 5 s を適用した。上限を緩和していない。
+  claim は 1 件だけ非同期 in-flight とし、lock/pool 待ち中も maintenance と停止通知を処理する。
+  停止クライアントが transaction object を保持したままでも、DB idle timeout で rollback/回収される。
+- **鍵・transport**: K1 parsed RSA-2048 cache (上限 2、TTL 15 分、single-flight) を使い、実測 176,576 件で
+  KDF 1 回。envelope bytes/receipt/宛先は不変、外側 Date/instance Cavage 署名だけ試行ごとに更新。
+  HTTPS、redirect/proxy 拒否、試行ごとの DNS 検証・internal/mixed IP 拒否・接続先固定を維持。
+  transport client cache は origin＋検証済み address set を key に最大 64 / idle 60 s とし、DNS 承認の cache ではない。
+- **計測の位置づけ**: 冒頭 control harness (Q1 ports＋実 HTTP、KDF は経路外、CPU/メモリ非制限) は
+  64 KiB 直列/並行 354.41/330.35 件/s、1,400,000 bytes は 192.59/275.56 件/s。
+  これは最終 worker の合格根拠ではない。R1/R2 後の production code `0a15260` で再測定し、以後は試験/docs のみ変更。
+  Ryzen 9 7900 上の release、sender cores 0–3 / `ulimit -v 8388608` (8 GiB-AS)、PostgreSQL 17 cores 4–7 /
+  Unix socket、外部 streaming HTTP receiver cores 8–9、4 origins / 16 Profiles。
+  64 KiB 直列/並行16 は **230.13/418.00 件/s** (目標 ≥100)、1,400,000 bytes は **149.79/259.85 件/s** (≥20)。
+  30 s silent origin 混在の正常側は単独中央値 326.33 → 325.89 件/s、比率 **0.9987** (≥0.80)。
+  600.18 s 継続は **176,576 件 / 294.20 件/s** (admission 込み)、120→600 s の RSS は 59,200→59,268 KiB、
+  接続数 7→11 (pool cap 16、最後 120 s は 11)。全 11 回の batch 完了時に本文/job/attempt/隔離/audit/操作行は 0、固定行数不変。
+- **R3 の分離計測**: local DB semaphore、実 pool acquire (BEGIN/SQL 除外)、明示的 relay lock 取得、
+  各 job の due_at→claim DB 時刻を分離した。queue は preload を含み、意図した retry/backoff は含めない。
+  600 s の平均 ms/job は pool **0.0961**、lock 取得 **4.613** (scheduler subset **0.00150**)、
+  ready queue **92.801** (個別最大 **179.655 ms**)。lock は DB 往復/行読取を含む取得 latency であり、
+  server-only blocked time や暗黙 UPDATE lock の完全な内訳ではない。個別 queue を count/sum/max に集約し、成功別の DB 行を残さない。
+  200 ms pool / 100 ms scheduler lock 注入を別接続で行うと 201.31/102.24 ms、2 jobs の queue は各 1,000 ms。
+- **実測の限界・未達判断**: 測った目標に未達はなく、目標/上限の変更は不要。ただし平文 loopback HTTP で TLS/RTT 未測定、
+  AS 制限は cgroup ではなく、12-core host の physical pinning は 4-vCPU VM ではない。co-tenant 負荷も排除していない。
+  4 origins / 16 Profiles を超える本番規模は未測定。100 arrivals/s で 1,000 ready backlog が約 5.15 s で解消する計算は
+  実測能力が不変かつ期限内の場合の参考値で、本番 SLO/全容量保証ではない。
+- **運営者入口**: `server --help` → `server post-relay --help` → preview / redeliver / discard / status。
+  receipt または immutable Profile ID、UUID 操作 ID、操作者・理由・preview の COUNT:BYTES:BOUNDARY 確認を用いる。
+  同じ操作 ID/元確認値で固定 selection を最大 128 件ずつ進め、新着失敗を無制限に追跡しない。
+  稼働 worker と同じ gate/lease/fence/共有枠を使う。成功は本文削除、失敗は元の隔離期限へ戻り、72 h/30 d を延長しない。
+  discard は別の明示操作で、自動容量対策として行わない。監査は body-free / 30 d、成功別の無期限行を残さない。
+  操作 command は migration を適用せず、全 migration の version/success/checksum を厳密照合。
+  AppModule/Ory/JWKS/S3/listener/通常 worker を起動せず、UUID と PostgreSQL sequence だけを使い、
+  Snowflake/WORKER_ID 初期化・鍵再生成を行わない。redelivery は既存鍵/公開 origin/allowlist を再確認する。
+- **送信停止**: `POST_RELAY_SENDER_ENABLED=false` を全 sending process に設定して再起動する。
+  手動 redeliver も拒否するが、listener/inbox/他の Profile 配送と毎秒の relay expiry/purge は止めない。
+  true/未設定で有効、それ以外は設定エラー。in-flight は bounded drain、既に許可した bytes の即時撤回ではない。
+  緊急時は全 sending server/運営者 session 停止または egress 遮断。allowlist 除外だけを即時失効と見なさない。
+  受付継続は共通 job/quarantine quota を消費し、80%/95%、期限間近 backlog、purge、lock timeout/接続待ちを監視する。
+  隔離満杯では復旧・明示破棄・元期限まで最長 30 日の新規受付拒否があり得る。監視供給の組込みは T1。
+- **宣言 docs と実記録先**: S1 packet の required docs `docs/post-relay-operations.md` は今回の merge に実在し、
+  上記の運営者/停止/schema/保持手順を収録する。Q1 の宣言パス差異を S1 は解消した (過去 packet/証跡は改変しない)。
+  数値・測定条件・R1–R3 対応表は追加の
+  [docs/post-relay-measurements.md](https://github.com/ShuttlePub/Emumet/blob/e26fcede7d3d1f6936c821cb668f9a6f262688cd/docs/post-relay-measurements.md)。
+  operations の監視説明だけで新しい wait 内訳を代用せず、この追加文書も参照する。
+  guide_reachability 宣言の抽象的な recovery subcommand は実際には `server post-relay --help` であり、
+  実行して preview/redeliver/discard/status と operations 文書への経路を確認した。

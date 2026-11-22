@@ -52,3 +52,47 @@ P1 全体・本番負荷 SLO・I1/S1/T1 の未実装機能の合格を意味し�
   失敗/ignored 0。DB 試験は PostgreSQL 17.9 の独立 DB で実行。追加 L1 server 13 件、fmt、
   workspace/all-targets clippy (`-D warnings`)、OpenAPI 差分なしを確認。
   独立再レビューは must/任意とも 0。merge 直前の GitHub checks は 21 件すべて SUCCESS。
+
+## S1 — signed delivery / operator recovery 完了根拠 (2026-11-22)
+
+対象は [Emumet PR #125](https://github.com/ShuttlePub/Emumet/pull/125)、承認 head
+`1895554930fb2e9c7f33b742aa1ca6488265f56e`、squash
+`e26fcede7d3d1f6936c821cb668f9a6f262688cd`。これは S1 の完了であり、I1 の受付有効化、
+T1 の監視統合や実 TLS/本番 SLO の認定ではない。詳細条件と制約は [decisions.md](decisions.md) の S1 結果。
+
+- [x] 許可 commit/絶対期限と P0–P4、解除 3 経路 (unlink / Account command / projector) × 自動/人手を実 DB で確認。
+  `s1_p0_p1_p2_p4_three_revokers_auto_and_manual_no_body_resurrection`、
+  `s1_unlink_gate_and_precommit_checkpoints_three_revokers_auto_manual`、
+  `s1_p3_silent_http_has_zero_db_holds_and_all_revokers_finish`、
+  `s1_p1_timeout_rollback_does_not_send_and_p2_expired_does_not_send`。
+  HTTP 中は pool idle / DB lock なし。30 s silent peer の間の解除は以前の実測 1.3–6.7 ms、今回も P3 回帰成功。
+- [x] 共有 global16/origin4/準備 lease 枠、Profile rotation、飽和 origin 除外と期限 job を検証。
+  R1 の `s1_scheduler_recently_served_profile_deadline_survives_last_origin_slot` は修正前に fresh job を選んで失敗、
+  修正後に最近送信済み Profile の残り 1 s job を選択。既存公平性試験も成功。
+- [x] R2 の `s1_scheduler_stalled_claimer_times_out_rolls_back_and_recovers`、
+  `s1_scheduler_transaction_budget_includes_time_before_claim_and_rolls_back`、
+  `stalled_claim_does_not_block_maintenance_or_shutdown` は修正前失敗、修正後成功。
+  lock 2 s / statement 3 s / idle と transaction 全体 5 s を緩和せず、上位 gate を追加しない。
+  停止 client の object を保持したまま DB idle 終了と別接続の fresh fencing 回収を確認。
+  `s1_scheduler_statement_timeout_rolls_back_its_uncommitted_lease`、transaction-local 設定の pool 非漏出も成功。
+- [x] R3 の `s1_scheduler_measures_connection_lock_and_each_jobs_ready_queue_separately` で pool/lock/queue の独立感度を確認。
+  分離測定定義・分布と 600 s 待ち内訳は merge commit の `docs/post-relay-measurements.md` に収録。
+  queue は preload を含む due_at→claim、lock は往復込み取得 latency と明記し、純粋な blocked-time 分布とは主張しない。
+- [x] 修正後 4 cores / 8 GiB-AS / release / plain HTTP は 64 KiB 230.13/418.00 件/s (直列/並行16、目標 ≥100)、
+  1,400,000 bytes 149.79/259.85 件/s (≥20)、timeout origin 混在の正常側比率 0.9987 (≥0.80)。
+  600.18 s / 176,576 件 / KDF 1 回、RSS/接続/固定行数は有界、生存行の増加なし。測った目標に未達なし。
+  TLS、実 VM/cgroup、4 origins/16 Profiles 超の規模は未測定のまま可視化する。
+- [x] instance 署名/固定 bytes、401 再送、403/409 恒久失敗、redirect/SSRF/DNS rebinding、期限内観測と stale 結果、
+  expiry/保持の既存 S1/Q1 試験を維持。成功・取消の件数比例 terminal 行は残さない。
+- [x] shipped `server --help` / `server post-relay --help` から preview→確認 redeliver/discard→status に到達。
+  `server/tests/post_relay_operator.rs` 2 件で厳密 schema 拒否・migration 不適用・最小初期化・WORKER_ID 非依存を確認。
+  release image operator 2/2 と Cargo/source 不在 smoke は前 head の証跡で、R1–R3 後に独立再実行したものではない。
+  image の redelivery 対象は 0 件で、任意の非空 image 再配送は未追加。この範囲を全成功と混同しない。
+- [x] sender-only 停止設定、手動拒否、expiry/purge 継続、全送信停止/egress 遮断との差、継続受付時 quota 増加を
+  宣言どおりの `docs/post-relay-operations.md` に収録。数値・待ち内訳は追加の measurements 文書を併用。
+- [x] 最終 functional/test head の fmt、workspace/all-targets clippy (`-D warnings`)、新鮮な PostgreSQL 17 DB の
+  `cargo test --release --workspace` は失敗 0 (application 374、driver 474、kernel 277、server 270 ほか)。
+  DATABASE_URL 試験は skip なし、明示 ignore の外部 E2E fixture はローカル成功に含めない。
+  benchmark は別途明示実行、最終承認 head の CI は 21 件すべて SUCCESS。再レビュー must なし。
+- [x] PR は MERGED、issue #123 は CLOSED、host queue/runs は `completed`、linkage は CLI で PR #125 に回復。
+  host に child submodule / .gitmodules はなく pointer sync は該当しない (closeout-plan の既定候補パスを作成しない)。
