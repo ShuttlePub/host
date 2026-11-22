@@ -45,30 +45,33 @@ implementation_issue_packet:
       - intents/emumet/features/post-relay/acceptance.md
     new_intent_needed: false
     placement_rationale: "B1 completes the approved post-relay runtime integration and Ory-independent availability behavior; it does not establish a separate feature."
-  knowledge_updates:
-    intent_tree:
-      required: true
-      target_paths:
-        - intents/emumet/features/post-relay/acceptance.md
-      summary: "At closeout, record actual startup dependency boundaries, bounded JWKS behavior, cached/uncached authentication results, and shutdown/drain/lease-recovery behavior."
-    adr:
-      required: false
-      target_paths: []
-      decision_title: ""
-    diagram:
-      required: false
-      target_paths: []
-      diagram_type: none
-    docs:
-      required: true
-      target_paths:
-        - docs/post-relay-operations.md
-      summary: "Document Ory-independent startup, fail-closed JWT behavior during JWKS failure, worker stop/drain bounds, and forced-termination lease recovery; cite the actual runtime-document path if the merged predecessors establish another location."
-  closeout_learning:
-    expected: "Write back the measured JWKS timeout behavior, Ory-outage availability, A1 regression results, SIGTERM drain bound, forced-termination lease recovery, and actual migration compatibility result."
-    write_back_required: true
-    write_back_targets:
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
       - intents/emumet/features/post-relay/acceptance.md
-  guide_reachability:
-    no_role_facing_surface: true
-    routes: []
+    summary: "At closeout, record actual startup dependency boundaries, bounded JWKS behavior, cached/uncached authentication results, and shutdown/drain/lease-recovery behavior."
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - docs/post-relay-operations.md
+    summary: "Document Ory-independent startup, fail-closed JWT behavior during JWKS failure, worker stop/drain bounds, and forced-termination lease recovery; cite the actual runtime-document path if the merged predecessors establish another location."
+closeout_learning:
+  expected: "Write back the measured JWKS timeout behavior, Ory-outage availability, A1 regression results, SIGTERM drain bound, forced-termination lease recovery, and actual migration compatibility result."
+  write_back_required: true
+  write_back_targets:
+    - intents/emumet/features/post-relay/acceptance.md
+guide_reachability:
+  no_role_facing_surface: true
+  routes: []
+revision_history:
+  - date: "2026-11-22"
+    note: "Mechanical schema normalization: CLI 0.27.1 dry-run did not read knowledge_updates, closeout_learning or guide_reachability beneath implementation_issue_packet. Moved these three declarations to the YAML root without changing values, scope, requirements or targets, following S1 e269504. Authorized by parent msg-1274 after independent re-review and CI 21/21, under user permission thread-rd4012ty question-2b6c8e26aadec7ce5067c6f25433c6a6. The already-closed GitHub issue body is unchanged; original publication used the nested structure."

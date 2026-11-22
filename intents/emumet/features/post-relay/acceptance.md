@@ -125,3 +125,40 @@ T1 の監視統合や実 TLS/本番 SLO の認定ではない。詳細条件と�
 > 転送先の ShuttlePub の受け口がまだないための措置である。オンにする条件と時期 (初回リリース時に受け口がそろっていればその時点、
 > そろっていなければ受け口の完成時) は [D68](../../../shuttlepub/decisions/2026-11-21-emumet-p1-open-items.md) を参照。
 > 有効化は T1 までの未達事項ではなく、ShuttlePub の受け口の完了条件と Emumet の初回リリースの完了条件に入っている。
+
+## B1 — Ory-independent runtime / bounded shutdown 完了根拠 (2026-11-22)
+
+対象は [Emumet PR #129](https://github.com/ShuttlePub/Emumet/pull/129)、独立再レビュー承認 head
+`65c738bf7c23181a47a07b2e77bc6b2a8b643368`、squash `5b0b7b53718cb5181e903efb46515404e2346fe9`。
+以下は B1 の完了であり、I1 inbox の有効化条件 (D68)、T1 の監視/full real-user E2E、本番 SLO の認定ではない。
+設定の具体化一覧・測定条件・制限は [decisions.md](decisions.md) の B1 結果と merged child の
+[docs/post-relay-operations.md](https://github.com/ShuttlePub/Emumet/blob/5b0b7b53718cb5181e903efb46515404e2346fe9/docs/post-relay-operations.md) を参照。
+
+- [x] B1-1/2: refused/stalled discovery・fetch headers/body は期限付き。migration/Profile/instance 鍵確認後に listener を bind、
+  JWKS warm-up 完了は待たず I1 inbox/S1 worker を統合。Ory 不在でも instance 文書と実署名 inbox→転送を確認。
+  `post_relay_runtime_cold_start_outages_serve_instance_and_forward_signed_inbox`、
+  `stalled_discovery_is_bounded_and_failed_attempts_are_single_flight`、`stalled_jwks_headers_and_bodies_are_bounded`。
+- [x] B1-3: 未取得 JWKS は fail-closed、cached/uncached 成功と issuer/audience/expiry/kid を維持。
+  `refused_discovery_and_uncached_authentication_fail_closed`、`uncached_acquisition_then_cached_outage_preserves_validation`、
+  `failed_or_empty_warmup_recovers_before_cached_refetch_interval` を含む auth/JWKS 13 件が成功。
+- [x] B1-4/7/9: 空 migration/既存 DB 再起動で同じ instance identity/鍵を維持、sender off で claim/送信しない。
+  seed と live projector の競合は子プロセス退出後の fixture 作成へ修正し、off 再起動→on 再起動の双方を検証。
+  `post_relay_runtime_empty_migration_and_stopped_sender_preserve_populated_restart`。
+  A1 login/consent 実装には変更を混ぜず、既存 `e2e_basic_flow` 6/6 (実認証 3 ケースを含む) と最新 CI E2E が成功。
+- [x] B1-5: SIGTERM で HTTP drain より先に claim 停止、stalled inbound/outbound を共通期限内で drain。
+  `post_relay_runtime_sigterm_stops_claims_before_http_drain_and_bounds_stalled_work`。
+  実 libc DNS 20 s 停止の `post_relay_runtime_sigterm_bounds_blocking_dns_runtime_teardown` は修正前 4 s 上限で失敗、
+  同じ絶対期限を runtime teardown まで適用後は 2 s 設定で 2.003/2.006 s 退出 (最終試験上限 3 s)。
+  async drain 満了を伴う反例でも追加の teardown 猶予は与えず、resolver が未完のまま退出したことを marker で確認。
+- [x] B1-6: `post_relay_runtime_sigkill_before_and_after_authorization_recovers_original_lease` で
+  許可前/後の実 SIGKILL→元の 30 s lease 満了→再起動回収を確認。S1 fencing/期限/送信方針を変更しない。
+- [x] B1-7/8/9: I1 inbox 既定 false、S1 sender 設定、既存 Profile 配送、認証 validation を維持。
+  migration/OpenAPI/`ory/hydra/hydra.yml` の変更なし。OpenAPI generator 1 件成功・生成差分なし。
+- [x] fmt と workspace/all-targets clippy `-D warnings` は通常/test-mode とも成功。production 同一の `20f446b` で
+  workspace 実 DB 1414 件成功 (app 374/driver 474/kernel 277/server 288/recovery CLI 1)、失敗/ignored 0。
+  measurements/live Cloudflare/別途 D15 fixture/OpenAPI generator のみ明示 filter、必要 DB 試験は skip なし (D15 は CI 成功)。
+  最新 head の all-features 実プロセス 5/5、CI は [B1 DB/process](https://github.com/ShuttlePub/Emumet/actions/runs/44985739155/job/137095774029)、
+  [coverage](https://github.com/ShuttlePub/Emumet/actions/runs/44985739775/job/137095798720)、既存認証 E2E を含む 21/21 SUCCESS。
+- [x] PR は MERGED、issue #127 は CLOSED、host queue/runs は completed、linked_pr は CLI で PR #129 に回復。
+  host に child submodule/.gitmodules はなく pointer sync は非該当。宣言済み intent_tree/docs/closeout_learning は
+  host knowledge と merged child operations 文書で満たし、CLI の design/orchestration 証跡をそれぞれ記録する。

@@ -225,3 +225,41 @@ I1 の PR 説明などにあった「運用上の安全弁」という説明は�
   承認済みのホームの link、容量の確認)、連合 E2E が通っていること。
 - オンにする時期: Emumet の初回リリースの時点で受け口がそろっていればその時点。そろっていなければ受け口の完成時。
   どちらの場合も、ShuttlePub の受け口の完了条件と Emumet の初回リリース (`emumet-first-release`) の完了条件に入れてある。
+
+### 2026-11-22: B1 Ory-independent runtime の実装結果と closeout
+
+- 根拠: [Emumet PR #129](https://github.com/ShuttlePub/Emumet/pull/129)、独立再レビュー承認 head
+  `65c738bf7c23181a47a07b2e77bc6b2a8b643368`、squash `5b0b7b53718cb5181e903efb46515404e2346fe9`。
+  実装開始 base は I1 `b054788aa253ad99ea3c49c12f239e9baf5bba1c`。must/任意なし、merge 直前 CI 21/21 SUCCESS。
+- **起動依存境界**: DB migration → Profile 鍵確認 → instance identity/鍵確認 → listener bind →
+  非同期 JWKS warm-up と各 worker/HTTP serving。bind 失敗時に relay を残さず、Ory/JWKS 取得完了を
+  listener・instance 文書・I1 inbox・S1 relay の起動条件にしない。inbox は router の一部であり別 queue を持たない。
+  自身の DB/鍵/転送先などの依存が健全な場合、Ory の connection refused / 応答停止でも署名付き受付・転送が動作した。
+- **認証境界**: discovery/取得/connect/応答 body と single-flight 待ちを期限付きにした。未取得/失敗時は JWT API が
+  fail-closed。cached/uncached の成功、issuer/audience/expiry/kid の既存検証を維持し、A1 login/consent の
+  URL/応答/cookie/scope/error は変更しない。鍵取得失敗を認証 bypass や起動成功の偽装には用いない。
+- **停止境界**: SIGTERM/SIGINT で新規 claim を先に止め、HTTP/relay/webhook 等を並行 drain。S1 relay の 12 s、
+  既存 webhook の 20 s は既定 25 s の全体期限内で動作する。async drain と Tokio runtime teardown は
+  **同じ絶対期限**を共有し、`shutdown_timeout` に残予算のみを渡す。async drain が満了した場合は 0、追加猶予を与えない。
+  reqwest の timeout/abort だけでは libc DNS の blocking task が残るため、暗黙 runtime Drop の無期限待ちを使わない。
+- **反例の red/green**: Linux の実 `getaddrinfo` を 20 s 止める子プロセス試験を追加。JWKS 200 ms/停止 2 s で
+  修正前は 4 s 以内に退出せず失敗。修正後は DNS のみ **2.003 s**、未完 HTTP body の drain 満了併用 **2.006 s**。
+  resolver marker は開始済み・未完了を証明する。最終試験上限は 3 s (1 s は scheduling margin) で、
+  drain 2 s + teardown 2 s を別々に与える誤実装も拒否する。SIGKILL は送信許可前/後で元の 30 s lease を
+  実際に待って回収し、S1 の fencing/送信方針を変えない。
+- **計画で具体名/値が未指定だった実装具体化** (リードへ報告済み):
+  `JWKS_TIMEOUT_MS` 既定 3000 / 1..60000、`SERVER_SHUTDOWN_TIMEOUT_SECS` 既定 25 / 1..300。
+  cold/empty JWKS の lazy retry は min(設定間隔, 1 s)、populated cache の unknown-kid 300 s 制限は不変。
+  `EMUMET_TEST_RELAY_ORIGINS` は test-mode build の明示的なローカル転送先リストのみ。Linux DNS 故障注入の
+  `cc` / `LD_PRELOAD` / `EMUMET_TEST_DNS_MARKER` は試験専用で production にリンクしない。
+  DNS must 修正自体には新しい production 設定/既定値はない。新たな production enable/disable flag は追加しない。
+- **回帰・限界**: 最新実 DB/実プロセス 5/5、JWKS/auth 13 件、workspace 実 DB 1414 件、既存 real-Ory E2E 6/6
+  が成功。workspace 全件は production 同一の `20f446b`、最終 `65c738b` の追加差分は coverage で見つかった
+  fixture/projector 競合を稼働子プロセス停止後の seed へ直した試験限定変更であり、最新 CI coverage/E2E も成功。
+  first-time RSA provisioning の fixture 120 s と、その後の stalled-Ory 起動上限 30 s (JWKS 期限 60 s) は分離する。
+  migration/OpenAPI/Hydra 設定は無変更。S1 sender 設定と I1 inbox 既定 false は不変で、D68 の受け口完成条件を変更しない。
+  T1 の full real-user relay E2E/監視供給、実 TLS/本番 SLO の認定はこの closeout に含めない。
+- **required docs** は merged child の
+  [docs/post-relay-operations.md](https://github.com/ShuttlePub/Emumet/blob/5b0b7b53718cb5181e903efb46515404e2346fe9/docs/post-relay-operations.md)
+  に収録 (host 配下の docs ではない)。required intent_tree/closeout_learning は本記録と acceptance に書き戻し、
+  packet の nested 宣言は値を変えず root に移すことで CLI 0.27.1 の読み飛ばしを解消する。
