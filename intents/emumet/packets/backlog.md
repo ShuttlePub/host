@@ -185,7 +185,7 @@ packet 起こしは `architecture-foundation` から。
 
 | feature | ブロッカー |
 |---|---|
-| post-relay | ShuttlePub への転送プロトコル、サービス間認証。**再開条件: ShuttlePub 本体実装の構想が立つこと** (2026-08-12 grill) |
+| post-relay | **P1 実装中**: C0/K1/L1/Q1/S1/I1 はマージ済み (Emumet PR #115 `f8fe0b4`、#119 `24a65ae`、#120 `a625d59`、#122 `7efe25c`、#125 `e26fced`、#126 `b054788`)。B1 (issue #127) は実装中、T1 (issue #128、モック受け手を使う E2E) は未着手。転送契約などの基本方針は D61–D67 で確定。**残件**: K2 (鍵の更新・失効)、ShuttlePub 側の受け口、連合 E2E、署名 API と sharedInbox (P2/P3)。`POST_RELAY_INBOX_ENABLED` は既定オフとし、ShuttlePub の受け口・必要な運用準備・連合 E2E がそろったら有効化する (D68、host commit `da15c2e`)。 |
 | shuttlepub-link | 連携先との認証方式、ShuttlePub 本体側の実装状況。**再開条件: 同上 (C2 と同時)** (2026-08-12 grill) |
 
 ## Host-only(publish 対象外)
