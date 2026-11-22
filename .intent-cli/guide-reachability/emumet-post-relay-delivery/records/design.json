@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "emumet-post-relay-delivery",
+  "role": "design",
+  "host_commit": "fbad5b5a6d47c336a76a4f64859b7c47351a2da4",
+  "recorded_at": "2026-11-22T00:41:46.1432527+00:00",
+  "guide_surfaces": [
+    "server --help / operator post-relay recovery subcommand --help"
+  ],
+  "roles": [
+    "operations"
+  ],
+  "note": "Executed release server --help and server post-relay --help successfully; both route operations to preview/redeliver/discard/status and docs/post-relay-operations.md. Declared abstract operator recovery subcommand is server post-relay. Actual docs path matches the merged child repo, measurements are supplemental."
+}

@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "emumet-post-relay-delivery",
+  "role": "orchestration",
+  "host_commit": "e4dca03e4ef758279b2d6fbc2f10bfb50bb3d1dc",
+  "recorded_at": "2026-11-22T00:41:46.2811565+00:00",
+  "targets": [
+    ".intent-cli/queue-state.json",
+    ".intent-cli/runs.jsonl"
+  ],
+  "note": "Verified PR125 MERGED as e26fcede7d3d1f6936c821cb668f9a6f262688cd and origin/main exact match; recorded queue/runs closeout with --pr-merged true and unique linked_pr recovery to PR125/issue123. Required knowledge recorded by design role. Claim release is the separate final attributed boundary."
+}

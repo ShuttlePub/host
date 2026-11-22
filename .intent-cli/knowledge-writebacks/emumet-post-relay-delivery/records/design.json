@@ -1,0 +1,13 @@
+{
+  "artifact_kind": "knowledge-writeback-record",
+  "execution_unit": "emumet-post-relay-delivery",
+  "role": "design",
+  "host_commit": "fbad5b5a6d47c336a76a4f64859b7c47351a2da4",
+  "recorded_at": "2026-11-22T00:38:52.9622364+00:00",
+  "targets": [
+    "intents/emumet/features/post-relay/decisions.md",
+    "intents/emumet/features/post-relay/acceptance.md",
+    "docs/post-relay-operations.md"
+  ],
+  "note": "S1 intent_tree and closeout_learning written back. Declared docs/post-relay-operations.md exists in the merged Emumet repo at e26fcede7d3d1f6936c821cb668f9a6f262688cd; it is not a host docs path. Additional docs/post-relay-measurements.md holds R1-R3 measurements and limitations, explicitly referenced in host writeback. No packet/target/limit change."
+}

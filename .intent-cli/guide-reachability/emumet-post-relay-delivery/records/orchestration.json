@@ -1,0 +1,14 @@
+{
+  "artifact_kind": "guide-reachability-record",
+  "execution_unit": "emumet-post-relay-delivery",
+  "role": "orchestration",
+  "host_commit": "fbad5b5a6d47c336a76a4f64859b7c47351a2da4",
+  "recorded_at": "2026-11-22T00:41:46.4009307+00:00",
+  "guide_surfaces": [
+    "server --help / operator post-relay recovery subcommand --help"
+  ],
+  "roles": [
+    "operations"
+  ],
+  "note": "Mechanically confirmed server --help and server post-relay --help execute without normal startup and point to shipped recovery commands, frozen selection confirmation and operations documentation. Host evidence identifies child docs scope and supplemental measurements. Q1 declarations are already at YAML root; S1 nested declarations were normalized without value changes in e2695048edd3d5a7b78095b5bbc5c15710b33a86 by parent permission."
+}
