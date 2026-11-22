@@ -162,3 +162,102 @@ T1 の監視統合や実 TLS/本番 SLO の認定ではない。詳細条件と�
 - [x] PR は MERGED、issue #127 は CLOSED、host queue/runs は completed、linked_pr は CLI で PR #129 に回復。
   host に child submodule/.gitmodules はなく pointer sync は非該当。宣言済み intent_tree/docs/closeout_learning は
   host knowledge と merged child operations 文書で満たし、CLI の design/orchestration 証跡をそれぞれ記録する。
+
+## T1 — E2E acceptance / physical capacity / alarms 完了根拠 (2026-11-22)
+
+対象は [Emumet PR #130](https://github.com/ShuttlePub/Emumet/pull/130)、承認 head
+`4f584d2107c708c79b464c58c6900ffab9e44733`、squash
+`439f7470990afbb79f286824fd59bb2b413a943a`。これは Emumet→P1 mock receiver の統合受け入れと
+運用検証であり、ShuttlePub 本番 receiver、全P1サービスの本番準備、production SLOの認定ではない。
+CIはマージ直前 **22/22 SUCCESS**。同PRで作成された最終E2E suiteは36 tests。
+実 Kratos/Hydra/Keto、ソースから構築したserver、ローカル build の release image
+`emumet-t1-release:local` を使用する。`receiver.rs` はlink台帳を持たず、P1署名・schema・envelopeを検証する。
+`POST_RELAY_INBOX_ENABLED` の既定値は引き続きfalse。このcloseoutではGHCR publish、Git/release tag、
+GitHub releaseは実行していない。CIの`:local`はテスト用ローカルimage名であり、公開物ではない。
+
+### §11.1 必須30ケースと対応テスト
+
+`server/tests/e2e_post_relay/` の統合テストをCIのpost-relay workflowで実行。
+番号は承認計画§11.1に対応する。
+
+| Case | 実証内容 | 対応テスト |
+|---:|---|---|
+| 1 | 実認証・Profile/link登録・署名inboxからrelay | `main::case01_real_auth_profile_link_signed_inbox_to_relay` |
+| 2 | raw bytes・未知欄・非ASCII・空白の保持 | `intake::case02_raw_bytes_unknown_fields_non_ascii_and_whitespace_survive` |
+| 3 | `to`文字列、actor object、IDなし、ld+json、array object | `intake::case03_to_string_actor_object_no_id_ld_json_and_array_object_are_forwarded` |
+| 4 | 重複JSON key、type配列、元header上限 | `intake::case04_duplicate_keys_type_arrays_and_oversized_original_headers` |
+| 5 | Follow/Block除外、既知/未知Undo・Accept・Reject | `intake::case05_follow_block_excluded_known_and_unknown_undo_accept_reject` |
+| 6 | early-Undo防御、Profile間独立性 | `intake::case06_early_undo_defense_and_independent_profiles` |
+| 7 | receipt保存後の失敗rollback・再送 | `intake::case07_failure_after_receipt_persistence_rolls_back_and_retry_is_not_lost` |
+| 8 | 同Activityの複数Profile配信 | `intake::case08_one_activity_is_delivered_independently_to_multiple_profiles` |
+| 9 | 未link時の本文なしhourly bucket | `intake::case09_unlinked_profile_leaves_only_a_body_free_hourly_bucket` |
+| 10 | retry対象status・恒久失敗status・redirect拒否 | `delivery::case10_401_and_503_retry_400_403_409_permanent_redirect_rejected` |
+| 11 | receiver受信後切断、同receipt/envelopeの再送 | `delivery::case11_receiver_accepts_then_disconnects_same_receipt_and_envelope_are_resent` |
+| 12 | 保存後停止・再起動・lease回収 | `delivery::case12_stop_after_persistence_restart_and_lease_recovery` |
+| 13 | P0/P1/P2/P4 × 解除3経路 × 自動/人手 | `races::case13_p0_p1_p2_p4_x_three_revokers_x_auto_and_operator` |
+| 14 | HTTP停止中のunlink/deactivation/projector非待機 | `races::case14_stalled_http_does_not_delay_unlink_deactivation_or_projector` |
+| 15 | 絶対send deadline超過後の送信禁止 | `races::case15_worker_past_its_absolute_send_deadline_does_not_send` |
+| 16 | relink後に旧job/quarantineを新homeへ漏らさない | `lifecycle::case16_relink_never_leaks_old_jobs_or_quarantine_to_the_new_home` |
+| 17 | 移管後link維持・新ownerだけ操作可能 | `lifecycle::case17_transfer_keeps_the_link_and_only_the_new_owner_can_operate_it` |
+| 18 | suspend/BAN hold・deactivationによる解除 | `lifecycle::case18_suspend_ban_hold_without_extending_and_deactivation_revokes_even_if_the_profile_row_stays` |
+| 19 | 同batch再有効化・古いevent再投影で新link保護 | `lifecycle::case19_deactivate_and_reactivate_in_one_batch_and_old_event_replay_keep_a_new_link` |
+| 20 | Ory停止/応答停止中のrelay継続、認証API fail-closed | `ory_outage::case20_ory_stopped_or_unresponsive_relay_keeps_working_and_protected_apis_fail_closed` |
+| 21 | 2プロセス間でquota/rate/reservation共有 | `retention::case21_two_processes_share_quota_rate_limit_and_reservations` |
+| 22 | success/cancel後にjob・attempt・terminal rowなし | `retention::case22_success_and_cancel_leave_no_job_attempt_or_terminal_rows` |
+| 23 | 注入時刻で72h/30d境界確認 | `retention::case23_72_hour_and_30_day_boundaries_with_injected_time` |
+| 24 | worker競合下のProfile一括redeliver/discard | `operator::case24_profile_bulk_redeliver_and_discard_via_cli_with_competing_workers` |
+| 25 | quarantine満杯でも新着拒否・受付済本文保持 | `retention::case25_full_quarantine_rejects_new_admission_but_keeps_accepted_bodies` |
+| 26 | link台帳なしのP1 receiver検証 | `receiver_p1::case26_27_receiver_p1_procedure_rejects_every_defect_and_needs_no_link_table` |
+| 27 | origin/Host/Digest/Date/schema不一致拒否 | `receiver_p1::case26_27_receiver_p1_procedure_rejects_every_defect_and_needs_no_link_table` |
+| 28 | retention期限近傍のredeliveryでbytes/expiry維持・新署名 | `operator::case28_redelivery_near_the_retention_limit_has_a_fresh_signature_keeps_expiry_and_bytes` |
+| 29 | live workerと並行するsource-built release-image操作 | `release_image::case29_release_image_operator_commands_run_beside_a_live_worker` |
+| 30 | log/audit/CLI/counterへの本文・秘密・actor漏洩なし | `leak::case30_no_body_secret_or_actor_identifier_in_logs_audit_cli_or_counters` |
+
+追加の容量・警報検証は `capacity::capacity_supply_every_30s_fails_closed_after_90s_and_applies_thresholds_with_hysteresis`、
+`supplier::capacity_supplier_keeps_a_fixed_period_deducting_work_time_and_records_overruns`、および
+`alarms.rs` のmissing/stale/low-capacity、quota/quarantine、reservation mismatch、purge delay、
+deadline-near backlog、repeated 401、lock/connection pressure、projector stall、拒否理由counterの
+fire/clear試験で行った。
+
+### 容量・警報と§11.2の証跡
+
+- `e2e/post-relay/capacity-supplier.sh` はPostgreSQL data volume（またはmanaged DBの同等指標）を
+  fixed cadenceで30秒ごとに測り、`server capacity report`へ通知する。測定時間を周期から差し引き、
+  overrunを記録し、失敗時に健康値を捏造しない。時刻は計測前にvalidation対象DBのclockから得る。
+  90秒超・欠損・未来時刻・閾値未満はfail-closed。10 GiB未満または10%未満で受付停止、
+  回復は12 GiB以上かつ12%以上を要求。
+- DB警報は80% warning / 95% critical quota、capacity missing/stale/threshold、
+  reservation mismatch、purge/cancel backlog、deadline-near、401、DB lock/connection pressure、
+  projector stall等を確認する。拒否理由counterは固定code
+  (`global_rate`, `profile_rate`, `profile_quota`, `global_quota`, `quarantine_full`, `capacity`,
+  `storage`)を使い、拒否ごとのDB行を作らない。持続拒否alertは`storage`以外の理由別counter
+  増加を検出する。runbookはmerged childの
+  [operations guide](https://github.com/ShuttlePub/Emumet/blob/439f7470990afbb79f286824fd59bb2b413a943a/docs/post-relay-operations.md)
+  に記録。
+- §11.2 throughput計測はRyzen 9 7900 / Linux 7.3.5 / release / PostgreSQL 17、
+  sender 4 cores＋8 GiB virtual-address-space制限、4 origins・16 Profiles、loopback plain HTTP
+  （TLSなし、host共用負荷あり）で実施。64 KiBは125.38/s serial・185.93/s bounded-16、
+  約1.34 MiBは93.88/s・167.28/s。目標100/s・20/sをこの条件で満たした。
+  10分runは113,664 delivery / 600.05 s (189.43/s、admission込み)、KDF 1回、live rows・
+  connection/RSSはbounded。timeout origin併設のhealthy throughput比は1.0144 (目標0.80以上)。
+- Final-code physical-stability runは専用PostgreSQL 17.9 clusterで135,104 deliveries / 600.12 s
+  (225.1/s)、DB relation size 35.0 MBでplateau、WALはmax_wal_size内で循環、autovacuumと
+  bounded dead tuplesを確認。これらは本番SLO・4-vCPU VM・TLS性能の主張ではない。
+  高圧縮bodyによりexternal TOASTは0 bytesで、この試験では外部TOAST growth/vacuumを検証していない。
+- T1の測定はE2E suiteが33 testsだった時点で行い、最終36-test suiteまでの追加変更はcapacity-report
+  refusal code、DB-clock sample validation、test-mode専用operator transport/utoipa記述などdelivery
+  path外。throughputは再測定していない。物理安定性はfinal codeでも計測済みである。
+
+### 計画外の追加と未解決事項
+
+- 計画外の実装追加: capacity-reportの固定refusal reason code、DB clockによるcapacity sample
+  timestamp検証、test-mode限定のoperator transport/utoipa記述。test-mode loopback例外は通常buildに含まれない。
+  追加検証としてsupplier固定周期・overrun、未来timestamp診断、理由別拒否counterの持続alertを含めた。
+- 未解決: 既存`e2e_basic_flow`とprojection再投影の競合は残存し、T1では修正していない。
+  `check_reservations`にはproduction callerがなく、運用上の整合性確認は`alerts.sh`のread-only
+  `consistency.sql`が担当する。
+- 拒否理由counterとその持続alertはprocess-local。複数server運用では各processのlogを個別に監視する必要があり、
+  process再起動でcounterの連続増加判定がリセットされる。external TOASTを含むincompressible bodyと
+  populated quarantineのvacuum負荷も未検証。固定arrival負荷、TLS、production storage/scaleも未測定。
+- host repoにはEmumet child submodule/.gitmodulesがないためsubmodule pointer syncは非該当。
+  PR mergeでissue #128はCLOSED。PR/issue/queue/runのlinkageはintent-cliで記録した。
