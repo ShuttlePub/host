@@ -368,3 +368,5 @@
 {"ts":"2026-11-22T14:02:45.4501726+00:00","execution_unit":"emumet-post-relay-e2e","event":"linkage-recovered","by":"intent-cli review closeout-plan","repo":"ShuttlePub/Emumet","pr":130}
 {"ts":"2026-11-22T16:19:37.329466+00:00","execution_unit":"shuttlepub-producer-intake","event":"pr-merged","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":35}
 {"ts":"2026-11-22T16:19:37.329466+00:00","execution_unit":"shuttlepub-producer-intake","event":"closeout-recorded","by":"intent-cli closeout pr","repo":"ShuttlePub/ShuttlePub","pr":35}
+{"ts":"2026-11-28T09:48:55.1560907+00:00","execution_unit":"shuttlepub-foundation-refresh","event":"queue_seeded_from_packet","by":"automation queue-seed-from-packet (G363)","packet_ref":".intent-cli/issues/shuttlepub-foundation-refresh/"}
+{"ts":"2026-11-28T09:49:03.9315715+00:00","execution_unit":"shuttlepub-foundation-refresh","event":"issue-created","by":"issue-publish-flow","linked_issue":"ShuttlePub/ShuttlePub#36","reason":"https://github.com/ShuttlePub/ShuttlePub/issues/36"}
