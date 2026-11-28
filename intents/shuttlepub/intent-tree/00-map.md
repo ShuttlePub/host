@@ -22,7 +22,7 @@ links/external.md            関連リポジトリ (nitinol, stargate, サービ
 product/service-concept.md   サービス群全体のコンセプト (2026-11-18)
 packets/roadmap-2026-11-18.md  サービス群の実装ロードマップ (P0-P4)
 contracts/emumet-post-relay/ Emumet 内向き転送の契約 v1 (正本。D61)
-decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提、D36-D41: 2026-11-18 P1 の連携を先に通し、その後 Stellar を切り出す、D42-D50: 2026-11-20 問題領域と 3 つの Producer・port 層、D51-D68: 2026-11-21 Emumet の P1 以降の未決事項と転送の契約、D69-D71: 2026-11-22 TL の流れ先・リレーを初期の範囲から外す・Shared Inbox と link の許可)
+decisions/                   決定一覧 (D1-D11: 2026-08-29 grill、D12-D19: 2026-11-15 役割境界と再構築、D20-D22: 2026-11-16 リレー優先・module の切り分け・永続化先、D23-D35: 2026-11-18 サービス群のコンセプトとサービス間の前提、D36-D41: 2026-11-18 P1 の連携を先に通し、その後 Stellar を切り出す、D42-D50: 2026-11-20 問題領域と 3 つの Producer・port 層、D51-D68: 2026-11-21 Emumet の P1 以降の未決事項と転送の契約、D69-D71: 2026-11-22 TL の流れ先・リレーを初期の範囲から外す・Shared Inbox と link の許可、D72-D76: 2026-11-28 Emumet Protocol・代理投稿の最小の流れ・Emumet のモック)
 features/                    (未整理)
 clarifications/open.md       (未整理)
 interviews/shuttlepub.json   初動 shaping の決定記録 (Q1-Q11)
@@ -110,6 +110,17 @@ Local TL はこの ShuttlePub の投稿だけ、Global TL は受け取った公�
   供給元の集約・Accept の配送・リレー用 inbox での Create の受け入れは、次の単位で外す。
 - **次の単位**: Emumet からの転送の受け口 (`POST /internal/v1/emumet/activities`)。D71 で転送の契約を
   改める (v1 の revision か v2 か未決) ので、その形が決まってから packet にする。
+
+## Emumet Protocol と代理投稿 (D72-D76、2026-11-28)
+
+Emumet と ShuttlePub の間の転送部分を Emumet Protocol と呼ぶ。D71 を反映する改訂は v2 ではなく
+unstable と明示する (D72)。受け口より前に、代理投稿 (利用者の投稿を Emumet の代理署名を付けて
+相手の inbox へ届ける) を最小の形で通す (D73・D74)。Emumet が提供すべき API は、ShuttlePub の
+リポジトリに置く専用の crate でまねる (D75)。
+
+- 決定: [decisions/2026-11-28-emumet-protocol-and-proxy-posting.md](../decisions/2026-11-28-emumet-protocol-and-proxy-posting.md)
+- 実行単位の順 (D76): (1) `shuttlepub-foundation-refresh` (nitinol 0.9.0、idle timeout、テストの
+  PostgreSQL の共有)、(2) 代理投稿 (リレー用の部分はここで外す)。その次が Emumet Protocol の受け口。
 
 下の「将来 slice」は 2026-08-29 時点の目安で、順序はロードマップが新しい。
 

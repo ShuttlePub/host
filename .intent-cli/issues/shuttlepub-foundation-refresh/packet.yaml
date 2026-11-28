@@ -1,0 +1,67 @@
+implementation_issue_packet:
+  issue_title: "shuttlepub-foundation-refresh: nitinol 0.9.0 への更新、idle timeout の設定、テスト用 PostgreSQL の共有"
+  issue_kind: feature
+  source_execution_unit: shuttlepub-foundation-refresh
+  domain: shuttlepub
+  target_repo: ShuttlePub/ShuttlePub
+  target_path: "Cargo.toml, Cargo.lock, application/, server/, scripts/ci/structural-checks.sh, docs/foundation.md"
+  target_part: "nitinol の版と System の組み立て、Projector の起動と停止、テスト用 PostgreSQL の用意、構造検査。`POST /inbox`・`GET /actor` の挙動、/api/v1 契約の定義と openapi/shuttlepub.json は変更対象外"
+  dependencies: []
+  technical_baseline:
+    - "層は kernel / port / application / driver / server の 5 crate。port は抽象のみ、具象は driver (D16, D50)"
+    - "AppHandler は EventSourceSystem<PostgresStore> を直接持つ。ストアの型引数も、ストアを切り替える feature も作らない。ストアは層ごとに決める (D49)"
+    - "nitinol はシングルノードで使う。0.9.0 に上げてから代理投稿の単位に進む (D76)"
+    - "/api/v1 の契約 (openapi/shuttlepub.json) には差分を出さない (D19, D34)"
+    - "作業ブランチの基点と PR の base は dev。main へは動く形になってから別途 PR で merge する"
+  intent_references:
+    - "intents/shuttlepub/decisions/2026-11-28-emumet-protocol-and-proxy-posting.md (D72-D76)"
+    - "intents/shuttlepub/decisions/2026-11-20-problem-domain-and-producers.md (D42-D50)"
+    - "intents/shuttlepub/technology/overview.md"
+  acceptance_criteria:
+    - "AC1 (nitinol 0.9.0): workspace の `nitinol` は `0.9.0` で、`Cargo.lock` もそれに合っている。feature の割り当て (`kernel` は `contract`、`application` は `eventsource`、`server` は `eventsource` と `postgres`) は変わらない。`cargo tree -p shuttlepub-kernel -e normal` に tokio・`nitinol-runtime`・axum・reqwest・sqlx が出ない。イベントの保存形式を固定する既存のテストが、内容を変えずに通る"
+    - "AC2 (idle timeout): System に idle timeout の既定 (5 分、`server` の定数) があり、`server::database::event_source_system` の引数で渡される。環境変数は増えていない。Design notes の I1〜I5 を満たし、それぞれ PostgreSQL を使うテストで確認されている。そのテストは「止まった」ことを観測してから次へ進む"
+    - "AC3 (テスト用 PostgreSQL): Design notes の P1〜P4 を満たす。P1〜P3 は実行したコマンドと出力が PR の説明にあり、P4 はテストがある。reaper の子プロセスはなくなっている。Docker も `SHUTTLEPUB_TEST_DATABASE_URL` も使えないとき、PostgreSQL を使うテストは失敗する"
+    - "AC4 (構造検査): `scripts/ci/structural-checks.sh` が `port` の外部依存 (tokio・reqwest・axum・sqlx・`nitinol-runtime`) を検査し、通る。`port` の `Cargo.toml` にその依存を足すと失敗することを、実装した人が確かめている"
+    - "AC5 (既存の挙動と契約の維持): `server/tests/` の既存のテストが、組み立ての関数の引数の書き換えを除いて検証内容を変えずに通る。`openapi/shuttlepub.json` は基点とバイト一致し、再生成しても差分が出ない。契約の定義・契約テスト・fixture に差分がない。AppHandler・axum の state・router・ルートの関数にストアの型引数がなく、cargo の feature は増えていない。`InMemoryStore` は `server` (テストを含む) に現れない"
+    - "AC6 (文書): `docs/foundation.md` が、nitinol 0.9.0、idle timeout の既定と止まったあとの動き、テスト用のコンテナの名前・残ること・消し方を説明している"
+    - "AC7 (検査): fmt / clippy `-D warnings` / test / build / `git diff --check` / structural-checks / openapi-schema が、ローカルで通る。CI (`dev` 向けの PR) での結果は、この実行単位の workflow の完了条件に含めず、PR の作成後に依頼者が確認する"
+
+# G461: packet-time intent-maintenance metadata.
+intent_placement:
+  primary_intent: intents/shuttlepub/intent-tree/00-map.md
+  supporting_intents:
+    - "intents/shuttlepub/decisions/2026-11-28-emumet-protocol-and-proxy-posting.md"
+    - "intents/shuttlepub/technology/overview.md"
+  new_intent_needed: false
+  placement_rationale: "D76 の (1)。PR #35 のレビューで残った指摘を、代理投稿の単位の前に片付ける。新しい intent ノードは不要。"
+knowledge_updates:
+  intent_tree:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/intent-tree/00-map.md"
+    summary: "shuttlepub-foundation-refresh の到達範囲 (nitinol 0.9.0、idle timeout、テスト用 PostgreSQL の共有) を記録する。"
+  adr:
+    required: false
+    target_paths: []
+    decision_title: ""
+  diagram:
+    required: false
+    target_paths: []
+    diagram_type: none
+  docs:
+    required: true
+    target_paths:
+      - "intents/shuttlepub/technology/overview.md"
+    summary: "nitinol 0.9.0、idle timeout の既定と止まったあとの動き、テスト用 PostgreSQL の用意の仕方を反映する。"
+closeout_learning:
+  expected: "nitinol 0.9.0 で集約と Projector を止めたときの挙動 (再生、起こし直し、遅れ) と、テスト用のコンテナをプロセスをまたいで共有したときの品質ゲートの時間を記録する。次の単位 (代理投稿の配送の Projector) の前提になる。"
+  write_back_required: true
+  write_back_targets:
+    - "intents/shuttlepub/technology/overview.md"
+    - "intents/shuttlepub/intent-tree/00-map.md"
+guide_reachability:
+  no_role_facing_surface: false
+  routes:
+    - guide_surface: guide workflow task implementation-loop
+      role: implementation
+      target_surface: "ShuttlePub/ShuttlePub リポジトリ (application/, server/, scripts/ci/)"
